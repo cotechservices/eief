@@ -1,0 +1,227 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Utilisateur {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  nom       String
+  prenom    String
+  telephone String?
+  role      Role     @default(PARENT)
+  estActif  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  eleve    Eleve?
+  parent   Parent?
+  personnel Personnel?
+  messagesEnvoyes   Message[] @relation("MessagesEnvoyes")
+  messagesRecus     Message[] @relation("MessagesRecus")
+}
+
+enum Role {
+  SUPER_ADMIN
+  DIRECTEUR_GENERAL
+  DIRECTEUR_ETUDES
+  COMPTABLE
+  SECRETARIAT
+  SURVEILLANT
+  ENSEIGNANT
+  PARENT
+  ELEVE
+}
+
+model Eleve {
+  id            Int      @id @default(autoincrement())
+  utilisateurId Int      @unique
+  matricule     String   @unique
+  dateNaissance DateTime
+  classeId      Int?
+  dateInscription DateTime @default(now())
+  estInscrit    Boolean  @default(true)
+
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id])
+  classe        Classe?     @relation(fields: [classeId], references: [id])
+  presences     Presence[]
+  notes         Note[]
+  paiements     Paiement[]
+  soumissions   SoumissionDevoir[]
+  parents       LienParentEleve[]
+}
+
+model Classe {
+  id        Int    @id @default(autoincrement())
+  nom       String
+  niveau    String
+  salle     String?
+  capaciteMax Int  @default(30)
+  titulaireId Int?
+  anneeScolaireId Int
+
+  eleves         Eleve[]
+  enseignements  Enseignement[]
+  presences      Presence[]
+}
+
+model Enseignement {
+  id            Int      @id @default(autoincrement())
+  enseignantId  Int
+  classeId      Int
+  matiereId     Int
+  heuresSemaine Decimal? @db.Decimal(5,2)
+  anneeScolaireId Int
+
+  enseignant Personnel @relation(fields: [enseignantId], references: [id])
+  classe     Classe    @relation(fields: [classeId], references: [id])
+  matiere    Matiere   @relation(fields: [matiereId], references: [id])
+  lecons     Lecon[]
+  devoirs    Devoir[]
+  notes      Note[]
+}
+
+model Matiere {
+  id        Int    @id @default(autoincrement())
+  nom       String
+  coefficient Int  @default(1)
+  enseignements Enseignement[]
+}
+
+model Lecon {
+  id            Int    @id @default(autoincrement())
+  enseignementId Int
+  titre         String
+  contenu       String?
+  fichierUrl    String?
+  videoUrl      String?
+  datePublication DateTime @default(now())
+
+  enseignement Enseignement @relation(fields: [enseignementId], references: [id])
+}
+
+model Devoir {
+  id            Int    @id @default(autoincrement())
+  enseignementId Int
+  titre         String
+  description   String?
+  fichierUrl    String?
+  dateLimite    DateTime
+  datePublication DateTime @default(now())
+
+  enseignement Enseignement @relation(fields: [enseignementId], references: [id])
+  soumissions  SoumissionDevoir[]
+}
+
+model SoumissionDevoir {
+  id           Int      @id @default(autoincrement())
+  devoirId     Int
+  eleveId      Int
+  fichierUrl   String
+  dateSoumission DateTime @default(now())
+  note         Decimal? @db.Decimal(5,2)
+  commentaire  String?
+  isOffline    Boolean  @default(false)
+  syncId       String?
+
+  devoir Devoir @relation(fields: [devoirId], references: [id])
+  eleve  Eleve  @relation(fields: [eleveId], references: [id])
+}
+
+model Presence {
+  id          Int      @id @default(autoincrement())
+  eleveId     Int
+  classeId    Int
+  date        DateTime
+  statut      String
+  heureArrivee DateTime?
+  enseignantId Int?
+  isOffline   Boolean  @default(false)
+  syncId      String?
+
+  eleve   Eleve   @relation(fields: [eleveId], references: [id])
+  classe  Classe  @relation(fields: [classeId], references: [id])
+}
+
+model Paiement {
+  id               Int      @id @default(autoincrement())
+  eleveId          Int
+  montant          Int
+  typeFrais        String
+  modePaiement     String
+  referenceTransaction String?
+  statut           String   @default("valide")
+  datePaiement     DateTime @default(now())
+  recuUrl          String?
+  saisiePar        Int?
+
+  eleve Eleve @relation(fields: [eleveId], references: [id])
+}
+
+model Note {
+  id            Int      @id @default(autoincrement())
+  eleveId       Int
+  enseignementId Int
+  valeur        Decimal  @db.Decimal(5,2)
+  coefficient   Int      @default(1)
+  dateSaisie    DateTime @default(now())
+  commentaire   String?
+  enseignantId  Int?
+  isOffline     Boolean  @default(false)
+  syncId        String?
+
+  eleve        Eleve        @relation(fields: [eleveId], references: [id])
+  enseignement Enseignement @relation(fields: [enseignementId], references: [id])
+}
+
+model Message {
+  id            Int      @id @default(autoincrement())
+  expediteurId  Int
+  destinataireId Int
+  sujet         String?
+  contenu       String
+  estLu         Boolean  @default(false)
+  dateEnvoi     DateTime @default(now())
+  isOffline     Boolean  @default(false)
+  syncId        String?
+
+  expediteur   Utilisateur @relation("MessagesEnvoyes", fields: [expediteurId], references: [id])
+  destinataire Utilisateur @relation("MessagesRecus", fields: [destinataireId], references: [id])
+}
+
+model Parent {
+  id            Int      @id @default(autoincrement())
+  utilisateurId Int      @unique
+  profession    String?
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id])
+  eleves      LienParentEleve[]
+}
+
+model LienParentEleve {
+  parentId Int
+  eleveId  Int
+  lien     String @default("parent")
+
+  parent Parent @relation(fields: [parentId], references: [id])
+  eleve  Eleve  @relation(fields: [eleveId], references: [id])
+
+  @@id([parentId, eleveId])
+}
+
+model Personnel {
+  id                Int      @id @default(autoincrement())
+  utilisateurId     Int      @unique
+  matriculePersonnel String   @unique
+  type              String
+  dateEmbauche      DateTime @default(now())
+  salaireBase       Int?
+
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id])
+  enseignements Enseignement[]
+}

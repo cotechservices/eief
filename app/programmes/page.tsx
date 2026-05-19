@@ -1,0 +1,263 @@
+// app/programmes/page.tsx - Version avec bouton à côté du texte 
+"use client";
+
+import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { BookOpen, Globe, Palette, Music, Trophy, Code, GraduationCap, Award, ArrowRight } from "lucide-react";
+
+export default function ProgrammesPage() {
+  const niveaux = [
+    {
+      id: "maternelle",
+      niveau: "Préscolaire / Maternelle",
+      description: "Éveil, socialisation et développement des compétences fondamentales",
+      cycles: ["Petite section", "Moyenne section", "Grande section"],
+      matieres: [
+        "Langage et communication",
+        "Éveil scientifique",
+        "Activités artistiques",
+        "Éducation physique",
+        "Découverte du monde"
+      ],
+      color: "bg-green-500",
+      objectif: "Préparer l'enfant à l'entrée au primaire",
+      lienInscription: "/register?niveau=maternelle"
+    },
+    {
+      id: "primaire",
+      niveau: "Primaire",
+      description: "Acquisition des connaissances fondamentales",
+      cycles: ["CP", "CE1-CE2", "CM1-CM2"],
+      matieres: [
+        "Lecture et écriture",
+        "Mathématiques",
+        "Étude du milieu",
+        "Éducation civique",
+        "Éducation physique",
+        "Arts plastiques"
+      ],
+      color: "bg-blue-500",
+      objectif: "Préparation au CEE",
+      lienInscription: "/register?niveau=primaire"
+    },
+    {
+      id: "college",
+      niveau: "Collège",
+      description: "Approfondissement des matières principales",
+      cycles: ["6ème", "5ème", "4ème", "3ème"],
+      matieres: [
+        "Français",
+        "Mathématiques",
+        "Anglais",
+        "Sciences physiques",
+        "Sciences naturelles",
+        "Histoire-Géographie",
+        "Éducation civique"
+      ],
+      color: "bg-purple-500",
+      objectif: "Préparation au BEPC",
+      lienInscription: "/register?niveau=college"
+    },
+    {
+      id: "lycee",
+      niveau: "Lycée",
+      description: "Préparation au baccalauréat unique",
+      cycles: ["Seconde", "Première", "Terminale"],
+      series: ["Série S", "Série L", "Série SE", "Série G"],
+      matieres: [
+        "Français",
+        "Philosophie",
+        "Mathématiques",
+        "Anglais",
+        "Histoire-Géographie",
+        "Sciences",
+        "Éducation physique"
+      ],
+      color: "bg-red-500",
+      objectif: "Préparation au BAC unique guinéen",
+      lienInscription: "/register?niveau=lycee"
+    }
+  ];
+
+  const activites = [
+    { icon: Trophy, name: "Sport", description: "Football, basketball, athlétisme, judo" },
+    { icon: Palette, name: "Arts", description: "Dessin, peinture, artisanat local" },
+    { icon: Music, name: "Musique", description: "Instruments traditionnels, chorale" },
+    { icon: Code, name: "Robotique", description: "Programmation, nouvelles technologies" },
+    { icon: BookOpen, name: "Club de lecture", description: "Bibliothèque, ateliers d'écriture" },
+    { icon: Globe, name: "Langues", description: "Anglais, arabe, langues nationales" }
+  ];
+
+  const diplomes = [
+    { nom: "CEE", description: "Certificat d'Études Élémentaires", niveau: "Fin primaire" },
+    { nom: "BEPC", description: "Brevet d'Études du Premier Cycle", niveau: "Fin collège" },
+    { nom: "BAC", description: "Baccalauréat Unique Guinéen", niveau: "Fin lycée" }
+  ];
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Header />
+      
+      {/* Hero Section */}
+      <div className="relative h-[300px] bg-gradient-to-r from-blue-900 to-blue-700 mt-16">
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="relative h-full flex items-center">
+          <div className="container mx-auto px-4 text-white">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Nos programmes scolaires</h1>
+            <p className="text-xl max-w-2xl">
+              Un parcours éducatif conforme au système éducatif guinéen, de la maternelle au baccalauréat
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Niveaux scolaires */}
+      <section className="py-10">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Le parcours scolaire en Guinée</h2>
+            <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
+            
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            {niveaux.map((niveau, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition">
+                <div className={`${niveau.color} p-5 text-white`}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-2xl font-bold">{niveau.niveau}</h3>
+                    </div>
+                    <GraduationCap className="w-8 h-8 opacity-80" />
+                  </div>
+                </div>
+                <div className="p-6">
+                  <p className="text-gray-600 mb-4">{niveau.description}</p>
+                  
+                  {/* Cycles */}
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-gray-800 mb-2">Cycles :</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {niveau.cycles.map((cycle, i) => (
+                        <span key={i} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                          {cycle}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Matières */}
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-gray-800 mb-2">Matières principales :</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {niveau.matieres.map((matiere, i) => (
+                        <span key={i} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                          {matiere}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Objectif + Bouton côte à côte */}
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <p className="text-sm text-blue-600 font-medium">
+                       {niveau.objectif}
+                    </p>
+                    <Link
+                      href={niveau.lienInscription}
+                      className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition flex items-center gap-2"
+                    >
+                      S'inscrire
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Diplômes */}
+      <section className="py-10 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Diplômes préparés</h2>
+            <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Notre école prépare les élèves aux diplômes officiels du système éducatif guinéen
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {diplomes.map((diplome, index) => (
+              <div key={index} className="bg-white rounded-xl p-6 text-center shadow-md hover:shadow-lg transition">
+                <Award className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">{diplome.nom}</h3>
+                <p className="text-gray-600 mb-2">{diplome.description}</p>
+                <span className="text-sm text-blue-600 font-medium">{diplome.niveau}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Activités extrascolaires */}
+      <section className="py-10">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Activités extrascolaires</h2>
+            <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Pour un développement équilibré de l'enfant
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {activites.map((activite, index) => (
+              <div key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-center group">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600 transition">
+                  <activite.icon className="w-8 h-8 text-blue-600 group-hover:text-white transition" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{activite.name}</h3>
+                <p className="text-gray-600">{activite.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Calendrier scolaire */}
+      <section className="py-10 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Calendrier scolaire</h2>
+            <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              L'année scolaire en Guinée s'étend d'octobre à juin
+            </p>
+          </div>
+          <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+              <div className="p-6 text-center">
+                <div className="text-2xl font-bold text-blue-600 mb-2">Octobre</div>
+                <div className="text-gray-600">Rentrée scolaire</div>
+                <div className="text-sm text-gray-500">Début des cours</div>
+              </div>
+              <div className="p-6 text-center">
+                <div className="text-2xl font-bold text-blue-600 mb-2">Décembre-Juin</div>
+                <div className="text-gray-600">Période des examens</div>
+                <div className="text-sm text-gray-500">BEPC, BAC</div>
+              </div>
+              <div className="p-6 text-center">
+                <div className="text-2xl font-bold text-blue-600 mb-2">Juin</div>
+                <div className="text-gray-600">Fin de l'année scolaire</div>
+                <div className="text-sm text-gray-500">Délibérations</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
