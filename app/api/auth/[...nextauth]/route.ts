@@ -5,7 +5,6 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
-// @ts-ignore - Ignorer les erreurs TypeScript pour cette route
 const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -34,7 +33,6 @@ const handler = NextAuth({
           throw new Error("Mot de passe incorrect");
         }
 
-        // @ts-ignore
         return {
           id: user.id.toString(),
           email: user.email,
@@ -46,21 +44,15 @@ const handler = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // @ts-ignore
       if (user) {
-        // @ts-ignore
         token.role = user.role;
-        // @ts-ignore
         token.id = user.id;
       }
       return token;
     },
     async session({ session, token }) {
-      // @ts-ignore
-      if (session.user) {
-        // @ts-ignore
+      if (token) {
         session.user.role = token.role;
-        // @ts-ignore
         session.user.id = token.id;
       }
       return session;

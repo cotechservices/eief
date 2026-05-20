@@ -12,7 +12,8 @@ import {
   CheckCircle,
   AlertCircle,
   Download,
-  Eye
+  Eye,
+  MessageSquare  
 } from "lucide-react";
 
 interface Enfant {
