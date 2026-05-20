@@ -22,9 +22,9 @@ export default function ContactPage() {
   };
 
   const infos = [
-    { icon: MapPin, title: "Adresse", text: "Conakry, Guinée", link: null },
-    { icon: Phone, title: "Téléphone", text: "+224 XXX XXX XXX", link: "tel:+224XXXXXXXXX" },
-    { icon: Mail, title: "Email", text: "contact@eief.edu.gn", link: "mailto:contact@eief.edu.gn" },
+    { icon: MapPin, title: "Adresse", text: "Conakry, Guinée, CU Coyah Sanoyah", link: null },
+    { icon: Phone, title: "Téléphone", text: "+224 628 84 84 37", link: "tel:+224628848437" },
+    { icon: Mail, title: "Email", text: "mohamedkc237@gmail.com", link: "mailto:mohamedkc237@gmail.com" },
     { icon: Clock, title: "Horaires", text: "Lun-Ven: 8h00 - 17h00 | Sam: 8h00 - 12h00", link: null },
   ];
 
