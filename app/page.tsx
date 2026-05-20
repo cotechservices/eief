@@ -193,7 +193,7 @@ export default function HomePage() {
             </p>
           </div>
           {/* Grille responsive : 1 sur mobile, 2 sur tablette, 6 sur desktop */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-6 gap-4">
             {modules.map((module, index) => (
               <div
                 key={index}
