@@ -189,7 +189,7 @@ export default function HomePage() {
               École Internationale des Enfants Futur
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              La réussite de nos élèves est notre fierté, nous sommes une excellence qui prépare les leaders de demain
+              Une éducation d'excellence pour former les leaders de demain.
             </p>
           </div>
           {/* Grille responsive : 1 sur mobile, 2 sur tablette, 6 sur desktop */}
