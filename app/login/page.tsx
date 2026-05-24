@@ -52,7 +52,7 @@ export default function LoginPage() {
 
           {/* Title */}
           <div className="text-center mb-6">
-            <h1 className="text-1xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-black">
               École Internationale des Enfants Futur
             </h1>
             <p className="text-gray-500 mt-2">
