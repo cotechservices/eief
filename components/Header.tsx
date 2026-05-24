@@ -75,7 +75,7 @@ export default function Header() {
             </div>
             <div>
               <span className="font-bold text-xl text-blue-900">E.I.E.F</span>
-              <span className="text-xs text-gray-500 block">Ecole Internationale des Enfants Futur</span>
+              <span className="text-xs text-black block">Ecole Internationale des Enfants Futur</span>
             </div>
           </Link>
 
@@ -151,7 +151,7 @@ export default function Header() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 rounded-lg hover:bg-gray-100"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-6 h-6 text-black" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
@@ -165,7 +165,7 @@ export default function Header() {
                   key={item.name}
                   href={item.href}
                   className={`relative flex items-center gap-2 py-2 transition ${
-                    active ? "text-blue-600 font-semibold" : "text-gray-700 hover:text-blue-600"
+                    active ? "text-blue-600 font-semibold" : "text-black hover:text-blue-600"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -181,12 +181,12 @@ export default function Header() {
             
             {/* Dropdown mobile */}
             <div className="mt-2 border-t border-gray-100 pt-2">
-              <p className="text-gray-500 text-sm px-2 py-1">Ressources</p>
+              <p className="text-black text-sm px-2 py-1">Ressources</p>
               {dropdownItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block py-2 pl-4 text-gray-700 hover:text-blue-600 transition"
+                  className="block py-2 pl-4 text-black hover:text-blue-600 transition"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}

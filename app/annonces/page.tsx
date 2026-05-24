@@ -20,7 +20,8 @@ import {
   User,
   Bell,
   Search,
-  Filter
+  Filter,
+  ArrowUpRight 
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -66,8 +67,8 @@ export default function AnnoncesPage() {
       const mockAnnonces: Annonce[] = [
         { 
           id: 1, 
-          titre: "🎉 Inscriptions 2025-2026 ouvertes !", 
-          contenu: "Les inscriptions pour la nouvelle année scolaire sont désormais ouvertes. 📚 Rejoignez notre communauté éducative d'exception. Places limitées !\n\n✅ Documents requis :\n- Extrait de naissance\n- Photos d'identité\n- Bulletin des 2 dernières années\n- Certificat de santé\n\n📅 Date limite : 30 Septembre 2025", 
+          titre: "Inscriptions 2025-2026 ouvertes !", 
+          contenu: "Les inscriptions pour la nouvelle année scolaire sont désormais ouvertes. Rejoignez notre communauté éducative d'exception. Places limitées !\n\n Documents requis :\n- Extrait de naissance\n- Photos d'identité\n- Bulletin des 2 dernières années\n- Certificat de santé\n\nDate limite : 30 Septembre 2025", 
           imageUrl: "/img/slide2.jpg", 
           datePublication: "2025-05-15T08:30:00", 
           auteur: "Administration", 
@@ -80,14 +81,14 @@ export default function AnnoncesPage() {
           views: 1250,
           userLiked: false,
           commentaires: [
-            { id: 1, auteur: "Mme Diallo", auteurAvatar: "/avatars/user1.jpg", contenu: "Super nouvelle ! Mon fils est déjà inscrit ✅", date: "2025-05-15T09:30:00", likes: 12 },
+            { id: 1, auteur: "Mme Diallo", auteurAvatar: "/avatars/user1.jpg", contenu: "Super nouvelle ! Mon fils est déjà inscrit", date: "2025-05-15T09:30:00", likes: 12 },
             { id: 2, auteur: "M. Camara", auteurAvatar: "/avatars/user2.jpg", contenu: "Les frais d'inscription sont de combien ?", date: "2025-05-15T10:15:00", likes: 3 }
           ]
         },
         { 
           id: 2, 
-          titre: "🏫 Journée portes ouvertes", 
-          contenu: "Venez découvrir notre établissement ! Au programme : visite des locaux, rencontre avec les enseignants, démonstration de nos équipements technologiques.\n\n📅 Date : Samedi 10 juin 2025\n⏰ Heure : 9h - 17h\n📍 Lieu : École Internationale des Enfants Futur\n\n🍽️ Buvette sur place", 
+          titre: "Journée portes ouvertes", 
+          contenu: "Venez découvrir notre établissement ! Au programme : visite des locaux, rencontre avec les enseignants, démonstration de nos équipements technologiques.\n\n Date : Samedi 10 juin 2025\n Heure : 9h - 17h\n Lieu : École Internationale des Enfants Futur\n\n Buvette sur place", 
           imageUrl: "/img/slide1.jpg", 
           datePublication: "2025-05-10T14:00:00", 
           auteur: "Direction", 
@@ -105,8 +106,8 @@ export default function AnnoncesPage() {
         },
         { 
           id: 3, 
-          titre: "⚠️ Alerte Intempéries", 
-          contenu: "En raison des fortes pluies annoncées, les cours sont annulés ce jour. La reprise aura lieu demain.\n\nRestez connectés pour plus d'informations.\n\n📞 Contact : +224 622 123 456", 
+          titre: "Alerte Intempéries", 
+          contenu: "En raison des fortes pluies annoncées, les cours sont annulés ce jour. La reprise aura lieu demain.\n\nRestez connectés pour plus d'informations.\n\nContact : +224 622 123 456", 
           imageUrl: "/img/slide2.jpg", 
           datePublication: "2025-05-18T06:00:00", 
           auteur: "Administration", 
@@ -122,8 +123,8 @@ export default function AnnoncesPage() {
         },
         { 
           id: 4, 
-          titre: "📚 Nouvelle bibliothèque numérique", 
-          contenu: "Nous sommes fiers d'annoncer l'ouverture de notre bibliothèque numérique ! Accédez à plus de 1000 livres en ligne depuis votre espace parent.\n\n📖 Romans, manuels, documentaires...\n💻 Accessible 24h/24\n📱 Sur mobile, tablette et ordinateur\n\nConnectez-vous dès maintenant pour découvrir cette nouvelle ressource !", 
+          titre: "Nouvelle bibliothèque numérique", 
+          contenu: "Nous sommes fiers d'annoncer l'ouverture de notre bibliothèque numérique ! Accédez à plus de 1000 livres en ligne depuis votre espace parent.\n\nRomans, manuels, documentaires...\nAccessible 24h/24\nSur mobile, tablette et ordinateur\n\nConnectez-vous dès maintenant pour découvrir cette nouvelle ressource !", 
           imageUrl: "/img/slide2.jpg", 
           datePublication: "2025-05-20T10:00:00", 
           auteur: "Bibliothèque", 
@@ -139,8 +140,8 @@ export default function AnnoncesPage() {
         },
         { 
           id: 5, 
-          titre: "🤖 Nouveau club de robotique", 
-          contenu: "Le club de robotique est lancé ! Les inscriptions sont ouvertes pour les élèves de la 6ème à la Terminale.\n\nAu programme :\n- Programmation avec Arduino\n- Construction de robots\n- Compétitions inter-écoles\n- Encadrement par des ingénieurs\n\n📅 Début : 15 juin 2025\n💰 Frais : 150 000 GNF/trimestre\n\nInscrivez-vous vite, places limitées à 20 élèves !", 
+          titre: "Nouveau club de robotique", 
+          contenu: "Le club de robotique est lancé ! Les inscriptions sont ouvertes pour les élèves de la 6ème à la Terminale.\n\nAu programme :\n- Programmation avec Arduino\n- Construction de robots\n- Compétitions inter-écoles\n- Encadrement par des ingénieurs\n\n Début : 15 juin 2025\n Frais : 150 000 GNF/trimestre\n\nInscrivez-vous vite, places limitées à 20 élèves !", 
           imageUrl: "/img/slide3.jpg", 
           datePublication: "2025-05-22T15:30:00", 
           auteur: "Activités périscolaires", 
@@ -156,8 +157,8 @@ export default function AnnoncesPage() {
         },
         { 
           id: 6, 
-          titre: "🎓 Cérémonie de remise des diplômes", 
-          contenu: "La cérémonie de remise des diplômes aura lieu le 28 juin 2025 à 10h. Tous les parents sont invités à se joindre à nous pour célébrer la réussite de nos élèves.\n\n📅 Date : 28 juin 2025\n⏰ Heure : 10h\n📍 Lieu : Grande salle de l'école\n\nTenue correcte exigée.", 
+          titre: "Cérémonie de remise des diplômes", 
+          contenu: "La cérémonie de remise des diplômes aura lieu le 28 juin 2025 à 10h. Tous les parents sont invités à se joindre à nous pour célébrer la réussite de nos élèves.\n\n Date : 28 juin 2025\n Heure : 10h\n Lieu : Grande salle de l'école\n\n Tenue correcte exigée.", 
           imageUrl: "/img/slide5.jpg", 
           datePublication: "2025-05-23T09:00:00", 
           auteur: "Direction", 
@@ -263,14 +264,13 @@ export default function AnnoncesPage() {
       <Header />
       
       {/* Barre supérieure style Facebook */}
-      <div className="fixed top-16 left-0 right-0 bg-white border-b z-40">
+      <div className="fixed top-16 left-0 right-0 bg-white z-40">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-gray-900">Ecole Internationale des Enfants Futur</h1>
+              <h1 className="text-xl font-bold text-gray-900">Infos</h1>
             </div>
             <div className="flex gap-2">
-              <h2>Filtrer par catégorie</h2>
               <select
                 value={selectedCategorie}
                 onChange={(e) => setSelectedCategorie(e.target.value)}
@@ -371,9 +371,9 @@ export default function AnnoncesPage() {
                       <span className="text-sm font-medium">Commenter</span>
                     </button>
                     <button className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition">
-                      <Share2 className="w-5 h-5" />
-                      <span className="text-sm font-medium">Partager</span>
-                    </button>
+  <ArrowUpRight  className="w-5 h-5" />
+  <span className="text-sm font-medium">Partager</span>
+</button>
                   </div>
                 </div>
               </div>
@@ -467,7 +467,6 @@ export default function AnnoncesPage() {
           </div>
         </div>
       )}
-
       <Footer />
     </div>
   );
