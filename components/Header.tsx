@@ -1,29 +1,62 @@
 // components/Header.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Image from "next/image"; 
-import { Menu, X, User, Library, BookMarked, ChevronDown } from "lucide-react";
+import { Menu, X, User, ChevronDown, Bell } from "lucide-react";
 
 const menuItems = [
   { name: "Accueil", href: "/" },
   { name: "À propos", href: "/apropos" },
   { name: "Programmes", href: "/programmes" },
-  { name: "Actualités", href: "/actualites" },
-  { name: "Blog", href: "/blog" },
-  { name: "Contact", href: "/contact" },
+  { 
+    name: "Annonces", 
+    href: "/annonces", 
+    icon: Bell,
+    badge: 3  // Nombre de nouvelles annonces non lues
+  },
 ];
 
 // Items du dropdown Ressources
 const dropdownItems = [
-  { name: "Bibliothèque", href: "/bibliotheque", icon: Library },
-  { name: "Librairie", href: "/librairie", icon: BookMarked },
+  { name: "Blog", href: "/blog" },
+  { name: "Bibliothèque", href: "/bibliotheque" },
+  { name: "Librairie", href: "/librairie" },
+  { name: "Contact", href: "/contact" },
 ];
 
 export default function Header() {
+  const pathname = usePathname(); // Récupère le chemin actuel
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setDropdownOpen(false);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  // Fonction pour vérifier si un lien est actif
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <nav className="fixed top-0 w-full bg-white shadow-md z-50">
@@ -48,23 +81,38 @@ export default function Header() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="text-gray-700 hover:text-blue-600 transition font-medium"
-              >
-                {item.name}
-              </Link>
-            ))}
+            {menuItems.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`relative flex items-center gap-1 transition font-medium ${
+                    active 
+                      ? "text-blue-600 border-b-2 border-blue-600 pb-0.5" 
+                      : "text-gray-700 hover:text-blue-600"
+                  }`}
+                >
+                  {item.name}
+                  {item.badge && item.badge > 0 && (
+                    <span className="absolute -top-2 -right-4 bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
             
             {/* Dropdown Ressources */}
-            <div className="relative">
+            <div 
+              className="relative"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
               <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                onMouseEnter={() => setDropdownOpen(true)}
-                onMouseLeave={() => setDropdownOpen(false)}
-                className="flex items-center gap-1 text-gray-700 hover:text-blue-600 transition font-medium"
+                className={`flex items-center gap-1 transition font-medium ${
+                  dropdownOpen ? "text-blue-600" : "text-gray-700 hover:text-blue-600"
+                }`}
               >
                 Ressources
                 <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
@@ -73,17 +121,15 @@ export default function Header() {
               {dropdownOpen && (
                 <div 
                   className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border z-50"
-                  onMouseEnter={() => setDropdownOpen(true)}
-                  onMouseLeave={() => setDropdownOpen(false)}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
                 >
                   {dropdownItems.map((item) => (
                     <Link
                       key={item.name}
                       href={item.href}
-                      className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
-                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
                     >
-                      <item.icon className="w-4 h-4" />
                       {item.name}
                     </Link>
                   ))}
@@ -112,16 +158,26 @@ export default function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="block py-2 text-gray-700 hover:text-blue-600 transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {menuItems.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`relative flex items-center gap-2 py-2 transition ${
+                    active ? "text-blue-600 font-semibold" : "text-gray-700 hover:text-blue-600"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.name}
+                  {item.badge && item.badge > 0 && (
+                    <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
             
             {/* Dropdown mobile */}
             <div className="mt-2 border-t border-gray-100 pt-2">
@@ -130,10 +186,9 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center gap-2 py-2 pl-4 text-gray-700 hover:text-blue-600 transition"
+                  className="block py-2 pl-4 text-gray-700 hover:text-blue-600 transition"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <item.icon className="w-4 h-4" />
                   {item.name}
                 </Link>
               ))}
