@@ -90,7 +90,7 @@ export default function Header() {
                   className={`relative flex items-center gap-1 transition font-medium ${
                     active 
                       ? "text-blue-600 border-b-2 border-blue-600 pb-0.5" 
-                      : "text-gray-700 hover:text-blue-600"
+                      : "text-black hover:text-blue-600"
                   }`}
                 >
                   {item.name}
@@ -111,7 +111,7 @@ export default function Header() {
             >
               <button
                 className={`flex items-center gap-1 transition font-medium ${
-                  dropdownOpen ? "text-blue-600" : "text-gray-700 hover:text-blue-600"
+                  dropdownOpen ? "text-blue-600" : "text-black hover:text-blue-600"
                 }`}
               >
                 Ressources
@@ -128,7 +128,7 @@ export default function Header() {
                     <Link
                       key={item.name}
                       href={item.href}
-                      className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+                      className="block px-4 py-2 text-black hover:bg-blue-50 hover:text-blue-600 transition"
                     >
                       {item.name}
                     </Link>
