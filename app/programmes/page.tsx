@@ -10,7 +10,7 @@ export default function ProgrammesPage() {
   const niveaux = [
     {
       id: "maternelle",
-      niveau: "Préscolaire / Maternelle",
+      niveau: "Maternelle",
       description: "Éveil, socialisation et développement des compétences fondamentales",
       cycles: ["Petite section", "Moyenne section", "Grande section"],
       matieres: [
@@ -116,7 +116,7 @@ export default function ProgrammesPage() {
       <section className="py-10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Le parcours scolaire en Guinée</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Le parcours scolaire</h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
             
           </div>

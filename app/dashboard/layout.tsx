@@ -2,9 +2,10 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image"; 
 import { 
   LayoutDashboard, 
   Users, 
@@ -21,10 +22,13 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronDown,
   Bell,
-  UserCircle
+  UserCircle,
+  DollarSign,
+  Euro,
+  FileText
 } from "lucide-react";
+import { Providers } from "./providers";
 
 const menuItems = {
   SUPER_ADMIN: [
@@ -33,12 +37,16 @@ const menuItems = {
     { name: "Classes", href: "/dashboard/admin/classes", icon: GraduationCap },
     { name: "Enseignants", href: "/dashboard/admin/enseignants", icon: Users },
     { name: "Personnel", href: "/dashboard/admin/personnel", icon: Users },
-    { name: "Finances", href: "/dashboard/admin/finances", icon: CreditCard },
-    { name: "Paiements", href: "/dashboard/admin/paiements", icon: CreditCard },
+    { name: "Finances", href: "/dashboard/admin/finances", icon: DollarSign },
+    { name: "Paiements", href: "/dashboard/admin/finances/paiements", icon: CreditCard },
+    { name: "Frais scolaires", href: "/dashboard/admin/finances/frais", icon: Euro },
+    { name: "Salaires", href: "/dashboard/admin/finances/salaires", icon: Users },
+    { name: "Rapports", href: "/dashboard/admin/finances/rapports", icon: FileText },
     { name: "Cantine", href: "/dashboard/admin/cantine", icon: Utensils },
     { name: "Transport", href: "/dashboard/admin/transport", icon: Bus },
     { name: "Bibliothèque", href: "/dashboard/admin/bibliotheque", icon: Library },
     { name: "Librairie", href: "/dashboard/admin/librairie", icon: BookMarked },
+    { name: "Annonces", href: "/dashboard/admin/annonces", icon: Bell },
     { name: "Messages", href: "/dashboard/admin/messages", icon: MessageSquare },
     { name: "Paramètres", href: "/dashboard/admin/parametres", icon: Settings },
   ],
@@ -82,9 +90,10 @@ const menuItems = {
   ],
 };
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardContent({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname(); // AJOUTER CETTE LIGNE
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userRole, setUserRole] = useState<string>("");
 
@@ -120,21 +129,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const items = getMenuItems();
 
+  // Fonction pour vérifier si un lien est actif
+  const isActive = (href: string) => {
+    if (href === "/dashboard/admin" && pathname === "/dashboard/admin") return true;
+    if (href !== "/dashboard/admin" && pathname.startsWith(href)) return true;
+    return false;
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside
-    className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-white shadow-lg ${
-      sidebarOpen ? "w-64" : "w-20"
-    }`}
-      >
+      <aside className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-white shadow-lg ${sidebarOpen ? "w-64" : "w-20"}`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between p-4 border-b">
             {sidebarOpen ? (
               <Link href="/dashboard" className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-white" />
+                  <Image 
+                    src="/img/logo.jpg"
+                    alt="Logo E.I.E.F"
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                  />
                 </div>
                 <span className="font-bold text-blue-900">E.I.E.F</span>
               </Link>
@@ -143,26 +161,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
             )}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1 rounded-lg hover:bg-gray-100"
-            >
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 rounded-lg hover:bg-gray-100">
               {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4">
-            {items.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="flex items-center gap-3 px-3 py-2 mb-1 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
-              >
-                <item.icon className="w-5 h-5" />
-                {sidebarOpen && <span className="text-sm">{item.name}</span>}
-              </Link>
-            ))}
+            {items.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2 mb-1 rounded-lg transition ${
+                    active 
+                      ? "bg-blue-600 text-white" 
+                      : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                  }`}
+                >
+                  <item.icon className={`w-5 h-5 ${active ? "text-white" : ""}`} />
+                  {sidebarOpen && <span className="text-sm">{item.name}</span>}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Footer Sidebar */}
@@ -183,24 +205,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Top Header */}
         <header className="bg-white shadow-sm sticky top-0 z-30">
           <div className="flex justify-between items-center px-6 py-3">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-semibold text-gray-800">
-                Tableau de bord
-              </h1>
-            </div>
+            <h1 className="text-xl font-semibold text-gray-800">Tableau de bord</h1>
             <div className="flex items-center gap-4">
               <button className="relative">
                 <Bell className="w-5 h-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  3
-                </span>
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
               </button>
               <div className="flex items-center gap-3">
                 <UserCircle className="w-8 h-8 text-gray-600" />
                 <div className="hidden md:block">
-                  <p className="text-sm font-medium text-gray-800">
-                    {session?.user?.name}
-                  </p>
+                  <p className="text-sm font-medium text-gray-800">{session?.user?.name}</p>
                   <p className="text-xs text-gray-500">{userRole}</p>
                 </div>
               </div>
@@ -212,5 +226,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className="p-6">{children}</main>
       </div>
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Providers>
+      <DashboardContent>{children}</DashboardContent>
+    </Providers>
   );
 }

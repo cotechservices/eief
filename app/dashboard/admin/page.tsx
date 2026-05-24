@@ -77,8 +77,7 @@ export default function AdminDashboard() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Tableau de bord</h1>
-        <p className="text-gray-500">Bienvenue dans l'administration de l'école</p>
+        <h1 className="text-2xl font-bold text-gray-800">Tableau de bord administrateur</h1>
       </div>
 
       {/* Statistiques */}

@@ -1,43 +1,58 @@
 // app/dashboard/page.tsx
-"use client";
+import { Suspense } from "react";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import Spinner from "@/components/ui/spinner";
+import { authOptions } from "@/lib/auth";
 
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+async function DashboardRedirect() {
+  const session = await getServerSession(authOptions);
+  
+  console.log("=== DASHBOARD REDIRECT ===");
+  console.log("Session:", session);
+  console.log("Session user:", session?.user);
+  console.log("Role:", (session?.user as any)?.role);
 
-export default function DashboardRedirect() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  if (!session) {
+    console.log("Pas de session -> redirection vers login");
+    redirect("/login");
+  }
 
-  useEffect(() => {
-    if (status === "loading") return;
-    
-    if (!session) {
-      router.push("/login");
-      return;
-    }
+  const role = (session.user as any)?.role;
+  console.log("Rôle détecté:", role);
 
-    const role = (session.user as any)?.role;
-    
-    if (role === "SUPER_ADMIN" || role === "DIRECTEUR" || role === "COMPTABLE") {
-      router.push("/dashboard/admin");
-    } else if (role === "ENSEIGNANT") {
-      router.push("/dashboard/enseignant");
-    } else if (role === "PARENT") {
-      router.push("/dashboard/parent");
-    } else if (role === "ELEVE") {
-      router.push("/dashboard/eleve");
-    } else {
-      router.push("/dashboard/parent");
-    }
-  }, [session, status, router]);
+  if (
+    role === "SUPER_ADMIN" ||
+    role === "DIRECTEUR" ||
+    role === "COMPTABLE"
+  ) {
+    console.log("Redirection vers /dashboard/admin");
+    redirect("/dashboard/admin");
+  }
 
+  if (role === "ENSEIGNANT") {
+    console.log("Redirection vers /dashboard/enseignant");
+    redirect("/dashboard/enseignant");
+  }
+
+  if (role === "PARENT") {
+    console.log("Redirection vers /dashboard/parent");
+    redirect("/dashboard/parent");
+  }
+
+  if (role === "ELEVE") {
+    console.log("Redirection vers /dashboard/eleve");
+    redirect("/dashboard/eleve");
+  }
+
+  console.log("Rôle non reconnu -> redirection vers login");
+  redirect("/login");
+}
+
+export default function DashboardPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-600">Redirection...</p>
-      </div>
-    </div>
+    <Suspense fallback={<Spinner />}>
+      <DashboardRedirect />
+    </Suspense>
   );
 }
