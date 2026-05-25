@@ -69,8 +69,7 @@ const menuItems = {
     { name: "Mes classes", href: "/dashboard/enseignant/classes", icon: GraduationCap },
     { name: "Leçons", href: "/dashboard/enseignant/lecons", icon: BookOpen },
     { name: "Devoirs", href: "/dashboard/enseignant/devoirs", icon: BookOpen },
-    { name: "Présences", href: "/dashboard/enseignant/presences", icon: Calendar },
-    { name: "Notes", href: "/dashboard/enseignant/notes", icon: GraduationCap },
+    { name: "Emploi", href: "/dashboard/enseignant/emploi", icon: Calendar },
     { name: "Messages", href: "/dashboard/enseignant/messages", icon: MessageSquare },
   ],
   PARENT: [
@@ -79,14 +78,18 @@ const menuItems = {
     { name: "Finances", href: "/dashboard/parent/finances", icon: CreditCard },
     { name: "Messages", href: "/dashboard/parent/messages", icon: MessageSquare },
     { name: "Transport", href: "/dashboard/parent/transport", icon: Bus },
+    { name: "Cantine", href: "/dashboard/parent/cantine", icon: Utensils },
+    
   ],
   ELEVE: [
     { name: "Dashboard", href: "/dashboard/eleve", icon: LayoutDashboard },
     { name: "Mes cours", href: "/dashboard/eleve/cours", icon: BookOpen },
     { name: "Mes devoirs", href: "/dashboard/eleve/devoirs", icon: BookOpen },
     { name: "Mes notes", href: "/dashboard/eleve/notes", icon: GraduationCap },
-    { name: "Emploi du temps", href: "/dashboard/eleve/emploi-temps", icon: Calendar },
+    { name: "Emploi", href: "/dashboard/eleve/emploi", icon: Calendar },
     { name: "Présences", href: "/dashboard/eleve/presences", icon: Calendar },
+    { name: "Transport", href: "/dashboard/parent/transport", icon: Bus },
+    { name: "Cantine", href: "/dashboard/parent/cantine", icon: Utensils },
   ],
 };
 
