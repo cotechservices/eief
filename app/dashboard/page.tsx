@@ -21,13 +21,22 @@ async function DashboardRedirect() {
   const role = (session.user as any)?.role;
   console.log("Rôle détecté:", role);
 
-  if (
-    role === "SUPER_ADMIN" ||
-    role === "DIRECTEUR" ||
-    role === "COMPTABLE"
-  ) {
+  // SUPER_ADMIN vers admin
+  if (role === "SUPER_ADMIN") {
     console.log("Redirection vers /dashboard/admin");
     redirect("/dashboard/admin");
+  }
+
+  // DIRECTEUR_GENERAL vers son propre dashboard
+  if (role === "DIRECTEUR_GENERAL" || role === "DIRECTEUR_ETUDES") {
+    console.log("Redirection vers /dashboard/directeur");
+    redirect("/dashboard/directeur");
+  }
+
+  // COMPTABLE vers son propre dashboard
+  if (role === "COMPTABLE") {
+    console.log("Redirection vers /dashboard/comptable");
+    redirect("/dashboard/comptable");
   }
 
   if (role === "ENSEIGNANT") {

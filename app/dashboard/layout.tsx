@@ -37,11 +37,10 @@ const menuItems = {
     { name: "Classes", href: "/dashboard/admin/classes", icon: GraduationCap },
     { name: "Enseignants", href: "/dashboard/admin/enseignants", icon: Users },
     { name: "Personnel", href: "/dashboard/admin/personnel", icon: Users },
-    { name: "Finances", href: "/dashboard/admin/finances", icon: DollarSign },
     { name: "Paiements", href: "/dashboard/admin/finances/paiements", icon: CreditCard },
-    { name: "Frais scolaires", href: "/dashboard/admin/finances/frais", icon: Euro },
-    { name: "Salaires", href: "/dashboard/admin/finances/salaires", icon: Users },
-    { name: "Rapports", href: "/dashboard/admin/finances/rapports", icon: FileText },
+    { name: "Frais scolaires", href: "/dashboard/admin/frais", icon: Euro },
+    { name: "Salaires", href: "/dashboard/admin/salaires", icon: Users },
+    { name: "Rapports", href: "/dashboard/admin/rapports", icon: FileText },
     { name: "Cantine", href: "/dashboard/admin/cantine", icon: Utensils },
     { name: "Transport", href: "/dashboard/admin/transport", icon: Bus },
     { name: "Bibliothèque", href: "/dashboard/admin/bibliotheque", icon: Library },
@@ -51,19 +50,29 @@ const menuItems = {
     { name: "Paramètres", href: "/dashboard/admin/parametres", icon: Settings },
   ],
   DIRECTEUR: [
-    { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
-    { name: "Statistiques", href: "/dashboard/admin/stats", icon: LayoutDashboard },
-    { name: "Classes", href: "/dashboard/admin/classes", icon: GraduationCap },
-    { name: "Enseignants", href: "/dashboard/admin/enseignants", icon: Users },
-    { name: "Rapports", href: "/dashboard/admin/rapports", icon: BookOpen },
+    { name: "Dashboard", href: "/dashboard/directeur", icon: LayoutDashboard },
+    { name: "Statistiques", href: "/dashboard/directeur/stats", icon: LayoutDashboard },
+    { name: "Élèves", href: "/dashboard/directeur/eleves", icon: Users },
+    { name: "Classes", href: "/dashboard/directeur/classes", icon: GraduationCap },
+    { name: "Enseignants", href: "/dashboard/directeur/enseignants", icon: Users },
+    { name: "Rapports", href: "/dashboard/directeur/rapports", icon: BookOpen },
+    { name: "Personnel", href: "/dashboard/directeur/personnel", icon: Users },
+    { name: "Bibliothèque", href: "/dashboard/directeur/bibliotheque", icon: Library },
+    { name: "Annonces", href: "/dashboard/directeur/annonces", icon: Bell },
+    { name: "Messages", href: "/dashboard/directeur/messages", icon: MessageSquare },
   ],
-  COMPTABLE: [
-    { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
-    { name: "Paiements", href: "/dashboard/admin/paiements", icon: CreditCard },
-    { name: "Frais scolaires", href: "/dashboard/admin/frais", icon: CreditCard },
-    { name: "Salaires", href: "/dashboard/admin/salaires", icon: CreditCard },
-    { name: "Rapports", href: "/dashboard/admin/rapports-financiers", icon: BookOpen },
-  ],
+ COMPTABLE: [
+  { name: "Dashboard", href: "/dashboard/comptable", icon: LayoutDashboard },
+  { name: "Paiements", href: "/dashboard/comptable/paiements", icon: CreditCard },
+  { name: "Frais scolaires", href: "/dashboard/comptable/frais", icon: Euro },
+  { name: "Salaires", href: "/dashboard/comptable/salaires", icon: Users },
+  { name: "Rapports", href: "/dashboard/comptable/rapports", icon: FileText },
+  { name: "Cantine", href: "/dashboard/comptable/cantine", icon: Utensils },
+  { name: "Transport", href: "/dashboard/comptable/transport", icon: Bus },
+  { name: "Bibliothèque", href: "/dashboard/comptable/bibliotheque", icon: Library },
+  { name: "Librairie", href: "/dashboard/comptable/librairie", icon: BookMarked },
+  { name: "Messages", href: "/dashboard/comptable/messages", icon: MessageSquare },
+],
   ENSEIGNANT: [
     { name: "Dashboard", href: "/dashboard/enseignant", icon: LayoutDashboard },
     { name: "Mes classes", href: "/dashboard/enseignant/classes", icon: GraduationCap },
@@ -121,8 +130,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }
 
   const getMenuItems = () => {
+    // Utiliser les noms exacts des rôles dans votre base de données
     if (userRole === "SUPER_ADMIN") return menuItems.SUPER_ADMIN;
-    if (userRole === "DIRECTEUR") return menuItems.DIRECTEUR;
+    if (userRole === "DIRECTEUR_GENERAL") return menuItems.DIRECTEUR;  // ← CORRIGÉ
     if (userRole === "COMPTABLE") return menuItems.COMPTABLE;
     if (userRole === "ENSEIGNANT") return menuItems.ENSEIGNANT;
     if (userRole === "PARENT") return menuItems.PARENT;
