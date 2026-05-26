@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import Image from "next/image";
 import { Mail, ArrowLeft, CheckCircle, AlertCircle, Send, GraduationCap, BookOpen, Users, Award } from "lucide-react";
 
@@ -38,6 +40,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+        <br />
+        <Header />
       {/* Image de fond */}
       <div className="absolute inset-0 z-0">
         <Image

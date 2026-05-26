@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
+import Header from "@/components/Header";
 import { Mail, Lock, Eye, EyeOff, GraduationCap, BookOpen, Users, Award } from "lucide-react";
 
 export default function LoginPage() {
@@ -33,6 +34,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      <br />
+      <Header />
       {/* Image de fond */}
       <div className="absolute inset-0 z-0">
         <Image
