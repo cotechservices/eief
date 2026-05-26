@@ -6,7 +6,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Image from "next/image";
-import { Mail, ArrowLeft, CheckCircle, AlertCircle, Send, GraduationCap, BookOpen, Users, Award } from "lucide-react";
+import { Mail, ArrowLeft, CheckCircle, AlertCircle, Send, Lock, GraduationCap, BookOpen, LockOpen, Users, Award } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -62,16 +62,10 @@ export default function ForgotPasswordPage() {
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <GraduationCap className="w-7 h-7 text-white" />
+                    <Lock className="w-7 h-7 text-white" />
                   </div>
-                  <span className="text-2xl font-bold">E.I.E.F</span>
-                </div>
-                <h2 className="text-3xl lg:text-3xl font-bold mb-4">
-                  Mot de passe oublié ?
-                </h2>
-                <p className="text-white/90 text-lg mb-8">
-                  Ne vous inquiétez pas, nous vous aiderons à le réinitialiser
-                </p>
+                  <span className="text-2xl font-bold"> Mot de passe oublié ?</span>
+                </div>   
               </div>
 
               {/* Avantages */}

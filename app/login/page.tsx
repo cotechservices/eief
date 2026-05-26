@@ -58,14 +58,8 @@ export default function LoginPage() {
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                     <GraduationCap className="w-7 h-7 text-white" />
                   </div>
-                  <span className="text-2xl font-bold">E.I.E.F</span>
+                  <span className="text-2xl font-bold">Bienvenue à E.I.E.F</span>
                 </div>
-                <h2 className="text-3xl lg:text-3xl font-bold mb-4">
-                  Bienvenue à l'École Internationale des Enfants Futur
-                </h2>
-                <p className="text-white/90 text-lg mb-8">
-                  Former les leaders de demain dans un environnement d'excellence
-                </p>
               </div>
 
               {/* Avantages */}

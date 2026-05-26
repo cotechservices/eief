@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, GraduationCap, BookOpen, Users, Award } from "lucide-react";
+import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, GraduationCap, BookOpen, Users, Award, LockOpen } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const params = useParams();
@@ -102,16 +102,10 @@ export default function ResetPasswordPage() {
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <GraduationCap className="w-7 h-7 text-white" />
+                    <LockOpen className="w-7 h-7 text-white" />
                   </div>
-                  <span className="text-2xl font-bold">E.I.E.F</span>
+                  <span className="text-2xl font-bold">Réinitialisation du mot de passe</span>
                 </div>
-                <h2 className="text-3xl lg:text-3xl font-bold mb-4">
-                  Réinitialisation du mot de passe
-                </h2>
-                <p className="text-white/90 text-lg mb-8">
-                  Sécurisez votre compte avec un nouveau mot de passe
-                </p>
               </div>
 
               {/* Avantages */}
