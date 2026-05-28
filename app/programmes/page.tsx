@@ -1,4 +1,4 @@
-// app/programmes/page.tsx - Version avec bouton à côté du texte 
+// app/programmes/page.tsx - Version sans âge
 "use client";
 
 import Link from "next/link";
@@ -13,7 +13,6 @@ export default function ProgrammesPage() {
       niveau: "Crèches et Maternelle",
       description: "Éveil, socialisation et développement des compétences fondamentales",
       descriptionDetaillee: "La maternelle est une étape cruciale dans le développement de l'enfant. Notre programme favorise l'éveil sensoriel, la motricité fine et globale, ainsi que l'apprentissage de la vie en collectivité. Les enfants découvrent le monde qui les entoure à travers le jeu, le langage et les activités artistiques.",
-      age: "De 2 à 5 ans",
       competences: ["Motricité fine et globale", "Langage oral", "Socialisation", "Créativité", "Autonomie"],
       color: "bg-green-500",
       objectif: "Préparer l'enfant à l'entrée au primaire",
@@ -24,8 +23,7 @@ export default function ProgrammesPage() {
       niveau: "Primaire",
       description: "Acquisition des connaissances fondamentales",
       descriptionDetaillee: "Le primaire constitue le socle de la scolarité où l'enfant acquiert les compétences essentielles en lecture, écriture et calcul. Notre approche pédagogique combine rigueur académique et méthodes actives pour développer la curiosité intellectuelle et le goût d'apprendre.",
-      age: "De 6 à 11 ans",
-      competences: ["Lecture et écriture", "Raisonnement mathématique", "Culture générale", "Esprit critique"],
+      competences: ["Lecture et écriture", "Raisonnement mathématique", "Culture générale", "Esprit critique", "Travail en équipe"],
       color: "bg-blue-500",
       objectif: "Préparation au CEE",
       lienInscription: "/register?niveau=primaire"
@@ -35,7 +33,6 @@ export default function ProgrammesPage() {
       niveau: "Collège",
       description: "Approfondissement des matières principales",
       descriptionDetaillee: "Le collège marque une étape de transition importante où les élèves approfondissent leurs connaissances et découvrent de nouvelles disciplines. Notre programme les prépare à l'autonomie intellectuelle et à la rigueur nécessaire pour les examens tout en développant leur sens des responsabilités.",
-      age: "De 12 à 15 ans",
       competences: ["Raisonnement scientifique", "Analyse littéraire", "Langues vivantes", "Méthodologie", "Organisation personnelle"],
       color: "bg-purple-500",
       objectif: "Préparation au BEPC",
@@ -46,7 +43,6 @@ export default function ProgrammesPage() {
       niveau: "Lycée",
       description: "Préparation au baccalauréat unique",
       descriptionDetaillee: "Le lycée prépare les élèves aux études supérieures et à la vie active. Notre programme, conforme au Baccalauréat Unique Guinéen, offre un équilibre entre formation générale et spécialisation selon les séries choisies. Nous accompagnons chaque élève dans son projet d'orientation.",
-      age: "De 16 à 18 ans",
       competences: ["Maîtrise des connaissances", "Autonomie intellectuelle", "Esprit d'analyse", "Préparation aux études supérieures", "Projet professionnel"],
       series: ["Série S (Scientifique)", "Série L (Littéraire)", "Série SE (Sciences Économiques)", "Série G (Gestion)"],
       color: "bg-red-500",
@@ -101,7 +97,6 @@ export default function ProgrammesPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="text-2xl font-bold">{niveau.niveau}</h3>
-                      <p className="text-sm opacity-90 mt-1">{niveau.age}</p>
                     </div>
                     <GraduationCap className="w-8 h-8 opacity-80" />
                   </div>
@@ -127,6 +122,23 @@ export default function ProgrammesPage() {
                     </div>
                   </div>
 
+                  {/* Séries pour lycée */}
+                  {niveau.series && (
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                        <Brain className="w-4 h-4 text-blue-600" />
+                        Séries proposées :
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {niveau.series.map((serie, i) => (
+                          <span key={i} className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">
+                            {serie}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Objectif + Bouton côte à côte */}
                   <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">
