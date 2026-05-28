@@ -121,23 +121,6 @@ export default function ProgrammesPage() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Séries pour lycée */}
-                  {niveau.series && (
-                    <div className="mb-4">
-                      <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                        <Brain className="w-4 h-4 text-blue-600" />
-                        Séries proposées :
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {niveau.series.map((serie, i) => (
-                          <span key={i} className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">
-                            {serie}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                   
                   {/* Objectif + Bouton côte à côte */}
                   <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
