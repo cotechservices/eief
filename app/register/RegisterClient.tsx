@@ -326,7 +326,7 @@ export default function RegisterPage() {
                         value={parentInfo.phone}
                         onChange={handleParentChange}
                         className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="+224 XX XXX XXXX"
+                        placeholder="+224 628 84 84 37"
                         required
                       />
                     </div>

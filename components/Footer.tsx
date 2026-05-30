@@ -79,8 +79,7 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Liens rapides</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href="/" className="hover:text-blue-400 transition">Accueil</Link></li>
-              <li><Link href="/about" className="hover:text-blue-400 transition">À propos</Link></li>
-              <li><Link href="/admissions" className="hover:text-blue-400 transition">Admissions</Link></li>
+              <li><Link href="/apropos" className="hover:text-blue-400 transition">À propos</Link></li>
               <li><Link href="/contact" className="hover:text-blue-400 transition">Contact</Link></li>
             </ul>
           </div>
@@ -124,7 +123,7 @@ export default function Footer() {
         {/* Réseaux sociaux - Facebook, LinkedIn, YouTube */}
         <div className="flex justify-center space-x-6 mb-8">
           <a 
-            href="#" 
+            href="https://www.facebook.com/enfantsdufutur" 
             className="hover:text-blue-400 transition"
             target="_blank"
             rel="noopener noreferrer"
@@ -140,7 +139,7 @@ export default function Footer() {
             <LinkedinIcon />
           </a>
           <a 
-            href="#" 
+            href="https://youtube.com/@eief-enfantsdufutur?si=W_u0umlkCy9cQVHd" 
             className="hover:text-red-600 transition"
             target="_blank"
             rel="noopener noreferrer"

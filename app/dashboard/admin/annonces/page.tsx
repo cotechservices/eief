@@ -3,10 +3,9 @@
 
 import { useState, useEffect } from "react";
 import { 
-  Plus, Edit, Trash2, Eye, Search, Filter, Download,
-  Calendar, User, Tag, Bell, AlertCircle, CheckCircle, XCircle,
-  ImageIcon, Upload, Send, Clock
+  Plus, Edit, Trash2, Eye, Search, Send, Clock, CheckCircle, XCircle, Calendar
 } from "lucide-react";
+import Image from "next/image";
 
 interface Annonce {
   id: number;
@@ -15,9 +14,7 @@ interface Annonce {
   imageUrl: string;
   datePublication: string;
   dateProgrammee?: string;
-  auteur: string;
   categorie: "info" | "alerte" | "evenement" | "inscription";
-  cible: "tous" | "parents" | "enseignants" | "eleves";
   estPublie: boolean;
   vue: number;
 }
@@ -25,27 +22,24 @@ interface Annonce {
 export default function AdminAnnoncesPage() {
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategorie, setSelectedCategorie] = useState("all");
-  const [selectedStatut, setSelectedStatut] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [editingAnnonce, setEditingAnnonce] = useState<Annonce | null>(null);
   const [formData, setFormData] = useState({
     titre: "",
     contenu: "",
     categorie: "info",
-    cible: "tous",
     dateProgrammee: "",
-    image: null as File | null
+    image: null as File | null,
+    imagePreview: ""
   });
 
   useEffect(() => {
     setTimeout(() => {
       const mockAnnonces: Annonce[] = [
-        { id: 1, titre: "Inscriptions 2025-2026 ouvertes", contenu: "Les inscriptions sont ouvertes...", imageUrl: "", datePublication: "2025-05-15", auteur: "Admin", categorie: "inscription", cible: "tous", estPublie: true, vue: 1250 },
-        { id: 2, titre: "Journée portes ouvertes", contenu: "Venez découvrir notre école...", imageUrl: "", datePublication: "2025-05-10", auteur: "Admin", categorie: "evenement", cible: "parents", estPublie: true, vue: 890 },
-        { id: 3, titre: "Vacances de Pâques", contenu: "Cours suspendus...", imageUrl: "", datePublication: "2025-04-01", auteur: "Admin", categorie: "info", cible: "tous", estPublie: true, vue: 2100 },
-        { id: 4, titre: "Réunion parents", contenu: "Réunion le 25 mai...", imageUrl: "", datePublication: "", auteur: "Admin", categorie: "evenement", cible: "parents", estPublie: false, vue: 0, dateProgrammee: "2025-05-25" },
+        { id: 1, titre: "Inscriptions 2025-2026 ouvertes", contenu: "Les inscriptions sont ouvertes...", imageUrl: "/img/slide2.jpg", datePublication: "2025-05-15", categorie: "inscription", estPublie: true, vue: 1250 },
+        { id: 2, titre: "Journée portes ouvertes", contenu: "Venez découvrir notre école...", imageUrl: "/img/slide3.jpg", datePublication: "2025-05-10", categorie: "evenement", estPublie: true, vue: 890 },
+        { id: 3, titre: "Vacances de Pâques", contenu: "Cours suspendus...", imageUrl: "", datePublication: "2025-04-01", categorie: "info", estPublie: true, vue: 2100 },
+        { id: 4, titre: "Réunion parents", contenu: "Réunion le 25 mai...", imageUrl: "", datePublication: "", categorie: "evenement", estPublie: false, vue: 0, dateProgrammee: "2025-05-25T10:00" },
       ];
       setAnnonces(mockAnnonces);
       setLoading(false);
@@ -56,25 +50,24 @@ export default function AdminAnnoncesPage() {
     total: annonces.length,
     publiees: annonces.filter(a => a.estPublie).length,
     programmees: annonces.filter(a => !a.estPublie && a.dateProgrammee).length,
-    vuesTotales: annonces.reduce((acc, a) => acc + a.vue, 0)
+    vues: annonces.reduce((acc, a) => acc + a.vue, 0)
   };
 
   const getCategorieBadge = (categorie: string) => {
-    switch(categorie) {
-      case "info": return <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">Information</span>;
-      case "alerte": return <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full">Alerte</span>;
-      case "evenement": return <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">Événement</span>;
-      case "inscription": return <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">Inscription</span>;
-      default: return <span>{categorie}</span>;
-    }
+    const styles = {
+      info: "bg-blue-100 text-blue-700",
+      alerte: "bg-red-100 text-red-700",
+      evenement: "bg-green-100 text-green-700",
+      inscription: "bg-purple-100 text-purple-700"
+    };
+    const labels = {
+      info: "Information",
+      alerte: "Alerte",
+      evenement: "Événement",
+      inscription: "Inscription"
+    };
+    return <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[categorie as keyof typeof styles]}`}>{labels[categorie as keyof typeof labels]}</span>;
   };
-
-  const filteredAnnonces = annonces.filter(a => {
-    const matchesSearch = a.titre.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategorie = selectedCategorie === "all" || a.categorie === selectedCategorie;
-    const matchesStatut = selectedStatut === "all" || (selectedStatut === "publie" ? a.estPublie : !a.estPublie);
-    return matchesSearch && matchesCategorie && matchesStatut;
-  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,23 +75,23 @@ export default function AdminAnnoncesPage() {
       id: editingAnnonce?.id || Date.now(),
       titre: formData.titre,
       contenu: formData.contenu,
-      imageUrl: "",
+      imageUrl: formData.imagePreview || "",
       datePublication: editingAnnonce?.datePublication || new Date().toISOString().split('T')[0],
-      auteur: "Admin",
       categorie: formData.categorie as any,
-      cible: formData.cible as any,
       estPublie: !formData.dateProgrammee,
       vue: editingAnnonce?.vue || 0,
       dateProgrammee: formData.dateProgrammee || undefined,
     };
+    
     if (editingAnnonce) {
       setAnnonces(annonces.map(a => a.id === editingAnnonce.id ? newAnnonce : a));
     } else {
       setAnnonces([newAnnonce, ...annonces]);
     }
+    
     setShowForm(false);
     setEditingAnnonce(null);
-    setFormData({ titre: "", contenu: "", categorie: "info", cible: "tous", dateProgrammee: "", image: null });
+    setFormData({ titre: "", contenu: "", categorie: "info", dateProgrammee: "", image: null, imagePreview: "" });
   };
 
   const handleDelete = (id: number) => {
@@ -109,6 +102,13 @@ export default function AdminAnnoncesPage() {
 
   const handlePublish = (id: number) => {
     setAnnonces(annonces.map(a => a.id === id ? { ...a, estPublie: true, datePublication: new Date().toISOString().split('T')[0] } : a));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, image: file, imagePreview: URL.createObjectURL(file) });
+    }
   };
 
   if (loading) {
@@ -122,105 +122,81 @@ export default function AdminAnnoncesPage() {
   return (
     <div className="space-y-6">
       {/* En-tête */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Gestion des annonces</h1>
-          <p className="text-gray-500">Créez et gérez les annonces de l'école</p>
+          <h1 className="text-2xl font-bold text-gray-800">Annonces</h1>
+          <p className="text-gray-500 text-sm">Gérez les annonces de l'école</p>
         </div>
-        <button onClick={() => { setEditingAnnonce(null); setShowForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+        <button 
+          onClick={() => { setEditingAnnonce(null); setShowForm(true); }} 
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition shadow-sm"
+        >
           <Plus className="w-4 h-4" /> Nouvelle annonce
         </button>
       </div>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4">
-          <div className="flex justify-between">
-            <div><p className="text-gray-500">Total annonces</p><p className="text-2xl font-bold text-blue-600">{stats.total}</p></div>
-            <Bell className="w-8 h-8 text-blue-200" />
-          </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
+          <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
+          <p className="text-gray-500 text-sm">Total annonces</p>
         </div>
-        <div className="bg-white rounded-xl p-4">
-          <div className="flex justify-between">
-            <div><p className="text-gray-500">Publiées</p><p className="text-2xl font-bold text-green-600">{stats.publiees}</p></div>
-            <CheckCircle className="w-8 h-8 text-green-200" />
-          </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+          <p className="text-2xl font-bold text-green-600">{stats.publiees}</p>
+          <p className="text-gray-500 text-sm">Publiées</p>
         </div>
-        <div className="bg-white rounded-xl p-4">
-          <div className="flex justify-between">
-            <div><p className="text-gray-500">Programmées</p><p className="text-2xl font-bold text-orange-600">{stats.programmees}</p></div>
-            <Clock className="w-8 h-8 text-orange-200" />
-          </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
+          <p className="text-2xl font-bold text-orange-600">{stats.programmees}</p>
+          <p className="text-gray-500 text-sm">Programmées</p>
         </div>
-        <div className="bg-white rounded-xl p-4">
-          <div className="flex justify-between">
-            <div><p className="text-gray-500">Vues totales</p><p className="text-2xl font-bold text-purple-600">{stats.vuesTotales}</p></div>
-            <Eye className="w-8 h-8 text-purple-200" />
-          </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+          <p className="text-2xl font-bold text-purple-600">{stats.vues}</p>
+          <p className="text-gray-500 text-sm">Vues totales</p>
         </div>
       </div>
 
-      {/* Filtres */}
-      <div className="bg-white rounded-xl shadow-sm p-4">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Rechercher..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 border rounded-lg" />
-          </div>
-          <select value={selectedCategorie} onChange={(e) => setSelectedCategorie(e.target.value)} className="px-3 py-2 border rounded-lg">
-            <option value="all">Toutes catégories</option>
-            <option value="info">Info</option>
-            <option value="alerte">Alerte</option>
-            <option value="evenement">Événement</option>
-            <option value="inscription">Inscription</option>
-          </select>
-          <select value={selectedStatut} onChange={(e) => setSelectedStatut(e.target.value)} className="px-3 py-2 border rounded-lg">
-            <option value="all">Tous statuts</option>
-            <option value="publie">Publiées</option>
-            <option value="brouillon">Brouillons</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Tableau des annonces */}
+      {/* Liste des annonces */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Titre</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catégorie</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cible</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vues</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredAnnonces.map((a) => (
-                <tr key={a.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium">{a.titre}</td>
+            <tbody className="divide-y divide-gray-100">
+              {annonces.map((a) => (
+                <tr key={a.id} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-4">
+                    <p className="font-medium text-gray-800">{a.titre}</p>
+                    <p className="text-xs text-gray-400 line-clamp-1">{a.contenu.substring(0, 60)}...</p>
+                  </td>
                   <td className="px-6 py-4">{getCategorieBadge(a.categorie)}</td>
-                  <td className="px-6 py-4 capitalize">{a.cible}</td>
-                  <td className="px-6 py-4">{a.datePublication || a.dateProgrammee || "-"}</td>
-                  <td className="px-6 py-4">{a.vue}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{a.datePublication || a.dateProgrammee?.split('T')[0] || "-"}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{a.vue}</td>
                   <td className="px-6 py-4">
                     {a.estPublie ? (
-                      <span className="text-green-600 text-sm">✅ Publiée</span>
+                      <span className="flex items-center gap-1 text-green-600 text-sm"><CheckCircle className="w-4 h-4" /> Publiée</span>
                     ) : (
-                      <span className="text-orange-600 text-sm">⏳ Programmée</span>
+                      <span className="flex items-center gap-1 text-orange-600 text-sm"><Clock className="w-4 h-4" /> Programmée</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button onClick={() => { setEditingAnnonce(a); setFormData({ titre: a.titre, contenu: a.contenu, categorie: a.categorie, cible: a.cible, dateProgrammee: a.dateProgrammee || "", image: null }); setShowForm(true); }} className="text-green-600">
+                    <div className="flex gap-3">
+                      <button onClick={() => { setEditingAnnonce(a); setFormData({ titre: a.titre, contenu: a.contenu, categorie: a.categorie, dateProgrammee: a.dateProgrammee || "", image: null, imagePreview: a.imageUrl }); setShowForm(true); }} className="text-blue-600 hover:text-blue-800">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handlePublish(a.id)} className="text-blue-600">
-                        <Send className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleDelete(a.id)} className="text-red-600">
+                      {!a.estPublie && (
+                        <button onClick={() => handlePublish(a.id)} className="text-green-600 hover:text-green-800">
+                          <Send className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button onClick={() => handleDelete(a.id)} className="text-red-600 hover:text-red-800">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -232,53 +208,75 @@ export default function AdminAnnoncesPage() {
         </div>
       </div>
 
-      {/* Modal Formulaire */}
+      {/* Modal Formulaire simplifié */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b">
-              <h2 className="text-xl font-bold">{editingAnnonce ? "Modifier" : "Nouvelle"} annonce</h2>
+              <h2 className="text-xl font-bold text-gray-800">{editingAnnonce ? "Modifier" : "Nouvelle"} annonce</h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Titre *</label>
-                <input type="text" value={formData.titre} onChange={(e) => setFormData({...formData, titre: e.target.value})} className="w-full px-3 py-2 border rounded-lg" required />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Titre *</label>
+                <input 
+                  type="text" 
+                  value={formData.titre} 
+                  onChange={(e) => setFormData({...formData, titre: e.target.value})} 
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  required 
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Contenu *</label>
-                <textarea rows={4} value={formData.contenu} onChange={(e) => setFormData({...formData, contenu: e.target.value})} className="w-full px-3 py-2 border rounded-lg" required />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contenu *</label>
+                <textarea 
+                  rows={4} 
+                  value={formData.contenu} 
+                  onChange={(e) => setFormData({...formData, contenu: e.target.value})} 
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  required 
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Catégorie</label>
-                  <select value={formData.categorie} onChange={(e) => setFormData({...formData, categorie: e.target.value})} className="w-full px-3 py-2 border rounded-lg">
-                    <option value="info">Information</option>
-                    <option value="alerte">Alerte</option>
-                    <option value="evenement">Événement</option>
-                    <option value="inscription">Inscription</option>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+                  <select 
+                    value={formData.categorie} 
+                    onChange={(e) => setFormData({...formData, categorie: e.target.value})} 
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="info">📢 Information</option>
+                    <option value="alerte">⚠️ Alerte</option>
+                    <option value="evenement">🎉 Événement</option>
+                    <option value="inscription">📝 Inscription</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Cible</label>
-                  <select value={formData.cible} onChange={(e) => setFormData({...formData, cible: e.target.value})} className="w-full px-3 py-2 border rounded-lg">
-                    <option value="tous">Tous</option>
-                    <option value="parents">Parents uniquement</option>
-                    <option value="enseignants">Enseignants</option>
-                    <option value="eleves">Élèves</option>
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Programmer</label>
+                  <input 
+                    type="datetime-local" 
+                    value={formData.dateProgrammee} 
+                    onChange={(e) => setFormData({...formData, dateProgrammee: e.target.value})} 
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Programmer (optionnel)</label>
-                <input type="datetime-local" value={formData.dateProgrammee} onChange={(e) => setFormData({...formData, dateProgrammee: e.target.value})} className="w-full px-3 py-2 border rounded-lg" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Image (optionnel)</label>
-                <input type="file" accept="image/*" onChange={(e) => setFormData({...formData, image: e.target.files?.[0] || null})} className="w-full" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleImageChange} 
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                />
+                {formData.imagePreview && (
+                  <div className="mt-3 relative h-32 w-full rounded-xl overflow-hidden">
+                    <Image src={formData.imagePreview} alt="Aperçu" fill className="object-cover" />
+                  </div>
+                )}
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg">Annuler</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">{editingAnnonce ? "Mettre à jour" : "Publier"}</button>
+                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition">Annuler</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition">{editingAnnonce ? "Mettre à jour" : "Publier"}</button>
               </div>
             </form>
           </div>

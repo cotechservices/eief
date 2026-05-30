@@ -14,14 +14,12 @@ const menuItems = [
   { 
     name: "Annonces", 
     href: "/annonces", 
-    icon: Bell,
-    badge: 3  // Nombre de nouvelles annonces non lues
-  },
+  },  
+  { name: "Blog", href: "/blog" },
 ];
 
 // Items du dropdown Ressources
 const dropdownItems = [
-  { name: "Blog", href: "/blog" },
   { name: "Bibliothèque", href: "/bibliotheque" },
   { name: "Librairie", href: "/librairie" },
   { name: "Contact", href: "/contact" },
@@ -94,11 +92,6 @@ export default function Header() {
                   }`}
                 >
                   {item.name}
-                  {item.badge && item.badge > 0 && (
-                    <span className="absolute -top-2 -right-4 bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               );
             })}
@@ -170,11 +163,6 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
-                  {item.badge && item.badge > 0 && (
-                    <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               );
             })}

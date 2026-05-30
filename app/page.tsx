@@ -85,22 +85,25 @@ export default function HomePage() {
   // Slides du carrousel
   const slides = [
     {
-      title: "École Internationale des Enfants Futur",
-      description: "Une éducation d'excellence pour former les leaders de demain",
-      image: "img/slide2.jpg",
-      cta: "Découvrir l'école"
-    },
-    {
-      title: "Inscriptions 2025-2026 ouvertes",
+      title: "Inscriptions ouvertes",
       description: "Rejoignez une communauté éducative d'exception",
       image: "img/slide3.jpg",
-      cta: "Pré-inscrire mon enfant"
+      cta: "Pré-inscrire mon enfant",
+      link: "/register"
     },
     {
-      title: "Plateforme de gestion 100% digitale",
+      title: "Notre école du futur",
+      description: "Une éducation d'excellence pour former les leaders",
+      image: "img/slide2.jpg",
+      cta: "Découvrir l'école",
+      link: "/register"
+    },
+    {
+      title: "Innovation & Digital",
       description: "Suivez la scolarité de vos enfants en temps réel",
       image: "img/slide5.jpg",
-      cta: "En savoir plus"
+      cta: "En savoir plus",
+      link: "/register"
     }
   ];
 
@@ -114,20 +117,20 @@ export default function HomePage() {
 
   // Features
   const features = [
-    { icon: GraduationCap, title: "Excellence académique", description: "Un enseignement de qualité reconnu" },
-    { icon: Users, title: "Encadrement", description: "Suivi individuel de chaque élève" },
-    { icon: Trophy, title: "Activités extrascolaires", description: "Sport, arts, robotique et plus" },
-    { icon: Smartphone, title: "Application mobile", description: "Suivez la scolarité partout" },
+    { icon: GraduationCap, title: "Excellence académique", description: "Un enseignement de qualité reconnu", link: "/programmes" },
+    { icon: Users, title: "Encadrement", description: "Suivi individuel de chaque élève", link: "/encadrement" },
+    { icon: Trophy, title: "Activités extrascolaires", description: "Sport, arts, robotique et plus", link: "/activites" },
+    { icon: Smartphone, title: "Application mobile", description: "Suivez la scolarité partout", link: "/mobile-app" },
   ];
 
   // Modules de la plateforme (6 modules)
   const modules = [
-    { icon: BookOpen, name: "Formation", color: "bg-blue-500" },
-    { icon: Bus, name: "Transport", color: "bg-orange-500" },
-    { icon: Utensils, name: "Cantine", color: "bg-red-500" },
-    { icon: Star, name: "Activités", color: "bg-yellow-500" },
-    { icon: Library, name: "Librairie", color: "bg-indigo-500" },
-    { icon: BookMarked, name: "Bibliothèque", color: "bg-teal-500" },
+    { icon: BookOpen, name: "Formation", color: "bg-blue-500", link: "/formation" },
+    { icon: Bus, name: "Transport", color: "bg-orange-500", link: "/transport" },
+    { icon: Utensils, name: "Cantine", color: "bg-red-500", link: "/cantine" },
+    { icon: Star, name: "Activités", color: "bg-yellow-500", link: "/activites" },
+    { icon: Library, name: "Librairie", color: "bg-indigo-500", link: "/librairie" },
+    { icon: BookMarked, name: "Bibliothèque", color: "bg-teal-500", link: "/bibliotheque" },
   ];
 
   return (
@@ -152,16 +155,18 @@ export default function HomePage() {
             <div className="relative h-full flex items-center">
               <div className="container mx-auto px-4 text-white">
                 <div className="max-w-2xl animate-fade-in-up">
-                 <h3 className="text-3xl md:text-5xl font-bold mb-4">
+                 <h3 className="text-xl md:text-5xl font-bold mb-4">
                     {slide.title}
                   </h3>
                   <p className="text-lg md:text-xl mb-8 text-gray-200">
                     {slide.description}
                   </p>
-                  <button className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center gap-2">
-                    {slide.cta}
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
+                  <Link href={slide.link}>
+                    <button className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center gap-2">
+                      {slide.cta}
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -221,15 +226,16 @@ export default function HomePage() {
           {/* Grille responsive : 3 sur mobile, 6 sur desktop */}
           <div className="grid grid-cols-3 lg:grid-cols-6 gap-4">
             {modules.map((module, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg p-6 text-center shadow-md hover:shadow-lg transition cursor-pointer group"
-              >
-                <div className={`w-12 h-12 ${module.color} rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition`}>
-                  <module.icon className="w-6 h-6 text-white" />
+              <Link href={module.link} key={index}>
+                <div
+                  className="bg-white rounded-lg p-6 text-center shadow-md hover:shadow-lg transition cursor-pointer group"
+                >
+                  <div className={`w-12 h-12 ${module.color} rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition`}>
+                    <module.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">{module.name}</span>
                 </div>
-                <span className="text-sm font-medium text-gray-700">{module.name}</span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -366,16 +372,17 @@ export default function HomePage() {
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {features.map((feature, index) => (
-                  <div
-                    key={index}
-                    className="bg-white rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition group"
-                  >
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600 transition">
-                      <feature.icon className="w-8 h-8 text-blue-600 group-hover:text-white transition" />
+                  <Link href={feature.link} key={index}>
+                    <div
+                      className="bg-white rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition group cursor-pointer"
+                    >
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600 transition">
+                        <feature.icon className="w-8 h-8 text-blue-600 group-hover:text-white transition" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2 text-gray-800">{feature.title}</h3>
+                      <p className="text-gray-600">{feature.description}</p>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2 text-gray-800">{feature.title}</h3>
-                    <p className="text-gray-600">{feature.description}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -415,6 +422,12 @@ export default function HomePage() {
                     <span className="text-sm">Suivi en temps réel</span>
                   </div>
                 </div>
+                <Link href="/platform">
+                  <button className="mt-6 bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center gap-2">
+                    Découvrir la plateforme
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                </Link>
               </div>
               <div className="flex flex-col items-center justify-center text-center md:text-right">
                 <div className="bg-white/10 backdrop-blur rounded-xl p-6 w-full">
