@@ -393,7 +393,11 @@ export default function RegisterForm() {
                     name="nom"
                     value={parentInfo.nom}
                     onChange={handleParentChange}
+<<<<<<< HEAD
                     className="w-full pl-10 pr-4 text-black py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                     placeholder="Votre nom"
                     required
                   />
@@ -408,7 +412,11 @@ export default function RegisterForm() {
                     name="prenom"
                     value={parentInfo.prenom}
                     onChange={handleParentChange}
+<<<<<<< HEAD
                     className="w-full pl-10 text-black pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                     placeholder="Votre prénom"
                     required
                   />
@@ -426,7 +434,11 @@ export default function RegisterForm() {
                     name="email"
                     value={parentInfo.email}
                     onChange={handleParentChange}
+<<<<<<< HEAD
                     className="w-full pl-10 text-black pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                     placeholder="votre@email.com"
                     required
                   />
@@ -441,8 +453,13 @@ export default function RegisterForm() {
                     name="phone"
                     value={parentInfo.phone}
                     onChange={handleParentChange}
+<<<<<<< HEAD
                     className="w-full pl-10 text-black pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="+227 42 17 22"
+=======
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="+224 XX XXX XXXX"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                     required
                   />
                 </div>
@@ -458,7 +475,11 @@ export default function RegisterForm() {
                   name="adresse"
                   value={parentInfo.adresse}
                   onChange={handleParentChange}
+<<<<<<< HEAD
                   className="w-full pl-10 text-black pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                   placeholder="Votre adresse complète"
                 />
               </div>
@@ -471,7 +492,11 @@ export default function RegisterForm() {
                 name="profession"
                 value={parentInfo.profession}
                 onChange={handleParentChange}
+<<<<<<< HEAD
                 className="w-full text-black px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                 placeholder="Votre profession"
               />
             </div>
@@ -539,7 +564,11 @@ export default function RegisterForm() {
                       type="text"
                       value={enfant.nom}
                       onChange={(e) => handleEnfantChange(idx, 'nom', e.target.value)}
+<<<<<<< HEAD
                       className="w-full px-4 text-black py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                       placeholder="Nom"
                       required
                     />
@@ -550,7 +579,11 @@ export default function RegisterForm() {
                       type="text"
                       value={enfant.prenom}
                       onChange={(e) => handleEnfantChange(idx, 'prenom', e.target.value)}
+<<<<<<< HEAD
                       className="w-full px-4 text-black py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                       placeholder="Prénom"
                       required
                     />
@@ -566,7 +599,11 @@ export default function RegisterForm() {
                         type="date"
                         value={enfant.dateNaissance}
                         onChange={(e) => handleEnfantChange(idx, 'dateNaissance', e.target.value)}
+<<<<<<< HEAD
                         className="w-full pl-10 text-black pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                         required
                       />
                     </div>
@@ -579,7 +616,11 @@ export default function RegisterForm() {
                         type="text"
                         value={enfant.lieuNaissance}
                         onChange={(e) => handleEnfantChange(idx, 'lieuNaissance', e.target.value)}
+<<<<<<< HEAD
                         className="w-full pl-10 text-black pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                         placeholder="Ville de naissance"
                       />
                     </div>
@@ -592,7 +633,11 @@ export default function RegisterForm() {
                     <select
                       value={enfant.sexe}
                       onChange={(e) => handleEnfantChange(idx, 'sexe', e.target.value)}
+<<<<<<< HEAD
                       className="w-full px-4 text-black py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                       required
                     >
                       <option value="">Sélectionner</option>
@@ -605,7 +650,11 @@ export default function RegisterForm() {
                     <select
                       value={enfant.niveau}
                       onChange={(e) => handleEnfantChange(idx, 'niveau', e.target.value)}
+<<<<<<< HEAD
                       className="w-full px-4 text-black py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+=======
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+>>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                       required
                     >
                       <option value="">Sélectionner un niveau</option>
