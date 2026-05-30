@@ -12,7 +12,13 @@ import {
   CheckCircle,
   XCircle,
   Eye,
-  Download
+  Download,
+  Loader2,
+  DollarSign,
+  UserCheck,
+  UserX,
+  Clock,
+  UserPlus
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -20,56 +26,64 @@ export default function AdminDashboard() {
     totalEleves: 0,
     totalEnseignants: 0,
     totalClasses: 0,
-    totalPaiementsMois: 0,
+    totalParents: 0,
+    totalPaiementsAnnee: 0,
     tauxPresence: 0,
-    tauxReussite: 0
+    tauxReussite: 0,
+    preinscriptionsEnAttente: 0,
+    hommes: 0,
+    femmes: 0
   });
 
+  const [presenceHebdo, setPresenceHebdo] = useState<any[]>([]);
+  const [classesPopulaires, setClassesPopulaires] = useState<any[]>([]);
+  const [activitesRecentes, setActivitesRecentes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulation chargement données
-    setTimeout(() => {
-      setStats({
-        totalEleves: 1250,
-        totalEnseignants: 85,
-        totalClasses: 32,
-        totalPaiementsMois: 12500000,
-        tauxPresence: 92,
-        tauxReussite: 98
-      });
-      setLoading(false);
-    }, 1000);
+    fetchDashboardData();
   }, []);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Récupérer les statistiques générales
+      const statsResponse = await fetch("/api/admin/dashboard/stats");
+      const statsData = await statsResponse.json();
+      setStats(statsData);
+
+      // Récupérer les présences hebdomadaires
+      const presenceResponse = await fetch("/api/admin/dashboard/presence");
+      const presenceData = await presenceResponse.json();
+      setPresenceHebdo(presenceData);
+
+      // Récupérer les classes les plus peuplées
+      const classesResponse = await fetch("/api/admin/dashboard/classes-populaires");
+      const classesData = await classesResponse.json();
+      setClassesPopulaires(classesData);
+
+      // Récupérer les activités récentes
+      const activitesResponse = await fetch("/api/admin/dashboard/activites");
+      const activitesData = await activitesResponse.json();
+      setActivitesRecentes(activitesData);
+    } catch (error) {
+      console.error("Erreur chargement dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const statCards = [
     { title: "Total élèves", value: stats.totalEleves, icon: Users, color: "bg-blue-500", change: "+12%" },
     { title: "Enseignants", value: stats.totalEnseignants, icon: GraduationCap, color: "bg-green-500", change: "+5%" },
     { title: "Classes", value: stats.totalClasses, icon: BookOpen, color: "bg-purple-500", change: "+2" },
-    { title: "Paiements (mois)", value: `${(stats.totalPaiementsMois / 1000000).toFixed(1)}M GNF`, icon: CreditCard, color: "bg-orange-500", change: "+18%" },
-  ];
-
-  const activitesRecentes = [
-    { id: 1, action: "Nouvel élève inscrit", utilisateur: "Mme Diallo", date: "Il y a 10 min", type: "success" },
-    { id: 2, action: "Paiement effectué", utilisateur: "M. Camara", date: "Il y a 1 heure", type: "success" },
-    { id: 3, action: "Devoir publié", utilisateur: "Mme Barry", date: "Il y a 2 heures", type: "info" },
-    { id: 4, action: "Absence signalée", utilisateur: "M. Konaté", date: "Il y a 3 heures", type: "warning" },
-  ];
-
-  const classesPopulaires = [
-    { name: "6ème A", eleves: 28, capacite: 30, taux: 93 },
-    { name: "5ème A", eleves: 30, capacite: 30, taux: 100 },
-    { name: "4ème B", eleves: 25, capacite: 30, taux: 83 },
-    { name: "Terminale S", eleves: 22, capacite: 25, taux: 88 },
+    { title: "Nombre de parents", value: stats.totalParents, icon: UserPlus, color: "bg-indigo-500", change: "+8%" },
   ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Chargement des données...</p>
-        </div>
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
@@ -78,6 +92,7 @@ export default function AdminDashboard() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Tableau de bord administrateur</h1>
+        <p className="text-gray-500">Vue d'ensemble de l'école</p>
       </div>
 
       {/* Statistiques */}
@@ -98,6 +113,27 @@ export default function AdminDashboard() {
         ))}
       </div>
 
+      {/* Statistiques supplémentaires */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+          <div className="flex items-center gap-2 mb-1"><Clock className="w-5 h-5" /><p className="text-sm opacity-90">Pré-inscriptions</p></div>
+          <p className="text-3xl font-bold">{stats.preinscriptionsEnAttente}</p>
+          <p className="text-xs opacity-75">en attente de validation</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-500"><Users className="w-5 h-5" /><p className="text-sm">Garçons</p></div>
+          <p className="text-2xl font-bold text-blue-600">{stats.hommes}</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-500"><Users className="w-5 h-5" /><p className="text-sm">Filles</p></div>
+          <p className="text-2xl font-bold text-pink-600">{stats.femmes}</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-500"><DollarSign className="w-5 h-5" /><p className="text-sm">Paiements année</p></div>
+          <p className="text-lg font-bold text-green-600">{(stats.totalPaiementsAnnee / 1000000).toFixed(1)}M GNF</p>
+        </div>
+      </div>
+
       {/* Graphiques rapides */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-xl shadow-sm p-6">
@@ -106,51 +142,20 @@ export default function AdminDashboard() {
             <button className="text-blue-600 text-sm hover:underline">Voir détails</button>
           </div>
           <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Lundi</span>
-                <span>94%</span>
+            {presenceHebdo.length > 0 ? presenceHebdo.map((jour, idx) => (
+              <div key={idx}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>{jour.jour}</span>
+                  <span>{jour.taux}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full ${jour.taux >= 90 ? "bg-green-500" : jour.taux >= 80 ? "bg-yellow-500" : "bg-red-500"}`}
+                    style={{ width: `${jour.taux}%` }}
+                  ></div>
+                </div>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: "94%" }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Mardi</span>
-                <span>91%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: "91%" }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Mercredi</span>
-                <span>89%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: "89%" }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Jeudi</span>
-                <span>95%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: "95%" }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Vendredi</span>
-                <span>90%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: "90%" }}></div>
-              </div>
-            </div>
+            )) : <p className="text-gray-500 text-center">Aucune donnée de présence</p>}
           </div>
         </div>
 
@@ -160,10 +165,10 @@ export default function AdminDashboard() {
             <button className="text-blue-600 text-sm hover:underline">Voir tout</button>
           </div>
           <div className="space-y-4">
-            {classesPopulaires.map((classe, idx) => (
+            {classesPopulaires.length > 0 ? classesPopulaires.map((classe, idx) => (
               <div key={idx} className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium text-gray-800">{classe.name}</p>
+                  <p className="font-medium text-gray-800">{classe.nom}</p>
                   <p className="text-sm text-gray-500">{classe.eleves}/{classe.capacite} élèves</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -176,7 +181,7 @@ export default function AdminDashboard() {
                   <span className="text-sm font-medium">{classe.taux}%</span>
                 </div>
               </div>
-            ))}
+            )) : <p className="text-gray-500 text-center">Aucune classe</p>}
           </div>
         </div>
       </div>
@@ -187,7 +192,7 @@ export default function AdminDashboard() {
           <h3 className="font-semibold text-gray-800">Activités récentes</h3>
         </div>
         <div className="divide-y">
-          {activitesRecentes.map((activite) => (
+          {activitesRecentes.length > 0 ? activitesRecentes.map((activite) => (
             <div key={activite.id} className="px-6 py-3 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 {activite.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -200,12 +205,9 @@ export default function AdminDashboard() {
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-xs text-gray-400">{activite.date}</span>
-                <button className="text-gray-400 hover:text-gray-600">
-                  <Eye className="w-4 h-4" />
-                </button>
               </div>
             </div>
-          ))}
+          )) : <p className="text-center py-8 text-gray-500">Aucune activité récente</p>}
         </div>
       </div>
     </div>

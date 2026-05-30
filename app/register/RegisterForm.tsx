@@ -1,14 +1,15 @@
 // app/register/RegisterForm.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { 
   User, Mail, Lock, Phone, Calendar, MapPin, Upload, CheckCircle,
-  ArrowRight, ArrowLeft, GraduationCap, Plus, Trash2, Users, Eye, EyeOff
+  ArrowRight, ArrowLeft, GraduationCap, Plus, Trash2, Users, Eye, EyeOff,
+  Loader2
 } from "lucide-react";
 
-// Interface pour un enfant
 interface Enfant {
   id: string;
   nom: string;
@@ -23,48 +24,27 @@ interface Enfant {
   bulletin: File | null;
 }
 
-// Système scolaire guinéen
-const niveauxGuineens = {
-  primaire: {
-    name: "Primaire",
-    classes: [
-      { value: "1ere_annee", label: "1ère année" },
-      { value: "2eme_annee", label: "2ème année" },
-      { value: "3eme_annee", label: "3ème année" },
-      { value: "4eme_annee", label: "4ème année" },
-      { value: "5eme_annee", label: "5ème année" },
-      { value: "6eme_annee", label: "6ème année" },
-    ]
-  },
-  college: {
-    name: "Collège",
-    classes: [
-      { value: "7eme", label: "7ème année" },
-      { value: "8eme", label: "8ème année" },
-      { value: "9eme", label: "9ème année" },
-      { value: "10eme", label: "10ème année" },
-    ]
-  },
-  lycee: {
-    name: "Lycée",
-    classes: [
-      { value: "11eme", label: "11ème année" },
-      { value: "12eme", label: "12ème année" },
-      { value: "terminale", label: "Terminale" },
-    ]
-  }
-};
+interface Classe {
+  id: number;
+  nom: string;
+  niveau: string;
+}
 
 export default function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const niveauParam = searchParams.get("niveau");
+  const { data: session, status } = useSession();
+  const isParentLoggedIn = status === "authenticated" && (session?.user as any)?.role === "PARENT";
   
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const [classes, setClasses] = useState<Classe[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
   
-  // Informations parent
+  // Informations parent - pré-remplies si déjà connecté
   const [parentInfo, setParentInfo] = useState({
     nom: "",
     prenom: "",
@@ -76,7 +56,6 @@ export default function RegisterForm() {
     confirmPassword: "",
   });
   
-  // Liste des enfants
   const [enfants, setEnfants] = useState<Enfant[]>([
     {
       id: crypto.randomUUID(),
@@ -94,6 +73,50 @@ export default function RegisterForm() {
   ]);
 
   const [activeEnfantIndex, setActiveEnfantIndex] = useState(0);
+
+  // Charger les classes depuis la base de données
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  // Pré-remplir les informations du parent si connecté
+  useEffect(() => {
+    if (isParentLoggedIn && session?.user) {
+      setParentInfo({
+        nom: (session.user as any).nom || "",
+        prenom: (session.user as any).prenom || "",
+        email: session.user.email || "",
+        phone: (session.user as any).telephone || "",
+        profession: "",
+        adresse: (session.user as any).adresse || "",
+        password: "",
+        confirmPassword: "",
+      });
+      // Passer directement à l'étape 2 si le parent est connecté
+      setStep(2);
+    }
+  }, [isParentLoggedIn, session]);
+
+  const fetchClasses = async () => {
+    try {
+      const classesRes = await fetch("/api/public/classes");
+      const classesData = await classesRes.json();
+      setClasses(classesData);
+    } catch (error) {
+      console.error("Erreur chargement classes:", error);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const getClassesForNiveau = (niveauNom: string) => {
+    return classes.filter(c => c.niveau === niveauNom);
+  };
+
+  const getNiveauxOptions = () => {
+    const niveauxUniques = [...new Set(classes.map(c => c.niveau))];
+    return niveauxUniques;
+  };
 
   const handleParentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -115,6 +138,29 @@ export default function RegisterForm() {
     const newEnfants = [...enfants];
     newEnfants[index][field] = file;
     setEnfants(newEnfants);
+  };
+
+  const uploadFile = async (file: File, enfantId: string, type: string): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("enfantId", enfantId);
+    formData.append("type", type);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        return data.url;
+      }
+      return null;
+    } catch (error) {
+      console.error(`Erreur upload ${type}:`, error);
+      return null;
+    }
   };
 
   const addEnfant = () => {
@@ -159,13 +205,90 @@ export default function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    setTimeout(() => {
-      console.log("Parent:", parentInfo);
-      console.log("Enfants:", enfants);
+
+    try {
+      const filesToUpload = enfants.filter(e => e.acteNaissance || e.photo || e.bulletin).length;
+      let uploadedCount = 0;
+
+      const enfantsAvecUrls = await Promise.all(
+        enfants.map(async (enfant) => {
+          let acteUrl = null;
+          let photoUrl = null;
+          let bulletinUrl = null;
+
+          if (enfant.acteNaissance) {
+            acteUrl = await uploadFile(enfant.acteNaissance, enfant.id, "acte");
+            uploadedCount++;
+            setUploadProgress({ current: uploadedCount, total: filesToUpload });
+          }
+
+          if (enfant.photo) {
+            photoUrl = await uploadFile(enfant.photo, enfant.id, "photo");
+            uploadedCount++;
+            setUploadProgress({ current: uploadedCount, total: filesToUpload });
+          }
+
+          if (enfant.bulletin) {
+            bulletinUrl = await uploadFile(enfant.bulletin, enfant.id, "bulletin");
+            uploadedCount++;
+            setUploadProgress({ current: uploadedCount, total: filesToUpload });
+          }
+
+          return {
+            nom: enfant.nom,
+            prenom: enfant.prenom,
+            dateNaissance: enfant.dateNaissance,
+            lieuNaissance: enfant.lieuNaissance,
+            sexe: enfant.sexe,
+            niveau: enfant.niveau,
+            classe: enfant.classe,
+            acteNaissanceUrl: acteUrl,
+            photoUrl: photoUrl,
+            bulletinUrl: bulletinUrl,
+          };
+        })
+      );
+
+      // Remplacer la partie d'envoi des données
+      const response = await fetch("/api/preinscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          parent: isParentLoggedIn ? null : {
+            nom: parentInfo.nom,
+            prenom: parentInfo.prenom,
+            email: parentInfo.email,
+            phone: parentInfo.phone,
+            profession: parentInfo.profession,
+            adresse: parentInfo.adresse,
+            password: parentInfo.password,
+          },
+          parentId: isParentLoggedIn ? (session?.user as any).parentId || (session?.user as any).id : null,
+          enfants: enfantsAvecUrls,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        sessionStorage.setItem("preinscription", JSON.stringify({
+          parentName: isParentLoggedIn ? `${(session?.user as any).prenom} ${(session?.user as any).nom}` : `${parentInfo.prenom} ${parentInfo.nom}`,
+          enfantsCount: enfants.length,
+          preinscriptions: data.preinscriptions
+        }));
+        router.push("/register-success");
+      } else {
+        alert("Erreur: " + data.message);
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("Une erreur est survenue. Veuillez réessayer.");
+    } finally {
       setLoading(false);
-      router.push("/register-success");
-    }, 2000);
+      setUploadProgress({ current: 0, total: 0 });
+    }
   };
 
   const isStepValid = () => {
@@ -181,24 +304,27 @@ export default function RegisterForm() {
       return enfants.every(enfant => enfant.acteNaissance && enfant.photo);
     }
     if (step === 4) {
-      return parentInfo.password && parentInfo.password === parentInfo.confirmPassword && parentInfo.password.length >= 6;
+      return isParentLoggedIn || (parentInfo.password && parentInfo.password === parentInfo.confirmPassword && parentInfo.password.length >= 6);
     }
     return true;
   };
 
-  const getClassesForNiveau = (niveau: string) => {
-    if (niveau === 'primaire') return niveauxGuineens.primaire.classes;
-    if (niveau === 'college') return niveauxGuineens.college.classes;
-    if (niveau === 'lycee') return niveauxGuineens.lycee.classes;
-    return [];
-  };
+  const niveauxOptions = getNiveauxOptions();
+
+  if (loadingData) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Progress Steps */}
+      {/* Progress Steps - Masquer l'étape 1 si parent déjà connecté */}
       <div className="mb-8">
         <div className="flex justify-between items-center">
-          {[1, 2, 3, 4].map((s) => (
+          {(isParentLoggedIn ? [2, 3, 4] : [1, 2, 3, 4]).map((s) => (
             <div key={s} className="flex flex-col items-center">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                 step >= s ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-600"
@@ -209,7 +335,7 @@ export default function RegisterForm() {
                 {s === 1 && "Parent"}
                 {s === 2 && "Enfant(s)"}
                 {s === 3 && "Documents"}
-                {s === 4 && "Compte"}
+                {s === 4 && "Validation"}
               </span>
             </div>
           ))}
@@ -218,14 +344,38 @@ export default function RegisterForm() {
           <div className="absolute top-0 left-0 h-1 bg-gray-300 rounded-full w-full"></div>
           <div 
             className="absolute top-0 left-0 h-1 bg-blue-600 rounded-full transition-all duration-300"
-            style={{ width: `${((step - 1) / 3) * 100}%` }}
+            style={{ width: isParentLoggedIn ? `${((step - 2) / 2) * 100}%` : `${((step - 1) / 3) * 100}%` }}
           ></div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-        {/* Étape 1 - Informations Parent */}
-        {step === 1 && (
+        {loading && uploadProgress.total > 0 && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-600">
+              Upload des documents... {uploadProgress.current}/{uploadProgress.total}
+            </p>
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
+        {/* Message pour parent connecté */}
+        {isParentLoggedIn && (
+          <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-green-700 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5" />
+              Vous êtes connecté en tant que parent. Vos informations seront utilisées automatiquement.
+            </p>
+          </div>
+        )}
+
+        {/* Étape 1 - Informations Parent (uniquement si non connecté) */}
+        {!isParentLoggedIn && step === 1 && (
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-blue-600" />
@@ -328,8 +478,8 @@ export default function RegisterForm() {
           </div>
         )}
 
-        {/* Étape 2 - Informations Enfant(s) - Gardez votre code existant */}
-        {step === 2 && (
+        {/* Étape 2 - Informations Enfant(s) */}
+        {((!isParentLoggedIn && step === 2) || (isParentLoggedIn && step === 2)) && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
@@ -459,9 +609,11 @@ export default function RegisterForm() {
                       required
                     >
                       <option value="">Sélectionner un niveau</option>
-                      <option value="primaire">Primaire (1ère → 6ème année)</option>
-                      <option value="college">Collège (7ème → 10ème année)</option>
-                      <option value="lycee">Lycée (11ème → Terminale)</option>
+                      {niveauxOptions.map((niveau) => (
+                        <option key={niveau} value={niveau}>
+                          {niveau}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -477,8 +629,8 @@ export default function RegisterForm() {
                     >
                       <option value="">Sélectionner une classe</option>
                       {getClassesForNiveau(enfant.niveau).map((classe) => (
-                        <option key={classe.value} value={classe.value}>
-                          {classe.label}
+                        <option key={classe.id} value={classe.nom}>
+                          {classe.nom}
                         </option>
                       ))}
                     </select>
@@ -490,7 +642,7 @@ export default function RegisterForm() {
         )}
 
         {/* Étape 3 - Documents */}
-        {step === 3 && (
+        {((!isParentLoggedIn && step === 3) || (isParentLoggedIn && step === 3)) && (
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <Upload className="w-8 h-8 text-blue-600" />
@@ -576,56 +728,60 @@ export default function RegisterForm() {
           </div>
         )}
 
-        {/* Étape 4 - Création du compte */}
-        {step === 4 && (
+        {/* Étape 4 - Validation */}
+        {((!isParentLoggedIn && step === 4) || (isParentLoggedIn && step === 4)) && (
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <Lock className="w-8 h-8 text-blue-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Création du compte</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Confirmation</h2>
             </div>
-            <p className="text-gray-600">Créez un mot de passe pour accéder à la plateforme</p>
             
-            <div>
-              <label className="block text-gray-700 mb-2">Mot de passe *</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={parentInfo.password}
-                  onChange={handleParentChange}
-                  className="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Minimum 6 caractères"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4 text-gray-400" /> : <Eye className="w-4 h-4 text-gray-400" />}
-                </button>
-              </div>
-            </div>
+            {!isParentLoggedIn && (
+              <>
+                <p className="text-gray-600">Créez un mot de passe pour accéder à la plateforme</p>
+                <div>
+                  <label className="block text-gray-700 mb-2">Mot de passe *</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={parentInfo.password}
+                      onChange={handleParentChange}
+                      className="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Minimum 6 caractères"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4 text-gray-400" /> : <Eye className="w-4 h-4 text-gray-400" />}
+                    </button>
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-gray-700 mb-2">Confirmer le mot de passe *</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={parentInfo.confirmPassword}
-                  onChange={handleParentChange}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Retapez votre mot de passe"
-                  required
-                />
-              </div>
-              {parentInfo.password !== parentInfo.confirmPassword && parentInfo.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">Les mots de passe ne correspondent pas</p>
-              )}
-            </div>
+                <div>
+                  <label className="block text-gray-700 mb-2">Confirmer le mot de passe *</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={parentInfo.confirmPassword}
+                      onChange={handleParentChange}
+                      className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Retapez votre mot de passe"
+                      required
+                    />
+                  </div>
+                  {parentInfo.password !== parentInfo.confirmPassword && parentInfo.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-1">Les mots de passe ne correspondent pas</p>
+                  )}
+                </div>
+              </>
+            )}
 
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-blue-800">
@@ -638,7 +794,7 @@ export default function RegisterForm() {
 
         {/* Boutons de navigation */}
         <div className="flex justify-between mt-8 pt-4 border-t">
-          {step > 1 && (
+          {step > (isParentLoggedIn ? 2 : 1) && (
             <button
               type="button"
               onClick={prevStep}
@@ -648,7 +804,7 @@ export default function RegisterForm() {
               Retour
             </button>
           )}
-          {step < 4 && (
+          {((!isParentLoggedIn && step < 4) || (isParentLoggedIn && step < 4)) && (
             <button
               type="button"
               onClick={nextStep}
@@ -663,7 +819,7 @@ export default function RegisterForm() {
               <ArrowRight className="w-4 h-4" />
             </button>
           )}
-          {step === 4 && (
+          {((!isParentLoggedIn && step === 4) || (isParentLoggedIn && step === 4)) && (
             <button
               type="submit"
               disabled={!isStepValid() || loading}
@@ -673,7 +829,7 @@ export default function RegisterForm() {
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
             >
-              {loading ? "Envoi en cours..." : "Envoyer ma pré-inscription"}
+              {loading ? (uploadProgress.total > 0 ? `Upload... ${uploadProgress.current}/${uploadProgress.total}` : "Envoi en cours...") : "Envoyer ma pré-inscription"}
               <GraduationCap className="w-4 h-4" />
             </button>
           )}

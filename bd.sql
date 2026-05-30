@@ -401,6 +401,62 @@ CREATE TABLE IF NOT EXISTS sessions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Table des pré-inscriptions
+CREATE TABLE IF NOT EXISTS preinscriptions (
+    id SERIAL PRIMARY KEY,
+    parent_id INTEGER REFERENCES parents(id) ON DELETE CASCADE,
+    enfant_nom VARCHAR(100) NOT NULL,
+    enfant_prenom VARCHAR(100) NOT NULL,
+    date_naissance DATE NOT NULL,
+    lieu_naissance VARCHAR(100),
+    sexe VARCHAR(10) NOT NULL,
+    niveau VARCHAR(50) NOT NULL,
+    classe VARCHAR(50) NOT NULL,
+    acte_naissance_url TEXT,
+    photo_url TEXT,
+    bulletin_url TEXT,
+    statut VARCHAR(50) DEFAULT 'en_attente',
+    numero_dossier VARCHAR(50) UNIQUE,
+    date_preinscription TIMESTAMP DEFAULT NOW(),
+    observations TEXT,
+    traite_par INTEGER,
+    date_traitement TIMESTAMP,
+    CONSTRAINT check_statut CHECK (statut IN ('en_attente', 'valide', 'rejete'))
+);
+
+-- Table des inscriptions (élèves définitivement inscrits)
+CREATE TABLE IF NOT EXISTS inscriptions (
+    id SERIAL PRIMARY KEY,
+    preinscription_id INTEGER REFERENCES preinscriptions(id) ON DELETE CASCADE,
+    eleve_id INTEGER REFERENCES eleves(id) ON DELETE CASCADE,
+    parent_id INTEGER REFERENCES parents(id) ON DELETE CASCADE,
+    numero_matricule VARCHAR(50) UNIQUE NOT NULL,
+    date_inscription DATE DEFAULT CURRENT_DATE,
+    annee_scolaire_id INTEGER REFERENCES annees_scolaires(id),
+    statut VARCHAR(50) DEFAULT 'active' CHECK (statut IN ('active', 'terminee', 'suspendue')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Table des réinscriptions
+CREATE TABLE IF NOT EXISTS reinscriptions (
+    id SERIAL PRIMARY KEY,
+    inscription_id INTEGER REFERENCES inscriptions(id) ON DELETE CASCADE,
+    eleve_id INTEGER REFERENCES eleves(id) ON DELETE CASCADE,
+    parent_id INTEGER REFERENCES parents(id) ON DELETE CASCADE,
+    annee_scolaire_id INTEGER REFERENCES annees_scolaires(id),
+    classe_id INTEGER REFERENCES classes(id),
+    montant_frais INTEGER DEFAULT 500000,
+    frais_statut VARCHAR(50) DEFAULT 'non_paye' CHECK (frais_statut IN ('non_paye', 'paye')),
+    frais_mode_paiement VARCHAR(50),
+    frais_reference VARCHAR(100),
+    frais_date_paiement TIMESTAMP,
+    statut VARCHAR(50) DEFAULT 'en_attente' CHECK (statut IN ('en_attente', 'valide', 'rejete')),
+    date_reinscription TIMESTAMP DEFAULT NOW(),
+    observations TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
 -- ============================================
 -- INDEX
 -- ============================================
@@ -416,7 +472,15 @@ CREATE INDEX IF NOT EXISTS idx_notes_eleve ON notes(eleve_id);
 CREATE INDEX IF NOT EXISTS idx_enseignements_classe ON enseignements(classe_id);
 CREATE INDEX IF NOT EXISTS idx_enseignements_enseignant ON enseignements(enseignant_id);
 CREATE INDEX IF NOT EXISTS idx_messages_destinataire ON messages(destinataire_id, est_lu);
-
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_parent_id ON public.preinscriptions(parent_id);
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_statut ON public.preinscriptions(statut);
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_numero_dossier ON public.preinscriptions(numero_dossier);
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_date ON public.preinscriptions(date_preinscription);
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_nom_enfant ON public.preinscriptions(enfant_nom, enfant_prenom);
+CREATE INDEX IF NOT EXISTS idx_inscriptions_eleve ON inscriptions(eleve_id);
+CREATE INDEX IF NOT EXISTS idx_inscriptions_parent ON inscriptions(parent_id);
+CREATE INDEX IF NOT EXISTS idx_reinscriptions_eleve ON reinscriptions(eleve_id);
+CREATE INDEX IF NOT EXISTS idx_reinscriptions_annee ON reinscriptions(annee_scolaire_id);
 -- ============================================
 -- INITIALISATION ANNÉE SCOLAIRE
 -- ============================================
