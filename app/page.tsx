@@ -181,25 +181,21 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+      
       {/* ========== STATISTIQUES ANIMÉES ========== */}
       <section className="py-10 bg-gradient-to-r from-blue-800 to-blue-800">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <h2 className="text-3xl text-white font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl text-white font-bold mb-4">
               École Internationale des Enfants Futur
             </h2>
-<<<<<<< HEAD
             <p className="text-gray-100 max-w-2xl mx-auto">
-=======
-            <p className="text-gray-400 max-w-2xl mx-auto">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
               Une éducation d'excellence pour former les leaders de demain.
             </p>
           </div> 
           <br />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-<<<<<<< HEAD
               <div className="text-4xl font-bold mb-2 text-gray-200">{stats.students}+</div>
               <div className="text-blue-100">Élèves</div>
             </div>
@@ -213,31 +209,17 @@ export default function HomePage() {
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold mb-2 text-gray-200">{stats.success}%</div>
-=======
-              <div className="text-4xl font-bold mb-2 text-gray-400">{stats.students}+</div>
-              <div className="text-blue-100">Élèves</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold mb-2 text-gray-400">{stats.teachers}+</div>
-              <div className="text-blue-100">Enseignants</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold mb-2 text-gray-400">{stats.classes}</div>
-              <div className="text-blue-100">Classes</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold mb-2 text-gray-400">{stats.success}%</div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
               <div className="text-blue-100">Taux de réussite</div>
             </div>
           </div>
         </div>
       </section>
+      
       {/* ========== PLATEFORME MODULES - 6 SUR UNE LIGNE ========== */}
       <section className="py-10">
         <div className="container mx-auto px-4">
-          {/* Grille responsive : 1 sur mobile, 2 sur tablette, 6 sur desktop */}
-          <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          {/* Grille responsive : 3 sur mobile, 6 sur desktop */}
+          <div className="grid grid-cols-3 lg:grid-cols-6 gap-4">
             {modules.map((module, index) => (
               <div
                 key={index}
@@ -252,6 +234,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      
       {/* ========== SECTION MODERNITÉ & INNOVATION ========== */}
       <section className="py-5 bg-white">
         <div className="container mx-auto px-4">
@@ -260,107 +243,49 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Une école tournée vers l'avenir
             </h2>
-<<<<<<< HEAD
-            <div className="w-20 h-1 bg-blue-800 mx-auto mb-6"></div>
-=======
             <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
           </div>
-        {/* Deux colonnes : Texte à gauche + Grille images à droite */}
-        <div className="flex flex-col md:flex-row gap-12 items-start mb-16">
-          {/* Colonne gauche - Texte */}
-          <div className="flex-1">
-            <div className="space-y-8">
-              {/* Préinscriptions & Inscriptions */}
-<<<<<<< HEAD
-              <div className="border-l-4 border-blue-800 pl-6">
-=======
-              <div className="border-l-4 border-blue-600 pl-6">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
-                <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                  Préinscriptions & Inscriptions
-                </h3>
+          
+          {/* Deux colonnes : Texte à gauche + Grille images à droite */}
+          <div className="flex flex-col md:flex-row gap-12 items-start mb-16">
+            {/* Colonne gauche - Texte */}
+            <div className="flex-1">
+              <div className="space-y-8">
+                {/* Préinscriptions & Inscriptions */}
+                <div className="border-l-4 border-blue-600 pl-6">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                    Préinscriptions & Inscriptions
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed mb-4">
+                    Les préinscriptions et inscriptions sont ouvertes pour l'année scolaire
+                    en cours. Notre établissement accueille les élèves dans un cadre moderne,
+                    sécurisé et propice à la réussite académique.
+                  </p>
 
-<<<<<<< HEAD
-                <p className="text-gray-800 leading-relaxed mb-4">
-=======
-                <p className="text-gray-600 leading-relaxed mb-4">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
-                  Les préinscriptions et inscriptions sont ouvertes pour l’année scolaire
-                  en cours. Notre établissement accueille les élèves dans un cadre moderne,
-                  sécurisé et propice à la réussite académique.
-                </p>
-
-                <div className="space-y-3 text-gray-700">
-                  <div className="flex items-start gap-3">
-<<<<<<< HEAD
-                    <div className="w-2 h-2 bg-blue-800 rounded-full mt-2"></div>
-=======
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
-                    <p>
-                      Procédure d’inscription simple, rapide et accessible en ligne.
-                    </p>
+                  <div className="space-y-3 text-gray-700">
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                      <p>Procédure d'inscription simple, rapide et accessible en ligne.</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                      <p>Places disponibles de la maternelle au lycée selon les capacités d'accueil.</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                      <p>Possibilité de préinscription en ligne avec suivi administratif sécurisé.</p>
+                    </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-<<<<<<< HEAD
-                    <div className="w-2 h-2 bg-blue-800 rounded-full mt-2"></div>
-=======
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
-                    <p>
-                      Places disponibles de la maternelle au lycée selon les capacités d’accueil.
-                    </p>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-<<<<<<< HEAD
-                    <div className="w-2 h-2 bg-blue-800 rounded-full mt-2"></div>
-=======
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
-                    <p>
-                      Possibilité de préinscription en ligne avec suivi administratif sécurisé.
-                    </p>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-<<<<<<< HEAD
-                    <div className="w-2 h-2 bg-blue-800 rounded-full mt-2"></div>
-=======
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
-                    <p>
-                      Possibilité de préinscription en ligne avec suivi administratif sécurisé.
-                    </p>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-<<<<<<< HEAD
-                    <div className="w-2 h-2 bg-blue-800 rounded-full mt-2"></div>
-=======
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
-                    <p>
-                      Possibilité de préinscription en ligne avec suivi administratif sécurisé.
-                    </p>
-                  </div>
+                  <Link href="/register">
+                    <button className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                      Faire une préinscription
+                    </button>
+                  </Link>
                 </div>
-
-               <Link href="/register">
-<<<<<<< HEAD
-                  <button className="mt-6 bg-blue-800 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
-=======
-                  <button className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
-                    Faire une préinscription
-                  </button>
-                </Link>
               </div>
-
             </div>
-          </div>
+            
             {/* Colonne droite - Images 2 par ligne avec effet de superposition */}
             <div className="flex-1">
               <div className="grid grid-cols-2 gap-4 gap-y-6">
@@ -430,8 +355,9 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          
           {/* ========== FEATURES ========== */}
-          <section className=" bg-gray-50">
+          <section className="bg-gray-50">
             <div className="container mx-auto px-4">
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -444,31 +370,20 @@ export default function HomePage() {
                     key={index}
                     className="bg-white rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition group"
                   >
-<<<<<<< HEAD
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-800 transition">
-                      <feature.icon className="w-8 h-8 text-blue-800 group-hover:text-white transition" />
-                    </div>
-                    <h3 className="text-xl text-black font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-gray-500 ">{feature.description}</p>
-=======
                     <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600 transition">
                       <feature.icon className="w-8 h-8 text-blue-600 group-hover:text-white transition" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-800">{feature.title}</h3>
                     <p className="text-gray-600">{feature.description}</p>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                   </div>
                 ))}
               </div>
             </div>
           </section>
           <br />
+          
           {/* Bannière de pub */}
-<<<<<<< HEAD
-          <div className="relative bg-gradient-to-r from-blue-800 to-indigo-700 rounded-2xl overflow-hidden shadow-xl">
-=======
           <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl overflow-hidden shadow-xl">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
             <div className="absolute inset-0 bg-black/20"></div>
             <div className="relative z-10 grid md:grid-cols-2 gap-8 p-8 md:p-12">
               <div className="text-white">
@@ -524,53 +439,33 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+          
           {/* Témoignages */}
           <div className="mt-10">
             <div className="text-center mb-10">
               <h3 className="text-2xl font-bold text-gray-800 mb-2">Ils nous font confiance</h3>
-<<<<<<< HEAD
-              <div className="w-16 h-1 bg-blue-800 mx-auto"></div>
-=======
               <div className="w-16 h-1 bg-blue-600 mx-auto"></div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition">
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}
                 </div>
-<<<<<<< HEAD
-                <p className="text-gray-800 italic mb-4">"Une école moderne avec des infrastructures de qualité. Ma fille adore ses cours de robotique !"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div>
-                  <div><p className="font-semibold text-black text-sm">Mme Diallo</p><p className="text-xs text-gray-500">Parent d'élève</p></div>
-=======
                 <p className="text-gray-600 italic mb-4">"Une école moderne avec des infrastructures de qualité. Ma fille adore ses cours de robotique !"</p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div>
-                  <div><p className="font-semibold text-sm">Mme Diallo</p><p className="text-xs text-gray-500">Parent d'élève</p></div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
+                  <div><p className="font-semibold text-gray-800 text-sm">Mme Diallo</p><p className="text-xs text-gray-500">Parent d'élève</p></div>
                 </div>
               </div>
               <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition">
                 <div className="flex items-center gap-1 mb-4">{[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}</div>
-<<<<<<< HEAD
-                <p className="text-gray-800 italic mb-4">"La plateforme en ligne est un vrai plus. Je peux suivre les notes et les devoirs de mon fils partout."</p>
-                <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👨</div><div><p className="font-semibold text-black text-sm">M. Camara</p><p className="text-xs text-gray-500">Parent d'élève</p></div></div>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition">
-                <div className="flex items-center gap-1 mb-4">{[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}</div>
-                <p className="text-gray-800 italic mb-4">"Les enseignants sont compétents et l'ambiance est excellente. Je recommande vivement."</p>
-                <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div><div><p className="font-semibold text-black text-sm">Mme Barry</p><p className="text-xs text-gray-500">Parent d'élève</p></div></div>
-=======
                 <p className="text-gray-600 italic mb-4">"La plateforme en ligne est un vrai plus. Je peux suivre les notes et les devoirs de mon fils partout."</p>
-                <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👨</div><div><p className="font-semibold text-sm">M. Camara</p><p className="text-xs text-gray-500">Parent d'élève</p></div></div>
+                <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👨</div><div><p className="font-semibold text-gray-800 text-sm">M. Camara</p><p className="text-xs text-gray-500">Parent d'élève</p></div></div>
               </div>
               <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition">
                 <div className="flex items-center gap-1 mb-4">{[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}</div>
                 <p className="text-gray-600 italic mb-4">"Les enseignants sont compétents et l'ambiance est excellente. Je recommande vivement."</p>
-                <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div><div><p className="font-semibold text-sm">Mme Barry</p><p className="text-xs text-gray-500">Parent d'élève</p></div></div>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
+                <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div><div><p className="font-semibold text-gray-800 text-sm">Mme Barry</p><p className="text-xs text-gray-500">Parent d'élève</p></div></div>
               </div>
             </div>
           </div>
@@ -578,11 +473,7 @@ export default function HomePage() {
       </section>
       
       {/* ========== APPEL À L'ACTION ========== */}
-<<<<<<< HEAD
-      <section className="py-10 bg-gradient-to-r from-blue-800 to-blue-800">
-=======
       <section className="py-10 bg-gradient-to-r from-blue-600 to-blue-800">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
             Prêt à rejoindre notre école ?

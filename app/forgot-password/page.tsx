@@ -40,8 +40,9 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-        <br />
-        <Header />
+      <br />
+      <Header />
+      
       {/* Image de fond */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -142,17 +143,10 @@ export default function ForgotPasswordPage() {
 
               {/* En-tête */}
               <div className="text-center mb-8">
-<<<<<<< HEAD
-                <h1 className="text-2xl font-bold text-black">
-                  Mot de passe oublié ?
-                </h1>
-                <p className="text-black mt-2">
-=======
                 <h1 className="text-2xl font-bold text-gray-800">
                   Mot de passe oublié ?
                 </h1>
                 <p className="text-gray-500 mt-2">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                   Saisissez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
                 </p>
               </div>
@@ -168,28 +162,16 @@ export default function ForgotPasswordPage() {
                   )}
 
                   <div>
-<<<<<<< HEAD
-                    <label className="block text-black mb-2 font-medium">
-                      Adresse email
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />
-=======
                     <label className="block text-gray-700 mb-2 font-medium">
                       Adresse email
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-<<<<<<< HEAD
-                        className="w-full pl-10 pr-4 py-3 text-black border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-=======
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-800"
                         placeholder="votre@email.com"
                         required
                         disabled={loading}

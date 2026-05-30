@@ -52,7 +52,7 @@ export default function LoginPage() {
           <div className="flex flex-col lg:flex-row rounded-2xl overflow-hidden shadow-2xl">
             
             {/* Partie gauche - Texte de pub avec transparence */}
-            <div className="lg:w-1/2 bg-black/50 backdrop-blur-s p-8 lg:p-12 flex flex-col justify-center text-white">
+            <div className="lg:w-1/2 bg-black/50 backdrop-blur-sm p-8 lg:p-12 flex flex-col justify-center text-white">
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
@@ -129,17 +129,10 @@ export default function LoginPage() {
 
               {/* Title */}
               <div className="text-center mb-8">
-<<<<<<< HEAD
-                <h1 className="text-2xl font-bold text-black">
-                  Connexion
-                </h1>
-                <p className="text-black mt-2">
-=======
                 <h1 className="text-2xl font-bold text-gray-800">
                   Connexion
                 </h1>
                 <p className="text-gray-500 mt-2">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                   Accédez à votre espace personnel
                 </p>
               </div>
@@ -155,28 +148,16 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Email */}
                 <div>
-<<<<<<< HEAD
-                  <label className="block text-black mb-2 font-medium">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />
-=======
                   <label className="block text-gray-700 mb-2 font-medium">
                     Email
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-<<<<<<< HEAD
-                      className="w-full pl-10 pr-4 py-3 text-black border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-=======
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-800"
                       placeholder="votre@email.com"
                       required
                       disabled={loading}
@@ -186,28 +167,16 @@ export default function LoginPage() {
 
                 {/* Password */}
                 <div>
-<<<<<<< HEAD
-                  <label className="block text-black mb-2 font-medium">
-                    Mot de passe
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />
-=======
                   <label className="block text-gray-700 mb-2 font-medium">
                     Mot de passe
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                     <input
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-<<<<<<< HEAD
-                      className="w-full pl-10 pr-12 py-3 text-black border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-=======
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-800"
                       placeholder="••••••••"
                       required
                       disabled={loading}
@@ -218,15 +187,9 @@ export default function LoginPage() {
                       className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
                       {showPassword ? (
-<<<<<<< HEAD
-                        <EyeOff className="w-5 h-5 text-black hover:text-black" />
-                      ) : (
-                        <Eye className="w-5 h-5 text-black hover:text-black" />
-=======
                         <EyeOff className="w-5 h-5 text-gray-400 hover:text-gray-600" />
                       ) : (
                         <Eye className="w-5 h-5 text-gray-400 hover:text-gray-600" />
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                       )}
                     </button>
                   </div>
@@ -264,11 +227,7 @@ export default function LoginPage() {
 
               {/* Register link */}
               <div className="mt-6 text-center">
-<<<<<<< HEAD
-                <p className="text-black">
-=======
                 <p className="text-gray-600">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                   Pas encore de compte ?{" "}
                   <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
                     Créer un compte
