@@ -45,7 +45,7 @@ export default function BibliothequePage() {
         <div className="max-w-3xl mx-auto mb-8">
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />
               <input
                 type="text"
                 placeholder="Rechercher un livre par titre ou auteur..."
@@ -57,7 +57,7 @@ export default function BibliothequePage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-3 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-3 text-black border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Toutes les catégories</option>
               <option value="scolaire">Scolaire</option>
@@ -72,22 +72,22 @@ export default function BibliothequePage() {
           <div className="bg-white rounded-xl p-4 text-center shadow-sm">
             <BookOpen className="w-8 h-8 text-blue-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-gray-800">1,250</p>
-            <p className="text-sm text-gray-500">Livres disponibles</p>
+            <p className="text-sm text-gray-900">Livres disponibles</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-sm">
             <User className="w-8 h-8 text-green-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-gray-800">45</p>
-            <p className="text-sm text-gray-500">Emprunts en cours</p>
+            <p className="text-sm text-gray-900">Emprunts en cours</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-sm">
             <Calendar className="w-8 h-8 text-orange-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-gray-800">12</p>
-            <p className="text-sm text-gray-500">Livres en retard</p>
+            <p className="text-sm text-gray-900">Livres en retard</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-sm">
             <Download className="w-8 h-8 text-purple-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-gray-800">89</p>
-            <p className="text-sm text-gray-500">Livres numériques</p>
+            <p className="text-sm text-gray-900">Livres numériques</p>
           </div>
         </div>
 
@@ -100,11 +100,11 @@ export default function BibliothequePage() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Titre</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Auteur</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catégorie</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Titre</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Auteur</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Catégorie</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Statut</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">

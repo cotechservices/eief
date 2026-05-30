@@ -106,7 +106,7 @@ const menuItems = {
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const pathname = usePathname(); // AJOUTER CETTE LIGNE
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userRole, setUserRole] = useState<string>("");
 
@@ -175,8 +175,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
             )}
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 rounded-lg hover:bg-gray-100">
-              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 rounded-lg hover:bg-gray-900">
+              {sidebarOpen ? <X className="w-5 h-5 text-black" /> : <Menu className="w-5 h-5 text-black" />}
             </button>
           </div>
 

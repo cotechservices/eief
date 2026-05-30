@@ -183,22 +183,22 @@ export default function ProgrammesPage() {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Encadrement personnalisé</h3>
-              <p className="text-gray-600">Des classes à effectif réduit pour un suivi individualisé de chaque élève</p>
+              <h3 className="text-xl font-semibold mb-2 text-black">Encadrement personnalisé</h3>
+              <p className="text-gray-900">Des classes à effectif réduit pour un suivi individualisé de chaque élève</p>
             </div>
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Brain className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Pédagogie active</h3>
-              <p className="text-gray-600">Des méthodes innovantes qui placent l'élève au cœur de son apprentissage</p>
+              <h3 className="text-xl font-semibold mb-2 text-black">Pédagogie active</h3>
+              <p className="text-gray-900">Des méthodes innovantes qui placent l'élève au cœur de son apprentissage</p>
             </div>
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Formation complète</h3>
-              <p className="text-gray-600">Un équilibre entre matières académiques et développement personnel</p>
+              <h3 className="text-xl font-semibold mb-2 text-black">Formation complète</h3>
+              <p className="text-gray-900">Un équilibre entre matières académiques et développement personnel</p>
             </div>
           </div>
         </div>
@@ -220,8 +220,8 @@ export default function ProgrammesPage() {
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600 transition">
                   <activite.icon className="w-8 h-8 text-blue-600 group-hover:text-white transition" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{activite.name}</h3>
-                <p className="text-gray-600">{activite.description}</p>
+                <h3 className="text-xl font-semibold mb-2 text-black">{activite.name}</h3>
+                <p className="text-gray-900">{activite.description}</p>
               </div>
             ))}
           </div>
@@ -234,26 +234,26 @@ export default function ProgrammesPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Calendrier scolaire</h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-900 max-w-2xl mx-auto">
               L'année scolaire en Guinée s'étend d'octobre à juin
             </p>
           </div>
           <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
             <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200">
               <div className="p-6 text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-2">Octobre</div>
-                <div className="text-gray-600">Rentrée scolaire</div>
-                <div className="text-sm text-gray-500">Début des cours</div>
+                <div className="text-2xl font-bold text-blue-800 mb-2">Octobre</div>
+                <div className="text-black">Rentrée scolaire</div>
+                <div className="text-sm text-gray-900">Début des cours</div>
               </div>
               <div className="p-6 text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-2">Décembre-Juin</div>
-                <div className="text-gray-600">Période des examens</div>
-                <div className="text-sm text-gray-500">BEPC, BAC</div>
+                <div className="text-2xl font-bold text-blue-800 mb-2">Décembre-Juin</div>
+                <div className="text-black">Période des examens</div>
+                <div className="text-sm text-gray-900">BEPC, BAC</div>
               </div>
               <div className="p-6 text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-2">Juin</div>
-                <div className="text-gray-600">Fin de l'année scolaire</div>
-                <div className="text-sm text-gray-500">Délibérations</div>
+                <div className="text-2xl font-bold text-blue-800 mb-2">Juin</div>
+                <div className="text-black">Fin de l'année scolaire</div>
+                <div className="text-sm text-gray-900">Délibérations</div>
               </div>
             </div>
           </div>

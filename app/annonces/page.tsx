@@ -222,7 +222,7 @@ export default function AnnoncesPage() {
       case "alerte": return "border-red-500";
       case "evenement": return "border-green-500";
       case "inscription": return "border-purple-500";
-      default: return "border-gray-500";
+      default: return "border-gray-900";
     }
   };
 
@@ -251,7 +251,7 @@ export default function AnnoncesPage() {
         <div className="flex items-center justify-center h-64 pt-20">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-500">Chargement des actualités...</p>
+            <p className="text-gray-900">Chargement des actualités...</p>
           </div>
         </div>
         <Footer />
@@ -270,7 +270,7 @@ export default function AnnoncesPage() {
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold text-gray-900">Infos</h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 text-black">
               <select
                 value={selectedCategorie}
                 onChange={(e) => setSelectedCategorie(e.target.value)}
@@ -297,12 +297,12 @@ export default function AnnoncesPage() {
                 <div className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-black font-bold">
                         {annonce.auteur.charAt(0)}
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">{annonce.auteur}</h3>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-2 text-xs text-gray-900">
                           <span>{annonce.auteurRole}</span>
                           <span>•</span>
                           <span>{getTimeAgo(annonce.datePublication)}</span>
@@ -311,7 +311,7 @@ export default function AnnoncesPage() {
                         </div>
                       </div>
                     </div>
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <button className="text-gray-900 hover:text-gray-800">
                       <MoreHorizontal className="w-5 h-5" />
                     </button>
                   </div>
@@ -319,7 +319,7 @@ export default function AnnoncesPage() {
                   {/* Contenu */}
                   <div className="mt-3">
                     <h2 className="text-lg font-bold text-gray-900 mb-2">{annonce.titre}</h2>
-                    <p className="text-gray-700 whitespace-pre-line">{annonce.contenu}</p>
+                    <p className="text-gray-900 whitespace-pre-line">{annonce.contenu}</p>
                   </div>
 
                   {/* Image avec fill */}
@@ -337,7 +337,7 @@ export default function AnnoncesPage() {
                   )}
 
                   {/* Statistiques */}
-                  <div className="flex items-center justify-between mt-3 pt-2 text-sm text-gray-500 border-t">
+                  <div className="flex items-center justify-between mt-3 pt-2 text-sm text-gray-900 border-t">
                     <div className="flex items-center gap-1">
                       <div className="flex -space-x-1">
                         <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-[10px]">👍</div>
@@ -346,7 +346,7 @@ export default function AnnoncesPage() {
                     </div>
                     <div className="flex gap-3">
                       <span>{annonce.comments} commentaires</span>
-                      <span>{annonce.shares} partages</span>
+                      {/* <span>{annonce.shares} partages</span> */} 
                     </div>
                   </div>
 
@@ -357,7 +357,7 @@ export default function AnnoncesPage() {
                       className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition ${
                         annonce.userLiked 
                           ? "text-blue-600 bg-blue-50" 
-                          : "text-gray-600 hover:bg-gray-100"
+                          : "text-gray-900 hover:bg-gray-700"
                       }`}
                     >
                       <ThumbsUp className="w-5 h-5" />
@@ -365,15 +365,16 @@ export default function AnnoncesPage() {
                     </button>
                     <button 
                       onClick={() => handleOpenComments(annonce)}
-                      className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition"
+                      className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-gray-900 hover:bg-gray-100 transition"
                     >
                       <MessageCircle className="w-5 h-5" />
                       <span className="text-sm font-medium">Commenter</span>
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition">
-  <ArrowUpRight  className="w-5 h-5" />
-  <span className="text-sm font-medium">Partager</span>
-</button>
+                     {/* 
+                    <button className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-gray-900 hover:bg-gray-100 transition">
+                      <ArrowUpRight  className="w-5 h-5" />
+                      <span className="text-sm font-medium">Partager</span>
+                    </button>*/}
                   </div>
                 </div>
               </div>
@@ -389,7 +390,7 @@ export default function AnnoncesPage() {
             {/* En-tête modal */}
             <div className="p-4 border-b flex justify-between items-center">
               <h2 className="text-lg font-bold">Commentaires ({selectedAnnonce.comments})</h2>
-              <button onClick={() => setShowCommentModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowCommentModal(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -404,8 +405,8 @@ export default function AnnoncesPage() {
                   </div>
                   <div className="flex-1">
                     <div className="bg-gray-100 rounded-lg p-3">
-                      <h4 className="font-semibold text-sm">{selectedAnnonce.auteur}</h4>
-                      <p className="text-sm text-gray-700 mt-1">{selectedAnnonce.contenu.substring(0, 150)}...</p>
+                      <h4 className="font-semibold text-sm text-black">{selectedAnnonce.auteur}</h4>
+                      <p className="text-sm text-gray-900 mt-1">{selectedAnnonce.contenu.substring(0, 150)}...</p>
                     </div>
                   </div>
                 </div>
@@ -419,10 +420,10 @@ export default function AnnoncesPage() {
                   </div>
                   <div className="flex-1">
                     <div className="bg-gray-100 rounded-lg p-3">
-                      <h4 className="font-semibold text-sm">{comment.auteur}</h4>
-                      <p className="text-sm text-gray-700">{comment.contenu}</p>
+                      <h4 className="font-semibold text-sm text-black">{comment.auteur}</h4>
+                      <p className="text-sm text-gray-900">{comment.contenu}</p>
                     </div>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 ml-2">
+                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-900 ml-2">
                       <button className="hover:text-blue-600">J'aime</button>
                       <button className="hover:text-blue-600">Répondre</button>
                       <span>{getTimeAgo(comment.date)}</span>
@@ -432,7 +433,7 @@ export default function AnnoncesPage() {
               ))}
 
               {selectedAnnonce.commentaires.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-900">
                   <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>Soyez le premier à commenter</p>
                 </div>
@@ -441,7 +442,7 @@ export default function AnnoncesPage() {
 
             {/* Zone de saisie commentaire */}
             <div className="p-4 border-t">
-              <div className="flex gap-3">
+              <div className="flex gap-3 text-black">
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                   V
                 </div>
@@ -452,7 +453,7 @@ export default function AnnoncesPage() {
                     onChange={(e) => setNewComment(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
                     placeholder="Écrivez un commentaire..."
-                    className="w-full px-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 text-black bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <button 
                     onClick={handleAddComment}

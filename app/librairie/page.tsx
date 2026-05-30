@@ -184,19 +184,19 @@ export default function LibrairiePage() {
         {/* Barre de recherche et filtre */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />
             <input
               type="text"
               placeholder="Rechercher un produit..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="w-full pl-10 pr-4 py-3 text-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             />
           </div>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-3 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
+            className="px-4 py-3 border text-black rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
           >
             {categories.map(cat => (
               <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -213,7 +213,7 @@ export default function LibrairiePage() {
                 <span className="font-medium">{cart.length} article(s) dans le panier</span>
               </div>
               <div className="flex flex-wrap items-center gap-4">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-800">
                   {cart.map((id, idx) => {
                     const produit = produits.find(p => p.id === id);
                     return produit && (
@@ -289,7 +289,7 @@ export default function LibrairiePage() {
                     <span className="text-xl font-bold text-blue-600">
                       {produit.prix.toLocaleString()} GNF
                     </span>
-                    <span className="text-xs text-gray-400">Stock: {produit.stock}</span>
+                    <span className="text-xs text-gray-900">Stock: {produit.stock}</span>
                   </div>
                   <button
                     onClick={() => addToCart(produit.id)}
