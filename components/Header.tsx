@@ -151,7 +151,6 @@ export default function Header() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 rounded-lg hover:bg-gray-100"
           >
-<<<<<<< HEAD
             {mobileMenuOpen ? <X className="w-6 h-6 text-black" /> : <Menu className="w-6 h-6 text-black" />}
           </button>
         </div>
@@ -159,28 +158,14 @@ export default function Header() {
         {/* Mobile Menu - BACKGROUND NOIR */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 bg-black rounded-lg">
-=======
-            {mobileMenuOpen ? <X className="w-6 h-6 text-black" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4">
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
             {menuItems.map((item) => {
               const active = isActive(item.href);
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-<<<<<<< HEAD
                   className={`relative flex items-center gap-2 py-2 px-2 transition ${
                     active ? "text-blue-400 font-semibold" : "text-white hover:text-blue-400"
-=======
-                  className={`relative flex items-center gap-2 py-2 transition ${
-                    active ? "text-blue-600 font-semibold" : "text-black hover:text-blue-600"
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -195,22 +180,13 @@ export default function Header() {
             })}
             
             {/* Dropdown mobile */}
-<<<<<<< HEAD
             <div className="mt-2 border-t border-gray-600 pt-2">
               <p className="text-gray-300 text-sm px-2 py-1">Ressources</p>
-=======
-            <div className="mt-2 border-t border-gray-100 pt-2">
-              <p className="text-black text-sm px-2 py-1">Ressources</p>
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
               {dropdownItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-<<<<<<< HEAD
                   className="block py-2 pl-4 text-white hover:text-blue-400 transition"
-=======
-                  className="block py-2 pl-4 text-black hover:text-blue-600 transition"
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
@@ -220,11 +196,7 @@ export default function Header() {
             
             <Link
               href="/login"
-<<<<<<< HEAD
               className="block mt-2 bg-blue-600 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-700 transition mx-2"
-=======
-              className="block mt-2 bg-blue-600 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-700 transition"
->>>>>>> 7712259007b165b3195b75c2e91ddf9095ff6fd5
               onClick={() => setMobileMenuOpen(false)}
             >
               Connexion
