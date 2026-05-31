@@ -2,6 +2,7 @@
 import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import Spinner from "@/components/ui/spinner";
 import { authOptions } from "@/lib/auth";
 
 async function DashboardRedirect() {

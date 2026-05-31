@@ -130,7 +130,7 @@ export default function AdminDashboard() {
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-black"><DollarSign className="w-5 h-5" /><p className="text-sm">Paiements année</p></div>
-          <p className="text-lg font-bold text-green-600">{(stats.totalPaiementsAnnee / 1000000).toFixed(1)}M GNF</p>
+          <p className="text-lg font-bold text-green-700">{(stats.totalPaiementsAnnee / 1000000).toFixed(1)}M GNF</p>
         </div>
       </div>
     </div>
