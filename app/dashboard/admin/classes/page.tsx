@@ -203,8 +203,8 @@ export default function GestionClassesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestion des classes</h1>
-          <p className="text-gray-500">Gérez toutes les classes de l'école</p>
+          <h1 className="text-2xl font-bold text-black">Gestion des classes</h1>
+          <p className="text-gray-700">Gérez toutes les classes de l'école</p>
         </div>
         <button onClick={() => { setEditingClasse(null); setShowForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
           <Plus className="w-4 h-4" /> Nouvelle classe
@@ -215,25 +215,25 @@ export default function GestionClassesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-500 text-sm">Total classes</p><p className="text-2xl font-bold text-blue-600">{totalClasses}</p></div>
+            <div><p className="text-gray-800 text-sm">Total classes</p><p className="text-2xl font-bold text-blue-600">{totalClasses}</p></div>
             <School className="w-8 h-8 text-blue-200" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-500 text-sm">Total élèves</p><p className="text-2xl font-bold text-green-600">{totalEleves}</p></div>
+            <div><p className="text-gray-800 text-sm">Total élèves</p><p className="text-2xl font-bold text-green-600">{totalEleves}</p></div>
             <Users className="w-8 h-8 text-green-200" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-500 text-sm">Capacité totale</p><p className="text-2xl font-bold text-orange-600">{totalCapacite}</p></div>
+            <div><p className="text-gray-800 text-sm">Capacité totale</p><p className="text-2xl font-bold text-orange-600">{totalCapacite}</p></div>
             <GraduationCap className="w-8 h-8 text-orange-200" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-500 text-sm">Taux remplissage</p><p className="text-2xl font-bold text-purple-600">{tauxRemplissageGlobal}%</p></div>
+            <div><p className="text-gray-800 text-sm">Taux remplissage</p><p className="text-2xl font-bold text-purple-600">{tauxRemplissageGlobal}%</p></div>
             <Users className="w-8 h-8 text-purple-200" />
           </div>
         </div>
@@ -243,12 +243,12 @@ export default function GestionClassesPage() {
       <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="text" placeholder="Rechercher une classe..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 border rounded-lg" />
+            <div className="relative text-black">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
+              <input type="text" placeholder="Rechercher une classe..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 border rounded-lg text-black" />
             </div>
           </div>
-          <select value={selectedNiveau} onChange={(e) => setSelectedNiveau(e.target.value)} className="px-3 py-2 border rounded-lg">
+          <select value={selectedNiveau} onChange={(e) => setSelectedNiveau(e.target.value)} className="px-3 py-2 border rounded-lg text-black">
             <option value="all">Tous les niveaux</option>
             {niveaux.filter(n => n !== "all").map(n => <option key={n} value={n}>{n}</option>)}
           </select>
@@ -261,13 +261,13 @@ export default function GestionClassesPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Classe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Niveau</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Effectif</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taux</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frais</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Classe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Niveau</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Effectif</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Taux</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Frais</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -278,27 +278,27 @@ export default function GestionClassesPage() {
                   <tr key={classe.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <GraduationCap className="w-5 h-5 text-blue-500" />
-                        <span className="font-medium">{classe.nom}</span>
+                        <GraduationCap className="w-5 h-5  text-blue-500" />
+                        <span className="font-medium text-black">{classe.nom}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">{classe.niveau}</td>
-                    <td className="px-6 py-4">{classe.effectif || 0}/{classe.capacite || 0}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-black">{classe.niveau}</td>
+                    <td className="px-6 py-4 text-black">{classe.effectif || 0}/{classe.capacite || 0}</td>
+                    <td className="px-6 py-4 text-black">
                       <div className="flex items-center gap-2">
-                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div className="w-20 bg-gray-200 rounded-full h-2 text-black">
                           <div 
                             className={`${tauxRemplissage.color} h-2 rounded-full`}
                             style={{ width: `${taux}%` }}
                           ></div>
                         </div>
-                        <span className="text-xs text-gray-500">{taux}%</span>
+                        <span className="text-xs text-black">{taux}%</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
                         <DollarSign className="w-4 h-4 text-green-600" />
-                        <span className="font-mono text-sm font-bold">{classe.frais_inscription?.toLocaleString()} GNF</span>
+                        <span className="font-mono text-sm font-bold text-black">{classe.frais_inscription?.toLocaleString()} GNF</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">{getStatutBadge("active")}</td>
@@ -333,7 +333,7 @@ export default function GestionClassesPage() {
 
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t flex justify-between items-center">
-            <p className="text-sm text-gray-500">{filteredClasses.length} classes</p>
+            <p className="text-sm text-gray-900">{filteredClasses.length} classes</p>
             <div className="flex gap-2">
               <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1} className="p-2 border rounded-lg">
                 <ChevronLeft className="w-4 h-4" />
@@ -355,7 +355,7 @@ export default function GestionClassesPage() {
               <div className="flex justify-between">
                 <div>
                   <h2 className="text-xl font-bold">Élèves - {selectedClasse.nom}</h2>
-                  <p className="text-gray-500 text-sm">Effectif: {selectedClasseEleves.length}/{selectedClasse.capacite}</p>
+                  <p className="text-gray-900 text-sm">Effectif: {selectedClasseEleves.length}/{selectedClasse.capacite}</p>
                 </div>
                 <button onClick={() => setShowElevesModal(false)} className="text-gray-400">✕</button>
               </div>
@@ -376,7 +376,7 @@ export default function GestionClassesPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold">{eleve.prenom} {eleve.nom}</h3>
-                        <p className="text-sm text-gray-500">Matricule: {eleve.matricule}</p>
+                        <p className="text-sm text-gray-900">Matricule: {eleve.matricule}</p>
                         <p className="text-sm">Parent: {eleve.parentNom || "-"}</p>
                       </div>
                     </div>
@@ -386,7 +386,7 @@ export default function GestionClassesPage() {
               {filteredEleves.length === 0 && (
                 <div className="text-center py-12">
                   <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Aucun élève dans cette classe</p>
+                  <p className="text-gray-900">Aucun élève dans cette classe</p>
                 </div>
               )}
             </div>
@@ -460,7 +460,7 @@ export default function GestionClassesPage() {
                     placeholder="Ex: 350000"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-900 mt-1">
                   Saisissez le montant des frais d'inscription pour cette classe
                 </p>
               </div>
