@@ -35,12 +35,15 @@ export async function GET(
         pu.nom as parent_nom,
         pu.prenom as parent_prenom,
         pu.telephone as parent_telephone,
-        pu.email as parent_email
+        pu.email as parent_email,
+        -- Récupérer la photo depuis preinscriptions (priorité à la photo de l'élève)
+        COALESCE(e.photo_url, pre.photo_url) as photo_url
       FROM eleves e
       JOIN utilisateurs u ON e.utilisateur_id = u.id
       LEFT JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id
       LEFT JOIN parents p ON lpe.parent_id = p.id
       LEFT JOIN utilisateurs pu ON p.utilisateur_id = pu.id
+      LEFT JOIN preinscriptions pre ON pre.enfant_nom = u.nom AND pre.enfant_prenom = u.prenom
       WHERE e.classe_id = $1 AND e.est_inscrit = true
     `, [classeId]);
 
@@ -57,7 +60,8 @@ export async function GET(
       parentNom: `${e.parent_prenom || ''} ${e.parent_nom || ''}`.trim(),
       parentTelephone: e.parent_telephone,
       dateInscription: e.date_inscription,
-      statut: e.statut ? "actif" : "inactif"
+      statut: e.statut ? "actif" : "inactif",
+      photo_url: e.photo_url || null  // Ajout du champ photo_url
     }));
 
     return NextResponse.json(eleves);

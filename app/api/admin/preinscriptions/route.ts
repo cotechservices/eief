@@ -81,6 +81,7 @@ export async function GET(request: NextRequest) {
 }
 
 // PUT - Mettre à jour le statut (avec création d'inscription)
+// app/api/admin/preinscriptions/route.ts - Partie PUT modifiée
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -204,13 +205,39 @@ export async function PUT(request: NextRequest) {
           modePaiementValide = 'especes';
         }
 
-        // 8. Enregistrer le paiement dans la table paiements
+        // 8. INSÉRER LE PAIEMENT DANS LA TABLE paiements
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        
         await query(`
-          INSERT INTO paiements (eleve_id, montant, type_frais, mode_paiement, reference_transaction, statut, date_paiement)
-          VALUES ($1, $2, 'inscription', $3, $4, 'valide', NOW())
-        `, [newEleve.rows[0].id, montantFrais, modePaiementValide, data.frais_reference || null]);
+          INSERT INTO paiements (
+            eleve_id, 
+            montant, 
+            type_frais, 
+            mode_paiement, 
+            reference_transaction, 
+            statut, 
+            date_paiement,
+            mois,
+            annee,
+            saisie_par
+          )
+          VALUES ($1, $2, 'inscription', $3, $4, 'valide', NOW(), $5, $6, $7)
+        `, [
+          newEleve.rows[0].id, 
+          montantFrais, 
+          modePaiementValide, 
+          data.frais_reference || null,
+          currentMonth,
+          currentYear,
+          (session.user as any).id
+        ]);
 
-        console.log(`✅ Élève créé: ${data.enfant_prenom} ${data.enfant_nom} - Matricule: ${matricule} - Classe ID: ${classeId} - Frais: ${montantFrais} GNF - Mode: ${modePaiementValide}`);
+        console.log(`✅ Élève créé: ${data.enfant_prenom} ${data.enfant_nom}`);
+        console.log(`   - Matricule: ${matricule}`);
+        console.log(`   - Classe ID: ${classeId}`);
+        console.log(`   - Frais: ${montantFrais} GNF inséré dans paiements`);
+        console.log(`   - Mode: ${modePaiementValide}`);
 
       } catch (createError) {
         console.error("Erreur lors de la création de l'élève:", createError);
@@ -238,7 +265,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: statut === "valide" ? "✅ Inscription validée et élève créé" : "❌ Pré-inscription rejetée",
+      message: statut === "valide" ? "✅ Inscription validée, élève créé et paiement enregistré" : "❌ Pré-inscription rejetée",
       data: result.rows[0]
     });
   } catch (error) {

@@ -1,48 +1,48 @@
-// app/api/parent/enfants/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+// app/api/parent/enfants/route.ts
+import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
-    const eleveId = parseInt(params.id);
     const userEmail = session.user?.email;
-
-    // Récupérer les détails de l'enfant
+    
+    // Récupérer les enfants du parent connecté avec les frais de la classe
     const result = await query(`
       SELECT 
         e.id,
         e.matricule,
+        e.utilisateur_id as eleve_id,
         u.nom,
         u.prenom,
-        e.date_naissance,
-        e.lieu_naissance,
-        e.sexe,
         c.nom as classe_nom,
-        c.niveau
-      FROM eleves e
+        c.niveau,
+        c.frais_inscription as frais_inscription_classe,
+        COALESCE((
+          SELECT AVG(n.valeur) 
+          FROM notes n 
+          WHERE n.eleve_id = e.id 
+          AND n.type_note = 'composition'
+        ), 0) as moyenne,
+        COALESCE(e.photo_url, pre.photo_url) as photo_url
+      FROM inscriptions i
+      JOIN eleves e ON i.eleve_id = e.id
       JOIN utilisateurs u ON e.utilisateur_id = u.id
-      JOIN classes c ON e.classe_id = c.id
+      LEFT JOIN classes c ON e.classe_id = c.id
+      LEFT JOIN preinscriptions pre ON pre.enfant_nom = u.nom AND pre.enfant_prenom = u.prenom
       JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id
       JOIN parents p ON lpe.parent_id = p.id
       JOIN utilisateurs pu ON p.utilisateur_id = pu.id
-      WHERE e.id = $1 AND pu.email = $2 AND e.est_inscrit = true
-    `, [eleveId, userEmail]);
+      WHERE pu.email = $1 AND i.statut = 'active'
+    `, [userEmail]);
 
-    if (result.rows.length === 0) {
-      return NextResponse.json({ error: "Enfant non trouvé" }, { status: 404 });
-    }
-
-    return NextResponse.json(result.rows[0]);
+    return NextResponse.json(result.rows);
   } catch (error) {
     console.error("Erreur:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

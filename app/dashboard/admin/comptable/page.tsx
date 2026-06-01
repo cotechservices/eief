@@ -128,7 +128,7 @@ export default function ComptableDashboard() {
             <div>
               <p className="text-gray-500 text-sm">Total recettes</p>
               <p className="text-2xl font-bold text-green-600">{stats.totalRecettes.toLocaleString()} GNF</p>
-              <p className="text-sm text-green-500 mt-1">+8% vs mois dernier</p>
+              <p className="text-sm text-green-500 mt-1">+8% vs année dernière</p>
             </div>
             <div className="bg-green-100 p-3 rounded-lg">
               <TrendingUp className="w-6 h-6 text-green-600" />
@@ -141,7 +141,7 @@ export default function ComptableDashboard() {
             <div>
               <p className="text-gray-500 text-sm">Total dépenses</p>
               <p className="text-2xl font-bold text-red-600">{stats.totalDepenses.toLocaleString()} GNF</p>
-              <p className="text-sm text-red-500 mt-1">+5% vs mois dernier</p>
+              <p className="text-sm text-red-500 mt-1">+5% vs année dernière</p>
             </div>
             <div className="bg-red-100 p-3 rounded-lg">
               <TrendingDown className="w-6 h-6 text-red-600" />

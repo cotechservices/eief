@@ -13,16 +13,17 @@ export async function GET() {
 
     const userEmail = session.user?.email;
     
-    // Récupérer les enfants du parent connecté via les inscriptions
     const result = await query(`
       SELECT 
         e.id,
         e.matricule,
-        e.utilisateur_id as eleve_id,
+        e.id as eleve_id,                    -- ← CORRECTION: utilisez e.id au lieu de e.utilisateur_id
         u.nom,
         u.prenom,
         c.nom as classe_nom,
         c.niveau,
+        c.frais_inscription as frais_inscription_classe,
+        COALESCE(e.photo_url, pre.photo_url) as photo_url,
         COALESCE((
           SELECT AVG(n.valeur) 
           FROM notes n 
@@ -33,6 +34,7 @@ export async function GET() {
       JOIN eleves e ON i.eleve_id = e.id
       JOIN utilisateurs u ON e.utilisateur_id = u.id
       LEFT JOIN classes c ON e.classe_id = c.id
+      LEFT JOIN preinscriptions pre ON pre.enfant_nom = u.nom AND pre.enfant_prenom = u.prenom
       JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id
       JOIN parents p ON lpe.parent_id = p.id
       JOIN utilisateurs pu ON p.utilisateur_id = pu.id

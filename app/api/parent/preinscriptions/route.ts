@@ -27,10 +27,12 @@ export async function GET() {
         p.statut,
         p.date_preinscription,
         p.frais_statut,
-        p.photo_url
+        p.photo_url,
+        COALESCE(c.frais_inscription, 500000) as frais_montant
       FROM preinscriptions p
       JOIN parents pa ON p.parent_id = pa.id
       JOIN utilisateurs u ON pa.utilisateur_id = u.id
+      LEFT JOIN classes c ON LOWER(c.nom) = LOWER(p.classe)
       WHERE u.email = $1
       ORDER BY p.date_preinscription DESC
     `, [userEmail]);

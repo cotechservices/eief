@@ -103,7 +103,7 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-black text-sm">{stat.title}</p>
                 <p className="text-2xl font-bold text-black mt-1">{stat.value}</p>
-                <p className="text-green-600 text-sm mt-2">{stat.change} vs mois dernier</p>
+                <p className="text-green-600 text-sm mt-2">{stat.change} vs année dernière</p>
               </div>
               <div className={`${stat.color} p-3 rounded-lg`}>
                 <stat.icon className="w-6 h-6 text-white" />

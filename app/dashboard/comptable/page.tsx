@@ -150,7 +150,7 @@ export default function ComptableDashboard() {
               <p className="text-gray-500 text-sm">Total recettes</p>
               <p className="text-2xl font-bold text-green-600">{stats.totalRecettes.toLocaleString()} GNF</p>
               <p className="text-sm text-green-500 mt-1 flex items-center gap-1">
-                <ArrowUpRight className="w-4 h-4" /> +{stats.evolutionRecettes}% vs mois dernier
+                <ArrowUpRight className="w-4 h-4" /> +{stats.evolutionRecettes}% vs année dernière
               </p>
             </div>
             <div className="bg-green-100 p-3 rounded-lg">
@@ -165,7 +165,7 @@ export default function ComptableDashboard() {
               <p className="text-gray-500 text-sm">Total dépenses</p>
               <p className="text-2xl font-bold text-red-600">{stats.totalDepenses.toLocaleString()} GNF</p>
               <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
-                <ArrowUpRight className="w-4 h-4" /> +{stats.evolutionDepenses}% vs mois dernier
+                <ArrowUpRight className="w-4 h-4" /> +{stats.evolutionDepenses}% vs année dernière
               </p>
             </div>
             <div className="bg-red-100 p-3 rounded-lg">
@@ -180,7 +180,7 @@ export default function ComptableDashboard() {
               <p className="text-gray-500 text-sm">Solde actuel</p>
               <p className="text-2xl font-bold text-blue-600">{stats.solde.toLocaleString()} GNF</p>
               <p className="text-sm text-green-500 mt-1 flex items-center gap-1">
-                <ArrowUpRight className="w-4 h-4" /> +{stats.evolutionSolde}% vs mois dernier
+                <ArrowUpRight className="w-4 h-4" /> +{stats.evolutionSolde}% vs année dernière
               </p>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">

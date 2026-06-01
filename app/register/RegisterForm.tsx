@@ -496,36 +496,37 @@ export default function RegisterForm() {
               </button>
             </div>
             <p className="text-gray-600">Vous pouvez inscrire plusieurs enfants</p>
-
             <div className="flex flex-wrap gap-2 border-b">
               {enfants.map((enfant, idx) => (
-                <button
+                <div
                   key={enfant.id}
-                  type="button"
                   onClick={() => setActiveEnfantIndex(idx)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition cursor-pointer ${
                     activeEnfantIndex === idx
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   <User className="w-4 h-4" />
-                  {enfant.nom || enfant.prenom ? `${enfant.prenom || ""} ${enfant.nom || ""}` : `Enfant ${idx + 1}`}
+                  <span>
+                    {enfant.nom || enfant.prenom ? `${enfant.prenom || ""} ${enfant.nom || ""}` : `Enfant ${idx + 1}`}
+                  </span>
                   {enfants.length > 1 && (
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         removeEnfant(idx);
                       }}
                       className="ml-2 hover:text-red-500"
+                      aria-label="Supprimer l'enfant"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
                   )}
-                </button>
+                </div>
               ))}
             </div>
-
             {enfants.map((enfant, idx) => (
               <div key={enfant.id} className={activeEnfantIndex === idx ? "block" : "hidden"}>
                 <div className="bg-blue-50 p-4 rounded-lg mb-6">
@@ -793,12 +794,12 @@ export default function RegisterForm() {
         )}
 
         {/* Boutons de navigation */}
-        <div className="flex justify-between mt-8 pt-4 border-t">
+        <div className="flex justify-between mt-8 pt-4 border-t text-black">
           {step > (isParentLoggedIn ? 2 : 1) && (
             <button
               type="button"
               onClick={prevStep}
-              className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded-lg hover:bg-gray-50 transition"
             >
               <ArrowLeft className="w-4 h-4" />
               Retour
