@@ -175,7 +175,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
             )}
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 rounded-lg hover:bg-gray-900">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 rounded-lg hover:bg-gray-300">
               {sidebarOpen ? <X className="w-5 h-5 text-black" /> : <Menu className="w-5 h-5 text-black" />}
             </button>
           </div>
@@ -191,7 +191,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                   className={`flex items-center gap-3 px-3 py-2 mb-1 rounded-lg transition ${
                     active 
                       ? "bg-blue-600 text-white" 
-                      : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                      : "text-black hover:bg-blue-50 hover:text-blue-600"
                   }`}
                 >
                   <item.icon className={`w-5 h-5 ${active ? "text-white" : ""}`} />
