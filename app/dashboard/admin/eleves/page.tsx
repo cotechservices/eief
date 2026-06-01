@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { 
   Search, 
   Eye, 
@@ -411,20 +412,24 @@ export default function GestionElevesPage() {
               <option key={c} value={c}>{c === "all" ? "Toutes les classes" : c}</option>
             ))}
           </select>
-          <button onClick={handleSearch} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            Rechercher
-          </button>
+         <Link 
+            href="/dashboard/admin/eleves/liste"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+          >
+            <FileText className="w-4 h-4" />
+            Voir la liste complète
+          </Link>
         </div>
       </div>
 
-      {/* Tableau */}
-      {filteredByClasse.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
-          <p className="text-gray-500">Aucun élève trouvé</p>
-        </div>
-      ) : (
-        <>
+        {/* Tableau */}
+        {filteredByClasse.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+            <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
+            <p className="text-gray-500">Aucun élève trouvé</p>
+          </div>
+          ) : (
+          <>
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -680,19 +685,31 @@ export default function GestionElevesPage() {
               </div>
 
               {/* Paiement */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-purple-600" />
-                  Informations de paiement
-                </h3>
-                <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div><p className="text-sm text-gray-700">Montant des frais</p><p className="font-bold text-lg text-black">500 000 GNF</p></div>
-                  <div><p className="text-sm text-gray-700">Statut paiement</p>{getFraisBadge(selectedEleve.frais_statut)}</div>
-                  {selectedEleve.frais_mode_paiement && (
-                    <div><p className="text-sm text-gray-700">Mode de paiement</p><p className="capitalize text-black">{selectedEleve.frais_mode_paiement.replace("_", " ")}</p></div>
-                  )}
+                {/* Paiement */}
+            <div>
+              <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-purple-600" />
+                Informations de paiement
+              </h3>
+              <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+                <div>
+                  <p className="text-sm text-gray-700">Montant des frais</p>
+                  <p className="font-bold text-lg text-black">
+                    {(selectedEleve.frais_montant || 0).toLocaleString()} GNF
+                  </p>
                 </div>
+                <div>
+                  <p className="text-sm text-gray-700">Statut paiement</p>
+                  {getFraisBadge(selectedEleve.frais_statut)}
+                </div>
+                {selectedEleve.frais_mode_paiement && (
+                  <div>
+                    <p className="text-sm text-gray-700">Mode de paiement</p>
+                    <p className="capitalize text-black">{selectedEleve.frais_mode_paiement.replace("_", " ")}</p>
+                  </div>
+                )}
               </div>
+            </div>
             </div>
             <div className="p-6 border-t bg-gray-50 flex justify-between gap-3">
               <button 

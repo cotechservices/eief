@@ -24,6 +24,7 @@ export async function GET() {
       u.prenom as enfant_prenom,
       c.nom as classe_nom,
       c.niveau,
+      c.frais_inscription as frais_montant,
       pu.nom as parent_nom,
       pu.prenom as parent_prenom,
       pu.email as parent_email,
