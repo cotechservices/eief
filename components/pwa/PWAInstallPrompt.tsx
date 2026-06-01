@@ -86,21 +86,21 @@ export function PWAInstallPrompt() {
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900">
-              Installez l'application
+              Installez l'application EIEF
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              E.I.E.F un accès rapide et sécurisé votre espace.
+            <p className="text-sm text-gray-700 mt-1">
+              Un accès rapide et sécurisé
             </p>
             <div className="flex gap-2 mt-3">
               <button
                 onClick={handleInstall}
-                className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-blue-700"
+                className="bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-blue-800"
               >
                 Installer
               </button>
               <button
                 onClick={handleDismiss}
-                className="text-gray-600 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-100"
+                className="text-gray-700 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-100"
               >
                 Plus tard
               </button>
