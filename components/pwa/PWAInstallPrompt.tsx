@@ -89,8 +89,7 @@ export function PWAInstallPrompt() {
               Installez l'application
             </h3>
             <p className="text-sm text-gray-600 mt-1">
-              Installez E.I.E.F Gestion sur votre téléphone pour un accès plus
-              rapide et des fonctionnalités hors ligne.
+              E.I.E.F un accès rapide et sécurisé votre espace.
             </p>
             <div className="flex gap-2 mt-3">
               <button
