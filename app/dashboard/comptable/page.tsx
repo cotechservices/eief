@@ -40,60 +40,11 @@ export default function ComptableDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Données statistiques
-  const stats = {
-    totalRecettes: 12500000,
-    totalDepenses: 4800000,
-    solde: 7700000,
-    encours: 3250000,
-    previsionMois: 14500000,
-    tauxRecouvrement: 78,
-    nombreEleves: 1250,
-    nombreClasses: 32,
-    recettesMois: 12500000,
-    depensesMois: 4800000,
-    evolutionRecettes: +8,
-    evolutionDepenses: +5,
-    evolutionSolde: +12
-  };
-
-  // Évolution mensuelle des recettes
-  const evolutionRecettes = [
-    { mois: "Jan", recettes: 11200000, depenses: 4500000 },
-    { mois: "Fév", recettes: 11800000, depenses: 4600000 },
-    { mois: "Mar", recettes: 12100000, depenses: 4700000 },
-    { mois: "Avr", recettes: 12300000, depenses: 4750000 },
-    { mois: "Mai", recettes: 12500000, depenses: 4800000 },
-    { mois: "Juin", recettes: 12800000, depenses: 4900000 },
-  ];
-
-  // Derniers paiements
-  const derniersPaiements = [
-    { id: 1, eleve: "Ibrahim Diallo", classe: "5ème A", montant: 150000, type: "Mensualité", date: "2025-05-20", statut: "payé", mode: "Mobile Money" },
-    { id: 2, eleve: "Aïssatou Souaré", classe: "3ème A", montant: 200000, type: "Inscription", date: "2025-05-19", statut: "payé", mode: "Espèces" },
-    { id: 3, eleve: "Mamadou Konaté", classe: "Terminale", montant: 150000, type: "Mensualité", date: "2025-05-18", statut: "en_attente", mode: "Carte" },
-    { id: 4, eleve: "Fatoumata Barry", classe: "6ème A", montant: 100000, type: "Cantine", date: "2025-05-17", statut: "payé", mode: "Mobile Money" },
-    { id: 5, eleve: "Mohamed Camara", classe: "4ème A", montant: 80000, type: "Transport", date: "2025-05-16", statut: "impayé", mode: "-" },
-    { id: 6, eleve: "Aminata Diallo", classe: "2nd A", montant: 150000, type: "Mensualité", date: "2025-05-15", statut: "payé", mode: "Mobile Money" },
-    { id: 7, eleve: "Ousmane Touré", classe: "1ère A", montant: 50000, type: "Bibliothèque", date: "2025-05-14", statut: "en_attente", mode: "Carte" },
-  ];
-
-  // Impayés
-  const impayes = [
-    { id: 1, eleve: "Mohamed Camara", classe: "4ème A", montant: 80000, type: "Transport", retard: 30 },
-    { id: 2, eleve: "Aminata Touré", classe: "2nd A", montant: 150000, type: "Mensualité", retard: 45 },
-    { id: 3, eleve: "Ousmane Keita", classe: "1ère A", montant: 100000, type: "Cantine", retard: 15 },
-  ];
-
-  // Répartition des recettes par catégorie
-  const categoriesRecettes = [
-    { name: "Inscriptions", montant: 2450000, pourcentage: 20, icon: Users, color: "bg-blue-500" },
-    { name: "Mensualités", montant: 6250000, pourcentage: 50, icon: GraduationCap, color: "bg-green-500" },
-    { name: "Cantine", montant: 1250000, pourcentage: 10, icon: Utensils, color: "bg-orange-500" },
-    { name: "Transport", montant: 1000000, pourcentage: 8, icon: Bus, color: "bg-purple-500" },
-    { name: "Bibliothèque", montant: 625000, pourcentage: 5, icon: BookOpen, color: "bg-teal-500" },
-    { name: "Autres", montant: 875000, pourcentage: 7, icon: DollarSign, color: "bg-gray-500" },
-  ];
+  const [stats, setStats] = useState<any>(null);
+  const [evolutionRecettes, setEvolutionRecettes] = useState<any[]>([]);
+  const [derniersPaiements, setDerniersPaiements] = useState<any[]>([]);
+  const [impayes, setImpayes] = useState<any[]>([]);
+  const [categoriesRecettes, setCategoriesRecettes] = useState<any[]>([]);
 
   // Pagination
   const totalPages = Math.ceil(derniersPaiements.length / itemsPerPage);
@@ -103,10 +54,54 @@ export default function ComptableDashboard() {
   );
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
+    const fetchDashboardData = async () => {
+      try {
+        const response = await fetch('/api/comptable/dashboard');
+        if (response.ok) {
+          const data = await response.json();
+          
+          const iconMap: Record<string, any> = {
+            Inscription: Users,
+            Mensualite: GraduationCap,
+            Cantine: Utensils,
+            Transport: Bus,
+            Bibliotheque: BookOpen,
+            Autre: DollarSign,
+          };
+          const colorMap: Record<string, string> = {
+            Inscription: "bg-blue-500",
+            Mensualite: "bg-green-500",
+            Cantine: "bg-orange-500",
+            Transport: "bg-purple-500",
+            Bibliotheque: "bg-teal-500",
+            Autre: "bg-gray-500",
+          };
+          
+          if (data.categoriesRecettes) {
+            data.categoriesRecettes = data.categoriesRecettes.map((cat: any) => ({
+              ...cat,
+              icon: iconMap[cat.name] || DollarSign,
+              color: colorMap[cat.name] || "bg-gray-500"
+            }));
+          }
+
+          setStats(data.stats);
+          setEvolutionRecettes(data.evolutionRecettes || []);
+          setDerniersPaiements(data.derniersPaiements || []);
+          setImpayes(data.impayes || []);
+          setCategoriesRecettes(data.categoriesRecettes || []);
+        }
+      } catch (error) {
+        console.error("Erreur chargement dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
-  if (loading) {
+  if (loading || !stats) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -248,7 +243,7 @@ export default function ComptableDashboard() {
               <PieChart className="w-5 h-5 text-purple-600" />
               Répartition des recettes
             </h3>
-            <span className="text-xs text-gray-400">total {stats.totalRecettes.toLocaleString()} GNF</span>
+            <span className="text-xs text-gray-900">total {stats.totalRecettes.toLocaleString()} GNF</span>
           </div>
           <div className="space-y-3">
             {categoriesRecettes.map((cat, idx) => (

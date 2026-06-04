@@ -211,7 +211,7 @@ export default function ComptablePaiementsPage() {
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
               <input
                 type="text"
                 placeholder="Rechercher par élève, parent ou référence..."
@@ -356,7 +356,7 @@ export default function ComptablePaiementsPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-800">Détail du paiement</h2>
-              <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -424,7 +424,7 @@ export default function ComptablePaiementsPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
               <h2 className="text-xl font-bold text-gray-800">Nouveau paiement</h2>
-              <button onClick={() => setShowPaymentModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowPaymentModal(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>

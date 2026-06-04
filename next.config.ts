@@ -64,6 +64,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "api.ecole-futur.com",
       },
+      {
+        protocol: "https",
+        hostname: "zwdpyhpbcrcccqgsthnc.supabase.co",
+      },
     ],
     formats: ["image/avif", "image/webp"],
     unoptimized: process.env.NODE_ENV === "development",

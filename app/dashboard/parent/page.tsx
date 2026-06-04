@@ -268,7 +268,7 @@ const statsGlobales = {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-400 hover:text-gray-600 transition"
+              className="ml-4 text-gray-900 hover:text-gray-600 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -323,7 +323,7 @@ const statsGlobales = {
                       <img src={p.photo_url} alt="photo" className="w-12 h-12 rounded-full object-cover" />
                     ) : (
                       <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        <Users className="w-6 h-6 text-gray-400" />
+                        <Users className="w-6 h-6 text-gray-900" />
                       </div>
                     )}
                     <div className="flex-1">

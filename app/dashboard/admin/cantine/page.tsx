@@ -1,19 +1,43 @@
 // app/dashboard/admin/cantine/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Utensils, Calendar, Users, CreditCard, Plus, Edit, Trash2, Eye, Search, Download } from "lucide-react";
 
 export default function CantinePage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
-  const menus = [
-    { id: 1, date: "2025-05-21", plat: "Riz au gras", accompagnement: "Légumes", dessert: "Fruit", prix: 5000, inscrits: 245, presents: 230 },
-    { id: 2, date: "2025-05-22", plat: "Poisson braisé", accompagnement: "Frites", dessert: "Yaourt", prix: 5500, inscrits: 248, presents: 242 },
-    { id: 3, date: "2025-05-23", plat: "Poulet DG", accompagnement: "Bananes plantain", dessert: "Glace", prix: 6000, inscrits: 250, presents: 248 },
-  ];
+  const [menus, setMenus] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const stats = { totalInscrits: 1250, moyenneJour: 240, recettesMois: 3250000, tauxPresence: 94 };
+  useEffect(() => {
+    const fetchCantine = async () => {
+      try {
+        const response = await fetch('/api/admin/cantine');
+        if (response.ok) {
+          const data = await response.json();
+          setMenus(data.menus || []);
+          setStats(data.stats || {
+            totalInscrits: 0,
+            moyenneJour: 0,
+            recettesMois: 0,
+            tauxPresence: 0
+          });
+        }
+      } catch (error) {
+        console.error("Erreur chargement cantine:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCantine();
+  }, []);
+
+  if (loading || !stats) {
+    return <div className="flex justify-center items-center h-64">Chargement...</div>;
+  }
 
   return (
     <div className="space-y-6">

@@ -47,7 +47,21 @@ export default function MesEnfantsPage() {
       for (const enfant of data) {
         const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
         const statsData = await statsResponse.json();
-        setStatsEnfant(prev => ({ ...prev, [enfant.eleve_id]: statsData }));
+        
+        // 🔥 CORRECTION : Nettoyer les données reçues
+        const cleanedStats = {
+          ...statsData,
+          paiements: {
+            total_paye: typeof statsData.paiements?.total_paye === 'number' 
+              ? statsData.paiements.total_paye 
+              : parseFloat(statsData.paiements?.total_paye) || 0,
+            nombre_paiements: typeof statsData.paiements?.nombre_paiements === 'number'
+              ? statsData.paiements.nombre_paiements
+              : parseInt(statsData.paiements?.nombre_paiements) || 0
+          }
+        };
+        
+        setStatsEnfant(prev => ({ ...prev, [enfant.eleve_id]: cleanedStats }));
       }
     } catch (error) {
       console.error("Erreur:", error);
@@ -56,12 +70,33 @@ export default function MesEnfantsPage() {
     }
   };
 
+  // 🔥 CORRECTION : Calculer le total des paiements correctement
+  const totalPayeCalcule = () => {
+    let total = 0;
+    Object.values(statsEnfant).forEach(s => {
+      if (s?.paiements?.total_paye) {
+        const montant = typeof s.paiements.total_paye === 'number' 
+          ? s.paiements.total_paye 
+          : parseFloat(String(s.paiements.total_paye));
+        if (!isNaN(montant) && montant < 100000000) { // Vérifier que c'est plausible
+          total += montant;
+        }
+      }
+    });
+    return total;
+  };
+
   const statsGlobales = {
     totalEnfants: enfants.length,
     totalAbsences: Object.values(statsEnfant).reduce((acc, s) => acc + (s.presences?.absents || 0), 0),
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (s.presences?.retards || 0), 0),
-    totalPaye: Object.values(statsEnfant).reduce((acc, s) => acc + (s.paiements?.total_paye || 0), 0),
+    totalPaye: totalPayeCalcule(),
   };
+
+  // 🔥 Debug: Afficher les valeurs dans la console
+  console.log("=== DEBUG STATS GLOBALES ===");
+  console.log("statsEnfant:", statsEnfant);
+  console.log("totalPaye calcule:", totalPayeCalcule());
 
   if (loading) {
     return (
@@ -112,6 +147,10 @@ export default function MesEnfantsPage() {
             {enfants.map((enfant) => {
               const stats = statsEnfant[enfant.eleve_id];
               
+              // 🔥 Vérifier que le montant est valide
+              const montantPaye = stats?.paiements?.total_paye || 0;
+              const montantValide = typeof montantPaye === 'number' ? montantPaye : parseFloat(String(montantPaye));
+              
               return (
                 <Link key={enfant.id} href={`/dashboard/parent/enfants/${enfant.eleve_id}`}>
                   <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition cursor-pointer group">
@@ -133,7 +172,7 @@ export default function MesEnfantsPage() {
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-gray-500 text-sm flex items-center gap-1"><CreditCard className="w-4 h-4" /> Frais payés</span>
-                            <span className="font-medium text-green-600">{stats.paiements?.total_paye?.toLocaleString() || 0} GNF</span>
+                            <span className="font-medium text-green-600">{!isNaN(montantValide) ? montantValide.toLocaleString() : "0"} GNF</span>
                           </div>
                           {stats.notes && stats.notes.length > 0 && (
                             <div className="mt-2 pt-2 border-t">
@@ -141,7 +180,7 @@ export default function MesEnfantsPage() {
                               <div className="flex flex-wrap gap-1">
                                 {stats.notes.slice(0, 3).map((note, idx) => (
                                   <span key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                                    {note.matiere}: {note.moyenne.toFixed(1)}/20
+                                    {note.matiere}: {typeof note.moyenne === 'number' ? note.moyenne.toFixed(1) : '0.0'}/20
                                   </span>
                                 ))}
                               </div>

@@ -387,7 +387,7 @@ export default function RegisterForm() {
               <div>
                 <label className="block text-gray-700 mb-2">Nom *</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
                     type="text"
                     name="nom"
@@ -402,7 +402,7 @@ export default function RegisterForm() {
               <div>
                 <label className="block text-gray-700 mb-2">Prénom *</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
                     type="text"
                     name="prenom"
@@ -420,7 +420,7 @@ export default function RegisterForm() {
               <div>
                 <label className="block text-gray-700 mb-2">Email *</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
                     type="email"
                     name="email"
@@ -435,7 +435,7 @@ export default function RegisterForm() {
               <div>
                 <label className="block text-gray-700 mb-2">Téléphone *</label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
                     type="tel"
                     name="phone"
@@ -452,7 +452,7 @@ export default function RegisterForm() {
             <div>
               <label className="block text-gray-700 mb-2">Adresse</label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                 <input
                   type="text"
                   name="adresse"
@@ -562,7 +562,7 @@ export default function RegisterForm() {
                   <div>
                     <label className="block text-gray-700 mb-2">Date de naissance *</label>
                     <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                       <input
                         type="date"
                         value={enfant.dateNaissance}
@@ -575,7 +575,7 @@ export default function RegisterForm() {
                   <div>
                     <label className="block text-gray-700 mb-2">Lieu de naissance</label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                       <input
                         type="text"
                         value={enfant.lieuNaissance}
@@ -659,7 +659,7 @@ export default function RegisterForm() {
                 
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
                     <label className="block text-gray-700 font-medium mb-2">Extrait d'acte de naissance *</label>
                     <input
                       type="file"
@@ -681,7 +681,7 @@ export default function RegisterForm() {
                   </div>
 
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
                     <label className="block text-gray-700 font-medium mb-2">Photo d'identité *</label>
                     <input
                       type="file"
@@ -703,7 +703,7 @@ export default function RegisterForm() {
                   </div>
 
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
                     <label className="block text-gray-700 font-medium mb-2">Bulletin (optionnel)</label>
                     <input
                       type="file"
@@ -743,7 +743,7 @@ export default function RegisterForm() {
                 <div>
                   <label className="block text-gray-700 mb-2">Mot de passe *</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                     <input
                       type={showPassword ? "text" : "password"}
                       name="password"
@@ -758,7 +758,7 @@ export default function RegisterForm() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4 text-gray-400" /> : <Eye className="w-4 h-4 text-gray-400" />}
+                      {showPassword ? <EyeOff className="w-4 h-4 text-gray-900" /> : <Eye className="w-4 h-4 text-gray-900" />}
                     </button>
                   </div>
                 </div>
@@ -766,7 +766,7 @@ export default function RegisterForm() {
                 <div>
                   <label className="block text-gray-700 mb-2">Confirmer le mot de passe *</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                     <input
                       type={showPassword ? "text" : "password"}
                       name="confirmPassword"
@@ -799,7 +799,7 @@ export default function RegisterForm() {
             <button
               type="button"
               onClick={prevStep}
-              className="flex items-center gap-2 px-6 py-2 border border-gray-400 rounded-lg hover:bg-gray-50 transition"
+              className="flex items-center gap-2 px-6 py-2 border border-gray-900 rounded-lg hover:bg-gray-50 transition"
             >
               <ArrowLeft className="w-4 h-4" />
               Retour

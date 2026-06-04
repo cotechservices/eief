@@ -93,7 +93,7 @@ export default function BlogPage() {
       <Header />
       
       {/* Hero Section avec image de fond */}
-      <div className="relative h-[300px] mt-16 overflow-hidden">
+      <div className="relative h-[360px] mt-16 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
             src="/img/slide3.jpg"

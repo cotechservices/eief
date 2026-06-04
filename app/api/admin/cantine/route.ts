@@ -1,0 +1,82 @@
+import { NextResponse } from "next/server";
+import { query } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role;
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE" && userRole !== "ADMIN_CANTINE")) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    // 1. Menus de la semaine/mois
+    const menusResult = await query(`
+      SELECT 
+        m.id, m.date, m.plat, m.accompagnement, m.dessert, m.regime_special,
+        (SELECT COUNT(*) FROM reserves_cantine r WHERE r.date = m.date) as inscrits,
+        (SELECT COUNT(*) FROM reserves_cantine r WHERE r.date = m.date AND r.est_present = true) as presents
+      FROM cantine_menus m
+      ORDER BY m.date DESC
+      LIMIT 30
+    `);
+
+    // Prix fictif par défaut car le prix n'est pas dans la table cantine_menus
+    const prixMenuDefaut = 5000;
+
+    const menus = menusResult.rows.map(r => ({
+      id: r.id,
+      date: r.date ? new Date(r.date).toISOString().split('T')[0] : "",
+      plat: r.plat || "-",
+      accompagnement: r.accompagnement || "-",
+      dessert: r.dessert || "-",
+      regime_special: r.regime_special,
+      prix: prixMenuDefaut,
+      inscrits: parseInt(r.inscrits || 0),
+      presents: parseInt(r.presents || 0)
+    }));
+
+    // 2. Statistiques globales
+    const inscritsTotal = await query(`
+      SELECT COUNT(DISTINCT eleve_id) as total FROM paiements WHERE type_frais = 'cantine' AND statut = 'valide'
+    `);
+    
+    // Moyenne de présences par jour
+    const moyenneJourResult = await query(`
+      SELECT AVG(count_presents) as moyenne
+      FROM (
+        SELECT date, COUNT(*) as count_presents 
+        FROM reserves_cantine 
+        WHERE est_present = true
+        GROUP BY date
+      ) sub
+    `);
+    
+    const recettesResult = await query(`
+      SELECT COALESCE(SUM(montant), 0) as total 
+      FROM paiements 
+      WHERE type_frais = 'cantine' AND statut = 'valide'
+      AND EXTRACT(MONTH FROM date_paiement) = EXTRACT(MONTH FROM CURRENT_DATE)
+      AND EXTRACT(YEAR FROM date_paiement) = EXTRACT(YEAR FROM CURRENT_DATE)
+    `);
+
+    // Taux de présence moyen
+    const totalPresentsQuery = await query(`SELECT COUNT(*) as total FROM reserves_cantine WHERE est_present = true`);
+    const totalReservesQuery = await query(`SELECT COUNT(*) as total FROM reserves_cantine`);
+    const totalP = parseInt(totalPresentsQuery.rows[0]?.total || 0);
+    const totalR = parseInt(totalReservesQuery.rows[0]?.total || 0);
+
+    const stats = {
+      totalInscrits: parseInt(inscritsTotal.rows[0]?.total || 0),
+      moyenneJour: Math.round(parseFloat(moyenneJourResult.rows[0]?.moyenne || 0)),
+      recettesMois: parseInt(recettesResult.rows[0]?.total || 0),
+      tauxPresence: totalR > 0 ? Math.round((totalP / totalR) * 100) : 0
+    };
+
+    return NextResponse.json({ menus, stats });
+  } catch (error) {
+    console.error("Erreur API Cantine:", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}

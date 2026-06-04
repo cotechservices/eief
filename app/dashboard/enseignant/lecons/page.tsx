@@ -30,7 +30,7 @@ export default function EnseignantLeconsPage() {
       )}
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b flex justify-between items-center"><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Rechercher..." className="pl-9 pr-4 py-1.5 border rounded-lg text-sm" /></div></div>
+        <div className="px-6 py-4 border-b flex justify-between items-center"><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" /><input type="text" placeholder="Rechercher..." className="pl-9 pr-4 py-1.5 border rounded-lg text-sm" /></div></div>
         <div className="overflow-x-auto"><table className="w-full"><thead className="bg-gray-50"><tr><th className="px-6 py-3 text-left text-xs">Titre</th><th className="px-6 py-3 text-left text-xs">Classe</th><th className="px-6 py-3 text-left text-xs">Date</th><th className="px-6 py-3 text-left text-xs">Vues</th><th className="px-6 py-3 text-left text-xs">Actions</th></tr></thead>
         <tbody>{lecons.map((l) => (<tr key={l.id} className="border-t hover:bg-gray-50"><td className="px-6 py-4 font-medium">{l.titre}</td><td className="px-6 py-4">{l.classe}</td><td className="px-6 py-4">{l.date}</td><td className="px-6 py-4">{l.vues}</td><td className="px-6 py-4 flex gap-2"><button className="text-blue-600"><Eye className="w-4 h-4" /></button><button className="text-green-600"><Edit className="w-4 h-4" /></button><button className="text-red-600"><Trash2 className="w-4 h-4" /></button></td></tr>))}</tbody></table></div>
       </div>

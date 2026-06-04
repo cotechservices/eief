@@ -69,7 +69,7 @@ export default function PaiementModal({
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
         <div className="p-6 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">Paiement des frais</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-900 hover:text-gray-600">
             <X className="w-5 h-5" />
           </button>
         </div>

@@ -217,7 +217,7 @@ export default function GestionClassesPage() {
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
               <input
                 type="text"
                 placeholder="Rechercher une classe, salle ou titulaire..."
@@ -283,13 +283,13 @@ export default function GestionClassesPage() {
                     <td className="px-6 py-4 text-gray-600">{classe.niveau}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4 text-gray-400" />
+                        <MapPin className="w-4 h-4 text-gray-900" />
                         <span>{classe.salle}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
-                        <User className="w-4 h-4 text-gray-400" />
+                        <User className="w-4 h-4 text-gray-900" />
                         <span>{classe.titulaire}</span>
                       </div>
                     </td>
@@ -373,7 +373,7 @@ export default function GestionClassesPage() {
                   <h2 className="text-xl font-bold text-gray-800">Matières - {selectedClasse.nom}</h2>
                   <p className="text-gray-500 text-sm">Titulaire: {selectedClasse.titulaire}</p>
                 </div>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600">✕</button>
               </div>
             </div>
             <div className="p-6">
@@ -420,7 +420,7 @@ export default function GestionClassesPage() {
                 <h2 className="text-xl font-bold text-gray-800">
                   {editingClasse ? "Modifier la classe" : "Ajouter une nouvelle classe"}
                 </h2>
-                <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-600">✕</button>
               </div>
             </div>
             <div className="p-6 space-y-4">

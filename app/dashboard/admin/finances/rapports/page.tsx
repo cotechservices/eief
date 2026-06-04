@@ -131,7 +131,7 @@ export default function RapportsFinanciersPage() {
                   <h4 className="font-medium text-gray-800">{rapport.titre}</h4>
                   <p className="text-sm text-gray-500 mt-1">{rapport.description}</p>
                   <div className="flex items-center gap-4 mt-2">
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                    <span className="text-xs text-gray-900 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {rapport.date}
                     </span>
@@ -173,7 +173,7 @@ export default function RapportsFinanciersPage() {
                 <h4 className="font-medium text-gray-800">{rapide.nom}</h4>
                 <p className="text-xs text-gray-500 mt-1">{rapide.description}</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition" />
+              <ChevronRight className="w-4 h-4 text-gray-900 group-hover:text-blue-600 transition" />
             </div>
           </a>
         ))}

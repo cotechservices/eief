@@ -261,7 +261,7 @@ export default function ListeElevesPage() {
                     <tr key={e.id} className="hover:bg-gray-50">
                       <td className="px-4 py-4">
                         <span className="font-mono text-sm text-blue-600">{e.numero_dossier || e.matricule}</span>
-                        <p className="text-xs text-gray-400 mt-1">Inscrit le: {new Date(e.date_inscription).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-900 mt-1">Inscrit le: {new Date(e.date_inscription).toLocaleDateString()}</p>
                       </td>
                       <td className="px-4 py-4">
                         {e.photo_url ? (
@@ -351,7 +351,7 @@ export default function ListeElevesPage() {
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
-                        <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-400">...</span>
+                        <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-900">...</span>
                       ) : (
                         <button
                           key={page}

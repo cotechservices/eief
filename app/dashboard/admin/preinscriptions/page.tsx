@@ -368,7 +368,7 @@ export default function GestionPreinscriptionsPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-400 hover:text-gray-600 transition"
+              className="ml-4 text-gray-900 hover:text-gray-600 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -572,7 +572,7 @@ export default function GestionPreinscriptionsPage() {
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
-                        <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-400">...</span>
+                        <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-900">...</span>
                       ) : (
                         <button
                           key={page}

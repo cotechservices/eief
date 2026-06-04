@@ -139,7 +139,7 @@ export default function FraisScolairesPage() {
             <h3 className="text-lg font-semibold text-gray-800">
               {editingId ? "Modifier le frais" : "Ajouter un nouveau frais"}
             </h3>
-            <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-gray-400 hover:text-gray-600">
+            <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-gray-900 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>

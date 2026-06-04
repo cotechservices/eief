@@ -34,6 +34,7 @@ const menuItems = {
   SUPER_ADMIN: [
     { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },    
     { name: "Preinscriptions", href: "/dashboard/admin/preinscriptions", icon: Users },
+    { name: "Réinscriptions", href: "/dashboard/admin/reinscriptions", icon: Users },
     { name: "Élèves", href: "/dashboard/admin/eleves", icon: Users },
     { name: "Classes", href: "/dashboard/admin/classes", icon: GraduationCap },
     { name: "Enseignants", href: "/dashboard/admin/enseignants", icon: Users },
@@ -64,6 +65,12 @@ const menuItems = {
   ],
  COMPTABLE: [
   { name: "Dashboard", href: "/dashboard/comptable", icon: LayoutDashboard },
+  { name: "Préinscriptions", href: "/dashboard/comptable/preinscriptions", icon: Users },
+  { name: "Réinscriptions", href: "/dashboard/comptable/reinscriptions", icon: Users },
+  { name: "Élèves", href: "/dashboard/comptable/eleves", icon: Users },
+  { name: "Classes", href: "/dashboard/comptable/classes", icon: GraduationCap },
+  { name: "Enseignants", href: "/dashboard/comptable/enseignants", icon: Users },
+  { name: "Personnel", href: "/dashboard/comptable/personnel", icon: Users },
   { name: "Paiements", href: "/dashboard/comptable/paiements", icon: CreditCard },
   { name: "Frais scolaires", href: "/dashboard/comptable/frais", icon: Euro },
   { name: "Salaires", href: "/dashboard/comptable/salaires", icon: Users },

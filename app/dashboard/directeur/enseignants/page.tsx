@@ -219,7 +219,7 @@ export default function GestionEnseignantsPage() {
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
               <input
                 type="text"
                 placeholder="Rechercher par nom, prénom, matricule ou email..."
@@ -274,7 +274,7 @@ export default function GestionEnseignantsPage() {
                       <div><p className="font-medium">{enseignant.prenom} {enseignant.nom}</p></div>
                     </div>
                   </td>
-                  <td className="px-6 py-4"><div className="flex items-center gap-1"><Award className="w-4 h-4 text-gray-400" />{enseignant.specialite}</div></td>
+                  <td className="px-6 py-4"><div className="flex items-center gap-1"><Award className="w-4 h-4 text-gray-900" />{enseignant.specialite}</div></td>
                   <td className="px-6 py-4"><div><p className="text-sm">{enseignant.telephone}</p><p className="text-xs text-gray-500">{enseignant.email}</p></div></td>
                   <td className="px-6 py-4"><div className="flex flex-wrap gap-1">{enseignant.classes.slice(0,2).map(c => <span key={c} className="text-xs bg-gray-100 px-2 py-1 rounded-full">{c}</span>)}</div></td>
                   <td className="px-6 py-4">{enseignant.heuresSemaine}h/semaine</td>
@@ -308,11 +308,11 @@ export default function GestionEnseignantsPage() {
       {showDetailModal && selectedEnseignant && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <div className="p-6 border-b sticky top-0 bg-white"><div className="flex justify-between items-center"><h2 className="text-xl font-bold">Fiche enseignant</h2><button onClick={() => setShowDetailModal(false)} className="text-gray-400">✕</button></div></div>
+            <div className="p-6 border-b sticky top-0 bg-white"><div className="flex justify-between items-center"><h2 className="text-xl font-bold">Fiche enseignant</h2><button onClick={() => setShowDetailModal(false)} className="text-gray-900">✕</button></div></div>
             <div className="p-6 space-y-6">
               <div className="flex items-center gap-4"><div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center"><User className="w-10 h-10 text-blue-600" /></div><div><h3 className="text-2xl font-bold">{selectedEnseignant.prenom} {selectedEnseignant.nom}</h3><p className="text-gray-500">Matricule: {selectedEnseignant.matricule}</p>{getStatutBadge(selectedEnseignant.statut)}</div></div>
-              <div><h4 className="font-semibold mb-3 border-b pb-2">Informations professionnelles</h4><div className="grid md:grid-cols-2 gap-4"><div className="flex items-center gap-2"><Briefcase className="w-4 h-4 text-gray-400" />{selectedEnseignant.specialite}</div><div className="flex items-center gap-2"><Award className="w-4 h-4 text-gray-400" />{selectedEnseignant.diplome}</div><div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-400" />Embauche: {selectedEnseignant.dateEmbauche}</div><div className="flex items-center gap-2"><Clock className="w-4 h-4 text-gray-400" />{selectedEnseignant.heuresSemaine}h/semaine</div></div></div>
-              <div><h4 className="font-semibold mb-3 border-b pb-2">Contact</h4><div className="grid md:grid-cols-2 gap-4"><div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" />{selectedEnseignant.telephone}</div><div className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" />{selectedEnseignant.email}</div><div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" />{selectedEnseignant.adresse}</div></div></div>
+              <div><h4 className="font-semibold mb-3 border-b pb-2">Informations professionnelles</h4><div className="grid md:grid-cols-2 gap-4"><div className="flex items-center gap-2"><Briefcase className="w-4 h-4 text-gray-900" />{selectedEnseignant.specialite}</div><div className="flex items-center gap-2"><Award className="w-4 h-4 text-gray-900" />{selectedEnseignant.diplome}</div><div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-900" />Embauche: {selectedEnseignant.dateEmbauche}</div><div className="flex items-center gap-2"><Clock className="w-4 h-4 text-gray-900" />{selectedEnseignant.heuresSemaine}h/semaine</div></div></div>
+              <div><h4 className="font-semibold mb-3 border-b pb-2">Contact</h4><div className="grid md:grid-cols-2 gap-4"><div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-900" />{selectedEnseignant.telephone}</div><div className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-900" />{selectedEnseignant.email}</div><div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-900" />{selectedEnseignant.adresse}</div></div></div>
               <div><h4 className="font-semibold mb-3 border-b pb-2">Classes assignées</h4><div className="flex flex-wrap gap-2">{selectedEnseignant.classes.map(c => <span key={c} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">{c}</span>)}</div></div>
             </div>
             <div className="p-6 border-t bg-gray-50 flex justify-end"><button onClick={() => setShowDetailModal(false)} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Fermer</button></div>
@@ -324,7 +324,7 @@ export default function GestionEnseignantsPage() {
       {showAssignModal && selectedEnseignant && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-            <div className="p-6 border-b"><div className="flex justify-between items-center"><h2 className="text-xl font-bold">Assignations - {selectedEnseignant.prenom} {selectedEnseignant.nom}</h2><button onClick={() => setShowAssignModal(false)} className="text-gray-400">✕</button></div></div>
+            <div className="p-6 border-b"><div className="flex justify-between items-center"><h2 className="text-xl font-bold">Assignations - {selectedEnseignant.prenom} {selectedEnseignant.nom}</h2><button onClick={() => setShowAssignModal(false)} className="text-gray-900">✕</button></div></div>
             <div className="p-6"><div className="space-y-3">{assignations.map((a, idx) => (<div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"><div><p className="font-medium">{a.matiereNom}</p><p className="text-sm text-gray-500">{a.classeNom}</p></div><div className="flex items-center gap-4"><span className="text-sm text-gray-500">{a.heures}h/semaine</span></div></div>))}</div></div>
             <div className="p-6 border-t flex justify-end"><button onClick={() => setShowAssignModal(false)} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Fermer</button></div>
           </div>

@@ -213,7 +213,7 @@ export default function EnfantDetailPage() {
                     <div className="flex justify-between items-center mb-1">
                       <div>
                         <span className="font-medium">{note.matiere}</span>
-                        <span className="text-xs text-gray-400 ml-2">Coeff. {note.coefficient}</span>
+                        <span className="text-xs text-gray-900 ml-2">Coeff. {note.coefficient}</span>
                       </div>
                       <span className={`font-bold ${noteCouleur}`}>{note.moyenne.toFixed(1)}/20</span>
                     </div>

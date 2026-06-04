@@ -4,7 +4,8 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Search, ShoppingCart, Package, TrendingUp, Star, Filter } from "lucide-react";
+import Link from "next/link";
+import { Search, ShoppingCart, Package, TrendingUp, Star, Filter, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
 export default function LibrairiePage() {
@@ -167,15 +168,43 @@ export default function LibrairiePage() {
       <Header />
       
       {/* Hero Section */}
-      <div className="relative h-[300px] bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 mt-16">
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1920&h=300&fit=crop')] bg-cover bg-center mix-blend-overlay" />
-        <div className="relative h-full flex items-center">
+      <div className="relative h-[350px] mt-16 overflow-hidden">        
+        <div className="absolute inset-0 bg-black/50 z-10" />
+        {/* Image de fond */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/img/slide2.jpg"
+            alt="École Internationale des Enfants Futur"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+        
+        {/* Contenu du Hero */}
+        <div className="relative z-20 h-full flex items-center">
           <div className="container mx-auto px-4 text-white">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Librairie scolaire</h1>
+            <div className="max-w-3xl">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">Librairie scolaire</h1>
             <p className="text-xl max-w-2xl">
               Fournitures, uniformes, manuels scolaires et accessoires de qualité
             </p>
+              <div className="flex flex-wrap gap-4">
+                <Link 
+                  href="#mission" 
+                  className="inline-flex items-center gap-2 bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition"
+                >
+                  Découvrir notre mission
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+                <Link 
+                  href="/contact" 
+                  className="inline-flex items-center gap-2 border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition"
+                >
+                  Nous contacter
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -259,7 +288,7 @@ export default function LibrairiePage() {
         {/* Produits */}
         {filteredProduits.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl">
-            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <Package className="w-16 h-16 text-gray-900 mx-auto mb-4" />
             <p className="text-gray-500 text-lg">Aucun produit trouvé</p>
           </div>
         ) : (

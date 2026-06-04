@@ -4,7 +4,7 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { BookOpen, Globe, Palette, Music, Trophy, Code, GraduationCap, Award, ArrowRight, Target, Sparkles, Brain, Users } from "lucide-react";
+import { BookOpen, Globe, Palette, Music, Trophy, Code, GraduationCap, Award, ArrowRight, Target, Sparkles, Brain, Users, FileText } from "lucide-react";
 
 export default function ProgrammesPage() {
   const niveaux = [
@@ -16,7 +16,8 @@ export default function ProgrammesPage() {
       competences: ["Motricité fine et globale", "Langage oral", "Socialisation", "Créativité", "Autonomie"],
       color: "bg-green-500",
       objectif: "Préparer l'enfant à l'entrée au primaire",
-      lienInscription: "/register?niveau=maternelle"
+      lienInscription: "/register?niveau=maternelle",
+      pdfUrl: "/pdf/fiche-maternelle.pdf"
     },
     {
       id: "primaire",
@@ -26,7 +27,8 @@ export default function ProgrammesPage() {
       competences: ["Lecture et écriture", "Raisonnement mathématique", "Culture générale", "Esprit critique", "Travail en équipe"],
       color: "bg-blue-500",
       objectif: "Préparation au CEE",
-      lienInscription: "/register?niveau=primaire"
+      lienInscription: "/register?niveau=primaire",
+      pdfUrl: "/pdf/fiche-primaire.pdf"
     },
     {
       id: "college",
@@ -36,7 +38,8 @@ export default function ProgrammesPage() {
       competences: ["Raisonnement scientifique", "Analyse littéraire", "Langues vivantes", "Méthodologie", "Organisation personnelle"],
       color: "bg-purple-500",
       objectif: "Préparation au BEPC",
-      lienInscription: "/register?niveau=college"
+      lienInscription: "/register?niveau=college",
+      pdfUrl: "/pdf/fiche-college.pdf"
     },
     {
       id: "lycee",
@@ -47,7 +50,8 @@ export default function ProgrammesPage() {
       series: ["Série S (Scientifique)", "Série L (Littéraire)", "Série SE (Sciences Économiques)", "Série G (Gestion)"],
       color: "bg-red-500",
       objectif: "Préparation au BAC unique guinéen",
-      lienInscription: "/register?niveau=lycee"
+      lienInscription: "/register?niveau=lycee",
+      pdfUrl: "/pdf/fiche-lycee.pdf"
     }
   ];
 
@@ -69,16 +73,33 @@ export default function ProgrammesPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
+
       {/* Hero Section */}
-      <div className="relative h-[300px] bg-gradient-to-r from-blue-900 to-blue-700 mt-16">
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="relative h-full flex items-center">
-          <div className="container mx-auto px-4 text-white">
+      <div className="relative min-h-[350px] py-12 mt-16 flex items-center overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/img/slide3.jpg')" }}
+        />
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/50" />
+        
+        {/* Content */}
+        <div className="relative container mx-auto px-4 text-white z-10">
+          <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Nos programmes scolaires</h1>
-            <p className="text-xl max-w-2xl">
+            <p className="text-xl mb-8 text-blue-100">
               Un parcours éducatif conforme au système éducatif guinéen, de la maternelle au baccalauréat
             </p>
+            <a
+              href="/pdf/fiche-renseignement-globale.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-blue-900 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-all duration-300 shadow-lg hover:scale-105"
+            >
+              <FileText className="w-5 h-5 text-blue-900" />
+              Fiche de renseignement EIEF (PDF)
+            </a>
           </div>
         </div>
       </div>
@@ -106,7 +127,7 @@ export default function ProgrammesPage() {
                   <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                     {niveau.descriptionDetaillee}
                   </p>
-                  
+
                   {/* Compétences clés */}
                   <div className="mb-4">
                     <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
@@ -121,7 +142,20 @@ export default function ProgrammesPage() {
                       ))}
                     </div>
                   </div>
-                  
+
+                  {/* Fiche d'enseignement PDF */}
+                  <div className="mb-4 pt-2">
+                    <a
+                      href={niveau.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-semibold transition hover:underline"
+                    >
+                      <FileText className="w-4.5 h-4.5" />
+                      Fiche d'enseignement (PDF)
+                    </a>
+                  </div>
+
                   {/* Objectif + Bouton côte à côte */}
                   <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">

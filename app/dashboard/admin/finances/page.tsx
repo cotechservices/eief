@@ -232,7 +232,7 @@ export default function ComptabilitePage() {
           <h3 className="font-semibold text-gray-800">Derniers paiements</h3>
           <div className="flex gap-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
               <input
                 type="text"
                 placeholder="Rechercher..."

@@ -303,7 +303,7 @@ export default function GestionClassesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-400 hover:text-gray-600 transition"
+              className="ml-4 text-gray-900 hover:text-gray-600 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -689,7 +689,7 @@ export default function GestionClassesPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">Frais de scolarité (GNF) *</label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input 
                     type="number" 
                     value={formData.frais_inscription || ""} 

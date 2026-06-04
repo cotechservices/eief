@@ -118,7 +118,7 @@ export default function DirecteurDashboard() {
                   {activite.type === "info" && <Eye className="w-4 h-4 text-blue-500" />}
                   <div><p className="text-sm font-medium">{activite.action}</p><p className="text-xs text-gray-500">Par {activite.utilisateur}</p></div>
                 </div>
-                <span className="text-xs text-gray-400">{activite.date}</span>
+                <span className="text-xs text-gray-900">{activite.date}</span>
               </div>
             ))}
           </div>
