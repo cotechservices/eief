@@ -60,25 +60,24 @@ export default function ParentPaiementPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Paiement des frais de scolarité</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Paiement des frais de scolarité</h1>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="font-semibold text-gray-800 mb-4">Choisissez l'enfant</h2>
+        <h2 className="font-semibold text-gray-900 mb-4">Choisissez l'enfant</h2>
         <div className="space-y-3">
           {enfants.map((enfant) => (
             <button
               key={enfant.id}
               onClick={() => setSelectedEnfant(enfant)}
-              className={`w-full p-4 border rounded-lg text-left transition ${
-                selectedEnfant?.id === enfant.id
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
+              className={`w-full p-4 border rounded-lg text-left transition ${selectedEnfant?.id === enfant.id
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-200 hover:border-gray-300"
+                }`}
             >
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-semibold">{enfant.prenom} {enfant.nom}</p>
-                  <p className="text-sm text-gray-500">{enfant.classe}</p>
+                  <p className="text-sm text-gray-900">{enfant.classe}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-red-600">{enfant.frais.reste.toLocaleString()} GNF à payer</p>
@@ -91,31 +90,28 @@ export default function ParentPaiementPage() {
 
         {selectedEnfant && (
           <div className="mt-8 pt-6 border-t">
-            <h3 className="font-semibold text-gray-800 mb-4">Mode de paiement</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">Mode de paiement</h3>
             <div className="grid grid-cols-3 gap-3 mb-6">
               <button
                 onClick={() => setModePaiement("especes")}
-                className={`p-3 border rounded-lg text-center ${
-                  modePaiement === "especes" ? "border-green-500 bg-green-50" : ""
-                }`}
+                className={`p-3 border rounded-lg text-center ${modePaiement === "especes" ? "border-green-500 bg-green-50" : ""
+                  }`}
               >
                 <Wallet className="w-6 h-6 mx-auto mb-1 text-green-600" />
                 <span className="text-sm">Espèces</span>
               </button>
               <button
                 onClick={() => setModePaiement("orange_money")}
-                className={`p-3 border rounded-lg text-center ${
-                  modePaiement === "orange_money" ? "border-orange-500 bg-orange-50" : ""
-                }`}
+                className={`p-3 border rounded-lg text-center ${modePaiement === "orange_money" ? "border-orange-500 bg-orange-50" : ""
+                  }`}
               >
                 <Smartphone className="w-6 h-6 mx-auto mb-1 text-orange-600" />
                 <span className="text-sm">Orange Money</span>
               </button>
               <button
                 onClick={() => setModePaiement("carte")}
-                className={`p-3 border rounded-lg text-center ${
-                  modePaiement === "carte" ? "border-blue-500 bg-blue-50" : ""
-                }`}
+                className={`p-3 border rounded-lg text-center ${modePaiement === "carte" ? "border-blue-500 bg-blue-50" : ""
+                  }`}
               >
                 <CreditCard className="w-6 h-6 mx-auto mb-1 text-blue-600" />
                 <span className="text-sm">Carte Visa</span>

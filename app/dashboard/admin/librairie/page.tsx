@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
+import {
   Store, ShoppingCart, Tag, Search, Plus, Trash2, Edit, CreditCard, Box, Check
 } from "lucide-react";
 
@@ -31,7 +31,7 @@ export default function LibrairiePage() {
   const [ventes, setVentes] = useState<Vente[]>([]);
   const [eleves, setEleves] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [showVenteForm, setShowVenteForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
@@ -123,37 +123,37 @@ export default function LibrairiePage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Librairie de l'école</h1>
-          <p className="text-gray-500">Gestion des fournitures, uniformes et ventes</p>
+          <h1 className="text-2xl font-bold text-black">Librairie de l'école</h1>
+          <p className="text-gray-900">Gestion des fournitures, uniformes et ventes</p>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-500">Articles en stock</p><p className="text-2xl font-bold">{stats.totalArticles}</p></div>
+          <div><p className="text-sm text-gray-900">Articles en stock</p><p className="text-2xl font-bold">{stats.totalArticles}</p></div>
           <Box className="text-blue-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-purple-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-500">Valeur du stock</p><p className="text-2xl font-bold text-purple-600">{stats.valeurStock.toLocaleString()} GNF</p></div>
+          <div><p className="text-sm text-gray-900">Valeur du stock</p><p className="text-2xl font-bold text-purple-600">{stats.valeurStock.toLocaleString()} GNF</p></div>
           <Store className="text-purple-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-500">Nombre de ventes</p><p className="text-2xl font-bold text-green-600">{stats.nombreVentes}</p></div>
+          <div><p className="text-sm text-gray-900">Nombre de ventes</p><p className="text-2xl font-bold text-green-600">{stats.nombreVentes}</p></div>
           <ShoppingCart className="text-green-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-orange-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-500">Recettes</p><p className="text-2xl font-bold text-orange-600">{stats.recettesVentes.toLocaleString()} GNF</p></div>
+          <div><p className="text-sm text-gray-900">Recettes</p><p className="text-2xl font-bold text-orange-600">{stats.recettesVentes.toLocaleString()} GNF</p></div>
           <CreditCard className="text-orange-200 w-10 h-10" />
         </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
         <div className="flex border-b">
-          <button onClick={() => setActiveTab("articles")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "articles" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-600 hover:bg-gray-50"}`}>
+          <button onClick={() => setActiveTab("articles")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "articles" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
             Inventaire
           </button>
-          <button onClick={() => setActiveTab("ventes")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "ventes" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-600 hover:bg-gray-50"}`}>
+          <button onClick={() => setActiveTab("ventes")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "ventes" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
             Historique des ventes
           </button>
         </div>
@@ -161,7 +161,7 @@ export default function LibrairiePage() {
         <div className="p-4 border-b flex justify-between bg-gray-50/50">
           <div className="relative w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 w-4 h-4" />
-            <input type="text" placeholder="Rechercher..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm" />
+            <input type="text" placeholder="Rechercher..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm text-gray-900" />
           </div>
           {activeTab === "articles" ? (
             <button onClick={() => { setEditingArticle(null); setArticleData({ nom: "", description: "", prix_unitaire: 0, quantite_stock: 0, categorie: "fourniture" }); setShowArticleForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
@@ -176,7 +176,7 @@ export default function LibrairiePage() {
 
         {activeTab === "articles" && (
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 text-black">
               <tr>
                 <th className="px-6 py-3 text-left">Article</th>
                 <th className="px-6 py-3 text-left">Catégorie</th>
@@ -190,10 +190,10 @@ export default function LibrairiePage() {
                 <tr key={a.id}>
                   <td className="px-6 py-4">
                     <p className="font-bold">{a.nom}</p>
-                    <p className="text-sm text-gray-500">{a.description}</p>
+                    <p className="text-sm text-gray-900">{a.description}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs capitalize">{a.categorie}</span>
+                    <span className="bg-gray-100 text-gray-900 px-2 py-1 rounded-full text-xs capitalize">{a.categorie}</span>
                   </td>
                   <td className="px-6 py-4 text-right font-medium">{a.prix_unitaire.toLocaleString()} GNF</td>
                   <td className="px-6 py-4 text-center">
@@ -211,12 +211,12 @@ export default function LibrairiePage() {
           </table>
         )}
         {filteredArticles.length === 0 && activeTab === "articles" && (
-          <div className="text-center py-8 text-gray-500">Aucun article trouvé</div>
+          <div className="text-center py-8 text-gray-900">Aucun article trouvé</div>
         )}
 
         {activeTab === "ventes" && (
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 text-black">
               <tr>
                 <th className="px-6 py-3 text-left">Date</th>
                 <th className="px-6 py-3 text-left">Article</th>
@@ -241,7 +241,7 @@ export default function LibrairiePage() {
           </table>
         )}
         {filteredVentes.length === 0 && activeTab === "ventes" && (
-          <div className="text-center py-8 text-gray-500">Aucune vente trouvée</div>
+          <div className="text-center py-8 text-gray-900">Aucune vente trouvée</div>
         )}
       </div>
 
@@ -253,25 +253,25 @@ export default function LibrairiePage() {
             <form onSubmit={handleArticleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm mb-1">Nom de l'article</label>
-                <input required type="text" value={articleData.nom} onChange={e => setArticleData({...articleData, nom: e.target.value})} className="w-full border p-2 rounded-lg" />
+                <input required type="text" value={articleData.nom} onChange={e => setArticleData({ ...articleData, nom: e.target.value })} className="w-full border p-2 rounded-lg" />
               </div>
               <div>
                 <label className="block text-sm mb-1">Description</label>
-                <textarea rows={2} value={articleData.description} onChange={e => setArticleData({...articleData, description: e.target.value})} className="w-full border p-2 rounded-lg" />
+                <textarea rows={2} value={articleData.description} onChange={e => setArticleData({ ...articleData, description: e.target.value })} className="w-full border p-2 rounded-lg" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm mb-1">Prix Unitaire (GNF)</label>
-                  <input required type="number" min="0" value={articleData.prix_unitaire} onChange={e => setArticleData({...articleData, prix_unitaire: parseInt(e.target.value)})} className="w-full border p-2 rounded-lg" />
+                  <input required type="number" min="0" value={articleData.prix_unitaire} onChange={e => setArticleData({ ...articleData, prix_unitaire: parseInt(e.target.value) })} className="w-full border p-2 rounded-lg" />
                 </div>
                 <div>
                   <label className="block text-sm mb-1">Quantité en stock</label>
-                  <input required type="number" min="0" value={articleData.quantite_stock} onChange={e => setArticleData({...articleData, quantite_stock: parseInt(e.target.value)})} className="w-full border p-2 rounded-lg" />
+                  <input required type="number" min="0" value={articleData.quantite_stock} onChange={e => setArticleData({ ...articleData, quantite_stock: parseInt(e.target.value) })} className="w-full border p-2 rounded-lg" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm mb-1">Catégorie</label>
-                <select value={articleData.categorie} onChange={e => setArticleData({...articleData, categorie: e.target.value})} className="w-full border p-2 rounded-lg">
+                <select value={articleData.categorie} onChange={e => setArticleData({ ...articleData, categorie: e.target.value })} className="w-full border p-2 rounded-lg">
                   <option value="fourniture">Fourniture scolaire</option>
                   <option value="uniforme">Uniforme / Tenue</option>
                   <option value="autre">Autre</option>
@@ -294,7 +294,7 @@ export default function LibrairiePage() {
             <form onSubmit={handleVenteSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm mb-1">Article</label>
-                <select required value={venteData.article_id} onChange={e => setVenteData({...venteData, article_id: e.target.value})} className="w-full border p-2 rounded-lg">
+                <select required value={venteData.article_id} onChange={e => setVenteData({ ...venteData, article_id: e.target.value })} className="w-full border p-2 rounded-lg">
                   <option value="">Sélectionner un article</option>
                   {articles.filter(a => a.quantite_stock > 0).map(a => (
                     <option key={a.id} value={a.id}>{a.nom} - {a.prix_unitaire.toLocaleString()} GNF (Stock: {a.quantite_stock})</option>
@@ -303,7 +303,7 @@ export default function LibrairiePage() {
               </div>
               <div>
                 <label className="block text-sm mb-1">Élève (Optionnel)</label>
-                <select value={venteData.eleve_id} onChange={e => setVenteData({...venteData, eleve_id: e.target.value})} className="w-full border p-2 rounded-lg">
+                <select value={venteData.eleve_id} onChange={e => setVenteData({ ...venteData, eleve_id: e.target.value })} className="w-full border p-2 rounded-lg">
                   <option value="">Vente libre / Anonyme</option>
                   {eleves.map(e => (
                     <option key={e.id} value={e.id}>{e.prenom} {e.nom} ({e.matricule})</option>
@@ -312,7 +312,7 @@ export default function LibrairiePage() {
               </div>
               <div>
                 <label className="block text-sm mb-1">Quantité</label>
-                <input required type="number" min="1" value={venteData.quantite} onChange={e => setVenteData({...venteData, quantite: parseInt(e.target.value)})} className="w-full border p-2 rounded-lg" />
+                <input required type="number" min="1" value={venteData.quantite} onChange={e => setVenteData({ ...venteData, quantite: parseInt(e.target.value) })} className="w-full border p-2 rounded-lg" />
               </div>
               <div className="flex justify-end gap-3 mt-6">
                 <button type="button" onClick={() => setShowVenteForm(false)} className="px-4 py-2 border rounded-lg">Annuler</button>

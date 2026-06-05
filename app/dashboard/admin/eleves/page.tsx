@@ -3,11 +3,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Search, 
-  Eye, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Search,
+  Eye,
+  CheckCircle,
+  XCircle,
   FileText,
   ChevronLeft,
   ChevronRight,
@@ -65,7 +65,7 @@ export default function GestionElevesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEleve, setSelectedEleve] = useState<Eleve | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  
+
   // États pour le modal de confirmation
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [eleveToDelete, setEleveToDelete] = useState<{ id: number; nom: string; prenom: string } | null>(null);
@@ -100,11 +100,11 @@ export default function GestionElevesPage() {
     setError(null);
     try {
       const response = await fetch("/api/admin/eleves");
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
       setEleves(data);
     } catch (error) {
@@ -128,13 +128,13 @@ export default function GestionElevesPage() {
 
   const handleDelete = async () => {
     if (!eleveToDelete) return;
-    
+
     setDeleting(true);
     try {
       const response = await fetch(`/api/admin/eleves?id=${eleveToDelete.id}`, {
         method: "DELETE",
       });
-      
+
       if (response.ok) {
         await fetchEleves();
         if (selectedEleve?.id === eleveToDelete.id) {
@@ -186,7 +186,7 @@ export default function GestionElevesPage() {
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
-      
+
       const colWidths = [
         { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 },
         { wch: 20 }, { wch: 8 }, { wch: 12 }, { wch: 15 }, { wch: 15 },
@@ -197,7 +197,7 @@ export default function GestionElevesPage() {
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Eleves');
-      
+
       const fileName = `eleves_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
       addNotification("success", "Export Excel effectué avec succès");
@@ -239,8 +239,8 @@ export default function GestionElevesPage() {
     );
   });
 
-  const filteredByClasse = selectedClasse === "all" 
-    ? filteredEleves 
+  const filteredByClasse = selectedClasse === "all"
+    ? filteredEleves
     : filteredEleves.filter(e => e.classe_nom === selectedClasse);
 
   const totalPages = Math.ceil(filteredByClasse.length / itemsPerPage);
@@ -251,7 +251,7 @@ export default function GestionElevesPage() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
@@ -288,7 +288,7 @@ export default function GestionElevesPage() {
         <div className="text-center text-red-600">
           <XCircle className="w-12 h-12 mx-auto mb-4" />
           <p>Erreur: {error}</p>
-          <button 
+          <button
             onClick={fetchEleves}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
@@ -306,15 +306,14 @@ export default function GestionElevesPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
-              notification.type === "success" 
-                ? "bg-green-50 border-l-4 border-green-500 text-green-800" 
-                : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -325,7 +324,7 @@ export default function GestionElevesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-600 transition"
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -338,7 +337,7 @@ export default function GestionElevesPage() {
           <h1 className="text-2xl font-bold text-black">Gestion des élèves inscrits</h1>
           <p className="text-gray-900">Liste de tous les élèves inscrits dans l'école</p>
         </div>
-        <button 
+        <button
           onClick={exportToExcel}
           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
         >
@@ -412,7 +411,7 @@ export default function GestionElevesPage() {
               <option key={c} value={c}>{c === "all" ? "Toutes les classes" : c}</option>
             ))}
           </select>
-         <Link 
+          <Link
             href="/dashboard/admin/eleves/liste"
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
           >
@@ -422,14 +421,14 @@ export default function GestionElevesPage() {
         </div>
       </div>
 
-        {/* Tableau */}
-        {filteredByClasse.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
-            <p className="text-gray-500">Aucun élève trouvé</p>
-          </div>
-          ) : (
-          <>
+      {/* Tableau */}
+      {filteredByClasse.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+          <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
+          <p className="text-gray-900">Aucun élève trouvé</p>
+        </div>
+      ) : (
+        <>
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -450,7 +449,7 @@ export default function GestionElevesPage() {
                     <tr key={e.id} className="hover:bg-gray-50">
                       <td className="px-4 py-4">
                         <span className="font-mono text-sm text-blue-600">{e.numero_dossier || e.matricule}</span>
-                       </td>
+                      </td>
                       <td className="px-4 py-4">
                         {e.photo_url ? (
                           <img src={e.photo_url} alt="photo" className="w-10 h-10 rounded-full object-cover" />
@@ -459,43 +458,43 @@ export default function GestionElevesPage() {
                             <Camera className="w-5 h-5 text-gray-900" />
                           </div>
                         )}
-                       </td>
+                      </td>
                       <td className="px-4 py-4">
                         <span className="font-medium">{e.enfant_prenom} {e.enfant_nom}</span>
                         <p className="text-xs text-gray-900">{e.sexe === "M" ? "Garçon" : "Fille"} - {new Date(e.date_naissance).toLocaleDateString()}</p>
                         <p className="text-xs text-gray-900">Matricule: {e.matricule}</p>
-                       </td>
+                      </td>
                       <td className="px-4 py-4">
                         <p className="text-sm">{e.parent_prenom} {e.parent_nom}</p>
                         <p className="text-xs text-gray-900">{e.parent_email}</p>
                         <p className="text-xs text-gray-900">{e.parent_telephone}</p>
-                       </td>
+                      </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-1">
                           <GraduationCap className="w-4 h-4 text-gray-900" />
                           <span>{e.classe_nom}</span>
                         </div>
-                       </td>
+                      </td>
                       <td className="px-4 py-4">{getFraisBadge(e.frais_statut)}</td>
                       <td className="px-4 py-4">{getStatutBadge(e.statut)}</td>
                       <td className="px-4 py-4">
                         <div className="flex gap-2">
-                          <button 
-                            onClick={() => { setSelectedEleve(e); setShowDetailModal(true); }} 
-                            className="text-blue-600 hover:text-blue-700 transition" 
+                          <button
+                            onClick={() => { setSelectedEleve(e); setShowDetailModal(true); }}
+                            className="text-blue-600 hover:text-blue-700 transition"
                             title="Voir détails"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button 
-                            onClick={() => openConfirmModal(e.id, e.enfant_nom, e.enfant_prenom)} 
-                            className="text-red-600 hover:text-red-700 transition" 
+                          <button
+                            onClick={() => openConfirmModal(e.id, e.enfant_nom, e.enfant_prenom)}
+                            className="text-red-600 hover:text-red-700 transition"
                             title="Supprimer"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                       </td>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -507,12 +506,12 @@ export default function GestionElevesPage() {
           {totalPages > 1 && (
             <div className="bg-white rounded-xl shadow-sm p-4">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-900">
                   Affichage de <span className="font-medium">{startIndex + 1}</span> à{' '}
                   <span className="font-medium">{Math.min(endIndex, filteredByClasse.length)}</span>{' '}
                   sur <span className="font-medium">{filteredByClasse.length}</span> élèves
                 </p>
-                
+
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -521,7 +520,7 @@ export default function GestionElevesPage() {
                   >
                     <ChevronLeft className="w-4 h-4 text-black" />
                   </button>
-                  
+
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
@@ -530,18 +529,17 @@ export default function GestionElevesPage() {
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page as number)}
-                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          }`}
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'text-gray-900 hover:bg-gray-100'
+                            }`}
                         >
                           {page}
                         </button>
                       )
                     ))}
                   </div>
-                  
+
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
@@ -565,12 +563,12 @@ export default function GestionElevesPage() {
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Confirmer la suppression</h2>
+                <h2 className="text-xl font-bold text-gray-900">Confirmer la suppression</h2>
               </div>
             </div>
-            
+
             <div className="p-6">
-              <p className="text-gray-700 mb-2">
+              <p className="text-gray-900 mb-2">
                 Êtes-vous sûr de vouloir supprimer l'élève ?
               </p>
               <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mb-4">
@@ -581,7 +579,7 @@ export default function GestionElevesPage() {
                 Cette action est irréversible. Toutes les données associées seront supprimées.
               </p>
             </div>
-            
+
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => {
@@ -622,7 +620,7 @@ export default function GestionElevesPage() {
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-black">Fiche élève</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">✕</button>
               </div>
             </div>
             <div className="p-6 space-y-6">
@@ -639,16 +637,16 @@ export default function GestionElevesPage() {
                 </div>
                 <div className="flex-1">
                   <div className="bg-gray-50 p-3 rounded-lg mb-3">
-                    <p className="text-sm text-gray-700">Matricule</p>
+                    <p className="text-sm text-gray-900">Matricule</p>
                     <p className="font-mono text-xl font-bold text-blue-600">{selectedEleve.matricule}</p>
                   </div>
                   <div className="flex gap-4 flex-wrap">
                     <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-700">Statut</p>
+                      <p className="text-xs text-gray-900">Statut</p>
                       {getStatutBadge(selectedEleve.statut)}
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-700">Paiement</p>
+                      <p className="text-xs text-gray-900">Paiement</p>
                       {getFraisBadge(selectedEleve.frais_statut)}
                     </div>
                   </div>
@@ -662,9 +660,9 @@ export default function GestionElevesPage() {
                   Informations du parent
                 </h3>
                 <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg text-black">
-                  <div><p className="text-sm text-gray-700">Nom complet</p><p className="font-medium">{selectedEleve.parent_prenom} {selectedEleve.parent_nom}</p></div>
-                  <div><p className="text-sm text-gray-700">Email</p><p>{selectedEleve.parent_email}</p></div>
-                  <div><p className="text-sm text-gray-700">Téléphone</p><p>{selectedEleve.parent_telephone}</p></div>
+                  <div><p className="text-sm text-gray-900">Nom complet</p><p className="font-medium">{selectedEleve.parent_prenom} {selectedEleve.parent_nom}</p></div>
+                  <div><p className="text-sm text-gray-900">Email</p><p>{selectedEleve.parent_email}</p></div>
+                  <div><p className="text-sm text-gray-900">Téléphone</p><p>{selectedEleve.parent_telephone}</p></div>
                 </div>
               </div>
 
@@ -675,52 +673,52 @@ export default function GestionElevesPage() {
                   Informations de l'enfant
                 </h3>
                 <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg text-black">
-                  <div><p className="text-sm text-gray-700">Nom complet</p><p className="font-medium">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</p></div>
-                  <div><p className="text-sm text-gray-700">Date de naissance</p><p>{new Date(selectedEleve.date_naissance).toLocaleDateString()}</p></div>
-                  <div><p className="text-sm text-gray-700">Lieu de naissance</p><p>{selectedEleve.lieu_naissance || "Non renseigné"}</p></div>
-                  <div><p className="text-sm text-gray-700">Sexe</p><p>{selectedEleve.sexe === "M" ? "Masculin" : "Féminin"}</p></div>
-                  <div><p className="text-sm text-gray-700">Niveau</p><p>{selectedEleve.niveau}</p></div>
-                  <div><p className="text-sm text-gray-700">Classe</p><p>{selectedEleve.classe_nom}</p></div>
+                  <div><p className="text-sm text-gray-900">Nom complet</p><p className="font-medium">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</p></div>
+                  <div><p className="text-sm text-gray-900">Date de naissance</p><p>{new Date(selectedEleve.date_naissance).toLocaleDateString()}</p></div>
+                  <div><p className="text-sm text-gray-900">Lieu de naissance</p><p>{selectedEleve.lieu_naissance || "Non renseigné"}</p></div>
+                  <div><p className="text-sm text-gray-900">Sexe</p><p>{selectedEleve.sexe === "M" ? "Masculin" : "Féminin"}</p></div>
+                  <div><p className="text-sm text-gray-900">Niveau</p><p>{selectedEleve.niveau}</p></div>
+                  <div><p className="text-sm text-gray-900">Classe</p><p>{selectedEleve.classe_nom}</p></div>
                 </div>
               </div>
 
               {/* Paiement */}
-                {/* Paiement */}
-            <div>
-              <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-purple-600" />
-                Informations de paiement
-              </h3>
-              <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                <div>
-                  <p className="text-sm text-gray-700">Montant des frais</p>
-                  <p className="font-bold text-lg text-black">
-                    {(selectedEleve.frais_montant || 0).toLocaleString()} GNF
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-700">Statut paiement</p>
-                  {getFraisBadge(selectedEleve.frais_statut)}
-                </div>
-                {selectedEleve.frais_mode_paiement && (
+              {/* Paiement */}
+              <div>
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-purple-600" />
+                  Informations de paiement
+                </h3>
+                <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-700">Mode de paiement</p>
-                    <p className="capitalize text-black">{selectedEleve.frais_mode_paiement.replace("_", " ")}</p>
+                    <p className="text-sm text-gray-900">Montant des frais</p>
+                    <p className="font-bold text-lg text-black">
+                      {(selectedEleve.frais_montant || 0).toLocaleString()} GNF
+                    </p>
                   </div>
-                )}
+                  <div>
+                    <p className="text-sm text-gray-900">Statut paiement</p>
+                    {getFraisBadge(selectedEleve.frais_statut)}
+                  </div>
+                  {selectedEleve.frais_mode_paiement && (
+                    <div>
+                      <p className="text-sm text-gray-900">Mode de paiement</p>
+                      <p className="capitalize text-black">{selectedEleve.frais_mode_paiement.replace("_", " ")}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            </div>
             <div className="p-6 border-t bg-gray-50 flex justify-between gap-3">
-              <button 
-                onClick={() => openConfirmModal(selectedEleve.id, selectedEleve.enfant_nom, selectedEleve.enfant_prenom)} 
+              <button
+                onClick={() => openConfirmModal(selectedEleve.id, selectedEleve.enfant_nom, selectedEleve.enfant_prenom)}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
                 Supprimer l'élève
               </button>
-              <button 
-                onClick={() => setShowDetailModal(false)} 
+              <button
+                onClick={() => setShowDetailModal(false)}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-black transition"
               >
                 Fermer

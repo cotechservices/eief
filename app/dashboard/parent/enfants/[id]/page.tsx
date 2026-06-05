@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { 
+import {
   ArrowLeft,
   GraduationCap,
   Calendar,
@@ -39,7 +39,7 @@ interface Stats {
 export default function EnfantDetailPage() {
   const params = useParams();
   const enfantId = params.id as string;
-  
+
   const [enfant, setEnfant] = useState<EleveDetail | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,10 +54,10 @@ export default function EnfantDetailPage() {
         fetch(`/api/parent/enfants/${enfantId}`),
         fetch(`/api/parent/enfants/${enfantId}/stats`)
       ]);
-      
+
       const enfantData = await enfantRes.json();
       const statsData = await statsRes.json();
-      
+
       setEnfant(enfantData);
       setStats(statsData);
     } catch (error) {
@@ -94,7 +94,7 @@ export default function EnfantDetailPage() {
     return (
       <div className="text-center py-12">
         <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-gray-800">Enfant non trouvé</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Enfant non trouvé</h2>
         <Link href="/dashboard/parent/enfants" className="mt-4 inline-block text-blue-600 hover:underline">
           Retour à la liste
         </Link>
@@ -104,29 +104,29 @@ export default function EnfantDetailPage() {
 
   const moyenne = parseFloat(getMoyenneGenerale());
   const appreciation = getAppreciation(moyenne);
-  const tauxPresence = stats?.presences?.total > 0 ? 
+  const tauxPresence = stats?.presences?.total > 0 ?
     ((stats.presences.presents / stats.presences.total) * 100).toFixed(1) : "0";
 
   return (
     <div className="space-y-6">
       {/* En-tête avec retour */}
       <div className="flex items-center gap-4">
-        <Link 
-          href="/dashboard/parent/enfants" 
+        <Link
+          href="/dashboard/parent/enfants"
           className="p-2 hover:bg-gray-100 rounded-lg transition"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">{enfant.prenom} {enfant.nom}</h1>
-          <p className="text-gray-500">{enfant.classe_nom} - Matricule: {enfant.matricule}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{enfant.prenom} {enfant.nom}</h1>
+          <p className="text-gray-900">{enfant.classe_nom} - Matricule: {enfant.matricule}</p>
         </div>
       </div>
 
       {/* Cartes de synthèse */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="flex items-center gap-2 text-gray-900 mb-1">
             <GraduationCap className="w-5 h-5" />
             <p className="text-sm">Moyenne générale</p>
           </div>
@@ -136,43 +136,43 @@ export default function EnfantDetailPage() {
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="flex items-center gap-2 text-gray-900 mb-1">
             <Calendar className="w-5 h-5" />
             <p className="text-sm">Assiduité</p>
           </div>
           <p className="text-3xl font-bold text-blue-600">{tauxPresence}%</p>
-          <p className="text-xs text-gray-500 mt-1">
-            Présents: {stats?.presences?.presents || 0} | 
-            Absents: {stats?.presences?.absents || 0} | 
+          <p className="text-xs text-gray-900 mt-1">
+            Présents: {stats?.presences?.presents || 0} |
+            Absents: {stats?.presences?.absents || 0} |
             Retards: {stats?.presences?.retards || 0}
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="flex items-center gap-2 text-gray-900 mb-1">
             <CreditCard className="w-5 h-5" />
             <p className="text-sm">Frais de scolarité</p>
           </div>
           <p className="text-2xl font-bold text-green-600">
             {stats?.paiements?.total_paye?.toLocaleString() || 0} GNF
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-900 mt-1">
             {stats?.paiements?.nombre_paiements || 0} paiement(s)
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="flex items-center gap-2 text-gray-900 mb-1">
             <BookOpen className="w-5 h-5" />
             <p className="text-sm">Matières</p>
           </div>
           <p className="text-3xl font-bold text-purple-600">{stats?.notes?.length || 0}</p>
-          <p className="text-xs text-gray-500 mt-1">Matières enseignées</p>
+          <p className="text-xs text-gray-900 mt-1">Matières enseignées</p>
         </div>
       </div>
 
       {/* Informations personnelles */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <User className="w-5 h-5 text-blue-600" />
             Informations personnelles
           </h2>
@@ -180,15 +180,15 @@ export default function EnfantDetailPage() {
         <div className="p-6">
           <div className="grid md:grid-cols-3 gap-4">
             <div>
-              <p className="text-sm text-gray-500">Date de naissance</p>
+              <p className="text-sm text-gray-900">Date de naissance</p>
               <p className="font-medium">{enfant.date_naissance ? new Date(enfant.date_naissance).toLocaleDateString() : "Non renseignée"}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Lieu de naissance</p>
+              <p className="text-sm text-gray-900">Lieu de naissance</p>
               <p className="font-medium">{enfant.lieu_naissance || "Non renseigné"}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Sexe</p>
+              <p className="text-sm text-gray-900">Sexe</p>
               <p className="font-medium">{enfant.sexe === "M" ? "Masculin" : "Féminin"}</p>
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function EnfantDetailPage() {
       {/* Notes par matière */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-green-600" />
             Notes par matière
           </h2>
@@ -218,9 +218,9 @@ export default function EnfantDetailPage() {
                       <span className={`font-bold ${noteCouleur}`}>{note.moyenne.toFixed(1)}/20</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="h-2 rounded-full transition-all"
-                        style={{ 
+                        style={{
                           width: `${(note.moyenne / 20) * 100}%`,
                           backgroundColor: note.moyenne >= 14 ? "#22c55e" : note.moyenne >= 10 ? "#3b82f6" : "#f97316"
                         }}
@@ -231,8 +231,8 @@ export default function EnfantDetailPage() {
               })}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <div className="text-center py-8 text-gray-900">
+              <FileText className="w-12 h-12 mx-auto mb-3 text-gray-900" />
               <p>Aucune note disponible pour le moment</p>
             </div>
           )}
@@ -242,7 +242,7 @@ export default function EnfantDetailPage() {
       {/* Historique des paiements */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-purple-600" />
             Historique des paiements
           </h2>
@@ -250,16 +250,16 @@ export default function EnfantDetailPage() {
         <div className="p-6">
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-green-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600">Total payé</p>
+              <p className="text-sm text-gray-900">Total payé</p>
               <p className="text-2xl font-bold text-green-600">{stats?.paiements?.total_paye?.toLocaleString() || 0} GNF</p>
             </div>
             <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600">Nombre de paiements</p>
+              <p className="text-sm text-gray-900">Nombre de paiements</p>
               <p className="text-2xl font-bold text-blue-600">{stats?.paiements?.nombre_paiements || 0}</p>
             </div>
           </div>
           {(!stats?.paiements || stats.paiements.nombre_paiements === 0) && (
-            <p className="text-center text-gray-500 mt-4">Aucun paiement enregistré</p>
+            <p className="text-center text-gray-900 mt-4">Aucun paiement enregistré</p>
           )}
         </div>
       </div>

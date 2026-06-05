@@ -3,10 +3,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  CreditCard, 
-  Download, 
-  Eye, 
+import {
+  CreditCard,
+  Download,
+  Eye,
   Printer,
   ChevronLeft,
   ChevronRight,
@@ -89,10 +89,10 @@ export default function ParentFinancesPage() {
     try {
       const financesRes = await fetch("/api/parent/finances");
       const financesData = await financesRes.json();
-      
+
       setEnfants(financesData.enfants || []);
       setTotals(financesData.totals);
-      
+
       if (financesData.enfants?.length > 0 && !selectedEnfantId) {
         setSelectedEnfantId(financesData.enfants[0].id);
       }
@@ -105,12 +105,12 @@ export default function ParentFinancesPage() {
 
   const enfantSelectionne = enfants.find(e => e.id === selectedEnfantId);
   const paiements = enfantSelectionne?.paiements || [];
-  
+
   // Filtrer par catégorie
-  const paiementsFiltres = selectedCategorie === "toutes" 
-    ? paiements 
+  const paiementsFiltres = selectedCategorie === "toutes"
+    ? paiements
     : paiements.filter(p => p.type_frais === selectedCategorie);
-  
+
   const totalPages = Math.ceil(paiementsFiltres.length / itemsPerPage);
   const paginatedPaiements = paiementsFiltres.slice(
     (currentPage - 1) * itemsPerPage,
@@ -130,12 +130,12 @@ export default function ParentFinancesPage() {
 
   const totalDepenses = Object.values(depensesParCategorie).reduce((acc, val) => acc + val, 0);
 
-  const tauxRecouvrement = totals && totals.total_du > 0 
-    ? (totals.total_paye / totals.total_du) * 100 
+  const tauxRecouvrement = totals && totals.total_du > 0
+    ? (totals.total_paye / totals.total_du) * 100
     : 0;
 
   const getStatutBadge = (statut: string) => {
-    switch(statut) {
+    switch (statut) {
       case "paye":
         return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
       case "en_attente":
@@ -156,7 +156,7 @@ export default function ParentFinancesPage() {
       bibliotheque: <BookOpen className="w-4 h-4 text-teal-600" />,
       librairie: <ShoppingBag className="w-4 h-4 text-pink-600" />
     };
-    return icons[type] || <CreditCard className="w-4 h-4 text-gray-600" />;
+    return icons[type] || <CreditCard className="w-4 h-4 text-gray-900" />;
   };
 
   const getTypeLabel = (type: string) => {
@@ -172,7 +172,7 @@ export default function ParentFinancesPage() {
   };
 
   const getModeIcon = (mode: string) => {
-    switch(mode) {
+    switch (mode) {
       case "mobile_money":
         return <Smartphone className="w-4 h-4 text-green-600" />;
       case "especes":
@@ -214,8 +214,8 @@ export default function ParentFinancesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Finances</h1>
-        <p className="text-gray-500">Gérez les paiements de vos enfants</p>
+        <h1 className="text-2xl font-bold text-gray-900">Finances</h1>
+        <p className="text-gray-900">Gérez les paiements de vos enfants</p>
       </div>
 
       {/* Cartes récapitulatives */}
@@ -227,23 +227,23 @@ export default function ParentFinancesPage() {
           </div>
           <div className="bg-white rounded-xl shadow-sm p-4">
             <div className="flex justify-between items-start">
-              <div><p className="text-gray-500 text-sm">Déjà payé</p><p className="text-2xl font-bold text-green-600">{totals.total_paye.toLocaleString()} GNF</p></div>
+              <div><p className="text-gray-900 text-sm">Déjà payé</p><p className="text-2xl font-bold text-green-600">{totals.total_paye.toLocaleString()} GNF</p></div>
               <div className="bg-green-100 p-3 rounded-lg"><CheckCircle className="w-6 h-6 text-green-600" /></div>
             </div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-4">
             <div className="flex justify-between items-start">
-              <div><p className="text-gray-500 text-sm">En attente</p><p className="text-2xl font-bold text-yellow-600">{totals.total_en_attente.toLocaleString()} GNF</p></div>
+              <div><p className="text-gray-900 text-sm">En attente</p><p className="text-2xl font-bold text-yellow-600">{totals.total_en_attente.toLocaleString()} GNF</p></div>
               <div className="bg-yellow-100 p-3 rounded-lg"><Clock className="w-6 h-6 text-yellow-600" /></div>
             </div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-4">
-              <div className="flex justify-between items-start">
-                <div><p className="text-gray-500 text-sm">Solde restant</p><p className="text-2xl font-bold text-orange-600">{totals.solde_restant.toLocaleString()} GNF</p></div>
-                <div className="bg-orange-100 p-3 rounded-lg"><AlertCircle className="w-6 h-6 text-orange-600" /></div>
-              </div>
+            <div className="flex justify-between items-start">
+              <div><p className="text-gray-900 text-sm">Solde restant</p><p className="text-2xl font-bold text-orange-600">{totals.solde_restant.toLocaleString()} GNF</p></div>
+              <div className="bg-orange-100 p-3 rounded-lg"><AlertCircle className="w-6 h-6 text-orange-600" /></div>
             </div>
           </div>
+        </div>
       )}
 
       {/* Barre de progression */}
@@ -262,7 +262,7 @@ export default function ParentFinancesPage() {
       {/* Graphique Dépenses par catégorie (tous enfants) */}
       {enfants.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-blue-600" />
             Dépenses par catégorie (tous enfants)
           </h3>
@@ -292,7 +292,7 @@ export default function ParentFinancesPage() {
                 <div key={categorie}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium">{labels[categorie]}</span>
-                    <span className="text-gray-600">{montant.toLocaleString()} GNF ({pourcentage.toFixed(1)}%)</span>
+                    <span className="text-gray-900">{montant.toLocaleString()} GNF ({pourcentage.toFixed(1)}%)</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div className={`${colors[categorie]} h-2 rounded-full`} style={{ width: `${pourcentage}%` }}></div>
@@ -301,7 +301,7 @@ export default function ParentFinancesPage() {
               );
             })}
             {totalDepenses === 0 && (
-              <p className="text-center text-gray-500 py-4">Aucune dépense enregistrée</p>
+              <p className="text-center text-gray-900 py-4">Aucune dépense enregistrée</p>
             )}
           </div>
         </div>
@@ -312,22 +312,21 @@ export default function ParentFinancesPage() {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-              <h3 className="font-semibold text-gray-800">Historique des paiements</h3>
-              
+              <h3 className="font-semibold text-gray-900">Historique des paiements</h3>
+
               {/* Sélection de l'enfant - intégrée ici */}
               <div className="flex flex-wrap gap-2">
-                <span className="text-sm text-gray-500 flex items-center gap-1 mr-2">
+                <span className="text-sm text-gray-900 flex items-center gap-1 mr-2">
                   <Users className="w-4 h-4" /> Enfant:
                 </span>
                 {enfants.map((enfant) => (
                   <button
                     key={enfant.id}
                     onClick={() => { setSelectedEnfantId(enfant.id); setCurrentPage(1); setSelectedCategorie("toutes"); }}
-                    className={`px-3 py-1 rounded-lg text-sm transition ${
-                      selectedEnfantId === enfant.id
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                    className={`px-3 py-1 rounded-lg text-sm transition ${selectedEnfantId === enfant.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                      }`}
                   >
                     {enfant.prenom} {enfant.nom}
                   </button>
@@ -343,11 +342,10 @@ export default function ParentFinancesPage() {
                 <button
                   key={cat.value}
                   onClick={() => { setSelectedCategorie(cat.value); setCurrentPage(1); }}
-                  className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 transition ${
-                    selectedCategorie === cat.value
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-200 border"
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 transition ${selectedCategorie === cat.value
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-900 hover:bg-gray-200 border"
+                    }`}
                 >
                   {cat.icon}
                   {cat.label}
@@ -361,12 +359,12 @@ export default function ParentFinancesPage() {
               <div className="px-6 py-2 bg-blue-50 border-b">
                 <div className="flex justify-between items-center text-sm">
                   <div>
-                    <span className="text-gray-600">Élève:</span>
+                    <span className="text-gray-900">Élève:</span>
                     <span className="font-semibold ml-2">{enfantSelectionne.prenom} {enfantSelectionne.nom}</span>
-                    <span className="text-gray-500 ml-2">({enfantSelectionne.classe_nom})</span>
+                    <span className="text-gray-900 ml-2">({enfantSelectionne.classe_nom})</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Matricule:</span>
+                    <span className="text-gray-900">Matricule:</span>
                     <span className="font-mono text-sm ml-2">{enfantSelectionne.matricule}</span>
                   </div>
                 </div>
@@ -376,12 +374,12 @@ export default function ParentFinancesPage() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catégorie</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Catégorie</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Montant</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Mode</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -405,7 +403,7 @@ export default function ParentFinancesPage() {
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
                             <button className="text-blue-600 hover:text-blue-700"><Eye className="w-4 h-4" /></button>
-                            <button className="text-gray-600 hover:text-gray-700"><Printer className="w-4 h-4" /></button>
+                            <button className="text-gray-900 hover:text-gray-900"><Printer className="w-4 h-4" /></button>
                             {paiement.statut === "impaye" && (
                               <button className="text-green-600 hover:text-green-700"><CreditCard className="w-4 h-4" /></button>
                             )}
@@ -418,18 +416,18 @@ export default function ParentFinancesPage() {
               </div>
 
               {paiementsFiltres.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-900">
                   Aucun paiement trouvé
                 </div>
               )}
 
               {totalPages > 1 && (
                 <div className="px-6 py-4 border-t flex justify-between items-center">
-                  <p className="text-sm text-gray-500">{paiementsFiltres.length} paiements</p>
+                  <p className="text-sm text-gray-900">{paiementsFiltres.length} paiements</p>
                   <div className="flex gap-2">
-                    <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button>
+                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button>
                     <span className="px-3 py-1 text-sm">{currentPage} / {totalPages}</span>
-                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button>
+                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button>
                   </div>
                 </div>
               )}
@@ -440,9 +438,9 @@ export default function ParentFinancesPage() {
 
       {enfants.length === 0 && (
         <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-800">Aucun enfant inscrit</h3>
-          <p className="text-gray-500 mt-2">Vous n'avez pas encore d'enfant inscrit dans l'école.</p>
+          <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900">Aucun enfant inscrit</h3>
+          <p className="text-gray-900 mt-2">Vous n'avez pas encore d'enfant inscrit dans l'école.</p>
           <Link href="/register" className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Inscrire un enfant</Link>
         </div>
       )}

@@ -91,7 +91,7 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       {/* Hero Section avec image de fond */}
       <div className="relative h-[360px] mt-16 overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -128,7 +128,7 @@ export default function BlogPage() {
                 <input
                   type="text"
                   placeholder="Rechercher un article..."
-                  className="flex-1 px-4 py-2 text-gray-800 rounded-l-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+                  className="flex-1 px-4 py-2 text-gray-900 rounded-l-lg border border-gray-300 focus:outline-none focus:border-blue-500"
                 />
                 <button className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition">
                   <Search className="w-5 h-5" />
@@ -142,21 +142,19 @@ export default function BlogPage() {
               <ul className="space-y-2">
                 {categories.map((cat, index) => (
                   <li key={index}>
-                    <a 
-                      href="#" 
-                      className={`flex justify-between items-center px-3 py-2 rounded-lg transition ${
-                        cat.active 
-                          ? "bg-blue-50 text-blue-600 font-medium" 
-                          : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
-                      }`}
+                    <a
+                      href="#"
+                      className={`flex justify-between items-center px-3 py-2 rounded-lg transition ${cat.active
+                        ? "bg-blue-50 text-blue-600 font-medium"
+                        : "text-gray-900 hover:bg-gray-100 hover:text-blue-600"
+                        }`}
                     >
                       <span className="flex items-center gap-2">
-                        <Tag className="w-4 h-4" /> 
+                        <Tag className="w-4 h-4" />
                         {cat.name}
                       </span>
-                      <span className={`text-sm px-2 py-0.5 rounded-full ${
-                        cat.active ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-500"
-                      }`}>
+                      <span className={`text-sm px-2 py-0.5 rounded-full ${cat.active ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-900"
+                        }`}>
                         {cat.count}
                       </span>
                     </a>
@@ -174,7 +172,7 @@ export default function BlogPage() {
               <input
                 type="email"
                 placeholder="Votre email"
-                className="w-full px-4 py-2 rounded-lg text-gray-800 mb-3 focus:outline-none"
+                className="w-full px-4 py-2 rounded-lg text-gray-900 mb-3 focus:outline-none"
               />
               <button className="w-full bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
                 S'abonner
@@ -197,9 +195,9 @@ export default function BlogPage() {
                 <Link href={`/blog/${article.id}`} key={article.id}>
                   <article className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer">
                     <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={article.image} 
-                        alt={article.title} 
+                      <img
+                        src={article.image}
+                        alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                       />
                       <span className="absolute top-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
@@ -210,10 +208,10 @@ export default function BlogPage() {
                       <h2 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition">
                         {article.title}
                       </h2>
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                      <p className="text-gray-900 text-sm mb-3 line-clamp-2">
                         {article.excerpt}
                       </p>
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <div className="flex items-center gap-3 text-xs text-gray-900">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" /> {article.date}
                         </span>
@@ -228,7 +226,7 @@ export default function BlogPage() {
                         <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">
                           {article.author.charAt(0)}
                         </div>
-                        <span className="text-xs text-gray-600">{article.author}</span>
+                        <span className="text-xs text-gray-900">{article.author}</span>
                       </div>
                     </div>
                   </article>
@@ -238,19 +236,19 @@ export default function BlogPage() {
 
             {/* Pagination */}
             <div className="flex justify-center gap-2 mt-10">
-              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition">
+              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 transition">
                 Précédent
               </button>
               <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                 1
               </button>
-              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition">
+              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 transition">
                 2
               </button>
-              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition">
+              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 transition">
                 3
               </button>
-              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition">
+              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 transition">
                 Suivant
               </button>
             </div>

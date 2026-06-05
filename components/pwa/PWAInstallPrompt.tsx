@@ -17,11 +17,11 @@ export function PWAInstallPrompt() {
 
   useEffect(() => {
     setIsMounted(true);
-    
+
     // Vérifier localStorage uniquement côté client
     const dismissed = localStorage.getItem("pwa-prompt-dismissed") === "true";
     setHasDismissed(dismissed);
-    
+
     // Vérifier si l'app est déjà installée
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true);
@@ -55,7 +55,7 @@ export function PWAInstallPrompt() {
     setShowPrompt(false);
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     if (outcome === "accepted") {
       setIsInstalled(true);
     }
@@ -88,7 +88,7 @@ export function PWAInstallPrompt() {
             <h3 className="font-semibold text-gray-900">
               Installez l'application EIEF
             </h3>
-            <p className="text-sm text-gray-700 mt-1">
+            <p className="text-sm text-gray-900 mt-1">
               Un accès rapide et sécurisé
             </p>
             <div className="flex gap-2 mt-3">
@@ -100,7 +100,7 @@ export function PWAInstallPrompt() {
               </button>
               <button
                 onClick={handleDismiss}
-                className="text-gray-700 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-100"
+                className="text-gray-900 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-100"
               >
                 Plus tard
               </button>

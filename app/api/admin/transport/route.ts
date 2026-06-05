@@ -63,3 +63,109 @@ export async function GET() {
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role;
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE" && userRole !== "ADMIN_TRANSPORT")) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { immatriculation, chauffeur, chauffeur_tel, capacite, trajet, horaireMatin, horaireSoir } = body;
+
+    // 1. Insérer le bus
+    const busResult = await query(`
+      INSERT INTO bus (immatriculation, capacite, chauffeur_nom, chauffeur_tel)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id
+    `, [immatriculation, parseInt(capacite || 0), chauffeur, chauffeur_tel || null]);
+
+    const busId = busResult.rows[0].id;
+
+    // 2. Insérer la ligne de transport associée
+    if (trajet) {
+      await query(`
+        INSERT INTO lignes_transport (nom, bus_id, horaire_matin, horaire_soir)
+        VALUES ($1, $2, $3, $4)
+      `, [trajet, busId, horaireMatin || null, horaireSoir || null]);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Erreur API Transport (POST):", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role;
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE" && userRole !== "ADMIN_TRANSPORT")) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { id, immatriculation, chauffeur, chauffeur_tel, capacite, trajet, horaireMatin, horaireSoir } = body;
+
+    // 1. Mettre à jour le bus
+    await query(`
+      UPDATE bus
+      SET immatriculation = $1, capacite = $2, chauffeur_nom = $3, chauffeur_tel = $4
+      WHERE id = $5
+    `, [immatriculation, parseInt(capacite || 0), chauffeur, chauffeur_tel || null, id]);
+
+    // 2. Mettre à jour ou insérer la ligne de transport
+    const ligneCheck = await query('SELECT id FROM lignes_transport WHERE bus_id = $1', [id]);
+    if (ligneCheck.rows.length > 0) {
+      await query(`
+        UPDATE lignes_transport
+        SET nom = $1, horaire_matin = $2, horaire_soir = $3
+        WHERE bus_id = $4
+      `, [trajet, horaireMatin || null, horaireSoir || null, id]);
+    } else if (trajet) {
+      await query(`
+        INSERT INTO lignes_transport (nom, bus_id, horaire_matin, horaire_soir)
+        VALUES ($1, $2, $3, $4)
+      `, [trajet, id, horaireMatin || null, horaireSoir || null]);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Erreur API Transport (PUT):", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role;
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE" && userRole !== "ADMIN_TRANSPORT")) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const id = url.searchParams.get("id");
+    
+    if (!id) return NextResponse.json({ error: "ID manquant" }, { status: 400 });
+
+    // Récupérer la ligne pour supprimer ses inscriptions d'abord
+    const ligneResult = await query('SELECT id FROM lignes_transport WHERE bus_id = $1', [id]);
+    const ligneIds = ligneResult.rows.map(r => r.id);
+
+    if (ligneIds.length > 0) {
+      await query(`DELETE FROM inscriptions_transport WHERE ligne_id = ANY($1)`, [ligneIds]);
+      await query(`DELETE FROM lignes_transport WHERE bus_id = $1`, [id]);
+    }
+
+    await query('DELETE FROM bus WHERE id = $1', [id]);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Erreur API Transport (DELETE):", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}

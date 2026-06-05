@@ -2,10 +2,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
   Calendar,
   Download,
   Eye,
@@ -24,8 +24,8 @@ import {
   Filter,
   Printer,
   Mail,
-  Wrench,      
-  Droplet     
+  Wrench,
+  Droplet
 } from "lucide-react";
 
 export default function ComptabilitePage() {
@@ -79,7 +79,7 @@ export default function ComptabilitePage() {
     { name: "Eau/Électricité", montant: 400000, pourcentage: 8, icon: Droplet },
     { name: "Transport", montant: 350000, pourcentage: 7, icon: Bus },
     { name: "Autres", montant: 250000, pourcentage: 6, icon: DollarSign },
-    ];
+  ];
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
@@ -90,7 +90,7 @@ export default function ComptabilitePage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Chargement des données financières...</p>
+          <p className="text-gray-900">Chargement des données financières...</p>
         </div>
       </div>
     );
@@ -101,12 +101,12 @@ export default function ComptabilitePage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Comptabilité</h1>
-          <p className="text-gray-500">Gestion financière de l'école</p>
+          <h1 className="text-2xl font-bold text-gray-900">Comptabilité</h1>
+          <p className="text-gray-900">Gestion financière de l'école</p>
         </div>
         <div className="flex gap-3">
-          <select 
-            value={periode} 
+          <select
+            value={periode}
             onChange={(e) => setPeriode(e.target.value)}
             className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -126,7 +126,7 @@ export default function ComptabilitePage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Total recettes</p>
+              <p className="text-gray-900 text-sm">Total recettes</p>
               <p className="text-2xl font-bold text-green-600">{stats.totalRecettes.toLocaleString()} GNF</p>
               <p className="text-sm text-green-500 mt-1">+8% vs année dernière</p>
             </div>
@@ -139,7 +139,7 @@ export default function ComptabilitePage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Total dépenses</p>
+              <p className="text-gray-900 text-sm">Total dépenses</p>
               <p className="text-2xl font-bold text-red-600">{stats.totalDepenses.toLocaleString()} GNF</p>
               <p className="text-sm text-red-500 mt-1">+5% vs année dernière</p>
             </div>
@@ -152,9 +152,9 @@ export default function ComptabilitePage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Solde actuel</p>
+              <p className="text-gray-900 text-sm">Solde actuel</p>
               <p className="text-2xl font-bold text-blue-600">{stats.solde.toLocaleString()} GNF</p>
-              <p className="text-sm text-gray-500 mt-1">Disponible</p>
+              <p className="text-sm text-gray-900 mt-1">Disponible</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
               <Wallet className="w-6 h-6 text-blue-600" />
@@ -165,9 +165,9 @@ export default function ComptabilitePage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Taux de recouvrement</p>
+              <p className="text-gray-900 text-sm">Taux de recouvrement</p>
               <p className="text-2xl font-bold text-purple-600">{stats.tauxRecouvrement}%</p>
-              <p className="text-sm text-gray-500 mt-1">Objectif: 95%</p>
+              <p className="text-sm text-gray-900 mt-1">Objectif: 95%</p>
             </div>
             <div className="bg-purple-100 p-3 rounded-lg">
               <CheckCircle className="w-6 h-6 text-purple-600" />
@@ -180,7 +180,7 @@ export default function ComptabilitePage() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Évolution des recettes */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Évolution des recettes</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Évolution des recettes</h3>
           <div className="space-y-3">
             {recettesParMois.map((item, idx) => (
               <div key={idx}>
@@ -189,7 +189,7 @@ export default function ComptabilitePage() {
                   <span>{item.montant.toLocaleString()} GNF</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-green-500 h-2 rounded-full"
                     style={{ width: `${(item.montant / item.prevision) * 100}%` }}
                   ></div>
@@ -201,12 +201,12 @@ export default function ComptabilitePage() {
 
         {/* Répartition des recettes */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Répartition des recettes</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Répartition des recettes</h3>
           <div className="space-y-3">
             {categoriesRecettes.map((cat, idx) => (
               <div key={idx} className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <cat.icon className="w-4 h-4 text-gray-600" />
+                  <cat.icon className="w-4 h-4 text-gray-900" />
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between text-sm">
@@ -214,7 +214,7 @@ export default function ComptabilitePage() {
                     <span>{cat.montant.toLocaleString()} GNF ({cat.pourcentage}%)</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                    <div 
+                    <div
                       className="bg-blue-500 h-1.5 rounded-full"
                       style={{ width: `${cat.pourcentage}%` }}
                     ></div>
@@ -229,7 +229,7 @@ export default function ComptabilitePage() {
       {/* Derniers paiements */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h3 className="font-semibold text-gray-800">Derniers paiements</h3>
+          <h3 className="font-semibold text-gray-900">Derniers paiements</h3>
           <div className="flex gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
@@ -240,7 +240,7 @@ export default function ComptabilitePage() {
               />
             </div>
             <button className="p-1.5 border rounded-lg hover:bg-gray-50">
-              <Filter className="w-4 h-4 text-gray-500" />
+              <Filter className="w-4 h-4 text-gray-900" />
             </button>
           </div>
         </div>
@@ -248,28 +248,28 @@ export default function ComptabilitePage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Élève</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Classe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Élève</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Classe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Montant</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Mode</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {derniersPaiements.map((paiement) => (
                 <tr key={paiement.id}>
-                  <td className="px-6 py-4 font-medium text-gray-800">{paiement.eleve}</td>
-                  <td className="px-6 py-4 text-gray-600">{paiement.classe}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">{paiement.eleve}</td>
+                  <td className="px-6 py-4 text-gray-900">{paiement.classe}</td>
                   <td className="px-6 py-4 font-medium">{paiement.montant.toLocaleString()} GNF</td>
                   <td className="px-6 py-4">
-                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-gray-100 text-gray-900 px-2 py-1 rounded-full">
                       {paiement.type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{paiement.date}</td>
+                  <td className="px-6 py-4 text-gray-900">{paiement.date}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1">
                       {paiement.mode === "Mobile Money" && <Smartphone className="w-4 h-4 text-green-600" />}
@@ -299,7 +299,7 @@ export default function ComptabilitePage() {
                     <button className="text-blue-600 hover:text-blue-700 mr-2">
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button className="text-gray-600 hover:text-gray-700">
+                    <button className="text-gray-900 hover:text-gray-900">
                       <Printer className="w-4 h-4" />
                     </button>
                   </td>
@@ -309,7 +309,7 @@ export default function ComptabilitePage() {
           </table>
         </div>
         <div className="px-6 py-4 border-t flex justify-between items-center">
-          <p className="text-sm text-gray-500">Affichage 5 sur 45 paiements</p>
+          <p className="text-sm text-gray-900">Affichage 5 sur 45 paiements</p>
           <button className="text-blue-600 text-sm hover:underline">Voir tous les paiements →</button>
         </div>
       </div>

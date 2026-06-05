@@ -2,10 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Edit,
+  Trash2,
   Save,
   X,
   Euro,
@@ -30,7 +30,7 @@ interface Frais {
 export default function FraisScolairesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  
+
   const [formData, setFormData] = useState({
     type: "mensualite",
     libelle: "",
@@ -53,10 +53,10 @@ export default function FraisScolairesPage() {
     if (editingId) {
       setFrais(frais.map(f => f.id === editingId ? { ...f, ...formData, montant: parseInt(formData.montant) } : f));
     } else {
-      setFrais([...frais, { 
-        id: frais.length + 1, 
-        ...formData, 
-        montant: parseInt(formData.montant) 
+      setFrais([...frais, {
+        id: frais.length + 1,
+        ...formData,
+        montant: parseInt(formData.montant)
       }]);
     }
     setShowForm(false);
@@ -84,13 +84,13 @@ export default function FraisScolairesPage() {
   };
 
   const getTypeIcon = (type: string) => {
-    switch(type) {
+    switch (type) {
       case 'inscription': return <GraduationCap className="w-5 h-5 text-blue-600" />;
       case 'mensualite': return <Euro className="w-5 h-5 text-green-600" />;
       case 'cantine': return <Utensils className="w-5 h-5 text-orange-600" />;
       case 'transport': return <Bus className="w-5 h-5 text-purple-600" />;
       case 'bibliotheque': return <BookOpen className="w-5 h-5 text-teal-600" />;
-      default: return <Euro className="w-5 h-5 text-gray-600" />;
+      default: return <Euro className="w-5 h-5 text-gray-900" />;
     }
   };
 
@@ -120,10 +120,10 @@ export default function FraisScolairesPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Frais scolaires</h1>
-          <p className="text-gray-500">Gestion des tarifs et frais de l'école</p>
+          <h1 className="text-2xl font-bold text-gray-900">Frais scolaires</h1>
+          <p className="text-gray-900">Gestion des tarifs et frais de l'école</p>
         </div>
-        <button 
+        <button
           onClick={() => setShowForm(!showForm)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
         >
@@ -136,16 +136,16 @@ export default function FraisScolairesPage() {
       {showForm && (
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">
+            <h3 className="text-lg font-semibold text-gray-900">
               {editingId ? "Modifier le frais" : "Ajouter un nouveau frais"}
             </h3>
-            <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-gray-900 hover:text-gray-600">
+            <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-gray-900 hover:text-gray-900">
               <X className="w-5 h-5" />
             </button>
           </div>
           <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 mb-1">Type de frais *</label>
+              <label className="block text-gray-900 mb-1">Type de frais *</label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
@@ -160,7 +160,7 @@ export default function FraisScolairesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-gray-700 mb-1">Libellé *</label>
+              <label className="block text-gray-900 mb-1">Libellé *</label>
               <input
                 type="text"
                 value={formData.libelle}
@@ -170,7 +170,7 @@ export default function FraisScolairesPage() {
               />
             </div>
             <div>
-              <label className="block text-gray-700 mb-1">Montant (GNF) *</label>
+              <label className="block text-gray-900 mb-1">Montant (GNF) *</label>
               <input
                 type="number"
                 value={formData.montant}
@@ -180,7 +180,7 @@ export default function FraisScolairesPage() {
               />
             </div>
             <div>
-              <label className="block text-gray-700 mb-1">Périodicité *</label>
+              <label className="block text-gray-900 mb-1">Périodicité *</label>
               <select
                 value={formData.periodicite}
                 onChange={(e) => setFormData({ ...formData, periodicite: e.target.value })}
@@ -193,7 +193,7 @@ export default function FraisScolairesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-gray-700 mb-1">Classe (optionnel)</label>
+              <label className="block text-gray-900 mb-1">Classe (optionnel)</label>
               <input
                 type="text"
                 value={formData.classe}
@@ -203,7 +203,7 @@ export default function FraisScolairesPage() {
               />
             </div>
             <div>
-              <label className="block text-gray-700 mb-1">Année scolaire</label>
+              <label className="block text-gray-900 mb-1">Année scolaire</label>
               <select
                 value={formData.anneeScolaire}
                 onChange={(e) => setFormData({ ...formData, anneeScolaire: e.target.value })}
@@ -239,12 +239,12 @@ export default function FraisScolairesPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Libellé</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Périodicité</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Année</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Libellé</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Montant</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Périodicité</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Année</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -256,7 +256,7 @@ export default function FraisScolairesPage() {
                       <span>{getTypeLabel(f.type)}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 font-medium text-gray-800">{f.libelle}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">{f.libelle}</td>
                   <td className="px-6 py-4 text-right font-medium">{f.montant.toLocaleString()} GNF</td>
                   <td className="px-6 py-4">{getPeriodiciteLabel(f.periodicite)}</td>
                   <td className="px-6 py-4">{f.anneeScolaire}</td>

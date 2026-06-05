@@ -25,9 +25,9 @@ export default function AproposPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
+
       {/* Hero Section avec image */}
-      <div className="relative h-[350px] mt-16 overflow-hidden">        
+      <div className="relative h-[350px] mt-16 overflow-hidden">
         <div className="absolute inset-0 bg-black/50 z-10" />
         {/* Image de fond */}
         <div className="absolute inset-0 z-0">
@@ -39,7 +39,7 @@ export default function AproposPage() {
             priority
           />
         </div>
-        
+
         {/* Contenu du Hero */}
         <div className="relative z-20 h-full flex items-center">
           <div className="container mx-auto px-4 text-white">
@@ -51,15 +51,15 @@ export default function AproposPage() {
                 Découvrez l'histoire, la mission et les valeurs de l'École Internationale des Enfants Futur
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link 
-                  href="#mission" 
+                <Link
+                  href="#mission"
                   className="inline-flex items-center gap-2 bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition"
                 >
                   Découvrir notre mission
                   <ChevronRight className="w-4 h-4" />
                 </Link>
-                <Link 
-                  href="/contact" 
+                <Link
+                  href="/contact"
                   className="inline-flex items-center gap-2 border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition"
                 >
                   Nous contacter
@@ -78,7 +78,7 @@ export default function AproposPage() {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Notre mission</h2>
               <div className="w-20 h-1 bg-blue-600 mb-6"></div>
-              <p className="text-gray-600 text-lg leading-relaxed mb-6">
+              <p className="text-gray-900 text-lg leading-relaxed mb-6">
                 Former les leaders de demain en offrant une éducation d'excellence,
                 inclusive et innovante, qui développe le plein potentiel de chaque élève
                 et les prépare à réussir dans un monde en constante évolution.
@@ -88,19 +88,19 @@ export default function AproposPage() {
                   <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <span className="text-blue-600 text-sm">✓</span>
                   </div>
-                  <p className="text-gray-600">Un enseignement personnalisé adapté à chaque élève</p>
+                  <p className="text-gray-900">Un enseignement personnalisé adapté à chaque élève</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <span className="text-blue-600 text-sm">✓</span>
                   </div>
-                  <p className="text-gray-600">Des infrastructures modernes et sécurisées</p>
+                  <p className="text-gray-900">Des infrastructures modernes et sécurisées</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <span className="text-blue-600 text-sm">✓</span>
                   </div>
-                  <p className="text-gray-600">Une équipe pédagogique qualifiée et passionnée</p>
+                  <p className="text-gray-900">Une équipe pédagogique qualifiée et passionnée</p>
                 </div>
               </div>
               <div className="mt-8 flex items-center gap-2 text-blue-600 font-medium">
@@ -108,7 +108,7 @@ export default function AproposPage() {
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
-            
+
             {/* Image */}
             <div className="relative h-[350px] md:h-[450px] rounded-xl overflow-hidden shadow-xl">
               <Image
@@ -145,16 +145,16 @@ export default function AproposPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Texte */}
             <div className="order-1 md:order-2">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Notre histoire</h2>
               <div className="w-20 h-1 bg-blue-600 mb-6"></div>
-              <p className="text-gray-600 text-lg leading-relaxed mb-4">
-                Fondée en 2010, l'École Internationale des Enfants Futur est née d'une vision : 
+              <p className="text-gray-900 text-lg leading-relaxed mb-4">
+                Fondée en 2010, l'École Internationale des Enfants Futur est née d'une vision :
                 offrir une éducation de qualité accessible à tous, qui prépare les enfants aux défis du monde moderne.
               </p>
-              <p className="text-gray-600 text-lg leading-relaxed mb-4">
+              <p className="text-gray-900 text-lg leading-relaxed mb-4">
                 Depuis notre création, nous n'avons cessé d'innover et de nous développer,
                 pour aujourd'hui accueillir plus de 1200 élèves de la maternelle au lycée.
               </p>
@@ -173,7 +173,7 @@ export default function AproposPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Notre équipe</h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-900 max-w-2xl mx-auto">
               Une équipe passionnée et dévouée à la réussite de vos enfants
             </p>
           </div>
@@ -187,9 +187,9 @@ export default function AproposPage() {
                   className="object-cover group-hover:scale-110 transition duration-500"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800">Dr. Jean Diallo</h3>
+              <h3 className="text-xl font-semibold text-gray-900">Dr. Jean Diallo</h3>
               <p className="text-blue-600 mb-2">Directeur Général</p>
-              <p className="text-gray-500 text-sm">20 ans d'expérience dans l'éducation</p>
+              <p className="text-gray-900 text-sm">20 ans d'expérience dans l'éducation</p>
             </div>
             <div className="text-center group">
               <div className="relative w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden shadow-lg">
@@ -200,9 +200,9 @@ export default function AproposPage() {
                   className="object-cover group-hover:scale-110 transition duration-500"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800">Mme. Fatou Sow</h3>
+              <h3 className="text-xl font-semibold text-gray-900">Mme. Fatou Sow</h3>
               <p className="text-blue-600 mb-2">Directrice Pédagogique</p>
-              <p className="text-gray-500 text-sm">Experte en innovation éducative</p>
+              <p className="text-gray-900 text-sm">Experte en innovation éducative</p>
             </div>
             <div className="text-center group">
               <div className="relative w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden shadow-lg">
@@ -213,9 +213,9 @@ export default function AproposPage() {
                   className="object-cover group-hover:scale-110 transition duration-500"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800">M. Mamadou Barry</h3>
+              <h3 className="text-xl font-semibold text-gray-900">M. Mamadou Barry</h3>
               <p className="text-blue-600 mb-2">Coordinateur des programmes</p>
-              <p className="text-gray-500 text-sm">Spécialiste en développement pédagogique</p>
+              <p className="text-gray-900 text-sm">Spécialiste en développement pédagogique</p>
             </div>
           </div>
         </div>
@@ -227,7 +227,7 @@ export default function AproposPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Nos valeurs</h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-900 max-w-2xl mx-auto">
               Des principes fondamentaux qui guident notre action au quotidien
             </p>
           </div>
@@ -237,8 +237,8 @@ export default function AproposPage() {
                 <div className={`w-16 h-16 ${valeur.color} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition`}>
                   <valeur.icon className={`w-8 h-8 ${valeur.iconColor} group-hover:scale-110 transition`} />
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-gray-800">{valeur.title}</h3>
-                <p className="text-gray-600">{valeur.description}</p>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">{valeur.title}</h3>
+                <p className="text-gray-900">{valeur.description}</p>
               </div>
             ))}
           </div>
@@ -253,14 +253,14 @@ export default function AproposPage() {
             Inscrivez votre enfant dès maintenant et offrez-lui une éducation d'excellence
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link 
-              href="/inscription" 
+            <Link
+              href="/inscription"
               className="bg-white text-blue-900 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition"
             >
               Inscrire mon enfant
             </Link>
-            <Link 
-              href="/contact" 
+            <Link
+              href="/contact"
               className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition"
             >
               Nous contacter

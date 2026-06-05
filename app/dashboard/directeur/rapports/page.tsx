@@ -2,10 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Download, 
-  Calendar, 
-  FileText, 
+import {
+  Download,
+  Calendar,
+  FileText,
   Printer,
   TrendingUp,
   TrendingDown,
@@ -55,24 +55,24 @@ export default function RapportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div><h1 className="text-2xl font-bold text-gray-800">Rapports</h1><p className="text-gray-500">Générez et consultez les rapports</p></div>
+        <div><h1 className="text-2xl font-bold text-gray-900">Rapports</h1><p className="text-gray-900">Générez et consultez les rapports</p></div>
         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"><Plus className="w-4 h-4" />Nouveau rapport</button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm p-4"><div className="flex justify-between"><div><p className="text-gray-500 text-sm">Rapports générés</p><p className="text-2xl font-bold text-blue-600">{stats.totalRapports}</p></div><FileText className="w-8 h-8 text-blue-200" /></div></div>
-        <div className="bg-white rounded-xl shadow-sm p-4"><div className="flex justify-between"><div><p className="text-gray-500 text-sm">Nouveaux (mois)</p><p className="text-2xl font-bold text-green-600">{stats.nouveauxMois}</p></div><Calendar className="w-8 h-8 text-green-200" /></div></div>
-        <div className="bg-white rounded-xl shadow-sm p-4"><div className="flex justify-between"><div><p className="text-gray-500 text-sm">Téléchargements</p><p className="text-2xl font-bold text-orange-600">{stats.telechargementsMois}</p></div><Download className="w-8 h-8 text-orange-200" /></div></div>
-        <div className="bg-white rounded-xl shadow-sm p-4"><div className="flex justify-between"><div><p className="text-gray-500 text-sm">Types de rapports</p><p className="text-2xl font-bold text-purple-600">{stats.types}</p></div><BarChart3 className="w-8 h-8 text-purple-200" /></div></div>
+        <div className="bg-white rounded-xl shadow-sm p-4"><div className="flex justify-between"><div><p className="text-gray-900 text-sm">Rapports générés</p><p className="text-2xl font-bold text-blue-600">{stats.totalRapports}</p></div><FileText className="w-8 h-8 text-blue-200" /></div></div>
+        <div className="bg-white rounded-xl shadow-sm p-4"><div className="flex justify-between"><div><p className="text-gray-900 text-sm">Nouveaux (mois)</p><p className="text-2xl font-bold text-green-600">{stats.nouveauxMois}</p></div><Calendar className="w-8 h-8 text-green-200" /></div></div>
+        <div className="bg-white rounded-xl shadow-sm p-4"><div className="flex justify-between"><div><p className="text-gray-900 text-sm">Téléchargements</p><p className="text-2xl font-bold text-orange-600">{stats.telechargementsMois}</p></div><Download className="w-8 h-8 text-orange-200" /></div></div>
+        <div className="bg-white rounded-xl shadow-sm p-4"><div className="flex justify-between"><div><p className="text-gray-900 text-sm">Types de rapports</p><p className="text-2xl font-bold text-purple-600">{stats.types}</p></div><BarChart3 className="w-8 h-8 text-purple-200" /></div></div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {categories.map((cat, idx) => (<div key={idx} className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition cursor-pointer"><div className={`w-10 h-10 ${cat.color} rounded-lg flex items-center justify-center mb-3`}><cat.icon className="w-5 h-5" /></div><h3 className="font-semibold">{cat.name}</h3><p className="text-2xl font-bold mt-1">{cat.count}</p><p className="text-xs text-gray-500">rapports disponibles</p></div>))}
+        {categories.map((cat, idx) => (<div key={idx} className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition cursor-pointer"><div className={`w-10 h-10 ${cat.color} rounded-lg flex items-center justify-center mb-3`}><cat.icon className="w-5 h-5" /></div><h3 className="font-semibold">{cat.name}</h3><p className="text-2xl font-bold mt-1">{cat.count}</p><p className="text-xs text-gray-900">rapports disponibles</p></div>))}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b flex justify-between items-center"><h3 className="font-semibold">Rapports récents</h3><select value={typeRapport} onChange={(e) => setTypeRapport(e.target.value)} className="px-3 py-1 border rounded-lg text-sm"><option value="all">Tous</option><option value="academique">Académiques</option><option value="financier">Financiers</option><option value="presence">Présences</option></select></div>
-        <div className="divide-y">{filteredRapports.map((r) => (<div key={r.id} className="px-6 py-4 hover:bg-gray-50 flex justify-between items-center"><div><h4 className="font-medium">{r.titre}</h4><p className="text-sm text-gray-500">{r.description}</p><div className="flex items-center gap-4 mt-1"><span className="text-xs text-gray-900">{r.date}</span><span className="text-xs text-gray-900">{r.taille}</span></div></div><div className="flex gap-2"><button className="p-2 text-gray-500 hover:text-blue-600"><Eye className="w-4 h-4" /></button><button className="p-2 text-gray-500 hover:text-green-600"><Download className="w-4 h-4" /></button><button className="p-2 text-gray-500 hover:text-gray-700"><Printer className="w-4 h-4" /></button></div></div>))}</div>
+        <div className="divide-y">{filteredRapports.map((r) => (<div key={r.id} className="px-6 py-4 hover:bg-gray-50 flex justify-between items-center"><div><h4 className="font-medium">{r.titre}</h4><p className="text-sm text-gray-900">{r.description}</p><div className="flex items-center gap-4 mt-1"><span className="text-xs text-gray-900">{r.date}</span><span className="text-xs text-gray-900">{r.taille}</span></div></div><div className="flex gap-2"><button className="p-2 text-gray-900 hover:text-blue-600"><Eye className="w-4 h-4" /></button><button className="p-2 text-gray-900 hover:text-green-600"><Download className="w-4 h-4" /></button><button className="p-2 text-gray-900 hover:text-gray-900"><Printer className="w-4 h-4" /></button></div></div>))}</div>
       </div>
     </div>
   );

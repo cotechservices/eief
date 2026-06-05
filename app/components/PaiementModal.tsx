@@ -13,13 +13,13 @@ interface PaiementModalProps {
   montantFrais?: number;
 }
 
-export default function PaiementModal({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
-  preinscriptionId, 
+export default function PaiementModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  preinscriptionId,
   enfantNom,
-  montantFrais = 500000 
+  montantFrais = 500000
 }: PaiementModalProps) {
   const [modePaiement, setModePaiement] = useState<string>("");
   const [reference, setReference] = useState("");
@@ -68,30 +68,29 @@ export default function PaiementModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
         <div className="p-6 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-800">Paiement des frais</h2>
-          <button onClick={onClose} className="text-gray-900 hover:text-gray-600">
+          <h2 className="text-xl font-bold text-gray-900">Paiement des frais</h2>
+          <button onClick={onClose} className="text-gray-900 hover:text-gray-900">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-6">
           <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">Enfant concerné</p>
-            <p className="font-semibold text-gray-800">{enfantNom}</p>
+            <p className="text-sm text-gray-900">Enfant concerné</p>
+            <p className="font-semibold text-gray-900">{enfantNom}</p>
             <p className="text-2xl font-bold text-blue-600 mt-2">{montant.toLocaleString()} GNF</p>
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">Mode de paiement *</label>
+            <label className="block text-gray-900 mb-2">Mode de paiement *</label>
             <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setModePaiement("especes")}
-                className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${
-                  modePaiement === "especes" 
-                    ? "border-green-500 bg-green-50" 
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
+                className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === "especes"
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-200 hover:border-gray-300"
+                  }`}
               >
                 <Wallet className="w-6 h-6 text-green-600" />
                 <span className="text-xs">Espèces</span>
@@ -100,11 +99,10 @@ export default function PaiementModal({
               <button
                 type="button"
                 onClick={() => setModePaiement("orange_money")}
-                className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${
-                  modePaiement === "orange_money" 
-                    ? "border-orange-500 bg-orange-50" 
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
+                className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === "orange_money"
+                  ? "border-orange-500 bg-orange-50"
+                  : "border-gray-200 hover:border-gray-300"
+                  }`}
               >
                 <Smartphone className="w-6 h-6 text-orange-600" />
                 <span className="text-xs">Orange Money</span>
@@ -113,11 +111,10 @@ export default function PaiementModal({
               <button
                 type="button"
                 onClick={() => setModePaiement("carte")}
-                className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${
-                  modePaiement === "carte" 
-                    ? "border-blue-500 bg-blue-50" 
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
+                className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === "carte"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
+                  }`}
               >
                 <CreditCard className="w-6 h-6 text-blue-600" />
                 <span className="text-xs">Carte Visa</span>
@@ -127,7 +124,7 @@ export default function PaiementModal({
 
           {modePaiement === "orange_money" && (
             <div>
-              <label className="block text-gray-700 mb-2">Numéro de transaction Orange Money</label>
+              <label className="block text-gray-900 mb-2">Numéro de transaction Orange Money</label>
               <input
                 type="text"
                 value={reference}
@@ -135,13 +132,13 @@ export default function PaiementModal({
                 placeholder="Ex: #OM-123456789"
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <p className="text-xs text-gray-500 mt-1">Entrez le numéro de transaction reçu par SMS</p>
+              <p className="text-xs text-gray-900 mt-1">Entrez le numéro de transaction reçu par SMS</p>
             </div>
           )}
 
           {modePaiement === "carte" && (
             <div>
-              <label className="block text-gray-700 mb-2">Numéro de transaction Carte</label>
+              <label className="block text-gray-900 mb-2">Numéro de transaction Carte</label>
               <input
                 type="text"
                 value={reference}
@@ -164,11 +161,10 @@ export default function PaiementModal({
           <button
             onClick={handlePaiement}
             disabled={loading}
-            className={`w-full py-3 rounded-lg font-semibold transition ${
-              loading
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-green-600 text-white hover:bg-green-700"
-            }`}
+            className={`w-full py-3 rounded-lg font-semibold transition ${loading
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-green-600 text-white hover:bg-green-700"
+              }`}
           >
             {loading ? "Traitement en cours..." : "Confirmer le paiement"}
           </button>

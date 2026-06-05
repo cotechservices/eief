@@ -80,3 +80,73 @@ export async function GET() {
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role;
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE" && userRole !== "ADMIN_CANTINE")) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { date, plat, accompagnement, dessert, regime_special } = body;
+
+    const result = await query(`
+      INSERT INTO cantine_menus (date, plat, accompagnement, dessert, regime_special)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [date, plat, accompagnement, dessert, regime_special || false]);
+
+    return NextResponse.json({ success: true, menu: result.rows[0] });
+  } catch (error) {
+    console.error("Erreur API Cantine (POST):", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role;
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE" && userRole !== "ADMIN_CANTINE")) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { id, date, plat, accompagnement, dessert, regime_special } = body;
+
+    await query(`
+      UPDATE cantine_menus 
+      SET date = $1, plat = $2, accompagnement = $3, dessert = $4, regime_special = $5
+      WHERE id = $6
+    `, [date, plat, accompagnement, dessert, regime_special || false, id]);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Erreur API Cantine (PUT):", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    const userRole = (session?.user as any)?.role;
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE" && userRole !== "ADMIN_CANTINE")) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const id = url.searchParams.get("id");
+    
+    if (!id) return NextResponse.json({ error: "ID manquant" }, { status: 400 });
+
+    await query('DELETE FROM cantine_menus WHERE id = $1', [id]);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Erreur API Cantine (DELETE):", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}

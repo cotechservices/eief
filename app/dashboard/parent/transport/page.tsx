@@ -129,16 +129,16 @@ export default function ParentTransportPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Transport scolaire</h1>
-          <p className="text-gray-500">Suivez le trajet de vos enfants et gérez les paiements</p>
+          <h1 className="text-2xl font-bold text-gray-900">Transport scolaire</h1>
+          <p className="text-gray-900">Suivez le trajet de vos enfants et gérez les paiements</p>
         </div>
         <button
           onClick={handleRefresh}
           className="p-2 rounded-lg hover:bg-gray-100 transition flex items-center gap-2"
           disabled={refreshing}
         >
-          <RefreshCw className={`w-5 h-5 text-gray-500 ${refreshing ? "animate-spin" : ""}`} />
-          <span className="text-sm text-gray-600">Actualiser</span>
+          <RefreshCw className={`w-5 h-5 text-gray-900 ${refreshing ? "animate-spin" : ""}`} />
+          <span className="text-sm text-gray-900">Actualiser</span>
         </button>
       </div>
 
@@ -150,16 +150,16 @@ export default function ParentTransportPage() {
           <p className="text-xs opacity-75">dont {stats.inscritsTransport} inscrits au transport</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-500"><Bus className="w-5 h-5" /><p className="text-sm">Lignes actives</p></div>
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><Bus className="w-5 h-5" /><p className="text-sm">Lignes actives</p></div>
           <p className="text-2xl font-bold text-blue-600">{stats.lignesActives}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-500"><CreditCard className="w-5 h-5" /><p className="text-sm">Frais transport</p></div>
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5" /><p className="text-sm">Frais transport</p></div>
           <p className="text-lg font-bold text-green-600">{stats.fraisTotalTransport.toLocaleString()} GNF</p>
-          <p className="text-xs text-gray-500">Payé: {stats.fraisPayesTransport.toLocaleString()} GNF</p>
+          <p className="text-xs text-gray-900">Payé: {stats.fraisPayesTransport.toLocaleString()} GNF</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-500"><TrendingUp className="w-5 h-5" /><p className="text-sm">Taux paiement</p></div>
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><TrendingUp className="w-5 h-5" /><p className="text-sm">Taux paiement</p></div>
           <p className="text-2xl font-bold text-purple-600">
             {stats.fraisTotalTransport > 0 ? Math.round((stats.fraisPayesTransport / stats.fraisTotalTransport) * 100) : 0}%
           </p>
@@ -169,7 +169,7 @@ export default function ParentTransportPage() {
       {/* Barre de progression des paiements transport */}
       <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="flex justify-between text-sm mb-2">
-          <span className="text-gray-600">Progression des paiements transport</span>
+          <span className="text-gray-900">Progression des paiements transport</span>
           <span className="font-medium text-blue-600">
             {stats.fraisTotalTransport > 0 ? Math.round((stats.fraisPayesTransport / stats.fraisTotalTransport) * 100) : 0}%
           </span>
@@ -185,7 +185,7 @@ export default function ParentTransportPage() {
       {/* Sélection de l'enfant (uniquement si des enfants sont inscrits) */}
       {enfantsInscrits.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-3">
-          <span className="text-sm text-gray-500 flex items-center gap-1 mr-2">
+          <span className="text-sm text-gray-900 flex items-center gap-1 mr-2">
             <Users className="w-4 h-4" /> Enfants inscrits:
           </span>
           {enfantsInscrits.map((e) => (
@@ -193,8 +193,8 @@ export default function ParentTransportPage() {
               key={e.id}
               onClick={() => setSelectedEnfantId(e.id)}
               className={`px-4 py-2 rounded-lg transition ${selectedEnfantId === e.id
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-900 hover:bg-gray-200"
                 }`}
             >
               {e.prenom} {e.nom}
@@ -229,7 +229,7 @@ export default function ParentTransportPage() {
             {/* Statut du bus */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                   <Bus className="w-5 h-5 text-blue-600" />
                   Statut du bus
                 </h3>
@@ -245,15 +245,15 @@ export default function ParentTransportPage() {
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Immatriculation</span>
+                  <span className="text-gray-900 text-sm">Immatriculation</span>
                   <span className="font-medium">{enfant.immatriculation || "Non renseignée"}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Chauffeur</span>
+                  <span className="text-gray-900 text-sm">Chauffeur</span>
                   <span className="font-medium">{enfant.chauffeur || "Non renseigné"}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Contact chauffeur</span>
+                  <span className="text-gray-900 text-sm">Contact chauffeur</span>
                   {enfant.chauffeurTel ? (
                     <a href={`tel:${enfant.chauffeurTel}`} className="text-blue-600 font-medium flex items-center gap-1">
                       <Phone className="w-3 h-3" /> {enfant.chauffeurTel}
@@ -265,11 +265,11 @@ export default function ParentTransportPage() {
                 {busPosition && (
                   <>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">Vitesse actuelle</span>
+                      <span className="text-gray-900 text-sm">Vitesse actuelle</span>
                       <span className="font-medium">{busPosition.vitesse} km/h</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">Dernière mise à jour</span>
+                      <span className="text-gray-900 text-sm">Dernière mise à jour</span>
                       <span className="text-sm">{new Date(busPosition.derniereMiseAJour).toLocaleTimeString()}</span>
                     </div>
                   </>
@@ -279,30 +279,30 @@ export default function ParentTransportPage() {
 
             {/* Horaires */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
                 <Clock className="w-5 h-5 text-orange-600" />
                 Horaires
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-500">Départ maison</p>
+                    <p className="text-sm text-gray-900">Départ maison</p>
                     <p className="text-xl font-bold text-blue-600">{enfant.heureMatin || "--:--"}</p>
                   </div>
                   <div className="text-">→</div>
                   <div>
-                    <p className="text-sm text-gray-500">Arrivée école</p>
+                    <p className="text-sm text-gray-900">Arrivée école</p>
                     <p className="text-xl font-bold text-blue-600">07:15</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-500">Départ école</p>
+                    <p className="text-sm text-gray-900">Départ école</p>
                     <p className="text-xl font-bold text-orange-600">{enfant.heureSoir || "--:--"}</p>
                   </div>
                   <div className="text-">→</div>
                   <div>
-                    <p className="text-sm text-gray-500">Arrivée maison</p>
+                    <p className="text-sm text-gray-900">Arrivée maison</p>
                     <p className="text-xl font-bold text-orange-600">17:15</p>
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export default function ParentTransportPage() {
 
             {/* Arrêt */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
                 <MapPin className="w-5 h-5 text-green-600" />
                 Point d'arrêt
               </h3>
@@ -320,8 +320,8 @@ export default function ParentTransportPage() {
                   <MapPin className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-800">{enfant.arret || "Arrêt principal"}</p>
-                  <p className="text-sm text-gray-500">{enfant.ligne || "Ligne non définie"}</p>
+                  <p className="font-medium text-gray-900">{enfant.arret || "Arrêt principal"}</p>
+                  <p className="text-sm text-gray-900">{enfant.ligne || "Ligne non définie"}</p>
                 </div>
               </div>
             </div>
@@ -346,9 +346,9 @@ export default function ParentTransportPage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center">
                   <div className="text-center">
                     <Bus className="w-12 h-12 text-blue-600 mx-auto mb-2" />
-                    <p className="text-gray-600">Carte en temps réel</p>
+                    <p className="text-gray-900">Carte en temps réel</p>
                     {busPosition && (
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-900">
                         Position: {busPosition.latitude.toFixed(4)}, {busPosition.longitude.toFixed(4)}
                       </p>
                     )}
@@ -365,7 +365,7 @@ export default function ParentTransportPage() {
                 <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-lg p-2">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-gray-600">Bus en mouvement</span>
+                    <span className="text-xs text-gray-900">Bus en mouvement</span>
                   </div>
                 </div>
               </div>
@@ -373,17 +373,17 @@ export default function ParentTransportPage() {
 
             {/* Présence du jour */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
                 <Users className="w-5 h-5 text-purple-600" />
                 Présence du jour
               </h3>
               <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
                 <div>
-                  <p className="text-sm text-gray-500">Statut ce matin</p>
+                  <p className="text-sm text-gray-900">Statut ce matin</p>
                   <p className="text-lg font-semibold text-green-600">✅ Présent</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">Heure de prise en charge</p>
+                  <p className="text-sm text-gray-900">Heure de prise en charge</p>
                   <p className="font-medium">{enfant.heureMatin || "--:--"}</p>
                 </div>
               </div>
@@ -391,7 +391,7 @@ export default function ParentTransportPage() {
                 <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2">
                   <Bell className="w-4 h-4" /> Activer les alertes
                 </button>
-                <button className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                <button className="flex-1 border border-gray-300 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center gap-2">
                   <Calendar className="w-4 h-4" /> Historique
                 </button>
               </div>

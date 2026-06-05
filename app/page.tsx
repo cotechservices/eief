@@ -177,7 +177,7 @@ export default function HomePage() {
                 }}
               />
             </div>
-            <div className="absolute inset-0 bg-black/50" />            
+            <div className="absolute inset-0 bg-black/50" />
             <div className="relative h-full flex items-center">
               <div className="container mx-auto px-4 text-white">
                 <div className="max-w-2xl animate-fade-in-up">
@@ -258,7 +258,7 @@ export default function HomePage() {
                   <div className={`w-12 h-12 ${module.color} rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition`}>
                     <module.icon className="w-6 h-6 text-white" />
                   </div>
-                  <span className="text-sm font-medium text-gray-700">{module.name}</span>
+                  <span className="text-sm font-medium text-gray-900">{module.name}</span>
                 </div>
               </Link>
             ))}
@@ -284,16 +284,16 @@ export default function HomePage() {
               <div className="space-y-8">
                 {/* Préinscriptions & Inscriptions */}
                 <div className="border-l-4 border-blue-600 pl-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
                     Préinscriptions & Inscriptions
                   </h3>
-                  <p className="text-gray-600 leading-relaxed mb-4">
+                  <p className="text-gray-900 leading-relaxed mb-4">
                     Les préinscriptions et inscriptions sont ouvertes pour l'année scolaire
                     en cours. Notre établissement accueille les élèves dans un cadre moderne,
                     sécurisé et propice à la réussite académique.
                   </p>
 
-                  <div className="space-y-3 text-gray-700">
+                  <div className="space-y-3 text-gray-900">
                     <div className="flex items-start gap-3">
                       <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
                       <p>Procédure d'inscription simple, rapide et accessible en ligne.</p>
@@ -332,7 +332,7 @@ export default function HomePage() {
                         className="object-cover w-full h-full hover:scale-105 transition duration-500"
                       />
                     </div>
-                    <div className="p-2 text-center text-xs text-gray-500 bg-gray-50">Bibliothèque numérique</div>
+                    <div className="p-2 text-center text-xs text-gray-900 bg-gray-50">Bibliothèque numérique</div>
                   </div>
                 </div>
 
@@ -348,7 +348,7 @@ export default function HomePage() {
                         className="object-cover w-full h-full hover:scale-105 transition duration-500"
                       />
                     </div>
-                    <div className="p-2 text-center text-xs text-gray-500 bg-gray-50">Laboratoire informatique</div>
+                    <div className="p-2 text-center text-xs text-gray-900 bg-gray-50">Laboratoire informatique</div>
                   </div>
                 </div>
 
@@ -364,7 +364,7 @@ export default function HomePage() {
                         className="object-cover w-full h-full hover:scale-105 transition duration-500"
                       />
                     </div>
-                    <div className="p-2 text-center text-xs text-gray-500 bg-gray-50">Robotique & programmation</div>
+                    <div className="p-2 text-center text-xs text-gray-900 bg-gray-50">Robotique & programmation</div>
                   </div>
                 </div>
 
@@ -380,7 +380,7 @@ export default function HomePage() {
                         className="object-cover w-full h-full hover:scale-105 transition duration-500"
                       />
                     </div>
-                    <div className="p-2 text-center text-xs text-gray-500 bg-gray-50">Application mobile</div>
+                    <div className="p-2 text-center text-xs text-gray-900 bg-gray-50">Application mobile</div>
                   </div>
                 </div>
               </div>
@@ -406,8 +406,8 @@ export default function HomePage() {
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600 transition">
                     <feature.icon className="w-8 h-8 text-blue-600 group-hover:text-white transition" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-800">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900">{feature.title}</h3>
+                  <p className="text-gray-900">{feature.description}</p>
                 </div>
               </Link>
             ))}
@@ -484,7 +484,7 @@ export default function HomePage() {
       {/* Témoignages */}
       <div className="container mx-auto px-4 mt-10 mb-10">
         <div className="text-center mb-10">
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">Ils nous font confiance</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Ils nous font confiance</h3>
           <div className="w-16 h-1 bg-blue-600 mx-auto"></div>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
@@ -492,21 +492,21 @@ export default function HomePage() {
             <div className="flex items-center gap-1 mb-4">
               {[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}
             </div>
-            <p className="text-gray-600 italic mb-4">"Une école moderne avec des infrastructures de qualité. Ma fille adore ses cours de robotique !"</p>
+            <p className="text-gray-900 italic mb-4">"Une école moderne avec des infrastructures de qualité. Ma fille adore ses cours de robotique !"</p>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div>
-              <div><p className="font-semibold text-gray-800 text-sm">Mme Diallo</p><p className="text-xs text-gray-500">Parent d'élève</p></div>
+              <div><p className="font-semibold text-gray-900 text-sm">Mme Diallo</p><p className="text-xs text-gray-900">Parent d'élève</p></div>
             </div>
           </div>
           <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition">
             <div className="flex items-center gap-1 mb-4">{[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}</div>
-            <p className="text-gray-600 italic mb-4">"La plateforme en ligne est un vrai plus. Je peux suivre les notes et les devoirs de mon fils partout."</p>
-            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👨</div><div><p className="font-semibold text-gray-800 text-sm">M. Camara</p><p className="text-xs text-gray-500">Parent d'élève</p></div></div>
+            <p className="text-gray-900 italic mb-4">"La plateforme en ligne est un vrai plus. Je peux suivre les notes et les devoirs de mon fils partout."</p>
+            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👨</div><div><p className="font-semibold text-gray-900 text-sm">M. Camara</p><p className="text-xs text-gray-900">Parent d'élève</p></div></div>
           </div>
           <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition">
             <div className="flex items-center gap-1 mb-4">{[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}</div>
-            <p className="text-gray-600 italic mb-4">"Les enseignants sont compétents et l'ambiance est excellente. Je recommande vivement."</p>
-            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div><div><p className="font-semibold text-gray-800 text-sm">Mme Barry</p><p className="text-xs text-gray-500">Parent d'élève</p></div></div>
+            <p className="text-gray-900 italic mb-4">"Les enseignants sont compétents et l'ambiance est excellente. Je recommande vivement."</p>
+            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div><div><p className="font-semibold text-gray-900 text-sm">Mme Barry</p><p className="text-xs text-gray-900">Parent d'élève</p></div></div>
           </div>
         </div>
       </div>

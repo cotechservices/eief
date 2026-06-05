@@ -2,11 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Download, 
-  Search, 
-  Filter, 
-  Eye, 
+import {
+  Download,
+  Search,
+  Filter,
+  Eye,
   Printer,
   ChevronLeft,
   ChevronRight,
@@ -63,7 +63,7 @@ export default function SalairesPage() {
     return <span className="text-yellow-600 text-sm flex items-center gap-1"><Clock className="w-4 h-4" /> En attente</span>;
   };
 
-  const filteredEmployes = employes.filter(e => 
+  const filteredEmployes = employes.filter(e =>
     e.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.poste.toLowerCase().includes(searchTerm.toLowerCase())
@@ -74,8 +74,8 @@ export default function SalairesPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestion des salaires</h1>
-          <p className="text-gray-500">Paie du personnel</p>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion des salaires</h1>
+          <p className="text-gray-900">Paie du personnel</p>
         </div>
         <div className="flex gap-3">
           <select
@@ -109,7 +109,7 @@ export default function SalairesPage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Déjà payé</p>
+              <p className="text-gray-900 text-sm">Déjà payé</p>
               <p className="text-2xl font-bold text-green-600">{totalPaye.toLocaleString()} GNF</p>
             </div>
             <div className="bg-green-100 p-3 rounded-lg">
@@ -120,7 +120,7 @@ export default function SalairesPage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">En attente</p>
+              <p className="text-gray-900 text-sm">En attente</p>
               <p className="text-2xl font-bold text-yellow-600">{totalEnAttente.toLocaleString()} GNF</p>
             </div>
             <div className="bg-yellow-100 p-3 rounded-lg">
@@ -158,15 +158,15 @@ export default function SalairesPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employé</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Poste</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Salaire base</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Prime</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Retenue</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Net à payer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date paiement</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Employé</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Poste</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Salaire base</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Prime</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Retenue</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Net à payer</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date paiement</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -176,22 +176,22 @@ export default function SalairesPage() {
                   <tr key={employe.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-medium text-gray-800">{employe.prenom} {employe.nom}</p>
+                        <p className="font-medium text-gray-900">{employe.prenom} {employe.nom}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{employe.poste}</td>
+                    <td className="px-6 py-4 text-gray-900">{employe.poste}</td>
                     <td className="px-6 py-4 text-right">{employe.salaireBase.toLocaleString()} GNF</td>
                     <td className="px-6 py-4 text-right text-green-600">{employe.prime.toLocaleString()} GNF</td>
                     <td className="px-6 py-4 text-right text-red-600">-{employe.retenue.toLocaleString()} GNF</td>
                     <td className="px-6 py-4 text-right font-bold">{net.toLocaleString()} GNF</td>
                     <td className="px-6 py-4">{getStatutBadge(employe.statut)}</td>
-                    <td className="px-6 py-4 text-gray-600">{employe.datePaiement || "-"}</td>
+                    <td className="px-6 py-4 text-gray-900">{employe.datePaiement || "-"}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
                         <button className="text-blue-600 hover:text-blue-700">
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="text-gray-600 hover:text-gray-700">
+                        <button className="text-gray-900 hover:text-gray-900">
                           <Printer className="w-4 h-4" />
                         </button>
                       </div>
@@ -203,9 +203,9 @@ export default function SalairesPage() {
             <tfoot className="bg-gray-50 font-medium">
               <tr>
                 <td colSpan={2} className="px-6 py-4 text-right font-bold">TOTAL</td>
-                <td className="px-6 py-4 text-right">{employes.reduce((a,b) => a + b.salaireBase, 0).toLocaleString()} GNF</td>
-                <td className="px-6 py-4 text-right">{employes.reduce((a,b) => a + b.prime, 0).toLocaleString()} GNF</td>
-                <td className="px-6 py-4 text-right">{employes.reduce((a,b) => a + b.retenue, 0).toLocaleString()} GNF</td>
+                <td className="px-6 py-4 text-right">{employes.reduce((a, b) => a + b.salaireBase, 0).toLocaleString()} GNF</td>
+                <td className="px-6 py-4 text-right">{employes.reduce((a, b) => a + b.prime, 0).toLocaleString()} GNF</td>
+                <td className="px-6 py-4 text-right">{employes.reduce((a, b) => a + b.retenue, 0).toLocaleString()} GNF</td>
                 <td className="px-6 py-4 text-right font-bold">{totalSalaires.toLocaleString()} GNF</td>
                 <td colSpan={3}></td>
               </tr>

@@ -3,10 +3,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  BookOpen, 
-  Calendar, 
-  Clock, 
+import {
+  BookOpen,
+  Calendar,
+  Clock,
   CheckCircle,
   AlertCircle,
   Download,
@@ -55,7 +55,7 @@ export default function EleveDashboard() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Chargement...</p>
+          <p className="text-gray-900">Chargement...</p>
         </div>
       </div>
     );
@@ -64,10 +64,10 @@ export default function EleveDashboard() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
+        <h1 className="text-2xl font-bold text-gray-900">
           Bonjour {eleve.prenom} !
         </h1>
-        <p className="text-gray-500">{eleve.classe} - Année scolaire 2025-2026</p>
+        <p className="text-gray-900">{eleve.classe} - Année scolaire 2025-2026</p>
       </div>
 
       {/* Stats rapides */}
@@ -78,17 +78,17 @@ export default function EleveDashboard() {
           <p className="text-xs mt-2">Rang: {eleve.rang}e / {eleve.totalEleves}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <p className="text-gray-500 text-sm">Absences</p>
+          <p className="text-gray-900 text-sm">Absences</p>
           <p className="text-2xl font-bold text-orange-600">2</p>
-          <p className="text-xs text-gray-500 mt-2">Dont 0 justifiée</p>
+          <p className="text-xs text-gray-900 mt-2">Dont 0 justifiée</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <p className="text-gray-500 text-sm">Devoirs à rendre</p>
+          <p className="text-gray-900 text-sm">Devoirs à rendre</p>
           <p className="text-2xl font-bold text-red-600">3</p>
           <p className="text-xs text-red-500 mt-2">1 en retard</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <p className="text-gray-500 text-sm">Progression</p>
+          <p className="text-gray-900 text-sm">Progression</p>
           <p className="text-2xl font-bold text-green-600">+2 pts</p>
           <p className="text-xs text-green-600 mt-2">vs trimestre dernier</p>
         </div>
@@ -98,18 +98,18 @@ export default function EleveDashboard() {
         {/* Emploi du temps */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b flex justify-between items-center">
-            <h3 className="font-semibold text-gray-800">Emploi du temps - Aujourd'hui</h3>
+            <h3 className="font-semibold text-gray-900">Emploi du temps - Aujourd'hui</h3>
             <button className="text-blue-600 text-sm hover:underline">Voir semaine</button>
           </div>
           <div className="divide-y">
             {emploiDuTemps.map((cours, idx) => (
               <div key={idx} className="px-6 py-3 flex justify-between items-center">
                 <div>
-                  <p className="font-medium text-gray-800">{cours.matiere}</p>
-                  <p className="text-xs text-gray-500">{cours.salle} • {cours.professeur}</p>
+                  <p className="font-medium text-gray-900">{cours.matiere}</p>
+                  <p className="text-xs text-gray-900">{cours.salle} • {cours.professeur}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-600">{cours.heure}</p>
+                  <p className="text-sm text-gray-900">{cours.heure}</p>
                   {cours.matiere === "Pause déjeuner" && (
                     <span className="text-xs text-green-600">🍽️</span>
                   )}
@@ -122,7 +122,7 @@ export default function EleveDashboard() {
         {/* Devoirs */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b flex justify-between items-center">
-            <h3 className="font-semibold text-gray-800">Devoirs à rendre</h3>
+            <h3 className="font-semibold text-gray-900">Devoirs à rendre</h3>
             <Link href="/dashboard/eleve/devoirs" className="text-blue-600 text-sm hover:underline">
               Voir tout
             </Link>
@@ -132,11 +132,11 @@ export default function EleveDashboard() {
               <div key={devoir.id} className="px-6 py-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium text-gray-800">{devoir.matiere}</p>
-                    <p className="text-sm text-gray-600">{devoir.titre}</p>
+                    <p className="font-medium text-gray-900">{devoir.matiere}</p>
+                    <p className="text-sm text-gray-900">{devoir.titre}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500">À rendre le {devoir.dateLimite}</p>
+                    <p className="text-xs text-gray-900">À rendre le {devoir.dateLimite}</p>
                     {devoir.urgent && (
                       <span className="text-xs text-red-500 flex items-center gap-1 mt-1">
                         <AlertCircle className="w-3 h-3" /> Urgent
@@ -153,7 +153,7 @@ export default function EleveDashboard() {
       {/* Dernières notes */}
       <div className="mt-6 bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h3 className="font-semibold text-gray-800">Dernières notes</h3>
+          <h3 className="font-semibold text-gray-900">Dernières notes</h3>
           <button className="text-blue-600 text-sm hover:underline flex items-center gap-1">
             <Download className="w-4 h-4" />
             Télécharger bulletin
@@ -163,22 +163,22 @@ export default function EleveDashboard() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matière</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Moyenne classe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Appréciation</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Matière</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Note</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Moyenne classe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Appréciation</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {notes.map((note, idx) => (
                 <tr key={idx}>
-                  <td className="px-6 py-4 font-medium text-gray-800">{note.matiere}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">{note.matiere}</td>
                   <td className="px-6 py-4">
                     <span className={`font-medium ${note.note >= 12 ? "text-green-600" : note.note >= 10 ? "text-orange-600" : "text-red-600"}`}>
                       {note.note}/20
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{note.moyenneClasse}/20</td>
+                  <td className="px-6 py-4 text-gray-900">{note.moyenneClasse}/20</td>
                   <td className="px-6 py-4">
                     <span className={`text-sm ${note.appreciation === "Très bien" || note.appreciation === "Bien" ? "text-green-600" : "text-orange-600"}`}>
                       {note.appreciation}

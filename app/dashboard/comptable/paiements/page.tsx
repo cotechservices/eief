@@ -3,9 +3,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   Plus,
   Download,
   Printer,
@@ -49,7 +49,7 @@ export default function ComptablePaiementsPage() {
   const [selectedPaiement, setSelectedPaiement] = useState<Paiement | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  
+
   const itemsPerPage = 10;
 
   // Données des paiements
@@ -80,7 +80,7 @@ export default function ComptablePaiementsPage() {
   };
 
   const getStatutBadge = (statut: string) => {
-    switch(statut) {
+    switch (statut) {
       case "paye":
         return <span className="text-green-600 text-sm flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Payé</span>;
       case "en_attente":
@@ -93,7 +93,7 @@ export default function ComptablePaiementsPage() {
   };
 
   const getModeIcon = (mode: string) => {
-    switch(mode) {
+    switch (mode) {
       case "mobile_money":
         return <Smartphone className="w-4 h-4 text-green-600" />;
       case "especes":
@@ -126,9 +126,9 @@ export default function ComptablePaiementsPage() {
   };
 
   const filteredPaiements = paiements.filter(p => {
-    const matchesSearch = p.eleve.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          p.parent.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          p.reference.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = p.eleve.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.parent.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.reference.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || p.statut === statusFilter;
     const matchesType = typeFilter === "all" || p.type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
@@ -164,10 +164,10 @@ export default function ComptablePaiementsPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestion des paiements</h1>
-          <p className="text-gray-500">Enregistrez et suivez tous les paiements</p>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion des paiements</h1>
+          <p className="text-gray-900">Enregistrez et suivez tous les paiements</p>
         </div>
-        <button 
+        <button
           onClick={() => setShowPaymentModal(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
         >
@@ -180,26 +180,26 @@ export default function ComptablePaiementsPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">Total paiements</p><p className="text-2xl font-bold text-blue-600">{stats.total}</p></div>
+            <div><p className="text-gray-900 text-sm">Total paiements</p><p className="text-2xl font-bold text-blue-600">{stats.total}</p></div>
             <div className="bg-blue-100 p-3 rounded-lg"><FileText className="w-6 h-6 text-blue-600" /></div>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">Payés</p><p className="text-2xl font-bold text-green-600">{stats.paye}</p></div>
+            <div><p className="text-gray-900 text-sm">Payés</p><p className="text-2xl font-bold text-green-600">{stats.paye}</p></div>
             <div className="bg-green-100 p-3 rounded-lg"><CheckCircle className="w-6 h-6 text-green-600" /></div>
           </div>
           <p className="text-xs text-green-600 mt-1">{stats.montantPaye.toLocaleString()} GNF</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">En attente</p><p className="text-2xl font-bold text-yellow-600">{stats.enAttente}</p></div>
+            <div><p className="text-gray-900 text-sm">En attente</p><p className="text-2xl font-bold text-yellow-600">{stats.enAttente}</p></div>
             <div className="bg-yellow-100 p-3 rounded-lg"><Clock className="w-6 h-6 text-yellow-600" /></div>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">Impayés</p><p className="text-2xl font-bold text-red-600">{stats.impaye}</p></div>
+            <div><p className="text-gray-900 text-sm">Impayés</p><p className="text-2xl font-bold text-red-600">{stats.impaye}</p></div>
             <div className="bg-red-100 p-3 rounded-lg"><AlertCircle className="w-6 h-6 text-red-600" /></div>
           </div>
           <p className="text-xs text-red-600 mt-1">{stats.montantImpaye.toLocaleString()} GNF</p>
@@ -243,7 +243,7 @@ export default function ComptablePaiementsPage() {
             <option value="transport">Transport</option>
             <option value="bibliotheque">Bibliothèque</option>
           </select>
-          <button 
+          <button
             onClick={handleExport}
             className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition flex items-center gap-2"
           >
@@ -259,30 +259,30 @@ export default function ComptablePaiementsPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Élève / Classe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Élève / Classe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Parent</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Montant</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Mode</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {paginatedPaiements.map((paiement) => (
                 <tr key={paiement.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-600">{paiement.date}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{paiement.date}</td>
                   <td className="px-6 py-4">
                     <div>
-                      <p className="font-medium text-gray-800">{paiement.eleve}</p>
-                      <p className="text-xs text-gray-500">{paiement.classe}</p>
+                      <p className="font-medium text-gray-900">{paiement.eleve}</p>
+                      <p className="text-xs text-gray-900">{paiement.classe}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4">{paiement.parent}</td>
                   <td className="px-6 py-4 text-right font-medium">{paiement.montant.toLocaleString()} GNF</td>
                   <td className="px-6 py-4">
-                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-gray-100 text-gray-900 px-2 py-1 rounded-full">
                       {getTypeLabel(paiement.type)}
                     </span>
                   </td>
@@ -291,33 +291,33 @@ export default function ComptablePaiementsPage() {
                       {getModeIcon(paiement.mode)}
                       <span className="text-sm">{getModeLabel(paiement.mode)}</span>
                     </div>
-                   </td>
+                  </td>
                   <td className="px-6 py-4">{getStatutBadge(paiement.statut)}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      <button 
+                      <button
                         onClick={() => { setSelectedPaiement(paiement); setShowDetailModal(true); }}
                         className="text-blue-600 hover:text-blue-700"
                         title="Voir détail"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleSendRappel(paiement)}
                         className="text-orange-600 hover:text-orange-700"
                         title="Envoyer rappel"
                       >
                         <Send className="w-4 h-4" />
                       </button>
-                      <button 
-                        className="text-gray-600 hover:text-gray-700"
+                      <button
+                        className="text-gray-900 hover:text-gray-900"
                         title="Imprimer reçu"
                       >
                         <Printer className="w-4 h-4" />
                       </button>
                     </div>
-                   </td>
-                 </tr>
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -326,21 +326,21 @@ export default function ComptablePaiementsPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t flex justify-between items-center">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-900">
               Affichage {((currentPage - 1) * itemsPerPage) + 1} à {Math.min(currentPage * itemsPerPage, filteredPaiements.length)} sur {filteredPaiements.length} paiements
             </p>
             <div className="flex gap-2">
-              <button 
-                onClick={() => setCurrentPage(p => Math.max(1, p-1))} 
-                disabled={currentPage === 1} 
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
                 className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="px-3 py-1 text-sm">{currentPage} / {totalPages}</span>
-              <button 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} 
-                disabled={currentPage === totalPages} 
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
                 className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -355,57 +355,57 @@ export default function ComptablePaiementsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-800">Détail du paiement</h2>
-              <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600">
+              <h2 className="text-xl font-bold text-gray-900">Détail du paiement</h2>
+              <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Référence</span>
+                <span className="text-gray-900">Référence</span>
                 <span className="font-mono text-sm">{selectedPaiement.reference}</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Date</span>
+                <span className="text-gray-900">Date</span>
                 <span>{selectedPaiement.date}</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Élève</span>
+                <span className="text-gray-900">Élève</span>
                 <span className="font-medium">{selectedPaiement.eleve} ({selectedPaiement.classe})</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Parent</span>
+                <span className="text-gray-900">Parent</span>
                 <span>{selectedPaiement.parent}</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Type</span>
+                <span className="text-gray-900">Type</span>
                 <span className="capitalize">{getTypeLabel(selectedPaiement.type)}</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Montant</span>
+                <span className="text-gray-900">Montant</span>
                 <span className="text-lg font-bold text-blue-600">{selectedPaiement.montant.toLocaleString()} GNF</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Mode</span>
+                <span className="text-gray-900">Mode</span>
                 <div className="flex items-center gap-1">
                   {getModeIcon(selectedPaiement.mode)}
                   <span>{getModeLabel(selectedPaiement.mode)}</span>
                 </div>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Statut</span>
+                <span className="text-gray-900">Statut</span>
                 {getStatutBadge(selectedPaiement.statut)}
               </div>
               {selectedPaiement.description && (
                 <div className="flex justify-between items-center pb-2 border-b">
-                  <span className="text-gray-500">Description</span>
+                  <span className="text-gray-900">Description</span>
                   <span className="text-sm">{selectedPaiement.description}</span>
                 </div>
               )}
             </div>
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
-              <button 
-                onClick={() => setShowDetailModal(false)} 
+              <button
+                onClick={() => setShowDetailModal(false)}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-100"
               >
                 Fermer
@@ -423,8 +423,8 @@ export default function ComptablePaiementsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold text-gray-800">Nouveau paiement</h2>
-              <button onClick={() => setShowPaymentModal(false)} className="text-gray-900 hover:text-gray-600">
+              <h2 className="text-xl font-bold text-gray-900">Nouveau paiement</h2>
+              <button onClick={() => setShowPaymentModal(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>

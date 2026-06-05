@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
+import {
   Search, Filter, Plus, Download, Printer, Eye, CreditCard,
   Smartphone, Wallet, CheckCircle, Clock, AlertCircle, ChevronLeft,
   ChevronRight, X, FileText, Send
@@ -29,7 +29,7 @@ export default function ComptablePaiementsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPaiement, setSelectedPaiement] = useState<Paiement | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  
+
   const itemsPerPage = 10;
 
   const fetchPaiements = async () => {
@@ -62,7 +62,7 @@ export default function ComptablePaiementsPage() {
   };
 
   const getStatutBadge = (statut: string) => {
-    switch(statut) {
+    switch (statut) {
       case "paye": return <span className="text-green-600 text-sm flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Payé</span>;
       case "en_attente": return <span className="text-yellow-600 text-sm flex items-center gap-1"><Clock className="w-4 h-4" /> En attente</span>;
       case "impaye": return <span className="text-red-600 text-sm flex items-center gap-1"><AlertCircle className="w-4 h-4" /> Impayé</span>;
@@ -71,7 +71,7 @@ export default function ComptablePaiementsPage() {
   };
 
   const getModeIcon = (mode: string) => {
-    switch(mode) {
+    switch (mode) {
       case "mobile_money": return <Smartphone className="w-4 h-4 text-green-600" />;
       case "especes": return <Wallet className="w-4 h-4 text-blue-600" />;
       case "carte": return <CreditCard className="w-4 h-4 text-purple-600" />;
@@ -100,9 +100,9 @@ export default function ComptablePaiementsPage() {
   };
 
   const filteredPaiements = paiements.filter(p => {
-    const matchesSearch = p.eleve?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          p.matricule?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          p.reference?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = p.eleve?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.matricule?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.reference?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || p.statut === statusFilter;
     const matchesType = typeFilter === "all" || p.type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
@@ -142,8 +142,8 @@ export default function ComptablePaiementsPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestion des paiements</h1>
-          <p className="text-gray-500">Valider et suivre tous les paiements des élèves</p>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion des paiements</h1>
+          <p className="text-gray-900">Valider et suivre tous les paiements des élèves</p>
         </div>
       </div>
 
@@ -151,26 +151,26 @@ export default function ComptablePaiementsPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">Total paiements</p><p className="text-2xl font-bold text-blue-600">{stats.total}</p></div>
+            <div><p className="text-gray-900 text-sm">Total paiements</p><p className="text-2xl font-bold text-blue-600">{stats.total}</p></div>
             <div className="bg-blue-100 p-3 rounded-lg"><FileText className="w-6 h-6 text-blue-600" /></div>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">Payés</p><p className="text-2xl font-bold text-green-600">{stats.paye}</p></div>
+            <div><p className="text-gray-900 text-sm">Payés</p><p className="text-2xl font-bold text-green-600">{stats.paye}</p></div>
             <div className="bg-green-100 p-3 rounded-lg"><CheckCircle className="w-6 h-6 text-green-600" /></div>
           </div>
           <p className="text-xs text-green-600 mt-1">{stats.montantPaye.toLocaleString()} GNF</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">En attente</p><p className="text-2xl font-bold text-yellow-600">{stats.enAttente}</p></div>
+            <div><p className="text-gray-900 text-sm">En attente</p><p className="text-2xl font-bold text-yellow-600">{stats.enAttente}</p></div>
             <div className="bg-yellow-100 p-3 rounded-lg"><Clock className="w-6 h-6 text-yellow-600" /></div>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">Impayés</p><p className="text-2xl font-bold text-red-600">{stats.impaye}</p></div>
+            <div><p className="text-gray-900 text-sm">Impayés</p><p className="text-2xl font-bold text-red-600">{stats.impaye}</p></div>
             <div className="bg-red-100 p-3 rounded-lg"><AlertCircle className="w-6 h-6 text-red-600" /></div>
           </div>
           <p className="text-xs text-red-600 mt-1">{stats.montantImpaye.toLocaleString()} GNF</p>
@@ -208,28 +208,28 @@ export default function ComptablePaiementsPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Élève / Classe</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Élève / Classe</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Montant</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Mode</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {paginatedPaiements.map((paiement) => (
                 <tr key={paiement.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-600">{paiement.date}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{paiement.date}</td>
                   <td className="px-6 py-4">
                     <div>
-                      <p className="font-medium text-gray-800">{paiement.eleve}</p>
-                      <p className="text-xs text-gray-500">{paiement.classe}</p>
+                      <p className="font-medium text-gray-900">{paiement.eleve}</p>
+                      <p className="text-xs text-gray-900">{paiement.classe}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right font-medium">{Number(paiement.montant).toLocaleString()} GNF</td>
                   <td className="px-6 py-4">
-                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-gray-100 text-gray-900 px-2 py-1 rounded-full">
                       {getTypeLabel(paiement.type)}
                     </span>
                   </td>
@@ -238,7 +238,7 @@ export default function ComptablePaiementsPage() {
                       {getModeIcon(paiement.mode)}
                       <span className="text-sm">{getModeLabel(paiement.mode)}</span>
                     </div>
-                   </td>
+                  </td>
                   <td className="px-6 py-4">{getStatutBadge(paiement.statut)}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
@@ -247,8 +247,8 @@ export default function ComptablePaiementsPage() {
                         <button onClick={() => validerPaiement(paiement.id)} className="text-green-600 hover:text-green-700"><CheckCircle className="w-4 h-4" /></button>
                       )}
                     </div>
-                   </td>
-                 </tr>
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -258,9 +258,9 @@ export default function ComptablePaiementsPage() {
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t flex justify-between items-center">
             <div className="flex gap-2">
-              <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1} className="p-2 border rounded-lg hover:bg-gray-50"><ChevronLeft className="w-4 h-4" /></button>
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 border rounded-lg hover:bg-gray-50"><ChevronLeft className="w-4 h-4" /></button>
               <span className="px-3 py-1 text-sm">{currentPage} / {totalPages}</span>
-              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg hover:bg-gray-50"><ChevronRight className="w-4 h-4" /></button>
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg hover:bg-gray-50"><ChevronRight className="w-4 h-4" /></button>
             </div>
           </div>
         )}
@@ -271,26 +271,26 @@ export default function ComptablePaiementsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-800">Détail du paiement</h2>
-              <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600">
+              <h2 className="text-xl font-bold text-gray-900">Détail du paiement</h2>
+              <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Référence</span>
+                <span className="text-gray-900">Référence</span>
                 <span className="font-mono text-sm">{selectedPaiement.reference}</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Élève</span>
+                <span className="text-gray-900">Élève</span>
                 <span className="font-medium">{selectedPaiement.eleve} ({selectedPaiement.classe})</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Montant</span>
+                <span className="text-gray-900">Montant</span>
                 <span className="text-lg font-bold text-blue-600">{Number(selectedPaiement.montant).toLocaleString()} GNF</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b">
-                <span className="text-gray-500">Mode</span>
+                <span className="text-gray-900">Mode</span>
                 <div className="flex items-center gap-1">
                   {getModeIcon(selectedPaiement.mode)}
                   <span>{getModeLabel(selectedPaiement.mode)}</span>

@@ -2,10 +2,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Edit,
+  Trash2,
   Eye,
   Search,
   Filter,
@@ -99,7 +99,7 @@ export default function GestionClassesPage() {
 
   // Filtrage des classes
   const filteredClasses = classes.filter(classe => {
-    const matchesSearch = 
+    const matchesSearch =
       classe.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
       classe.titulaire.toLowerCase().includes(searchTerm.toLowerCase()) ||
       classe.salle.toLowerCase().includes(searchTerm.toLowerCase());
@@ -147,7 +147,7 @@ export default function GestionClassesPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Chargement des classes...</p>
+          <p className="text-gray-900">Chargement des classes...</p>
         </div>
       </div>
     );
@@ -158,10 +158,10 @@ export default function GestionClassesPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestion des classes</h1>
-          <p className="text-gray-500">Gérez toutes les classes de l'école</p>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion des classes</h1>
+          <p className="text-gray-900">Gérez toutes les classes de l'école</p>
         </div>
-        <button 
+        <button
           onClick={() => { setEditingClasse(null); setShowForm(true); }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
         >
@@ -175,7 +175,7 @@ export default function GestionClassesPage() {
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total classes</p>
+              <p className="text-gray-900 text-sm">Total classes</p>
               <p className="text-2xl font-bold text-blue-600">{classes.length}</p>
             </div>
             <School className="w-8 h-8 text-blue-200" />
@@ -184,7 +184,7 @@ export default function GestionClassesPage() {
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total élèves</p>
+              <p className="text-gray-900 text-sm">Total élèves</p>
               <p className="text-2xl font-bold text-green-600">{classes.reduce((acc, c) => acc + c.effectif, 0)}</p>
             </div>
             <Users className="w-8 h-8 text-green-200" />
@@ -193,7 +193,7 @@ export default function GestionClassesPage() {
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Capacité totale</p>
+              <p className="text-gray-900 text-sm">Capacité totale</p>
               <p className="text-2xl font-bold text-orange-600">{classes.reduce((acc, c) => acc + c.capacite, 0)}</p>
             </div>
             <GraduationCap className="w-8 h-8 text-orange-200" />
@@ -202,7 +202,7 @@ export default function GestionClassesPage() {
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Taux remplissage</p>
+              <p className="text-gray-900 text-sm">Taux remplissage</p>
               <p className="text-2xl font-bold text-purple-600">
                 {Math.round((classes.reduce((acc, c) => acc + c.effectif, 0) / classes.reduce((acc, c) => acc + c.capacite, 0)) * 100)}%
               </p>
@@ -259,14 +259,14 @@ export default function GestionClassesPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Classe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Niveau</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Salle</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Titulaire</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Effectif</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taux</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Classe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Niveau</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Salle</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Titulaire</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Effectif</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Taux</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -277,10 +277,10 @@ export default function GestionClassesPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <GraduationCap className="w-5 h-5 text-blue-500" />
-                        <span className="font-medium text-gray-800">{classe.nom}</span>
+                        <span className="font-medium text-gray-900">{classe.nom}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{classe.niveau}</td>
+                    <td className="px-6 py-4 text-gray-900">{classe.niveau}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
                         <MapPin className="w-4 h-4 text-gray-900" />
@@ -297,32 +297,32 @@ export default function GestionClassesPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-20 bg-gray-200 rounded-full h-2">
-                          <div 
+                          <div
                             className={`${tauxRemplissage.color} h-2 rounded-full`}
                             style={{ width: `${(classe.effectif / classe.capacite) * 100}%` }}
                           ></div>
                         </div>
-                        <span className="text-xs text-gray-500">{Math.round((classe.effectif / classe.capacite) * 100)}%</span>
+                        <span className="text-xs text-gray-900">{Math.round((classe.effectif / classe.capacite) * 100)}%</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">{getStatutBadge(classe.statut)}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <button 
+                        <button
                           onClick={() => handleViewMatieres(classe)}
                           className="text-blue-600 hover:text-blue-700"
                           title="Voir matières"
                         >
                           <BookOpen className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => { setEditingClasse(classe); setShowForm(true); }}
                           className="text-green-600 hover:text-green-700"
                           title="Modifier"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(classe.id)}
                           className="text-red-600 hover:text-red-700"
                           title="Supprimer"
@@ -340,7 +340,7 @@ export default function GestionClassesPage() {
 
         {/* Pagination */}
         <div className="px-6 py-4 border-t flex justify-between items-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-900">
             Affichage {((currentPage - 1) * itemsPerPage) + 1} à {Math.min(currentPage * itemsPerPage, filteredClasses.length)} sur {filteredClasses.length} classes
           </p>
           <div className="flex gap-2">
@@ -370,16 +370,16 @@ export default function GestionClassesPage() {
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">Matières - {selectedClasse.nom}</h2>
-                  <p className="text-gray-500 text-sm">Titulaire: {selectedClasse.titulaire}</p>
+                  <h2 className="text-xl font-bold text-gray-900">Matières - {selectedClasse.nom}</h2>
+                  <p className="text-gray-900 text-sm">Titulaire: {selectedClasse.titulaire}</p>
                 </div>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">✕</button>
               </div>
             </div>
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold">Liste des matières</h3>
-                <button 
+                <button
                   onClick={() => setShowMatiereForm(true)}
                   className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                 >
@@ -391,10 +391,10 @@ export default function GestionClassesPage() {
                   <div key={matiere.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <div>
                       <p className="font-medium">{matiere.nom}</p>
-                      <p className="text-sm text-gray-500">Enseignant: {matiere.enseignant}</p>
+                      <p className="text-sm text-gray-900">Enseignant: {matiere.enseignant}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm text-gray-500">{matiere.heuresSemaine}h/semaine</span>
+                      <span className="text-sm text-gray-900">{matiere.heuresSemaine}h/semaine</span>
                       <button className="text-blue-600"><Edit className="w-4 h-4" /></button>
                       <button className="text-red-600"><Trash2 className="w-4 h-4" /></button>
                     </div>
@@ -417,10 +417,10 @@ export default function GestionClassesPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold text-gray-900">
                   {editingClasse ? "Modifier la classe" : "Ajouter une nouvelle classe"}
                 </h2>
-                <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-600">✕</button>
+                <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-900">✕</button>
               </div>
             </div>
             <div className="p-6 space-y-4">

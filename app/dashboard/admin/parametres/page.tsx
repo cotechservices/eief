@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Settings, Calendar, Shield, Database, Bell, CheckCircle, Clock, Save, Plus, Trash2 
+import {
+  Settings, Calendar, Shield, Database, Bell, CheckCircle, Clock, Save, Plus, Trash2
 } from "lucide-react";
 
 interface AnneeScolaire {
@@ -95,17 +95,17 @@ export default function ParametresPage() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Paramètres système</h1>
-          <p className="text-gray-500">Configuration générale de l'établissement</p>
+          <h1 className="text-2xl font-bold text-gray-900">Paramètres système</h1>
+          <p className="text-gray-900">Configuration générale de l'établissement</p>
         </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
         <div className="p-6 border-b bg-gray-50">
-          <h2 className="text-lg text-black font-bold flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-600"/> Années scolaires</h2>
+          <h2 className="text-lg text-black font-bold flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-600" /> Années scolaires</h2>
           <p className="text-sm text-gray-900 mt-1">Gérez les années académiques (une seule peut être active à la fois)</p>
         </div>
-        
+
         <div className="p-6">
           <div className="flex justify-end mb-4">
             <button onClick={() => setShowForm(true)} className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800">
@@ -124,7 +124,7 @@ export default function ParametresPage() {
             </thead>
             <tbody className="divide-y">
               {loading ? (
-                <tr><td colSpan={4} className="py-8 text-center text-gray-500">Chargement...</td></tr>
+                <tr><td colSpan={4} className="py-8 text-center text-gray-900">Chargement...</td></tr>
               ) : (
                 annees.map(annee => (
                   <tr key={annee.id} className="hover:bg-gray-50">
@@ -135,10 +135,10 @@ export default function ParametresPage() {
                     <td className="py-4">
                       {annee.est_active ? (
                         <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center w-max gap-1">
-                          <CheckCircle className="w-3 h-3"/> Active
+                          <CheckCircle className="w-3 h-3" /> Active
                         </span>
                       ) : (
-                        <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium flex items-center w-max gap-1">
+                        <span className="bg-gray-100 text-gray-900 px-3 py-1 rounded-full text-xs font-medium flex items-center w-max gap-1">
                           Archivée
                         </span>
                       )}
@@ -170,20 +170,20 @@ export default function ParametresPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Libellé (ex: 2024-2025)</label>
-                <input required type="text" value={formData.libelle} onChange={e => setFormData({...formData, libelle: e.target.value})} className="w-full border px-3 py-2 rounded-lg" />
+                <input required type="text" value={formData.libelle} onChange={e => setFormData({ ...formData, libelle: e.target.value })} className="w-full border px-3 py-2 rounded-lg" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Date de début</label>
-                  <input required type="date" value={formData.date_debut} onChange={e => setFormData({...formData, date_debut: e.target.value})} className="w-full border px-3 py-2 rounded-lg" />
+                  <input required type="date" value={formData.date_debut} onChange={e => setFormData({ ...formData, date_debut: e.target.value })} className="w-full border px-3 py-2 rounded-lg" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Date de fin</label>
-                  <input required type="date" value={formData.date_fin} onChange={e => setFormData({...formData, date_fin: e.target.value})} className="w-full border px-3 py-2 rounded-lg" />
+                  <input required type="date" value={formData.date_fin} onChange={e => setFormData({ ...formData, date_fin: e.target.value })} className="w-full border px-3 py-2 rounded-lg" />
                 </div>
               </div>
               <div className="flex items-center gap-2 pt-2">
-                <input type="checkbox" id="active" checked={formData.est_active} onChange={e => setFormData({...formData, est_active: e.target.checked})} />
+                <input type="checkbox" id="active" checked={formData.est_active} onChange={e => setFormData({ ...formData, est_active: e.target.checked })} />
                 <label htmlFor="active" className="text-sm">Définir comme année active par défaut</label>
               </div>
               <div className="flex justify-end gap-3 pt-4">

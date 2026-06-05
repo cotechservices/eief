@@ -4,22 +4,21 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image"; 
+import Image from "next/image";
 import { Menu, X, User, ChevronDown, Bell } from "lucide-react";
 
 const menuItems = [
   { name: "Accueil", href: "/" },
   { name: "À propos", href: "/apropos" },
   { name: "Programmes", href: "/programmes" },
-  { 
-    name: "Annonces", 
-    href: "/annonces", 
-  },  
+  { name: "Annonces", href: "/annonces" },
   { name: "Blog", href: "/blog" },
 ];
 
 // Items du dropdown Ressources
 const dropdownItems = [
+  { name: "Cantine", href: "/cantine" },
+  { name: "Transport", href: "/transport" },
   { name: "Bibliothèque", href: "/bibliotheque" },
   { name: "Librairie", href: "/librairie" },
   { name: "Contact", href: "/contact" },
@@ -63,7 +62,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center overflow-hidden">
-              <Image 
+              <Image
                 src="/img/logo.jpg"
                 alt="Logo E.I.E.F"
                 width={40}
@@ -85,34 +84,32 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`relative flex items-center gap-1 transition font-medium ${
-                    active 
-                      ? "text-blue-600 border-b-2 border-blue-600 pb-0.5" 
+                  className={`relative flex items-center gap-1 transition font-medium ${active
+                      ? "text-blue-600 border-b-2 border-blue-600 pb-0.5"
                       : "text-black hover:text-blue-600"
-                  }`}
+                    }`}
                 >
                   {item.name}
                 </Link>
               );
             })}
-            
+
             {/* Dropdown Ressources */}
-            <div 
+            <div
               className="relative"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
               <button
-                className={`flex items-center gap-1 transition font-medium ${
-                  dropdownOpen ? "text-blue-600" : "text-black hover:text-blue-600"
-                }`}
+                className={`flex items-center gap-1 transition font-medium ${dropdownOpen ? "text-blue-600" : "text-black hover:text-blue-600"
+                  }`}
               >
                 Ressources
                 <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
               </button>
-              
+
               {dropdownOpen && (
-                <div 
+                <div
                   className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border z-50"
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
@@ -157,19 +154,18 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`relative flex items-center gap-2 py-2 px-2 transition ${
-                    active ? "text-blue-400 font-semibold" : "text-white hover:text-blue-400"
-                  }`}
+                  className={`relative flex items-center gap-2 py-2 px-2 transition ${active ? "text-blue-400 font-semibold" : "text-white hover:text-blue-400"
+                    }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               );
             })}
-            
+
             {/* Dropdown mobile */}
             <div className="mt-2 border-t border-gray-600 pt-2">
-              <p className="text-gray-300 text-sm px-2 py-1">Ressources</p>
+              <p className="text-gray-900 text-sm px-2 py-1">Ressources</p>
               {dropdownItems.map((item) => (
                 <Link
                   key={item.name}
@@ -181,7 +177,7 @@ export default function Header() {
                 </Link>
               ))}
             </div>
-            
+
             <Link
               href="/login"
               className="block mt-2 bg-blue-600 text-white text-center px-4 py-2 rounded-lg hover:bg-blue-700 transition mx-2"

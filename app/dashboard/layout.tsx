@@ -5,12 +5,12 @@ import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image"; 
-import { 
-  LayoutDashboard, 
-  Users, 
-  GraduationCap, 
-  BookOpen, 
+import Image from "next/image";
+import {
+  LayoutDashboard,
+  Users,
+  GraduationCap,
+  BookOpen,
   Calendar,
   CreditCard,
   Bus,
@@ -32,7 +32,7 @@ import { Providers } from "./providers";
 
 const menuItems = {
   SUPER_ADMIN: [
-    { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },    
+    { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
     { name: "Preinscriptions", href: "/dashboard/admin/preinscriptions", icon: Users },
     { name: "Réinscriptions", href: "/dashboard/admin/reinscriptions", icon: Users },
     { name: "Élèves", href: "/dashboard/admin/eleves", icon: Users },
@@ -63,24 +63,24 @@ const menuItems = {
     { name: "Annonces", href: "/dashboard/directeur/annonces", icon: Bell },
     { name: "Messages", href: "/dashboard/directeur/messages", icon: MessageSquare },
   ],
- COMPTABLE: [
-  { name: "Dashboard", href: "/dashboard/comptable", icon: LayoutDashboard },
-  { name: "Préinscriptions", href: "/dashboard/comptable/preinscriptions", icon: Users },
-  { name: "Réinscriptions", href: "/dashboard/comptable/reinscriptions", icon: Users },
-  { name: "Élèves", href: "/dashboard/comptable/eleves", icon: Users },
-  { name: "Classes", href: "/dashboard/comptable/classes", icon: GraduationCap },
-  { name: "Enseignants", href: "/dashboard/comptable/enseignants", icon: Users },
-  { name: "Personnel", href: "/dashboard/comptable/personnel", icon: Users },
-  { name: "Paiements", href: "/dashboard/comptable/paiements", icon: CreditCard },
-  { name: "Frais scolaires", href: "/dashboard/comptable/frais", icon: Euro },
-  { name: "Salaires", href: "/dashboard/comptable/salaires", icon: Users },
-  { name: "Rapports", href: "/dashboard/comptable/rapports", icon: FileText },
-  { name: "Cantine", href: "/dashboard/comptable/cantine", icon: Utensils },
-  { name: "Transport", href: "/dashboard/comptable/transport", icon: Bus },
-  { name: "Bibliothèque", href: "/dashboard/comptable/bibliotheque", icon: Library },
-  { name: "Librairie", href: "/dashboard/comptable/librairie", icon: BookMarked },
-  { name: "Messages", href: "/dashboard/comptable/messages", icon: MessageSquare },
-],
+  COMPTABLE: [
+    { name: "Dashboard", href: "/dashboard/comptable", icon: LayoutDashboard },
+    { name: "Préinscriptions", href: "/dashboard/comptable/preinscriptions", icon: Users },
+    { name: "Réinscriptions", href: "/dashboard/comptable/reinscriptions", icon: Users },
+    { name: "Élèves", href: "/dashboard/comptable/eleves", icon: Users },
+    { name: "Classes", href: "/dashboard/comptable/classes", icon: GraduationCap },
+    { name: "Enseignants", href: "/dashboard/comptable/enseignants", icon: Users },
+    { name: "Personnel", href: "/dashboard/comptable/personnel", icon: Users },
+    { name: "Paiements", href: "/dashboard/comptable/paiements", icon: CreditCard },
+    { name: "Frais scolaires", href: "/dashboard/comptable/frais", icon: Euro },
+    { name: "Salaires", href: "/dashboard/comptable/salaires", icon: Users },
+    { name: "Rapports", href: "/dashboard/comptable/rapports", icon: FileText },
+    { name: "Cantine", href: "/dashboard/comptable/cantine", icon: Utensils },
+    { name: "Transport", href: "/dashboard/comptable/transport", icon: Bus },
+    { name: "Bibliothèque", href: "/dashboard/comptable/bibliotheque", icon: Library },
+    { name: "Librairie", href: "/dashboard/comptable/librairie", icon: BookMarked },
+    { name: "Messages", href: "/dashboard/comptable/messages", icon: MessageSquare },
+  ],
   ENSEIGNANT: [
     { name: "Dashboard", href: "/dashboard/enseignant", icon: LayoutDashboard },
     { name: "Mes classes", href: "/dashboard/enseignant/classes", icon: GraduationCap },
@@ -96,7 +96,7 @@ const menuItems = {
     { name: "Messages", href: "/dashboard/parent/messages", icon: MessageSquare },
     { name: "Transport", href: "/dashboard/parent/transport", icon: Bus },
     { name: "Cantine", href: "/dashboard/parent/cantine", icon: Utensils },
-    
+
   ],
   ELEVE: [
     { name: "Dashboard", href: "/dashboard/eleve", icon: LayoutDashboard },
@@ -131,7 +131,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement...</p>
+          <p className="text-gray-900">Chargement...</p>
         </div>
       </div>
     );
@@ -167,7 +167,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             {sidebarOpen ? (
               <Link href="/dashboard" className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Image 
+                  <Image
                     src="/img/logo.jpg"
                     alt="Logo E.I.E.F"
                     width={40}
@@ -195,11 +195,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 mb-1 rounded-lg transition ${
-                    active 
-                      ? "bg-blue-600 text-white" 
-                      : "text-black hover:bg-blue-50 hover:text-blue-600"
-                  }`}
+                  className={`flex items-center gap-3 px-3 py-2 mb-1 rounded-lg transition ${active
+                    ? "bg-blue-600 text-white"
+                    : "text-black hover:bg-blue-50 hover:text-blue-600"
+                    }`}
                 >
                   <item.icon className={`w-5 h-5 ${active ? "text-white" : ""}`} />
                   {sidebarOpen && <span className="text-sm">{item.name}</span>}
@@ -226,17 +225,17 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         {/* Top Header */}
         <header className="bg-white shadow-sm sticky top-0 z-30">
           <div className="flex justify-between items-center px-6 py-3">
-            <h1 className="text-xl font-semibold text-gray-800">Tableau de bord</h1>
+            <h1 className="text-xl font-semibold text-gray-900">Tableau de bord</h1>
             <div className="flex items-center gap-4">
               <button className="relative">
-                <Bell className="w-5 h-5 text-gray-600" />
+                <Bell className="w-5 h-5 text-gray-900" />
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
               </button>
               <div className="flex items-center gap-3">
-                <UserCircle className="w-8 h-8 text-gray-600" />
+                <UserCircle className="w-8 h-8 text-gray-900" />
                 <div className="hidden md:block">
-                  <p className="text-sm font-medium text-gray-800">{session?.user?.name}</p>
-                  <p className="text-xs text-gray-500">{userRole}</p>
+                  <p className="text-sm font-medium text-gray-900">{session?.user?.name}</p>
+                  <p className="text-xs text-gray-900">{userRole}</p>
                 </div>
               </div>
             </div>

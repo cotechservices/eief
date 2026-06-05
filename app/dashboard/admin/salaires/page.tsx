@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
+import {
   Download, Search, Filter, Eye, Printer, ChevronLeft, ChevronRight,
   User, Calendar, CreditCard, TrendingUp, AlertCircle, CheckCircle, Clock
 } from "lucide-react";
@@ -59,8 +59,8 @@ export default function SalairesPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            personnel_id, montant, 
-            mois: parseInt(selectedMois), 
+            personnel_id, montant,
+            mois: parseInt(selectedMois),
             annee: parseInt(selectedAnnee),
             mode_paiement: 'virement',
             reference_transaction: `SAL-${selectedAnnee}${selectedMois}-${personnel_id}`
@@ -72,7 +72,7 @@ export default function SalairesPage() {
           const data = await res.json();
           alert(data.error || "Erreur de paiement");
         }
-      } catch(e) {
+      } catch (e) {
         console.error(e);
       }
     }
@@ -89,7 +89,7 @@ export default function SalairesPage() {
     return <span className="text-yellow-600 text-sm flex items-center gap-1"><Clock className="w-4 h-4" /> Non payé</span>;
   };
 
-  const filteredEmployes = salaires.filter(s => 
+  const filteredEmployes = salaires.filter(s =>
     s.employe?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.poste?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -99,8 +99,8 @@ export default function SalairesPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestion des salaires</h1>
-          <p className="text-gray-500">Paie du personnel</p>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion des salaires</h1>
+          <p className="text-gray-900">Paie du personnel</p>
         </div>
         <div className="flex gap-3">
           <select
@@ -130,7 +130,7 @@ export default function SalairesPage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Déjà payé</p>
+              <p className="text-gray-900 text-sm">Déjà payé</p>
               <p className="text-2xl font-bold text-green-600">{totalPaye.toLocaleString()} GNF</p>
             </div>
             <div className="bg-green-100 p-3 rounded-lg">
@@ -141,7 +141,7 @@ export default function SalairesPage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Non payé</p>
+              <p className="text-gray-900 text-sm">Non payé</p>
               <p className="text-2xl font-bold text-yellow-600">{totalEnAttente.toLocaleString()} GNF</p>
             </div>
             <div className="bg-yellow-100 p-3 rounded-lg">
@@ -172,28 +172,28 @@ export default function SalairesPage() {
       {/* Tableau des salaires */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Chargement...</div>
+          <div className="p-8 text-center text-gray-900">Chargement...</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employé</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Poste</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Salaire net</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date paiement</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Employé</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Poste</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Salaire net</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date paiement</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredEmployes.map((employe) => (
                   <tr key={employe.personnel_id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-800">{employe.employe}</td>
-                    <td className="px-6 py-4 text-gray-600">{employe.poste}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900">{employe.employe}</td>
+                    <td className="px-6 py-4 text-gray-900">{employe.poste}</td>
                     <td className="px-6 py-4 text-right font-bold">{Number(employe.salaire_base).toLocaleString()} GNF</td>
                     <td className="px-6 py-4">{getStatutBadge(employe.statut)}</td>
-                    <td className="px-6 py-4 text-gray-600">{employe.date_paiement || "-"}</td>
+                    <td className="px-6 py-4 text-gray-900">{employe.date_paiement || "-"}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
                         {employe.statut !== "paye" && (
@@ -201,7 +201,7 @@ export default function SalairesPage() {
                             Payer
                           </button>
                         )}
-                        <button className="text-gray-600 hover:text-gray-700 p-1">
+                        <button className="text-gray-900 hover:text-gray-900 p-1">
                           <Printer className="w-4 h-4" />
                         </button>
                       </div>

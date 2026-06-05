@@ -122,24 +122,24 @@ export default function Footer() {
 
         {/* Réseaux sociaux - Facebook, LinkedIn, YouTube */}
         <div className="flex justify-center space-x-6 mb-8">
-          <a 
-            href="https://www.facebook.com/enfantsdufutur" 
+          <a
+            href="https://www.facebook.com/enfantsdufutur"
             className="hover:text-blue-400 transition"
             target="_blank"
             rel="noopener noreferrer"
           >
             <FacebookIcon />
           </a>
-          <a 
-            href="#" 
+          <a
+            href="#"
             className="hover:text-blue-400 transition"
             target="_blank"
             rel="noopener noreferrer"
           >
             <LinkedinIcon />
           </a>
-          <a 
-            href="https://youtube.com/@eief-enfantsdufutur?si=W_u0umlkCy9cQVHd" 
+          <a
+            href="https://youtube.com/@eief-enfantsdufutur?si=W_u0umlkCy9cQVHd"
             className="hover:text-red-600 transition"
             target="_blank"
             rel="noopener noreferrer"

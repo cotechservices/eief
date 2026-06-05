@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
+import {
   Plus, Edit, Trash2, Eye, Search, Filter, Download,
   Calendar, User, Tag, Bell, AlertCircle, CheckCircle, XCircle,
   ImageIcon, Upload, Send, Clock
@@ -60,7 +60,7 @@ export default function AdminAnnoncesPage() {
   };
 
   const getCategorieBadge = (categorie: string) => {
-    switch(categorie) {
+    switch (categorie) {
       case "info": return <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">Information</span>;
       case "alerte": return <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full">Alerte</span>;
       case "evenement": return <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">Événement</span>;
@@ -125,7 +125,7 @@ export default function AdminAnnoncesPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Gestion des annonces</h1>
-          <p className="text-gray-500">Créez et gérez les annonces de l'école</p>
+          <p className="text-gray-900">Créez et gérez les annonces de l'école</p>
         </div>
         <button onClick={() => { setEditingAnnonce(null); setShowForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
           <Plus className="w-4 h-4" /> Nouvelle annonce
@@ -136,25 +136,25 @@ export default function AdminAnnoncesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4">
           <div className="flex justify-between">
-            <div><p className="text-gray-500">Total annonces</p><p className="text-2xl font-bold text-blue-600">{stats.total}</p></div>
+            <div><p className="text-gray-900">Total annonces</p><p className="text-2xl font-bold text-blue-600">{stats.total}</p></div>
             <Bell className="w-8 h-8 text-blue-200" />
           </div>
         </div>
         <div className="bg-white rounded-xl p-4">
           <div className="flex justify-between">
-            <div><p className="text-gray-500">Publiées</p><p className="text-2xl font-bold text-green-600">{stats.publiees}</p></div>
+            <div><p className="text-gray-900">Publiées</p><p className="text-2xl font-bold text-green-600">{stats.publiees}</p></div>
             <CheckCircle className="w-8 h-8 text-green-200" />
           </div>
         </div>
         <div className="bg-white rounded-xl p-4">
           <div className="flex justify-between">
-            <div><p className="text-gray-500">Programmées</p><p className="text-2xl font-bold text-orange-600">{stats.programmees}</p></div>
+            <div><p className="text-gray-900">Programmées</p><p className="text-2xl font-bold text-orange-600">{stats.programmees}</p></div>
             <Clock className="w-8 h-8 text-orange-200" />
           </div>
         </div>
         <div className="bg-white rounded-xl p-4">
           <div className="flex justify-between">
-            <div><p className="text-gray-500">Vues totales</p><p className="text-2xl font-bold text-purple-600">{stats.vuesTotales}</p></div>
+            <div><p className="text-gray-900">Vues totales</p><p className="text-2xl font-bold text-purple-600">{stats.vuesTotales}</p></div>
             <Eye className="w-8 h-8 text-purple-200" />
           </div>
         </div>
@@ -188,13 +188,13 @@ export default function AdminAnnoncesPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Titre</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catégorie</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cible</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vues</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Titre</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Catégorie</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Cible</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Vues</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -242,16 +242,16 @@ export default function AdminAnnoncesPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Titre *</label>
-                <input type="text" value={formData.titre} onChange={(e) => setFormData({...formData, titre: e.target.value})} className="w-full px-3 py-2 border rounded-lg" required />
+                <input type="text" value={formData.titre} onChange={(e) => setFormData({ ...formData, titre: e.target.value })} className="w-full px-3 py-2 border rounded-lg" required />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Contenu *</label>
-                <textarea rows={4} value={formData.contenu} onChange={(e) => setFormData({...formData, contenu: e.target.value})} className="w-full px-3 py-2 border rounded-lg" required />
+                <textarea rows={4} value={formData.contenu} onChange={(e) => setFormData({ ...formData, contenu: e.target.value })} className="w-full px-3 py-2 border rounded-lg" required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Catégorie</label>
-                  <select value={formData.categorie} onChange={(e) => setFormData({...formData, categorie: e.target.value})} className="w-full px-3 py-2 border rounded-lg">
+                  <select value={formData.categorie} onChange={(e) => setFormData({ ...formData, categorie: e.target.value })} className="w-full px-3 py-2 border rounded-lg">
                     <option value="info">Information</option>
                     <option value="alerte">Alerte</option>
                     <option value="evenement">Événement</option>
@@ -260,7 +260,7 @@ export default function AdminAnnoncesPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Cible</label>
-                  <select value={formData.cible} onChange={(e) => setFormData({...formData, cible: e.target.value})} className="w-full px-3 py-2 border rounded-lg">
+                  <select value={formData.cible} onChange={(e) => setFormData({ ...formData, cible: e.target.value })} className="w-full px-3 py-2 border rounded-lg">
                     <option value="tous">Tous</option>
                     <option value="parents">Parents uniquement</option>
                     <option value="enseignants">Enseignants</option>
@@ -270,11 +270,11 @@ export default function AdminAnnoncesPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Programmer (optionnel)</label>
-                <input type="datetime-local" value={formData.dateProgrammee} onChange={(e) => setFormData({...formData, dateProgrammee: e.target.value})} className="w-full px-3 py-2 border rounded-lg" />
+                <input type="datetime-local" value={formData.dateProgrammee} onChange={(e) => setFormData({ ...formData, dateProgrammee: e.target.value })} className="w-full px-3 py-2 border rounded-lg" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Image (optionnel)</label>
-                <input type="file" accept="image/*" onChange={(e) => setFormData({...formData, image: e.target.files?.[0] || null})} className="w-full" />
+                <input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })} className="w-full" />
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-lg">Annuler</button>

@@ -50,7 +50,7 @@ export default function LoginPage() {
       <div className="relative z-20 min-h-screen flex items-center justify-center px-4 py-12">
         <div className="max-w-6xl w-full mx-auto">
           <div className="flex flex-col lg:flex-row rounded-2xl overflow-hidden shadow-2xl">
-            
+
             {/* Partie gauche - Texte de pub avec transparence */}
             <div className="lg:w-1/2 bg-black/50 backdrop-blur-sm p-8 lg:p-12 flex flex-col justify-center text-white">
               <div className="mb-8">
@@ -129,10 +129,10 @@ export default function LoginPage() {
 
               {/* Title */}
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-800">
+                <h1 className="text-2xl font-bold text-gray-900">
                   Connexion
                 </h1>
-                <p className="text-gray-500 mt-2">
+                <p className="text-gray-900 mt-2">
                   Accédez à votre espace personnel
                 </p>
               </div>
@@ -148,7 +148,7 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Email */}
                 <div>
-                  <label className="block text-gray-700 mb-2 font-medium">
+                  <label className="block text-gray-900 mb-2 font-medium">
                     Email
                   </label>
                   <div className="relative">
@@ -157,7 +157,7 @@ export default function LoginPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-800"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
                       placeholder="votre@email.com"
                       required
                       disabled={loading}
@@ -167,7 +167,7 @@ export default function LoginPage() {
 
                 {/* Password */}
                 <div>
-                  <label className="block text-gray-700 mb-2 font-medium">
+                  <label className="block text-gray-900 mb-2 font-medium">
                     Mot de passe
                   </label>
                   <div className="relative">
@@ -176,7 +176,7 @@ export default function LoginPage() {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-800"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
                       placeholder="••••••••"
                       required
                       disabled={loading}
@@ -187,9 +187,9 @@ export default function LoginPage() {
                       className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
                       {showPassword ? (
-                        <EyeOff className="w-5 h-5 text-gray-900 hover:text-gray-600" />
+                        <EyeOff className="w-5 h-5 text-gray-900 hover:text-gray-900" />
                       ) : (
-                        <Eye className="w-5 h-5 text-gray-900 hover:text-gray-600" />
+                        <Eye className="w-5 h-5 text-gray-900 hover:text-gray-900" />
                       )}
                     </button>
                   </div>
@@ -197,8 +197,8 @@ export default function LoginPage() {
 
                 {/* Forgot password link */}
                 <div className="text-right">
-                  <Link 
-                    href="/forgot-password" 
+                  <Link
+                    href="/forgot-password"
                     className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
                   >
                     Mot de passe oublié ?
@@ -227,7 +227,7 @@ export default function LoginPage() {
 
               {/* Register link */}
               <div className="mt-6 text-center">
-                <p className="text-gray-600">
+                <p className="text-gray-900">
                   Pas encore de compte ?{" "}
                   <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
                     Créer un compte

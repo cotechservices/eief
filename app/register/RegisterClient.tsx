@@ -4,14 +4,14 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { 
-  User, 
-  Mail, 
-  Lock, 
-  Phone, 
-  Calendar, 
-  MapPin, 
-  Upload, 
+import {
+  User,
+  Mail,
+  Lock,
+  Phone,
+  Calendar,
+  MapPin,
+  Upload,
   CheckCircle,
   ArrowRight,
   ArrowLeft,
@@ -74,10 +74,10 @@ export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const niveauParam = searchParams.get("niveau");
-  
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  
+
   // Informations parent
   const [parentInfo, setParentInfo] = useState({
     nom: "",
@@ -89,7 +89,7 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
-  
+
   // Liste des enfants
   const [enfants, setEnfants] = useState<Enfant[]>([
     {
@@ -117,12 +117,12 @@ export default function RegisterPage() {
   const handleEnfantChange = (index: number, field: keyof Enfant, value: any) => {
     const newEnfants = [...enfants];
     newEnfants[index] = { ...newEnfants[index], [field]: value };
-    
+
     // Réinitialiser la classe si le niveau change
     if (field === 'niveau') {
       newEnfants[index].classe = "";
     }
-    
+
     setEnfants(newEnfants);
   };
 
@@ -174,7 +174,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     // Simuler l'envoi
     setTimeout(() => {
       console.log("Parent:", parentInfo);
@@ -189,7 +189,7 @@ export default function RegisterPage() {
       return parentInfo.nom && parentInfo.prenom && parentInfo.email && parentInfo.phone;
     }
     if (step === 2) {
-      return enfants.every(enfant => 
+      return enfants.every(enfant =>
         enfant.nom && enfant.prenom && enfant.dateNaissance && enfant.niveau && enfant.classe
       );
     }
@@ -212,7 +212,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       {/* Hero Section */}
       <div className="relative h-[250px] bg-gradient-to-r from-blue-900 to-blue-700 mt-16">
         <div className="absolute inset-0 bg-black/30" />
@@ -234,12 +234,11 @@ export default function RegisterPage() {
             <div className="flex justify-between items-center">
               {[1, 2, 3, 4].map((s) => (
                 <div key={s} className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    step >= s ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-600"
-                  }`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= s ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-900"
+                    }`}>
                     {step > s ? <CheckCircle className="w-5 h-5" /> : s}
                   </div>
-                  <span className="text-xs mt-1 text-gray-600 hidden md:block">
+                  <span className="text-xs mt-1 text-gray-900 hidden md:block">
                     {s === 1 && "Parent"}
                     {s === 2 && "Enfant(s)"}
                     {s === 3 && "Documents"}
@@ -250,7 +249,7 @@ export default function RegisterPage() {
             </div>
             <div className="relative mt-2">
               <div className="absolute top-0 left-0 h-1 bg-gray-300 rounded-full w-full"></div>
-              <div 
+              <div
                 className="absolute top-0 left-0 h-1 bg-blue-600 rounded-full transition-all duration-300"
                 style={{ width: `${((step - 1) / 3) * 100}%` }}
               ></div>
@@ -265,11 +264,11 @@ export default function RegisterPage() {
                   <Users className="w-8 h-8 text-blue-600" />
                   <h2 className="text-2xl font-bold text-gray-900">Informations du parent/tuteur</h2>
                 </div>
-                <p className="text-gray-600">Veuillez remplir vos informations personnelles</p>
-                
+                <p className="text-gray-900">Veuillez remplir vos informations personnelles</p>
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 mb-2">Nom *</label>
+                    <label className="block text-gray-900 mb-2">Nom *</label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                       <input
@@ -284,7 +283,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-700 mb-2">Prénom *</label>
+                    <label className="block text-gray-900 mb-2">Prénom *</label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                       <input
@@ -302,7 +301,7 @@ export default function RegisterPage() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 mb-2">Email *</label>
+                    <label className="block text-gray-900 mb-2">Email *</label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                       <input
@@ -317,7 +316,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-700 mb-2">Téléphone *</label>
+                    <label className="block text-gray-900 mb-2">Téléphone *</label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                       <input
@@ -334,7 +333,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">Adresse</label>
+                  <label className="block text-gray-900 mb-2">Adresse</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                     <input
@@ -349,7 +348,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">Profession</label>
+                  <label className="block text-gray-900 mb-2">Profession</label>
                   <input
                     type="text"
                     name="profession"
@@ -379,7 +378,7 @@ export default function RegisterPage() {
                     Ajouter un enfant
                   </button>
                 </div>
-                <p className="text-gray-600">Vous pouvez inscrire plusieurs enfants</p>
+                <p className="text-gray-900">Vous pouvez inscrire plusieurs enfants</p>
 
                 {/* Onglets enfants */}
                 <div className="flex flex-wrap gap-2 border-b">
@@ -388,11 +387,10 @@ export default function RegisterPage() {
                       key={enfant.id}
                       type="button"
                       onClick={() => setActiveEnfantIndex(idx)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition ${
-                        activeEnfantIndex === idx
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition ${activeEnfantIndex === idx
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                        }`}
                     >
                       <User className="w-4 h-4" />
                       {enfant.nom || enfant.prenom ? `${enfant.prenom || ""} ${enfant.nom || ""}` : `Enfant ${idx + 1}`}
@@ -420,7 +418,7 @@ export default function RegisterPage() {
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-gray-700 mb-2">Nom de l'enfant *</label>
+                        <label className="block text-gray-900 mb-2">Nom de l'enfant *</label>
                         <input
                           type="text"
                           value={enfant.nom}
@@ -431,7 +429,7 @@ export default function RegisterPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-gray-700 mb-2">Prénom de l'enfant *</label>
+                        <label className="block text-gray-900 mb-2">Prénom de l'enfant *</label>
                         <input
                           type="text"
                           value={enfant.prenom}
@@ -445,7 +443,7 @@ export default function RegisterPage() {
 
                     <div className="grid md:grid-cols-2 gap-4 mt-4">
                       <div>
-                        <label className="block text-gray-700 mb-2">Date de naissance *</label>
+                        <label className="block text-gray-900 mb-2">Date de naissance *</label>
                         <div className="relative">
                           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                           <input
@@ -458,7 +456,7 @@ export default function RegisterPage() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-gray-700 mb-2">Lieu de naissance</label>
+                        <label className="block text-gray-900 mb-2">Lieu de naissance</label>
                         <div className="relative">
                           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                           <input
@@ -474,7 +472,7 @@ export default function RegisterPage() {
 
                     <div className="grid md:grid-cols-2 gap-4 mt-4">
                       <div>
-                        <label className="block text-gray-700 mb-2">Sexe *</label>
+                        <label className="block text-gray-900 mb-2">Sexe *</label>
                         <select
                           value={enfant.sexe}
                           onChange={(e) => handleEnfantChange(idx, 'sexe', e.target.value)}
@@ -487,7 +485,7 @@ export default function RegisterPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-gray-700 mb-2">Niveau *</label>
+                        <label className="block text-gray-900 mb-2">Niveau *</label>
                         <select
                           value={enfant.niveau}
                           onChange={(e) => handleEnfantChange(idx, 'niveau', e.target.value)}
@@ -504,7 +502,7 @@ export default function RegisterPage() {
 
                     {enfant.niveau && (
                       <div className="mt-4">
-                        <label className="block text-gray-700 mb-2">Classe *</label>
+                        <label className="block text-gray-900 mb-2">Classe *</label>
                         <select
                           value={enfant.classe}
                           onChange={(e) => handleEnfantChange(idx, 'classe', e.target.value)}
@@ -532,18 +530,18 @@ export default function RegisterPage() {
                   <Upload className="w-8 h-8 text-blue-600" />
                   <h2 className="text-2xl font-bold text-gray-900">Documents requis</h2>
                 </div>
-                <p className="text-gray-600">Veuillez télécharger les documents pour chaque enfant</p>
+                <p className="text-gray-900">Veuillez télécharger les documents pour chaque enfant</p>
 
                 {enfants.map((enfant, idx) => (
                   <div key={enfant.id} className="border rounded-lg p-4 mb-6">
                     <h3 className="font-semibold text-blue-800 mb-4">
                       {enfant.prenom || "Enfant"} {enfant.nom || ""} - Documents
                     </h3>
-                    
+
                     <div className="space-y-4">
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                         <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                        <label className="block text-gray-700 font-medium mb-2">Extrait d'acte de naissance *</label>
+                        <label className="block text-gray-900 font-medium mb-2">Extrait d'acte de naissance *</label>
                         <input
                           type="file"
                           accept=".pdf,.jpg,.jpeg,.png"
@@ -554,7 +552,7 @@ export default function RegisterPage() {
                         <button
                           type="button"
                           onClick={() => document.getElementById(`acte_${idx}`)?.click()}
-                          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+                          className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
                         >
                           Choisir un fichier
                         </button>
@@ -565,7 +563,7 @@ export default function RegisterPage() {
 
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                         <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                        <label className="block text-gray-700 font-medium mb-2">Photo d'identité *</label>
+                        <label className="block text-gray-900 font-medium mb-2">Photo d'identité *</label>
                         <input
                           type="file"
                           accept=".jpg,.jpeg,.png"
@@ -576,7 +574,7 @@ export default function RegisterPage() {
                         <button
                           type="button"
                           onClick={() => document.getElementById(`photo_${idx}`)?.click()}
-                          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+                          className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
                         >
                           Choisir un fichier
                         </button>
@@ -587,7 +585,7 @@ export default function RegisterPage() {
 
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                         <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                        <label className="block text-gray-700 font-medium mb-2">Bulletin (optionnel)</label>
+                        <label className="block text-gray-900 font-medium mb-2">Bulletin (optionnel)</label>
                         <input
                           type="file"
                           accept=".pdf"
@@ -598,7 +596,7 @@ export default function RegisterPage() {
                         <button
                           type="button"
                           onClick={() => document.getElementById(`bulletin_${idx}`)?.click()}
-                          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+                          className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
                         >
                           Choisir un fichier
                         </button>
@@ -619,10 +617,10 @@ export default function RegisterPage() {
                   <Lock className="w-8 h-8 text-blue-600" />
                   <h2 className="text-2xl font-bold text-gray-900">Création du compte</h2>
                 </div>
-                <p className="text-gray-600">Créez un mot de passe pour accéder à la plateforme</p>
-                
+                <p className="text-gray-900">Créez un mot de passe pour accéder à la plateforme</p>
+
                 <div>
-                  <label className="block text-gray-700 mb-2">Mot de passe *</label>
+                  <label className="block text-gray-900 mb-2">Mot de passe *</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                     <input
@@ -638,7 +636,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">Confirmer le mot de passe *</label>
+                  <label className="block text-gray-900 mb-2">Confirmer le mot de passe *</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                     <input
@@ -682,11 +680,10 @@ export default function RegisterPage() {
                   type="button"
                   onClick={nextStep}
                   disabled={!isStepValid()}
-                  className={`flex items-center gap-2 px-6 py-2 rounded-lg transition ml-auto ${
-                    isStepValid()
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
+                  className={`flex items-center gap-2 px-6 py-2 rounded-lg transition ml-auto ${isStepValid()
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-gray-300 text-gray-900 cursor-not-allowed"
+                    }`}
                 >
                   Suivant
                   <ArrowRight className="w-4 h-4" />
@@ -696,11 +693,10 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={!isStepValid() || loading}
-                  className={`flex items-center gap-2 px-6 py-2 rounded-lg transition ml-auto ${
-                    isStepValid() && !loading
-                      ? "bg-green-600 text-white hover:bg-green-700"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
+                  className={`flex items-center gap-2 px-6 py-2 rounded-lg transition ml-auto ${isStepValid() && !loading
+                    ? "bg-green-600 text-white hover:bg-green-700"
+                    : "bg-gray-300 text-gray-900 cursor-not-allowed"
+                    }`}
                 >
                   {loading ? "Envoi en cours..." : "Envoyer ma pré-inscription"}
                   <GraduationCap className="w-4 h-4" />

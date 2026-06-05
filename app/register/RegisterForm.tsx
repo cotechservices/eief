@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { 
+import {
   User, Mail, Lock, Phone, Calendar, MapPin, Upload, CheckCircle,
   ArrowRight, ArrowLeft, GraduationCap, Plus, Trash2, Users, Eye, EyeOff,
   Loader2
@@ -36,14 +36,14 @@ export default function RegisterForm() {
   const niveauParam = searchParams.get("niveau");
   const { data: session, status } = useSession();
   const isParentLoggedIn = status === "authenticated" && (session?.user as any)?.role === "PARENT";
-  
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [classes, setClasses] = useState<Classe[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  
+
   // Informations parent - pré-remplies si déjà connecté
   const [parentInfo, setParentInfo] = useState({
     nom: "",
@@ -55,7 +55,7 @@ export default function RegisterForm() {
     password: "",
     confirmPassword: "",
   });
-  
+
   const [enfants, setEnfants] = useState<Enfant[]>([
     {
       id: crypto.randomUUID(),
@@ -126,11 +126,11 @@ export default function RegisterForm() {
   const handleEnfantChange = (index: number, field: keyof Enfant, value: any) => {
     const newEnfants = [...enfants];
     newEnfants[index] = { ...newEnfants[index], [field]: value };
-    
+
     if (field === 'niveau') {
       newEnfants[index].classe = "";
     }
-    
+
     setEnfants(newEnfants);
   };
 
@@ -296,7 +296,7 @@ export default function RegisterForm() {
       return parentInfo.nom && parentInfo.prenom && parentInfo.email && parentInfo.phone;
     }
     if (step === 2) {
-      return enfants.every(enfant => 
+      return enfants.every(enfant =>
         enfant.nom && enfant.prenom && enfant.dateNaissance && enfant.niveau && enfant.classe
       );
     }
@@ -326,12 +326,11 @@ export default function RegisterForm() {
         <div className="flex justify-between items-center">
           {(isParentLoggedIn ? [2, 3, 4] : [1, 2, 3, 4]).map((s) => (
             <div key={s} className="flex flex-col items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                step >= s ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-600"
-              }`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= s ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-900"
+                }`}>
                 {step > s ? <CheckCircle className="w-5 h-5" /> : s}
               </div>
-              <span className="text-xs mt-1 text-gray-600 hidden md:block">
+              <span className="text-xs mt-1 text-gray-900 hidden md:block">
                 {s === 1 && "Parent"}
                 {s === 2 && "Enfant(s)"}
                 {s === 3 && "Documents"}
@@ -342,7 +341,7 @@ export default function RegisterForm() {
         </div>
         <div className="relative mt-2">
           <div className="absolute top-0 left-0 h-1 bg-gray-300 rounded-full w-full"></div>
-          <div 
+          <div
             className="absolute top-0 left-0 h-1 bg-blue-600 rounded-full transition-all duration-300"
             style={{ width: isParentLoggedIn ? `${((step - 2) / 2) * 100}%` : `${((step - 1) / 3) * 100}%` }}
           ></div>
@@ -356,7 +355,7 @@ export default function RegisterForm() {
               Upload des documents... {uploadProgress.current}/{uploadProgress.total}
             </p>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div 
+              <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
               ></div>
@@ -381,11 +380,11 @@ export default function RegisterForm() {
               <Users className="w-8 h-8 text-blue-600" />
               <h2 className="text-2xl font-bold text-gray-900">Informations du parent/tuteur</h2>
             </div>
-            <p className="text-gray-600">Veuillez remplir vos informations personnelles</p>
-            
+            <p className="text-gray-900">Veuillez remplir vos informations personnelles</p>
+
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 mb-2">Nom *</label>
+                <label className="block text-gray-900 mb-2">Nom *</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
@@ -400,7 +399,7 @@ export default function RegisterForm() {
                 </div>
               </div>
               <div>
-                <label className="block text-gray-700 mb-2">Prénom *</label>
+                <label className="block text-gray-900 mb-2">Prénom *</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
@@ -418,7 +417,7 @@ export default function RegisterForm() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 mb-2">Email *</label>
+                <label className="block text-gray-900 mb-2">Email *</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
@@ -433,7 +432,7 @@ export default function RegisterForm() {
                 </div>
               </div>
               <div>
-                <label className="block text-gray-700 mb-2">Téléphone *</label>
+                <label className="block text-gray-900 mb-2">Téléphone *</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
@@ -450,7 +449,7 @@ export default function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Adresse</label>
+              <label className="block text-gray-900 mb-2">Adresse</label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                 <input
@@ -465,7 +464,7 @@ export default function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Profession</label>
+              <label className="block text-gray-900 mb-2">Profession</label>
               <input
                 type="text"
                 name="profession"
@@ -495,17 +494,16 @@ export default function RegisterForm() {
                 Ajouter un enfant
               </button>
             </div>
-            <p className="text-gray-600">Vous pouvez inscrire plusieurs enfants</p>
+            <p className="text-gray-900">Vous pouvez inscrire plusieurs enfants</p>
             <div className="flex flex-wrap gap-2 border-b">
               {enfants.map((enfant, idx) => (
                 <div
                   key={enfant.id}
                   onClick={() => setActiveEnfantIndex(idx)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition cursor-pointer ${
-                    activeEnfantIndex === idx
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition cursor-pointer ${activeEnfantIndex === idx
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                    }`}
                 >
                   <User className="w-4 h-4" />
                   <span>
@@ -535,7 +533,7 @@ export default function RegisterForm() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 mb-2">Nom de l'enfant *</label>
+                    <label className="block text-gray-900 mb-2">Nom de l'enfant *</label>
                     <input
                       type="text"
                       value={enfant.nom}
@@ -546,7 +544,7 @@ export default function RegisterForm() {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-700 mb-2">Prénom de l'enfant *</label>
+                    <label className="block text-gray-900 mb-2">Prénom de l'enfant *</label>
                     <input
                       type="text"
                       value={enfant.prenom}
@@ -560,7 +558,7 @@ export default function RegisterForm() {
 
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
                   <div>
-                    <label className="block text-gray-700 mb-2">Date de naissance *</label>
+                    <label className="block text-gray-900 mb-2">Date de naissance *</label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                       <input
@@ -573,7 +571,7 @@ export default function RegisterForm() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-700 mb-2">Lieu de naissance</label>
+                    <label className="block text-gray-900 mb-2">Lieu de naissance</label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                       <input
@@ -589,7 +587,7 @@ export default function RegisterForm() {
 
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
                   <div>
-                    <label className="block text-gray-700 mb-2">Sexe *</label>
+                    <label className="block text-gray-900 mb-2">Sexe *</label>
                     <select
                       value={enfant.sexe}
                       onChange={(e) => handleEnfantChange(idx, 'sexe', e.target.value)}
@@ -602,7 +600,7 @@ export default function RegisterForm() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-gray-700 mb-2">Niveau *</label>
+                    <label className="block text-gray-900 mb-2">Niveau *</label>
                     <select
                       value={enfant.niveau}
                       onChange={(e) => handleEnfantChange(idx, 'niveau', e.target.value)}
@@ -621,7 +619,7 @@ export default function RegisterForm() {
 
                 {enfant.niveau && (
                   <div className="mt-4">
-                    <label className="block text-gray-700 mb-2">Classe *</label>
+                    <label className="block text-gray-900 mb-2">Classe *</label>
                     <select
                       value={enfant.classe}
                       onChange={(e) => handleEnfantChange(idx, 'classe', e.target.value)}
@@ -649,18 +647,18 @@ export default function RegisterForm() {
               <Upload className="w-8 h-8 text-blue-600" />
               <h2 className="text-2xl font-bold text-gray-900">Documents requis</h2>
             </div>
-            <p className="text-gray-600">Veuillez télécharger les documents pour chaque enfant</p>
+            <p className="text-gray-900">Veuillez télécharger les documents pour chaque enfant</p>
 
             {enfants.map((enfant, idx) => (
               <div key={enfant.id} className="border rounded-lg p-4 mb-6">
                 <h3 className="font-semibold text-blue-800 mb-4">
                   {enfant.prenom || "Enfant"} {enfant.nom || ""} - Documents
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Extrait d'acte de naissance *</label>
+                    <label className="block text-gray-900 font-medium mb-2">Extrait d'acte de naissance *</label>
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
@@ -671,7 +669,7 @@ export default function RegisterForm() {
                     <button
                       type="button"
                       onClick={() => document.getElementById(`acte_${idx}`)?.click()}
-                      className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+                      className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
                     >
                       Choisir un fichier
                     </button>
@@ -682,7 +680,7 @@ export default function RegisterForm() {
 
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Photo d'identité *</label>
+                    <label className="block text-gray-900 font-medium mb-2">Photo d'identité *</label>
                     <input
                       type="file"
                       accept=".jpg,.jpeg,.png"
@@ -693,7 +691,7 @@ export default function RegisterForm() {
                     <button
                       type="button"
                       onClick={() => document.getElementById(`photo_${idx}`)?.click()}
-                      className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+                      className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
                     >
                       Choisir un fichier
                     </button>
@@ -704,7 +702,7 @@ export default function RegisterForm() {
 
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Bulletin (optionnel)</label>
+                    <label className="block text-gray-900 font-medium mb-2">Bulletin (optionnel)</label>
                     <input
                       type="file"
                       accept=".pdf"
@@ -715,7 +713,7 @@ export default function RegisterForm() {
                     <button
                       type="button"
                       onClick={() => document.getElementById(`bulletin_${idx}`)?.click()}
-                      className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+                      className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
                     >
                       Choisir un fichier
                     </button>
@@ -736,12 +734,12 @@ export default function RegisterForm() {
               <Lock className="w-8 h-8 text-blue-600" />
               <h2 className="text-2xl font-bold text-gray-900">Confirmation</h2>
             </div>
-            
+
             {!isParentLoggedIn && (
               <>
-                <p className="text-gray-600">Créez un mot de passe pour accéder à la plateforme</p>
+                <p className="text-gray-900">Créez un mot de passe pour accéder à la plateforme</p>
                 <div>
-                  <label className="block text-gray-700 mb-2">Mot de passe *</label>
+                  <label className="block text-gray-900 mb-2">Mot de passe *</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                     <input
@@ -764,7 +762,7 @@ export default function RegisterForm() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">Confirmer le mot de passe *</label>
+                  <label className="block text-gray-900 mb-2">Confirmer le mot de passe *</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                     <input
@@ -810,11 +808,10 @@ export default function RegisterForm() {
               type="button"
               onClick={nextStep}
               disabled={!isStepValid()}
-              className={`flex items-center gap-2 px-6 py-2 rounded-lg transition ml-auto ${
-                isStepValid()
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+              className={`flex items-center gap-2 px-6 py-2 rounded-lg transition ml-auto ${isStepValid()
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-300 text-gray-900 cursor-not-allowed"
+                }`}
             >
               Suivant
               <ArrowRight className="w-4 h-4" />
@@ -824,11 +821,10 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={!isStepValid() || loading}
-              className={`flex items-center gap-2 px-6 py-2 rounded-lg transition ml-auto ${
-                isStepValid() && !loading
-                  ? "bg-green-600 text-white hover:bg-green-700"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+              className={`flex items-center gap-2 px-6 py-2 rounded-lg transition ml-auto ${isStepValid() && !loading
+                ? "bg-green-600 text-white hover:bg-green-700"
+                : "bg-gray-300 text-gray-900 cursor-not-allowed"
+                }`}
             >
               {loading ? (uploadProgress.total > 0 ? `Upload... ${uploadProgress.current}/${uploadProgress.total}` : "Envoi en cours...") : "Envoyer ma pré-inscription"}
               <GraduationCap className="w-4 h-4" />

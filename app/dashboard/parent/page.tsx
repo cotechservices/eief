@@ -3,10 +3,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Users, 
-  CreditCard, 
-  Bus, 
+import {
+  Users,
+  CreditCard,
+  Bus,
   Calendar,
   AlertCircle,
   MessageSquare,
@@ -32,7 +32,7 @@ interface Enfant {
   prenom: string;
   classe_nom: string;
   niveau: string;
-  frais_inscription_classe: number; 
+  frais_inscription_classe: number;
   photo_url: string | null;
 }
 
@@ -47,14 +47,14 @@ interface Preinscription {
   statut: "en_attente" | "valide" | "rejete";
   date_preinscription: string;
   frais_statut: string;
-  frais_montant: number; 
+  frais_montant: number;
   photo_url: string | null;
 }
 interface Stats {
   notes: Array<{ matiere: string; moyenne: number; coefficient: number }>;
   presences: { total: number; presents: number; absents: number; retards: number };
-  paiements: { 
-    total_paye: number; 
+  paiements: {
+    total_paye: number;
     nombre_paiements: number;
     details?: Array<{ montant: number; type_frais: string; mode_paiement: string; date_paiement: string }>;
   };
@@ -78,12 +78,12 @@ export default function ParentDashboard() {
   const [modePaiement, setModePaiement] = useState("");
   const [reference, setReference] = useState("");
   const [paiementLoading, setPaiementLoading] = useState(false);
-  
+
   // États pour l'annulation
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [preinscriptionToCancel, setPreinscriptionToCancel] = useState<Preinscription | null>(null);
   const [cancelling, setCancelling] = useState(false);
-  
+
   // État pour les notifications
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -112,16 +112,16 @@ export default function ParentDashboard() {
         fetch("/api/parent/enfants"),
         fetch("/api/parent/preinscriptions")
       ]);
-      
+
       const enfantsData = await enfantsRes.json();
       const preinscriptionsData = await preinscriptionsRes.json();
-      
+
       setEnfants(enfantsData);
-      
+
       // 🔥 CORRECTION : Ne garder que les pré-inscriptions en attente
       const preinscriptionsEnAttente = preinscriptionsData.filter(p => p.statut === "en_attente");
       setPreinscriptions(preinscriptionsEnAttente);
-      
+
       // Charger les statistiques pour chaque enfant
       for (const enfant of enfantsData) {
         const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
@@ -224,16 +224,16 @@ export default function ParentDashboard() {
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
- // Dans statsGlobales, modifiez le calcul de totalPaye
-const statsGlobales = {
-  totalEnfants: enfants.length,
-  totalPreinscriptions: preinscriptions.length,
-  preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
-  preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
-  totalAbsences: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.absents) || 0), 0),
-  totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
-  totalPaye: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0),
-};
+  // Dans statsGlobales, modifiez le calcul de totalPaye
+  const statsGlobales = {
+    totalEnfants: enfants.length,
+    totalPreinscriptions: preinscriptions.length,
+    preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
+    preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
+    totalAbsences: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.absents) || 0), 0),
+    totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
+    totalPaye: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0),
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -249,15 +249,14 @@ const statsGlobales = {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
-              notification.type === "success" 
-                ? "bg-green-50 border-l-4 border-green-500 text-green-800" 
-                : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -268,7 +267,7 @@ const statsGlobales = {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-600 transition"
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -301,12 +300,12 @@ const statsGlobales = {
           <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
         </div>
       </div>
-      
+
       {/* Section Pré-inscriptions */}
       {preinscriptions.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <FileText className="w-5 h-5 text-purple-600" />
               Mes pré-inscriptions
             </h2>
@@ -330,7 +329,7 @@ const statsGlobales = {
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-semibold text-black">{p.enfant_prenom} {p.enfant_nom}</h3>
-                          <p className="text-sm text-gray-700">{p.classe}</p>
+                          <p className="text-sm text-gray-900">{p.classe}</p>
                           <p className="text-xs text-gray-900 mt-1">Dossier: {p.numero_dossier}</p>
                         </div>
                         <div className="text-right">
@@ -348,7 +347,7 @@ const statsGlobales = {
                               }}
                               className="flex-1 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
                             >
-                              <CreditCard className="w-4 h-4" /> 
+                              <CreditCard className="w-4 h-4" />
                               Payer {(p.frais_montant || 500000).toLocaleString()} GNF
                             </button>
                             <button
@@ -386,15 +385,15 @@ const statsGlobales = {
       )}
 
       {/* Liste des enfants inscrits */}
-      <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
         <GraduationCap className="w-5 h-5 text-blue-600" />
         Mes enfants inscrits
       </h2>
-      
+
       {enfants.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-          <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-800">Aucun enfant inscrit</h3>
+          <Users className="w-16 h-16 text-gray-900 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900">Aucun enfant inscrit</h3>
           <p className="text-gray-900 mt-2">Vous n'avez pas encore d'enfant inscrit dans l'école.</p>
           <Link href="/register" className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Inscrire un enfant</Link>
         </div>
@@ -402,7 +401,7 @@ const statsGlobales = {
         <div className="grid md:grid-cols-2 gap-6">
           {enfants.map((enfant) => {
             const stats = statsEnfant[enfant.eleve_id];
-            
+
             return (
               <div key={enfant.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition">
                 <div className="bg-blue-600 p-4 text-white">
@@ -425,87 +424,87 @@ const statsGlobales = {
                     </div>
                   </div>
                 </div>
-<div className="p-4 space-y-3">
-  {stats && (
-    <>
-      <div className="flex justify-between items-center">
-        <span className="text-gray-900 text-sm flex items-center gap-1"><AlertCircle className="w-4 h-4" /> Absences/Retards</span>
-        <span className="font-medium text-orange-600">{stats.presences?.absents || 0} abs. / {stats.presences?.retards || 0} ret.</span>
-      </div>
-      
-      {/* Frais d'inscription total */}
-      <div className="flex justify-between items-center">
-        <span className="text-gray-900 text-sm flex items-center gap-1"><Wallet className="w-4 h-4" /> Frais de scolarité</span>
-        <span className="font-medium text-blue-600">{stats.frais_inscription_total?.toLocaleString() || 0} GNF</span>
-      </div>
-      
-      {/* Total payé */}
-      <div className="flex justify-between items-center">
-        <span className="text-gray-900 text-sm flex items-center gap-1"><CreditCard className="w-4 h-4" /> Total payé</span>
-        <span className="font-medium text-green-600">{stats.paiements?.total_paye?.toLocaleString() || 0} GNF</span>
-      </div>
-      
-      {/* Solde restant */}
-      {stats.solde_restant !== undefined && stats.solde_restant > 0 && (
-        <div className="flex justify-between items-center">
-          <span className="text-gray-900 text-sm flex items-center gap-1"><AlertTriangle className="w-4 h-4" /> Solde restant</span>
-          <span className="font-medium text-orange-600">{stats.solde_restant.toLocaleString()} GNF</span>
-        </div>
-      )}
-      
-      {/* Barre de progression des paiements */}
-      {stats.frais_inscription_total && stats.frais_inscription_total > 0 && (
-        <div className="mt-2">
-          <div className="flex justify-between text-xs text-gray-700 mb-1">
-            <span>Progression des paiements</span>
-            <span>{Math.round(((stats.paiements?.total_paye || 0) / stats.frais_inscription_total) * 100)}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-green-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, ((stats.paiements?.total_paye || 0) / stats.frais_inscription_total) * 100)}%` }}
-            />
-          </div>
-        </div>
-      )}
-      
-      {/* Détail des derniers paiements (optionnel) */}
-      {stats.paiements?.details && stats.paiements.details.length > 0 && (
-        <div className="mt-3 pt-3 border-t">
-          <p className="text-xs text-gray-700 mb-2">Derniers paiements:</p>
-          <div className="space-y-1">
-            {stats.paiements.details.slice(0, 2).map((p, idx) => (
-              <div key={idx} className="flex justify-between text-xs">
-                <span className="text-black">{new Date(p.date_paiement).toLocaleDateString()}</span>
-                <span className="font-medium text-green-600">{p.montant.toLocaleString()} GNF</span>
-                <span className="text-black capitalize">{p.mode_paiement}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+                <div className="p-4 space-y-3">
+                  {stats && (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-900 text-sm flex items-center gap-1"><AlertCircle className="w-4 h-4" /> Absences/Retards</span>
+                        <span className="font-medium text-orange-600">{stats.presences?.absents || 0} abs. / {stats.presences?.retards || 0} ret.</span>
+                      </div>
 
-      {stats.notes && stats.notes.length > 0 && (
-        <div className="mt-2 pt-2 border-t">
-          <p className="text-xs text-gray-900 mb-1">Matières:</p>
-          <div className="flex flex-wrap gap-1">
-            {stats.notes.slice(0, 3).map((note, idx) => (
-              <span key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                {note.matiere}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </>
-  )}
-  <Link 
-    href={`/dashboard/parent/enfants/${enfant.eleve_id}`}
-    className="w-full mt-3 text-blue-600 text-sm font-medium flex items-center justify-center gap-1 hover:gap-2 transition-all"
-  >
-    Voir le détail <Eye className="w-4 h-4" />
-  </Link>
-</div>
+                      {/* Frais d'inscription total */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-900 text-sm flex items-center gap-1"><Wallet className="w-4 h-4" /> Frais de scolarité</span>
+                        <span className="font-medium text-blue-600">{stats.frais_inscription_total?.toLocaleString() || 0} GNF</span>
+                      </div>
+
+                      {/* Total payé */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-900 text-sm flex items-center gap-1"><CreditCard className="w-4 h-4" /> Total payé</span>
+                        <span className="font-medium text-green-600">{stats.paiements?.total_paye?.toLocaleString() || 0} GNF</span>
+                      </div>
+
+                      {/* Solde restant */}
+                      {stats.solde_restant !== undefined && stats.solde_restant > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-900 text-sm flex items-center gap-1"><AlertTriangle className="w-4 h-4" /> Solde restant</span>
+                          <span className="font-medium text-orange-600">{stats.solde_restant.toLocaleString()} GNF</span>
+                        </div>
+                      )}
+
+                      {/* Barre de progression des paiements */}
+                      {stats.frais_inscription_total && stats.frais_inscription_total > 0 && (
+                        <div className="mt-2">
+                          <div className="flex justify-between text-xs text-gray-900 mb-1">
+                            <span>Progression des paiements</span>
+                            <span>{Math.round(((stats.paiements?.total_paye || 0) / stats.frais_inscription_total) * 100)}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                              style={{ width: `${Math.min(100, ((stats.paiements?.total_paye || 0) / stats.frais_inscription_total) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Détail des derniers paiements (optionnel) */}
+                      {stats.paiements?.details && stats.paiements.details.length > 0 && (
+                        <div className="mt-3 pt-3 border-t">
+                          <p className="text-xs text-gray-900 mb-2">Derniers paiements:</p>
+                          <div className="space-y-1">
+                            {stats.paiements.details.slice(0, 2).map((p, idx) => (
+                              <div key={idx} className="flex justify-between text-xs">
+                                <span className="text-black">{new Date(p.date_paiement).toLocaleDateString()}</span>
+                                <span className="font-medium text-green-600">{p.montant.toLocaleString()} GNF</span>
+                                <span className="text-black capitalize">{p.mode_paiement}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {stats.notes && stats.notes.length > 0 && (
+                        <div className="mt-2 pt-2 border-t">
+                          <p className="text-xs text-gray-900 mb-1">Matières:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {stats.notes.slice(0, 3).map((note, idx) => (
+                              <span key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+                                {note.matiere}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  <Link
+                    href={`/dashboard/parent/enfants/${enfant.eleve_id}`}
+                    className="w-full mt-3 text-blue-600 text-sm font-medium flex items-center justify-center gap-1 hover:gap-2 transition-all"
+                  >
+                    Voir le détail <Eye className="w-4 h-4" />
+                  </Link>
+                </div>
               </div>
             );
           })}
@@ -549,12 +548,12 @@ const statsGlobales = {
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Annuler la pré-inscription</h2>
+                <h2 className="text-xl font-bold text-gray-900">Annuler la pré-inscription</h2>
               </div>
             </div>
-            
+
             <div className="p-6">
-              <p className="text-gray-700 mb-2">
+              <p className="text-gray-900 mb-2">
                 Êtes-vous sûr de vouloir annuler cette pré-inscription ?
               </p>
               <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mb-4">
@@ -565,7 +564,7 @@ const statsGlobales = {
                 Cette action est irréversible et supprimera définitivement la pré-inscription.
               </p>
             </div>
-            
+
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => {
@@ -621,11 +620,10 @@ const statsGlobales = {
                   <button
                     type="button"
                     onClick={() => setModePaiement("especes")}
-                    className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${
-                      modePaiement === "especes" 
-                        ? "border-green-500 bg-green-50" 
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === "especes"
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 hover:border-gray-300"
+                      }`}
                   >
                     <Wallet className="w-6 h-6 text-green-900" />
                     <span className="text-xs text-black">Espèces</span>
@@ -633,11 +631,10 @@ const statsGlobales = {
                   <button
                     type="button"
                     onClick={() => setModePaiement("orange_money")}
-                    className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${
-                      modePaiement === "orange_money" 
-                        ? "border-orange-500 bg-orange-50" 
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === "orange_money"
+                      ? "border-orange-500 bg-orange-50"
+                      : "border-gray-200 hover:border-gray-300"
+                      }`}
                   >
                     <Smartphone className="w-6 h-6 text-orange-600" />
                     <span className="text-xs text-black">Orange Money</span>
@@ -645,11 +642,10 @@ const statsGlobales = {
                   <button
                     type="button"
                     onClick={() => setModePaiement("carte")}
-                    className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${
-                      modePaiement === "carte" 
-                        ? "border-blue-500 bg-blue-50" 
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === "carte"
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                      }`}
                   >
                     <CreditCard className="w-6 h-6 text-blue-700" />
                     <span className="text-xs text-black">Carte Visa</span>
@@ -677,8 +673,8 @@ const statsGlobales = {
                     className=" text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <p className="text-xs text-gray-900 mt-1">
-                    {modePaiement === "orange_money" 
-                      ? "Entrez le numéro de transaction reçu par SMS" 
+                    {modePaiement === "orange_money"
+                      ? "Entrez le numéro de transaction reçu par SMS"
                       : "Entrez le numéro de transaction de votre carte"}
                   </p>
                 </div>
@@ -687,11 +683,10 @@ const statsGlobales = {
               <button
                 onClick={handlePaiement}
                 disabled={!modePaiement || paiementLoading}
-                className={`w-full py-3 rounded-lg font-semibold transition ${
-                  !modePaiement || paiementLoading
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-green-600 text-white hover:bg-green-700"
-                }`}
+                className={`w-full py-3 rounded-lg font-semibold transition ${!modePaiement || paiementLoading
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700"
+                  }`}
               >
                 {paiementLoading ? "Traitement..." : "Confirmer le paiement"}
               </button>

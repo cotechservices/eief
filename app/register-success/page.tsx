@@ -10,7 +10,7 @@ export default function RegisterSuccessPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-32 text-center">
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -19,7 +19,7 @@ export default function RegisterSuccessPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Pré-inscription envoyée !
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-900 mb-6">
             Votre demande a été enregistrée avec succès. Vous recevrez un email de confirmation dans les plus brefs délais.
           </p>
           <Link

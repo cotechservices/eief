@@ -21,7 +21,7 @@ function extractYouTubeId(url: string): string | null {
     /youtube\.com\/embed\/([^&\n?#]+)/,
     /youtube\.com\/shorts\/([^&\n?#]+)/
   ];
-  
+
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match && match[1]) {
@@ -87,7 +87,7 @@ export default function YouTubeGallery() {
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
             Dernières vidéos
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-900 mt-1">
             Découvrez notre chaîne YouTube et suivez l'actualité de l'école
           </p>
         </div>
@@ -148,10 +148,10 @@ export default function YouTubeGallery() {
 
             {/* Informations vidéo */}
             <div className="p-4">
-              <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition line-clamp-2">
+              <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition line-clamp-2">
                 {video.title}
               </h3>
-              <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+              <div className="flex items-center gap-4 mt-3 text-xs text-gray-900">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   Il y a {video.date}
@@ -181,7 +181,7 @@ export default function YouTubeGallery() {
           href="https://www.youtube.com/@eief-enfantsdufutur/videos"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-medium transition"
+          className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-900 px-6 py-3 rounded-lg font-medium transition"
         >
           Voir toutes les vidéos
           <ChevronRight className="w-4 h-4" />

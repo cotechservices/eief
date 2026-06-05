@@ -4,10 +4,10 @@
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { 
-  Heart, 
-  Share2, 
-  Bookmark, 
+import {
+  Heart,
+  Share2,
+  Bookmark,
   Calendar,
   Bell,
   Clock,
@@ -45,11 +45,11 @@ function ImageModal({ imageUrl, alt, onClose }: { imageUrl: string; alt: string;
   }, [onClose]);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 cursor-pointer"
       onClick={onClose}
     >
-      <div 
+      <div
         className="relative bg-white rounded-lg shadow-2xl overflow-hidden cursor-default"
         style={{
           width: '21cm', // Format A4 largeur
@@ -66,7 +66,7 @@ function ImageModal({ imageUrl, alt, onClose }: { imageUrl: string; alt: string;
         >
           <X className="w-6 h-6" />
         </button>
-        
+
         {/* Image en plein écran A4 */}
         <div className="relative w-full h-full">
           <img
@@ -75,7 +75,7 @@ function ImageModal({ imageUrl, alt, onClose }: { imageUrl: string; alt: string;
             className="w-full h-full object-contain"
           />
         </div>
-        
+
         {/* Info image */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
           <p className="text-white text-sm text-center">{alt}</p>
@@ -132,15 +132,15 @@ function AnnonceCarousel({ images, alt, onImageClick }: { images: string[]; alt:
           <ZoomIn className="w-12 h-12 text-white drop-shadow-lg" />
         </div>
       </div>
-      
+
       {/* Navigation arrows */}
-      <button 
+      <button
         onClick={prevSlide}
         className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition z-10 cursor-pointer opacity-0 group-hover:opacity-100"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
-      <button 
+      <button
         onClick={nextSlide}
         className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition z-10 cursor-pointer opacity-0 group-hover:opacity-100"
       >
@@ -164,7 +164,7 @@ function AnnonceCarousel({ images, alt, onImageClick }: { images: string[]; alt:
 const getCategory = (titre: string, contenu: string): "info" | "alerte" | "evenement" | "inscription" => {
   const titleLower = (titre || "").toLowerCase();
   const contentLower = (contenu || "").toLowerCase();
-  
+
   if (titleLower.includes("inscription") || contentLower.includes("inscription")) {
     return "inscription";
   }
@@ -197,7 +197,7 @@ export default function AnnoncesPage() {
   const handleShare = async (annonce: Annonce) => {
     const shareUrl = `${window.location.origin}/annonces?id=${annonce.id}`;
     const shareText = `Découvrez cette annonce de l'EIEF : ${annonce.titre}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -221,7 +221,7 @@ export default function AnnoncesPage() {
     } catch (err) {
       setToast("Lien de l'annonce prêt à être partagé !");
     }
-    
+
     setTimeout(() => {
       setToast(null);
     }, 3000);
@@ -279,12 +279,12 @@ export default function AnnoncesPage() {
   }, []);
 
   const getCategorieStyle = (categorie: string) => {
-    switch(categorie) {
-      case "info": return { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200",};
-      case "alerte": return { bg: "bg-red-50", text: "text-red-600", border: "border-red-200"};
+    switch (categorie) {
+      case "info": return { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200", };
+      case "alerte": return { bg: "bg-red-50", text: "text-red-600", border: "border-red-200" };
       case "evenement": return { bg: "bg-green-50", text: "text-green-600", border: "border-green-200" };
-      case "inscription": return { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200"};
-      default: return { bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200" };
+      case "inscription": return { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" };
+      default: return { bg: "bg-gray-50", text: "text-gray-900", border: "border-gray-200" };
     }
   };
 
@@ -292,7 +292,7 @@ export default function AnnoncesPage() {
     const date = new Date(dateStr);
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diff < 60) return `à l'instant`;
     if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
     if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
@@ -301,7 +301,7 @@ export default function AnnoncesPage() {
   };
 
   const handleLike = (id: number) => {
-    setAnnonces(annonces.map(a => 
+    setAnnonces(annonces.map(a =>
       a.id === id ? { ...a, likes: a.userLiked ? a.likes - 1 : a.likes + 1, userLiked: !a.userLiked } : a
     ));
   };
@@ -321,8 +321,8 @@ export default function AnnoncesPage() {
   };
 
   const filteredAnnonces = annonces.filter(a => {
-    const matchesSearch = a.titre.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          a.contenu.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = a.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      a.contenu.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategorie = selectedCategorie === "all" || a.categorie === selectedCategorie;
     return matchesSearch && matchesCategorie;
   });
@@ -334,7 +334,7 @@ export default function AnnoncesPage() {
         <div className="flex items-center justify-center h-96 pt-16">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-500">Chargement des annonces...</p>
+            <p className="text-gray-900">Chargement des annonces...</p>
           </div>
         </div>
         <Footer />
@@ -345,7 +345,7 @@ export default function AnnoncesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       {/* Hero Section */}
       <div className="relative h-[350px] mt-16 overflow-hidden">
         <div className="absolute inset-0 bg-black/50 z-10" />
@@ -416,7 +416,7 @@ export default function AnnoncesPage() {
                           {annonce.categorie === "evenement" && "Événement"}
                           {annonce.categorie === "inscription" && "Inscription"}
                         </span>
-                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                        <span className="text-xs text-gray-900 flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {getTimeAgo(annonce.datePublication)}
                         </span>
@@ -425,16 +425,16 @@ export default function AnnoncesPage() {
                       <h2 className="text-xl font-bold text-gray-900">{annonce.titre}</h2>
                     </div>
                   </div>
-                  
-                  <p className="text-gray-600 leading-relaxed mt-3">{annonce.contenu}</p>
+
+                  <p className="text-gray-900 leading-relaxed mt-3">{annonce.contenu}</p>
                 </div>
 
                 {/* Images Carousel - Cliquables */}
                 {annonce.imageUrls && annonce.imageUrls.length > 0 && (
                   <div className="relative h-64 md:h-80 w-full bg-gray-100 border-y overflow-hidden">
-                    <AnnonceCarousel 
-                      images={annonce.imageUrls} 
-                      alt={annonce.titre} 
+                    <AnnonceCarousel
+                      images={annonce.imageUrls}
+                      alt={annonce.titre}
                       onImageClick={openImageModal}
                     />
                   </div>
@@ -445,20 +445,20 @@ export default function AnnoncesPage() {
                   <div className="flex gap-6">
                     <button
                       onClick={() => handleLike(annonce.id)}
-                      className={`flex items-center gap-2 transition ${annonce.userLiked ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
+                      className={`flex items-center gap-2 transition ${annonce.userLiked ? 'text-blue-600' : 'text-gray-900 hover:text-blue-600'}`}
                     >
                       <Heart className={`w-5 h-5 ${annonce.userLiked ? 'fill-blue-600' : ''}`} />
                       <span className="text-sm font-medium">{annonce.likes}</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleShare(annonce)}
-                      className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition"
+                      className="flex items-center gap-2 text-gray-900 hover:text-blue-600 transition"
                     >
                       <Share2 className="w-5 h-5" />
                       <span className="text-sm font-medium">Partager</span>
                     </button>
                   </div>
-                  <button className="text-gray-400 hover:text-blue-600 transition">
+                  <button className="text-gray-900 hover:text-blue-600 transition">
                     <Bookmark className="w-5 h-5" />
                   </button>
                 </div>
@@ -469,9 +469,9 @@ export default function AnnoncesPage() {
           {/* Message si aucun résultat */}
           {filteredAnnonces.length === 0 && (
             <div className="text-center py-12">
-              <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-600">Aucune annonce pour l'instant</h3>
-              <p className="text-gray-400 mt-2">Vérifiez plus tard ou modifiez vos filtres</p>
+              <Bell className="w-16 h-16 text-gray-900 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900">Aucune annonce pour l'instant</h3>
+              <p className="text-gray-900 mt-2">Vérifiez plus tard ou modifiez vos filtres</p>
             </div>
           )}
         </div>
@@ -479,9 +479,9 @@ export default function AnnoncesPage() {
 
       {/* Modal image format A4 */}
       {selectedImage && (
-        <ImageModal 
-          imageUrl={selectedImage} 
-          alt={selectedImageAlt} 
+        <ImageModal
+          imageUrl={selectedImage}
+          alt={selectedImageAlt}
           onClose={closeImageModal}
         />
       )}

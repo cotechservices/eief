@@ -88,7 +88,7 @@ export default function ClassesPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-gray-700 mb-1">Nom de la classe</label>
+                <label className="block text-gray-900 mb-1">Nom de la classe</label>
                 <input
                   type="text"
                   value={formData.nom}
@@ -98,7 +98,7 @@ export default function ClassesPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-1">Niveau</label>
+                <label className="block text-gray-900 mb-1">Niveau</label>
                 <input
                   type="text"
                   value={formData.niveau}
@@ -108,7 +108,7 @@ export default function ClassesPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-1">Salle</label>
+                <label className="block text-gray-900 mb-1">Salle</label>
                 <input
                   type="text"
                   value={formData.salle}
@@ -117,7 +117,7 @@ export default function ClassesPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-1">Capacité maximale</label>
+                <label className="block text-gray-900 mb-1">Capacité maximale</label>
                 <input
                   type="number"
                   value={formData.capaciteMax}

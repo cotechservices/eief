@@ -2,10 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Download, 
-  Calendar, 
-  TrendingUp, 
+import {
+  Download,
+  Calendar,
+  TrendingUp,
   TrendingDown,
   PieChart,
   BarChart3,
@@ -84,8 +84,8 @@ export default function RapportsFinanciersPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Rapports financiers</h1>
-          <p className="text-gray-500">Analyse et suivi des finances</p>
+          <h1 className="text-2xl font-bold text-gray-900">Rapports financiers</h1>
+          <p className="text-gray-900">Analyse et suivi des finances</p>
         </div>
         <div className="flex gap-3">
           <select
@@ -111,9 +111,9 @@ export default function RapportsFinanciersPage() {
             <div className={`w-10 h-10 ${cat.color} rounded-lg flex items-center justify-center mb-3`}>
               <cat.icon className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-gray-800">{cat.name}</h3>
+            <h3 className="font-semibold text-gray-900">{cat.name}</h3>
             <p className="text-2xl font-bold mt-1">{cat.count}</p>
-            <p className="text-xs text-gray-500">rapports disponibles</p>
+            <p className="text-xs text-gray-900">rapports disponibles</p>
           </div>
         ))}
       </div>
@@ -121,15 +121,15 @@ export default function RapportsFinanciersPage() {
       {/* Rapports récents */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b">
-          <h3 className="font-semibold text-gray-800">Rapports récents</h3>
+          <h3 className="font-semibold text-gray-900">Rapports récents</h3>
         </div>
         <div className="divide-y">
           {rapports.map((rapport) => (
             <div key={rapport.id} className="px-6 py-4 hover:bg-gray-50 transition">
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="font-medium text-gray-800">{rapport.titre}</h4>
-                  <p className="text-sm text-gray-500 mt-1">{rapport.description}</p>
+                  <h4 className="font-medium text-gray-900">{rapport.titre}</h4>
+                  <p className="text-sm text-gray-900 mt-1">{rapport.description}</p>
                   <div className="flex items-center gap-4 mt-2">
                     <span className="text-xs text-gray-900 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -144,13 +144,13 @@ export default function RapportsFinanciersPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="p-2 text-gray-500 hover:text-blue-600 transition">
+                  <button className="p-2 text-gray-900 hover:text-blue-600 transition">
                     <Eye className="w-5 h-5" />
                   </button>
-                  <button className="p-2 text-gray-500 hover:text-gray-700 transition">
+                  <button className="p-2 text-gray-900 hover:text-gray-900 transition">
                     <Download className="w-5 h-5" />
                   </button>
-                  <button className="p-2 text-gray-500 hover:text-gray-700 transition">
+                  <button className="p-2 text-gray-900 hover:text-gray-900 transition">
                     <Printer className="w-5 h-5" />
                   </button>
                 </div>
@@ -170,8 +170,8 @@ export default function RapportsFinanciersPage() {
           >
             <div className="flex justify-between items-start">
               <div>
-                <h4 className="font-medium text-gray-800">{rapide.nom}</h4>
-                <p className="text-xs text-gray-500 mt-1">{rapide.description}</p>
+                <h4 className="font-medium text-gray-900">{rapide.nom}</h4>
+                <p className="text-xs text-gray-900 mt-1">{rapide.description}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-900 group-hover:text-blue-600 transition" />
             </div>
@@ -183,7 +183,7 @@ export default function RapportsFinanciersPage() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Évolution des finances */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Évolution mensuelle 2025</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Évolution mensuelle 2025</h3>
           <div className="space-y-3">
             <div>
               <div className="flex justify-between text-sm mb-1">
@@ -235,7 +235,7 @@ export default function RapportsFinanciersPage() {
 
         {/* Répartition des dépenses */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Répartition des dépenses 2025</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Répartition des dépenses 2025</h3>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>

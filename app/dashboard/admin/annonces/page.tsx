@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
+import {
   Plus, Edit, Trash2, Search, Send, Clock, CheckCircle, Users, ImageIcon, Eye, X, ChevronLeft, ChevronRight, Loader2, AlertTriangle, Megaphone, Calendar, Info, Bell
 } from "lucide-react";
 
@@ -83,15 +83,15 @@ function AnnonceCarousel({ images, alt }: { images: string[]; alt: string }) {
           className="object-contain max-w-full max-h-full w-full h-full"
         />
       </div>
-      
-      <button 
+
+      <button
         onClick={prevSlide}
         type="button"
         className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition z-10 cursor-pointer"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
-      <button 
+      <button
         onClick={nextSlide}
         type="button"
         className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition z-10 cursor-pointer"
@@ -129,10 +129,10 @@ export default function AdminAnnoncesPage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  
+
   // État pour les notifications
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  
+
   // État pour le modal de confirmation de suppression
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [annonceToDelete, setAnnonceToDelete] = useState<{ id: number; titre: string } | null>(null);
@@ -176,7 +176,7 @@ export default function AdminAnnoncesPage() {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
       setSelectedFiles((prev) => [...prev, ...filesArray]);
-      
+
       const newPreviewUrls = filesArray.map((file) => URL.createObjectURL(file));
       setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
     }
@@ -273,7 +273,7 @@ export default function AdminAnnoncesPage() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAnnonce) return;
-    
+
     setUploading(true);
     try {
       let uploadedUrls: string[] = [];
@@ -283,7 +283,7 @@ export default function AdminAnnoncesPage() {
 
       // Récupérer les images existantes (après suppression éventuelle dans l'UI)
       let existingImages = getAllImages(selectedAnnonce.image_url);
-      
+
       // Fusionner les images existantes avec les nouvelles
       const allImages = [...existingImages, ...uploadedUrls];
 
@@ -299,7 +299,7 @@ export default function AdminAnnoncesPage() {
           image_url: allImages.length > 0 ? JSON.stringify(allImages) : null
         })
       });
-      
+
       if (res.ok) {
         setShowEditModal(false);
         setSelectedAnnonce(null);
@@ -327,7 +327,7 @@ export default function AdminAnnoncesPage() {
   // Fonction de suppression
   const handleDelete = async () => {
     if (!annonceToDelete) return;
-    
+
     setDeleting(true);
     try {
       const res = await fetch(`/api/admin/annonces?id=${annonceToDelete.id}`, { method: 'DELETE' });
@@ -354,7 +354,7 @@ export default function AdminAnnoncesPage() {
       enseignant: "bg-green-100 text-green-700",
       classe: "bg-orange-100 text-orange-700"
     };
-    const styleClass = styles[cible] || 'bg-gray-100 text-gray-700';
+    const styleClass = styles[cible] || 'bg-gray-100 text-gray-900';
     const label = cible.charAt(0).toUpperCase() + cible.slice(1);
     return <span className={`px-2 py-1 rounded-full text-xs font-medium ${styleClass}`}>{label}</span>;
   };
@@ -372,7 +372,7 @@ export default function AdminAnnoncesPage() {
       alerte: <AlertTriangle className="w-3 h-3" />,
       rappel: <Bell className="w-3 h-3" />
     };
-    const styleClass = styles[type] || 'bg-gray-100 text-gray-700';
+    const styleClass = styles[type] || 'bg-gray-100 text-gray-900';
     const labels: Record<string, string> = {
       information: "Information",
       evenement: "Événement",
@@ -402,15 +402,14 @@ export default function AdminAnnoncesPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
-              notification.type === "success" 
-                ? "bg-green-50 border-l-4 border-green-500 text-green-800" 
-                : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -420,7 +419,7 @@ export default function AdminAnnoncesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-500 hover:text-gray-700 transition"
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -433,8 +432,8 @@ export default function AdminAnnoncesPage() {
           <h1 className="text-2xl font-bold text-black">Annonces</h1>
           <p className="text-gray-900 text-sm">Gérez les communications de l'école</p>
         </div>
-        <button 
-          onClick={() => setShowForm(true)} 
+        <button
+          onClick={() => setShowForm(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition shadow-sm"
         >
           <Plus className="w-4 h-4" /> Nouvelle annonce
@@ -469,7 +468,7 @@ export default function AdminAnnoncesPage() {
                         </div>
                       )}
                       <div>
-                        <p className="font-medium text-gray-800">{a.titre}</p>
+                        <p className="font-medium text-gray-900">{a.titre}</p>
                         <p className="text-xs text-gray-900 line-clamp-1">{a.contenu.substring(0, 60)}...</p>
                       </div>
                     </div>
@@ -479,33 +478,33 @@ export default function AdminAnnoncesPage() {
                   <td className="px-6 py-4 text-sm text-gray-900">{a.auteur}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {a.date_publication ? new Date(a.date_publication).toLocaleDateString() : "-"}
-                   </td>
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      <button 
-                        onClick={() => handleView(a)} 
+                      <button
+                        onClick={() => handleView(a)}
                         className="text-blue-600 hover:text-blue-800 transition"
                         title="Voir le contenu"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button 
-                        onClick={() => handleEdit(a)} 
+                      <button
+                        onClick={() => handleEdit(a)}
                         className="text-green-600 hover:text-green-800 transition"
                         title="Modifier"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button 
-                        onClick={() => openConfirmModal(a.id, a.titre)} 
+                      <button
+                        onClick={() => openConfirmModal(a.id, a.titre)}
                         className="text-red-600 hover:text-red-800 transition"
                         title="Supprimer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                   </td>
-                 </tr>
+                  </td>
+                </tr>
               ))}
               {annonces.length === 0 && (
                 <tr>
@@ -529,54 +528,54 @@ export default function AdminAnnoncesPage() {
                   {getTypeBadge(selectedAnnonce.type)}
                   <h2 className="text-xl font-bold text-black">{selectedAnnonce.titre}</h2>
                 </div>
-                <button 
-                  onClick={() => setShowViewModal(false)} 
-                  className="text-gray-400 hover:text-gray-600 transition"
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="text-gray-900 hover:text-gray-900 transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 space-y-4">
               {/* Images */}
               {selectedAnnonce.image_url && getAllImages(selectedAnnonce.image_url).length > 0 && (
                 <div className="rounded-lg overflow-hidden bg-gray-100">
                   <div className="h-64">
-                    <AnnonceCarousel 
-                      images={getAllImages(selectedAnnonce.image_url)} 
-                      alt={selectedAnnonce.titre} 
+                    <AnnonceCarousel
+                      images={getAllImages(selectedAnnonce.image_url)}
+                      alt={selectedAnnonce.titre}
                     />
                   </div>
                 </div>
               )}
-              
+
               {/* Métadonnées */}
               <div className="flex flex-wrap gap-4 pb-4 border-b">
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-gray-900">
                   <Users className="w-4 h-4" />
                   <span>Cible: {getCibleBadge(selectedAnnonce.cible)}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-gray-900">
                   <Clock className="w-4 h-4" />
                   <span>Publié le: {new Date(selectedAnnonce.date_publication).toLocaleDateString()} à {new Date(selectedAnnonce.date_publication).toLocaleTimeString()}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-gray-900">
                   <Users className="w-4 h-4" />
                   <span>Auteur: {selectedAnnonce.auteur}</span>
                 </div>
               </div>
-              
+
               {/* Contenu */}
               <div className="prose max-w-none">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Contenu :</h3>
-                <p className="text-gray-800 whitespace-pre-wrap">{selectedAnnonce.contenu}</p>
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Contenu :</h3>
+                <p className="text-gray-900 whitespace-pre-wrap">{selectedAnnonce.contenu}</p>
               </div>
             </div>
-            
+
             <div className="p-6 border-t bg-gray-50 flex justify-end">
-              <button 
-                onClick={() => setShowViewModal(false)} 
+              <button
+                onClick={() => setShowViewModal(false)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
                 Fermer
@@ -596,85 +595,81 @@ export default function AdminAnnoncesPage() {
             <form onSubmit={handleUpdate} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Titre *</label>
-                <input 
-                  type="text" 
-                  value={formData.titre} 
-                  onChange={(e) => setFormData({...formData, titre: e.target.value})} 
-                  className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  required 
+                <input
+                  type="text"
+                  value={formData.titre}
+                  onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
+                  className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Type d'annonce *</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, type: "information"})}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
-                      formData.type === "information"
-                        ? "bg-blue-50 border-blue-500 text-blue-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
+                    onClick={() => setFormData({ ...formData, type: "information" })}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${formData.type === "information"
+                      ? "bg-blue-50 border-blue-500 text-blue-700"
+                      : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                      }`}
                   >
                     <Info className="w-4 h-4" />
                     <span className="text-sm">Information</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, type: "evenement"})}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
-                      formData.type === "evenement"
-                        ? "bg-purple-50 border-purple-500 text-purple-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
+                    onClick={() => setFormData({ ...formData, type: "evenement" })}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${formData.type === "evenement"
+                      ? "bg-purple-50 border-purple-500 text-purple-700"
+                      : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                      }`}
                   >
                     <Calendar className="w-4 h-4" />
                     <span className="text-sm">Événement</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, type: "alerte"})}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
-                      formData.type === "alerte"
-                        ? "bg-red-50 border-red-500 text-red-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
+                    onClick={() => setFormData({ ...formData, type: "alerte" })}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${formData.type === "alerte"
+                      ? "bg-red-50 border-red-500 text-red-700"
+                      : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                      }`}
                   >
                     <AlertTriangle className="w-4 h-4" />
                     <span className="text-sm">Alerte</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, type: "rappel"})}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
-                      formData.type === "rappel"
-                        ? "bg-yellow-50 border-yellow-500 text-yellow-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
+                    onClick={() => setFormData({ ...formData, type: "rappel" })}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${formData.type === "rappel"
+                      ? "bg-yellow-50 border-yellow-500 text-yellow-700"
+                      : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                      }`}
                   >
                     <Bell className="w-4 h-4" />
                     <span className="text-sm">Rappel</span>
                   </button>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Contenu *</label>
-                <textarea 
-                  rows={4} 
-                  value={formData.contenu} 
-                  onChange={(e) => setFormData({...formData, contenu: e.target.value})} 
-                  className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  required 
+                <textarea
+                  rows={4}
+                  value={formData.contenu}
+                  onChange={(e) => setFormData({ ...formData, contenu: e.target.value })}
+                  className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Cible</label>
-                <select 
-                  value={formData.cible} 
-                  onChange={(e) => setFormData({...formData, cible: e.target.value})} 
+                <select
+                  value={formData.cible}
+                  onChange={(e) => setFormData({ ...formData, cible: e.target.value })}
                   className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="tous">Tous (Public)</option>
@@ -682,7 +677,7 @@ export default function AdminAnnoncesPage() {
                   <option value="enseignant">Enseignants uniquement</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Ajouter des images</label>
                 <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition relative">
@@ -695,17 +690,17 @@ export default function AdminAnnoncesPage() {
                     disabled={uploading}
                   />
                   <div className="text-center">
-                    <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 font-medium">Cliquez ou glissez des images ici</p>
-                    <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP jusqu'à 5 Mo</p>
+                    <ImageIcon className="w-8 h-8 text-gray-900 mx-auto mb-2" />
+                    <p className="text-sm text-gray-900 font-medium">Cliquez ou glissez des images ici</p>
+                    <p className="text-xs text-gray-900 mt-1">PNG, JPG, WEBP jusqu'à 5 Mo</p>
                   </div>
                 </div>
-                
+
                 {/* Images existantes avec bouton de suppression */}
                 {selectedAnnonce.image_url && getAllImages(selectedAnnonce.image_url).length > 0 && (
                   <div className="mt-3">
                     <div className="flex justify-between items-center mb-2">
-                      <p className="text-xs text-gray-500">Images actuelles :</p>
+                      <p className="text-xs text-gray-900">Images actuelles :</p>
                       <button
                         type="button"
                         onClick={() => {
@@ -724,10 +719,10 @@ export default function AdminAnnoncesPage() {
                     <div className="grid grid-cols-3 gap-2">
                       {getAllImages(selectedAnnonce.image_url).map((url, idx) => (
                         <div key={idx} className="relative w-full h-16 rounded-lg overflow-hidden border group">
-                          <img 
-                            src={url} 
-                            alt={`Image ${idx + 1}`} 
-                            className="object-cover w-full h-full" 
+                          <img
+                            src={url}
+                            alt={`Image ${idx + 1}`}
+                            className="object-cover w-full h-full"
                           />
                           <button
                             type="button"
@@ -748,11 +743,11 @@ export default function AdminAnnoncesPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Nouvelles images en prévisualisation */}
                 {previewUrls.length > 0 && (
                   <div className="mt-4">
-                    <p className="text-xs text-gray-500 mb-2">Nouvelles images à ajouter :</p>
+                    <p className="text-xs text-gray-900 mb-2">Nouvelles images à ajouter :</p>
                     <div className="grid grid-cols-3 gap-3">
                       {previewUrls.map((url, index) => (
                         <div key={index} className="relative w-full h-20 rounded-xl overflow-hidden group border">
@@ -773,21 +768,21 @@ export default function AdminAnnoncesPage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => {
                     setShowEditModal(false);
                     setSelectedAnnonce(null);
                     setSelectedFiles([]);
                     setPreviewUrls([]);
-                  }} 
+                  }}
                   className="px-4 py-2 text-black border border-gray-300 rounded-xl hover:bg-gray-100 transition"
                   disabled={uploading}
                 >
                   Annuler
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition flex items-center gap-2"
                   disabled={uploading}
                 >
@@ -813,12 +808,12 @@ export default function AdminAnnoncesPage() {
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Confirmer la suppression</h2>
+                <h2 className="text-xl font-bold text-gray-900">Confirmer la suppression</h2>
               </div>
             </div>
-            
+
             <div className="p-6">
-              <p className="text-gray-700 mb-2">
+              <p className="text-gray-900 mb-2">
                 Êtes-vous sûr de vouloir supprimer cette annonce ?
               </p>
               <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mb-4">
@@ -829,7 +824,7 @@ export default function AdminAnnoncesPage() {
                 Cette action est irréversible. Tous les médias associés seront également supprimés.
               </p>
             </div>
-            
+
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => {
@@ -873,85 +868,81 @@ export default function AdminAnnoncesPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Titre *</label>
-                <input 
-                  type="text" 
-                  value={formData.titre} 
-                  onChange={(e) => setFormData({...formData, titre: e.target.value})} 
-                  className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  required 
+                <input
+                  type="text"
+                  value={formData.titre}
+                  onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
+                  className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Type d'annonce *</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, type: "information"})}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
-                      formData.type === "information"
-                        ? "bg-blue-50 border-blue-500 text-blue-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
+                    onClick={() => setFormData({ ...formData, type: "information" })}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${formData.type === "information"
+                      ? "bg-blue-50 border-blue-500 text-blue-700"
+                      : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                      }`}
                   >
                     <Info className="w-4 h-4" />
                     <span className="text-sm">Information</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, type: "evenement"})}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
-                      formData.type === "evenement"
-                        ? "bg-purple-50 border-purple-500 text-purple-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
+                    onClick={() => setFormData({ ...formData, type: "evenement" })}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${formData.type === "evenement"
+                      ? "bg-purple-50 border-purple-500 text-purple-700"
+                      : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                      }`}
                   >
                     <Calendar className="w-4 h-4" />
                     <span className="text-sm">Événement</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, type: "alerte"})}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
-                      formData.type === "alerte"
-                        ? "bg-red-50 border-red-500 text-red-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
+                    onClick={() => setFormData({ ...formData, type: "alerte" })}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${formData.type === "alerte"
+                      ? "bg-red-50 border-red-500 text-red-700"
+                      : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                      }`}
                   >
                     <AlertTriangle className="w-4 h-4" />
                     <span className="text-sm">Alerte</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, type: "rappel"})}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
-                      formData.type === "rappel"
-                        ? "bg-yellow-50 border-yellow-500 text-yellow-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
+                    onClick={() => setFormData({ ...formData, type: "rappel" })}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${formData.type === "rappel"
+                      ? "bg-yellow-50 border-yellow-500 text-yellow-700"
+                      : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
+                      }`}
                   >
                     <Bell className="w-4 h-4" />
                     <span className="text-sm">Rappel</span>
                   </button>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Contenu *</label>
-                <textarea 
-                  rows={4} 
-                  value={formData.contenu} 
-                  onChange={(e) => setFormData({...formData, contenu: e.target.value})} 
-                  className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  required 
+                <textarea
+                  rows={4}
+                  value={formData.contenu}
+                  onChange={(e) => setFormData({ ...formData, contenu: e.target.value })}
+                  className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Cible</label>
-                <select 
-                  value={formData.cible} 
-                  onChange={(e) => setFormData({...formData, cible: e.target.value})} 
+                <select
+                  value={formData.cible}
+                  onChange={(e) => setFormData({ ...formData, cible: e.target.value })}
                   className="w-full text-black px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="tous">Tous (Public)</option>
@@ -959,7 +950,7 @@ export default function AdminAnnoncesPage() {
                   <option value="enseignant">Enseignants uniquement</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-black mb-1">Images (une ou plusieurs)</label>
                 <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition relative">
@@ -972,12 +963,12 @@ export default function AdminAnnoncesPage() {
                     disabled={uploading}
                   />
                   <div className="text-center">
-                    <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 font-medium">Cliquez ou glissez des images ici</p>
-                    <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP jusqu'à 5 Mo</p>
+                    <ImageIcon className="w-8 h-8 text-gray-900 mx-auto mb-2" />
+                    <p className="text-sm text-gray-900 font-medium">Cliquez ou glissez des images ici</p>
+                    <p className="text-xs text-gray-900 mt-1">PNG, JPG, WEBP jusqu'à 5 Mo</p>
                   </div>
                 </div>
-                
+
                 {previewUrls.length > 0 && (
                   <div className="grid grid-cols-3 gap-3 mt-4">
                     {previewUrls.map((url, index) => (
@@ -998,16 +989,16 @@ export default function AdminAnnoncesPage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t">
-                <button 
-                  type="button" 
-                  onClick={handleCloseForm} 
+                <button
+                  type="button"
+                  onClick={handleCloseForm}
                   className="px-4 py-2 text-black border border-gray-300 rounded-xl hover:bg-gray-100 transition"
                   disabled={uploading}
                 >
                   Annuler
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition flex items-center gap-2"
                   disabled={uploading}
                 >

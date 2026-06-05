@@ -77,13 +77,13 @@ export default function ProgrammesPage() {
       {/* Hero Section */}
       <div className="relative min-h-[350px] py-12 mt-16 flex items-center overflow-hidden">
         {/* Background Image */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('/img/slide3.jpg')" }}
         />
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-black/50" />
-        
+
         {/* Content */}
         <div className="relative container mx-auto px-4 text-white z-10">
           <div className="max-w-3xl">
@@ -123,14 +123,14 @@ export default function ProgrammesPage() {
                   </div>
                 </div>
                 <div className="p-6">
-                  <p className="text-gray-700 font-medium mb-3">{niveau.description}</p>
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                  <p className="text-gray-900 font-medium mb-3">{niveau.description}</p>
+                  <p className="text-gray-900 text-sm mb-4 leading-relaxed">
                     {niveau.descriptionDetaillee}
                   </p>
 
                   {/* Compétences clés */}
                   <div className="mb-4">
-                    <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-blue-600" />
                       Compétences développées :
                     </h4>
@@ -185,7 +185,7 @@ export default function ProgrammesPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Diplômes préparés</h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-900 max-w-2xl mx-auto">
               Notre école prépare les élèves aux diplômes officiels du système éducatif guinéen
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function ProgrammesPage() {
               <div key={index} className="bg-white rounded-xl p-6 text-center shadow-md hover:shadow-lg transition">
                 <Award className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{diplome.nom}</h3>
-                <p className="text-gray-600 mb-2">{diplome.description}</p>
+                <p className="text-gray-900 mb-2">{diplome.description}</p>
                 <span className="text-sm text-blue-600 font-medium">{diplome.niveau}</span>
               </div>
             ))}
@@ -208,7 +208,7 @@ export default function ProgrammesPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Notre approche pédagogique</h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-900 max-w-2xl mx-auto">
               Une éducation qui allie excellence académique et développement personnel
             </p>
           </div>
@@ -244,7 +244,7 @@ export default function ProgrammesPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Activités extrascolaires</h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-900 max-w-2xl mx-auto">
               Pour un développement équilibré de l'enfant
             </p>
           </div>

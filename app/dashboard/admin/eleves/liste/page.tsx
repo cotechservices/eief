@@ -3,11 +3,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Search, 
-  Eye, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Search,
+  Eye,
+  CheckCircle,
+  XCircle,
   FileText,
   ChevronLeft,
   ChevronRight,
@@ -72,7 +72,7 @@ export default function ListeElevesPage() {
     try {
       const response = await fetch("/api/admin/eleves");
       const data = await response.json();
-      
+
       // Simuler des données pour transport, cantine, bibliothèque
       // (À remplacer par de vraies données de votre API)
       const dataWithServices = data.map((e: Eleve) => ({
@@ -84,7 +84,7 @@ export default function ListeElevesPage() {
         bibliotheque_inscrit: Math.random() > 0.5,
         bibliotheque_statut: Math.random() > 0.5 ? 'paye' : 'non_paye',
       }));
-      
+
       setEleves(dataWithServices);
     } catch (error) {
       console.error("Erreur:", error);
@@ -115,7 +115,7 @@ export default function ListeElevesPage() {
 
   const getServiceBadge = (inscrit: boolean | undefined, statut: string | undefined) => {
     if (!inscrit) {
-      return <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">Non inscrit</span>;
+      return <span className="bg-gray-100 text-gray-900 px-2 py-1 rounded-full text-xs">Non inscrit</span>;
     }
     if (statut === 'paye') {
       return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
@@ -136,8 +136,8 @@ export default function ListeElevesPage() {
     );
   });
 
-  const filteredByClasse = selectedClasse === "all" 
-    ? filteredEleves 
+  const filteredByClasse = selectedClasse === "all"
+    ? filteredEleves
     : filteredEleves.filter(e => e.classe_nom === selectedClasse);
 
   const totalPages = Math.ceil(filteredByClasse.length / itemsPerPage);
@@ -148,7 +148,7 @@ export default function ListeElevesPage() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
@@ -184,9 +184,9 @@ export default function ListeElevesPage() {
       {/* En-tête avec bouton retour */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Link 
+          <Link
             href="/dashboard/admin/eleves"
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
+            className="flex items-center gap-2 text-gray-900 hover:text-gray-900 transition"
           >
             <ArrowLeft className="w-5 h-5" />
             Retour
@@ -235,7 +235,7 @@ export default function ListeElevesPage() {
       {filteredByClasse.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
-          <p className="text-gray-500">Aucun élève trouvé</p>
+          <p className="text-gray-900">Aucun élève trouvé</p>
         </div>
       ) : (
         <>
@@ -280,7 +280,7 @@ export default function ListeElevesPage() {
                       <td className="px-4 py-4">
                         <p className="text-sm">{e.parent_prenom} {e.parent_nom}</p>
                         <p className="text-xs text-blue-600">{e.parent_email}</p>
-                        <p className="text-xs text-gray-500">{e.parent_telephone}</p>
+                        <p className="text-xs text-gray-900">{e.parent_telephone}</p>
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-1">
@@ -292,7 +292,7 @@ export default function ListeElevesPage() {
                       <td className="px-4 py-4">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-1">
-                            <Bus className="w-3 h-3 text-gray-500" />
+                            <Bus className="w-3 h-3 text-gray-900" />
                             {getServiceBadge(e.transport_inscrit, e.transport_statut)}
                           </div>
                         </div>
@@ -301,7 +301,7 @@ export default function ListeElevesPage() {
                       <td className="px-4 py-4">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-1">
-                            <Utensils className="w-3 h-3 text-gray-500" />
+                            <Utensils className="w-3 h-3 text-gray-900" />
                             {getServiceBadge(e.cantine_inscrit, e.cantine_statut)}
                           </div>
                         </div>
@@ -310,7 +310,7 @@ export default function ListeElevesPage() {
                       <td className="px-4 py-4">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-1">
-                            <Library className="w-3 h-3 text-gray-500" />
+                            <Library className="w-3 h-3 text-gray-900" />
                             {getServiceBadge(e.bibliotheque_inscrit, e.bibliotheque_statut)}
                           </div>
                         </div>
@@ -333,12 +333,12 @@ export default function ListeElevesPage() {
           {totalPages > 1 && (
             <div className="bg-white rounded-xl shadow-sm p-4">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-900">
                   Affichage de <span className="font-medium">{startIndex + 1}</span> à{' '}
                   <span className="font-medium">{Math.min(endIndex, filteredByClasse.length)}</span>{' '}
                   sur <span className="font-medium">{filteredByClasse.length}</span> élèves
                 </p>
-                
+
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -347,7 +347,7 @@ export default function ListeElevesPage() {
                   >
                     <ChevronLeft className="w-4 h-4 text-black" />
                   </button>
-                  
+
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
@@ -356,18 +356,17 @@ export default function ListeElevesPage() {
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page as number)}
-                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          }`}
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'text-gray-900 hover:bg-gray-100'
+                            }`}
                         >
                           {page}
                         </button>
                       )
                     ))}
                   </div>
-                  
+
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}

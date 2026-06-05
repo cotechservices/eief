@@ -2,12 +2,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Search, 
-  Eye, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  Search,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
   FileText,
   ChevronLeft,
   ChevronRight,
@@ -71,7 +71,7 @@ export default function GestionReinscriptionsPage() {
   const [observations, setObservations] = useState("");
   const [showPaiementModal, setShowPaiementModal] = useState(false);
   const [paiementReinscription, setPaiementReinscription] = useState<Reinscription | null>(null);
-  
+
   // États pour le modal de confirmation
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [reinscriptionToDelete, setReinscriptionToDelete] = useState<{ id: number; nom: string; prenom: string } | null>(null);
@@ -110,11 +110,11 @@ export default function GestionReinscriptionsPage() {
       if (searchTerm) params.append("search", searchTerm);
 
       const response = await fetch(`/api/admin/reinscriptions?${params}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
       setReinscriptions(data);
       setCurrentPage(1);
@@ -139,13 +139,13 @@ export default function GestionReinscriptionsPage() {
 
   const handleDelete = async () => {
     if (!reinscriptionToDelete) return;
-    
+
     setDeleting(true);
     try {
       const response = await fetch(`/api/admin/reinscriptions?id=${reinscriptionToDelete.id}`, {
         method: "DELETE",
       });
-      
+
       if (response.ok) {
         await fetchReinscriptions();
         if (selectedReinscription?.id === reinscriptionToDelete.id) {
@@ -180,14 +180,14 @@ export default function GestionReinscriptionsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, statut, observations }),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
         fetchReinscriptions();
         setShowDetailModal(false);
-        const message = statut === "valide" 
-          ? "Inscription validée avec succès" 
+        const message = statut === "valide"
+          ? "Inscription validée avec succès"
           : "Réinscription rejetée avec succès";
         addNotification("success", message);
       } else {
@@ -233,7 +233,7 @@ export default function GestionReinscriptionsPage() {
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
-      
+
       const colWidths = [
         { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 25 },
         { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 20 },
@@ -244,7 +244,7 @@ export default function GestionReinscriptionsPage() {
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Reinscriptions');
-      
+
       const fileName = `reinscriptions_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
       addNotification("success", "Export Excel effectué avec succès");
@@ -291,7 +291,7 @@ export default function GestionReinscriptionsPage() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
@@ -319,7 +319,7 @@ export default function GestionReinscriptionsPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement des réinscriptions...</p>
+          <p className="text-gray-900">Chargement des réinscriptions...</p>
         </div>
       </div>
     );
@@ -331,7 +331,7 @@ export default function GestionReinscriptionsPage() {
         <div className="text-center text-red-600">
           <XCircle className="w-12 h-12 mx-auto mb-4" />
           <p>Erreur: {error}</p>
-          <button 
+          <button
             onClick={fetchReinscriptions}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
@@ -349,15 +349,14 @@ export default function GestionReinscriptionsPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
-              notification.type === "success" 
-                ? "bg-green-50 border-l-4 border-green-500 text-green-800" 
-                : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -368,7 +367,7 @@ export default function GestionReinscriptionsPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-600 transition"
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -381,7 +380,7 @@ export default function GestionReinscriptionsPage() {
           <h1 className="text-2xl font-bold text-black">Gestion des réinscriptions</h1>
           <p className="text-gray-900">Gérez les demandes d'inscription, les documents et les paiements</p>
         </div>
-        <button 
+        <button
           onClick={exportToExcel}
           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
         >
@@ -559,7 +558,7 @@ export default function GestionReinscriptionsPage() {
                   <span className="font-medium">{Math.min(endIndex, filteredReinscriptions.length)}</span>{' '}
                   sur <span className="font-medium">{filteredReinscriptions.length}</span> résultats
                 </p>
-                
+
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -568,7 +567,7 @@ export default function GestionReinscriptionsPage() {
                   >
                     <ChevronLeft className="w-4 h-4 text-black" />
                   </button>
-                  
+
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
@@ -577,18 +576,17 @@ export default function GestionReinscriptionsPage() {
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page as number)}
-                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          }`}
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'text-gray-900 hover:bg-gray-100'
+                            }`}
                         >
                           {page}
                         </button>
                       )
                     ))}
                   </div>
-                  
+
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
@@ -612,12 +610,12 @@ export default function GestionReinscriptionsPage() {
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Confirmer la suppression</h2>
+                <h2 className="text-xl font-bold text-gray-900">Confirmer la suppression</h2>
               </div>
             </div>
-            
+
             <div className="p-6">
-              <p className="text-gray-700 mb-2">
+              <p className="text-gray-900 mb-2">
                 Êtes-vous sûr de vouloir supprimer cette réinscription ?
               </p>
               <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mb-4">
@@ -628,7 +626,7 @@ export default function GestionReinscriptionsPage() {
                 Cette action est irréversible. Toutes les données associées seront supprimées.
               </p>
             </div>
-            
+
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => {
@@ -669,10 +667,10 @@ export default function GestionReinscriptionsPage() {
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-black">Détail de la réinscription</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">✕</button>
               </div>
             </div>
-            
+
             <div className="p-6 space-y-6">
               {/* En-tête avec photo */}
               <div className="flex items-start gap-6 pb-6 border-b">
@@ -706,7 +704,7 @@ export default function GestionReinscriptionsPage() {
               {/* Informations parent */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <User className="w-5 h-5 text-blue-900"/>
+                  <User className="w-5 h-5 text-blue-900" />
                   Informations du parent
                 </h3>
                 <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
@@ -813,35 +811,35 @@ export default function GestionReinscriptionsPage() {
                 </div>
               </div>
               {/* Paiement */}
-            <div>
-              <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-purple-600" />
-                Informations de paiement
-              </h3>
-              <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                <div>
-                  <p className="text-sm text-gray-900">Montant des frais</p>
-                  <p className="font-bold text-lg text-green-600">
-                    {selectedReinscription.frais_montant?.toLocaleString()} GNF
-                  </p>
-                  {selectedReinscription.classe && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      (Frais pour la classe {selectedReinscription.classe})
+              <div>
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-purple-600" />
+                  Informations de paiement
+                </h3>
+                <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+                  <div>
+                    <p className="text-sm text-gray-900">Montant des frais</p>
+                    <p className="font-bold text-lg text-green-600">
+                      {selectedReinscription.frais_montant?.toLocaleString()} GNF
                     </p>
+                    {selectedReinscription.classe && (
+                      <p className="text-xs text-gray-900 mt-1">
+                        (Frais pour la classe {selectedReinscription.classe})
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">Statut paiement</p>
+                    {getFraisBadge(selectedReinscription.frais_statut)}
+                  </div>
+                  {selectedReinscription.frais_mode_paiement && (
+                    <div>
+                      <p className="text-sm text-gray-900">Mode de paiement</p>
+                      <p className="capitalize text-black">{selectedReinscription.frais_mode_paiement.replace("_", " ")}</p>
+                    </div>
                   )}
                 </div>
-                <div>
-                  <p className="text-sm text-gray-900">Statut paiement</p>
-                  {getFraisBadge(selectedReinscription.frais_statut)}
-                </div>
-                {selectedReinscription.frais_mode_paiement && (
-                  <div>
-                    <p className="text-sm text-gray-900">Mode de paiement</p>
-                    <p className="capitalize text-black">{selectedReinscription.frais_mode_paiement.replace("_", " ")}</p>
-                  </div>
-                )}
               </div>
-            </div>
               {/* Observations */}
               <div>
                 <label className="block text-black mb-2">Observations</label>
@@ -854,26 +852,26 @@ export default function GestionReinscriptionsPage() {
                 />
               </div>
             </div>
-            
+
             <div className="p-6 border-t bg-gray-50 flex justify-between gap-3">
               {selectedReinscription.statut === "en_attente" && (
                 <div className="flex gap-3">
-                  <button 
-                    onClick={() => handleUpdateStatut(selectedReinscription.id, "rejete")} 
+                  <button
+                    onClick={() => handleUpdateStatut(selectedReinscription.id, "rejete")}
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
                   >
                     Rejeter
                   </button>
                   {selectedReinscription.frais_statut === "paye" ? (
-                    <button 
-                      onClick={() => handleUpdateStatut(selectedReinscription.id, "valide")} 
+                    <button
+                      onClick={() => handleUpdateStatut(selectedReinscription.id, "valide")}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                     >
                       Valider l'inscription
                     </button>
                   ) : (
-                    <button 
-                      onClick={() => { setShowDetailModal(false); handleOpenPaiement(selectedReinscription); }} 
+                    <button
+                      onClick={() => { setShowDetailModal(false); handleOpenPaiement(selectedReinscription); }}
                       className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
                     >
                       Enregistrer le paiement
@@ -882,15 +880,15 @@ export default function GestionReinscriptionsPage() {
                 </div>
               )}
               <div className="flex gap-3 ml-auto">
-                <button 
-                  onClick={() => openConfirmModal(selectedReinscription.id, selectedReinscription.enfant_nom, selectedReinscription.enfant_prenom)} 
+                <button
+                  onClick={() => openConfirmModal(selectedReinscription.id, selectedReinscription.enfant_nom, selectedReinscription.enfant_prenom)}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
                 >
                   <Trash2 className="w-4 h-4" />
                   Supprimer
                 </button>
-                <button 
-                  onClick={() => setShowDetailModal(false)} 
+                <button
+                  onClick={() => setShowDetailModal(false)}
                   className="px-4 py-2 text-black border rounded-lg hover:bg-gray-50 transition"
                 >
                   Fermer

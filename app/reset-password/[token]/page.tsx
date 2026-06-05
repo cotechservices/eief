@@ -64,7 +64,7 @@ export default function ResetPasswordPage() {
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Mot de passe modifié !</h1>
-              <p className="text-gray-500 mb-6">
+              <p className="text-gray-900 mb-6">
                 Votre mot de passe a été réinitialisé avec succès.
               </p>
               <Link
@@ -96,7 +96,7 @@ export default function ResetPasswordPage() {
       <div className="relative z-20 min-h-screen flex items-center justify-center px-4 py-12">
         <div className="max-w-6xl w-full mx-auto">
           <div className="flex flex-col lg:flex-row rounded-2xl overflow-hidden shadow-2xl">
-            
+
             {/* Partie gauche - Texte de pub avec transparence */}
             <div className="lg:w-1/2 bg-black/50 backdrop-blur-md p-8 lg:p-12 flex flex-col justify-center text-white">
               <div className="mb-8">
@@ -182,10 +182,10 @@ export default function ResetPasswordPage() {
 
               {/* En-tête */}
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-800">
+                <h1 className="text-2xl font-bold text-gray-900">
                   Nouveau mot de passe
                 </h1>
-                <p className="text-gray-500 mt-2">
+                <p className="text-gray-900 mt-2">
                   Choisissez un mot de passe sécurisé pour votre compte
                 </p>
               </div>
@@ -202,7 +202,7 @@ export default function ResetPasswordPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Password */}
                 <div>
-                  <label className="block text-gray-700 mb-2 font-medium">
+                  <label className="block text-gray-900 mb-2 font-medium">
                     Nouveau mot de passe
                   </label>
                   <div className="relative">
@@ -222,9 +222,9 @@ export default function ResetPasswordPage() {
                       className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
                       {showPassword ? (
-                        <EyeOff className="w-5 h-5 text-gray-900 hover:text-gray-600" />
+                        <EyeOff className="w-5 h-5 text-gray-900 hover:text-gray-900" />
                       ) : (
-                        <Eye className="w-5 h-5 text-gray-900 hover:text-gray-600" />
+                        <Eye className="w-5 h-5 text-gray-900 hover:text-gray-900" />
                       )}
                     </button>
                   </div>
@@ -232,7 +232,7 @@ export default function ResetPasswordPage() {
 
                 {/* Confirm Password */}
                 <div>
-                  <label className="block text-gray-700 mb-2 font-medium">
+                  <label className="block text-gray-900 mb-2 font-medium">
                     Confirmer le mot de passe
                   </label>
                   <div className="relative">
@@ -270,8 +270,8 @@ export default function ResetPasswordPage() {
 
                 {/* Login link */}
                 <div className="text-center">
-                  <Link 
-                    href="/login" 
+                  <Link
+                    href="/login"
                     className="text-blue-600 hover:text-blue-700 hover:underline text-sm font-medium"
                   >
                     Retour à la connexion

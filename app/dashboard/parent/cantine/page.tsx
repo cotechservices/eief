@@ -244,16 +244,16 @@ export default function ParentCantinePage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Cantine scolaire</h1>
-          <p className="text-gray-500">Gérez les repas de vos enfants et réservez les menus</p>
+          <h1 className="text-2xl font-bold text-gray-900">Cantine scolaire</h1>
+          <p className="text-gray-900">Gérez les repas de vos enfants et réservez les menus</p>
         </div>
         <button
           onClick={handleRefresh}
           className="p-2 rounded-lg hover:bg-gray-100 transition flex items-center gap-2"
           disabled={refreshing}
         >
-          <RefreshCw className={`w-5 h-5 text-gray-500 ${refreshing ? "animate-spin" : ""}`} />
-          <span className="text-sm text-gray-600">Actualiser</span>
+          <RefreshCw className={`w-5 h-5 text-gray-900 ${refreshing ? "animate-spin" : ""}`} />
+          <span className="text-sm text-gray-900">Actualiser</span>
         </button>
       </div>
 
@@ -265,17 +265,17 @@ export default function ParentCantinePage() {
           <p className="text-xs opacity-75">dont {stats.inscritsCantine} inscrits à la cantine</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-500"><Utensils className="w-5 h-5" /><p className="text-sm">Repas servis</p></div>
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><Utensils className="w-5 h-5" /><p className="text-sm">Repas servis</p></div>
           <p className="text-2xl font-bold text-orange-600">{stats.repasServisMois}</p>
-          <p className="text-xs text-gray-500">ce mois-ci</p>
+          <p className="text-xs text-gray-900">ce mois-ci</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-500"><CreditCard className="w-5 h-5" /><p className="text-sm">Frais cantine</p></div>
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5" /><p className="text-sm">Frais cantine</p></div>
           <p className="text-lg font-bold text-green-600">{stats.fraisTotalCantine.toLocaleString()} GNF</p>
-          <p className="text-xs text-gray-500">Payé: {stats.fraisPayesCantine.toLocaleString()} GNF</p>
+          <p className="text-xs text-gray-900">Payé: {stats.fraisPayesCantine.toLocaleString()} GNF</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-500"><TrendingUp className="w-5 h-5" /><p className="text-sm">Taux paiement</p></div>
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><TrendingUp className="w-5 h-5" /><p className="text-sm">Taux paiement</p></div>
           <p className="text-2xl font-bold text-purple-600">
             {stats.fraisTotalCantine > 0 ? Math.round((stats.fraisPayesCantine / stats.fraisTotalCantine) * 100) : 0}%
           </p>
@@ -285,7 +285,7 @@ export default function ParentCantinePage() {
       {/* Barre de progression des paiements cantine */}
       <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="flex justify-between text-sm mb-2">
-          <span className="text-gray-600">Progression des paiements cantine</span>
+          <span className="text-gray-900">Progression des paiements cantine</span>
           <span className="font-medium text-orange-600">
             {stats.fraisTotalCantine > 0 ? Math.round((stats.fraisPayesCantine / stats.fraisTotalCantine) * 100) : 0}%
           </span>
@@ -301,7 +301,7 @@ export default function ParentCantinePage() {
       {/* Sélection de l'enfant */}
       {enfantsInscrits.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-3">
-          <span className="text-sm text-gray-500 flex items-center gap-1 mr-2">
+          <span className="text-sm text-gray-900 flex items-center gap-1 mr-2">
             <Users className="w-4 h-4" /> Enfants inscrits:
           </span>
           {enfantsInscrits.map((e) => (
@@ -309,8 +309,8 @@ export default function ParentCantinePage() {
               key={e.id}
               onClick={() => setSelectedEnfantId(e.id)}
               className={`px-4 py-2 rounded-lg transition ${selectedEnfantId === e.id
-                  ? "bg-orange-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-orange-600 text-white"
+                : "bg-gray-100 text-gray-900 hover:bg-gray-200"
                 }`}
             >
               {e.prenom} {e.nom}
@@ -345,7 +345,7 @@ export default function ParentCantinePage() {
             {/* Statut du service cantine */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                   <Utensils className="w-5 h-5 text-orange-600" />
                   Statut du service
                 </h3>
@@ -361,23 +361,23 @@ export default function ParentCantinePage() {
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Solde disponible</span>
+                  <span className="text-gray-900 text-sm">Solde disponible</span>
                   <span className="font-medium text-green-600">{enfant.solde?.toLocaleString()} GNF</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Repas réservés</span>
+                  <span className="text-gray-900 text-sm">Repas réservés</span>
                   <span className="font-medium">{enfantReservations.length}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Total à payer</span>
+                  <span className="text-gray-900 text-sm">Total à payer</span>
                   <span className="font-medium text-orange-600">{totalAPayer.toLocaleString()} GNF</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Responsable cantine</span>
+                  <span className="text-gray-900 text-sm">Responsable cantine</span>
                   <span className="font-medium">Mme. Touré</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Contact</span>
+                  <span className="text-gray-900 text-sm">Contact</span>
                   <a href="tel:+224620000000" className="text-orange-600 font-medium flex items-center gap-1">
                     <Phone className="w-3 h-3" /> 6200 00 00
                   </a>
@@ -387,19 +387,19 @@ export default function ParentCantinePage() {
 
             {/* Horaires des repas */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
                 <Clock className="w-5 h-5 text-orange-600" />
                 Horaires des repas
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-500">Déjeuner</p>
+                    <p className="text-sm text-gray-900">Déjeuner</p>
                     <p className="text-xl font-bold text-orange-600">12:30</p>
                   </div>
                   <div className="text-">→</div>
                   <div>
-                    <p className="text-sm text-gray-500">Goûter</p>
+                    <p className="text-sm text-gray-900">Goûter</p>
                     <p className="text-xl font-bold text-orange-600">16:00</p>
                   </div>
                 </div>
@@ -451,8 +451,8 @@ export default function ParentCantinePage() {
                     onClick={() => setShowResume(true)}
                     disabled={totalQuantities === 0}
                     className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${totalQuantities > 0
-                        ? "bg-white text-orange-600 hover:bg-gray-100"
-                        : "bg-white/50 text-orange-400 cursor-not-allowed"
+                      ? "bg-white text-orange-600 hover:bg-gray-100"
+                      : "bg-white/50 text-orange-400 cursor-not-allowed"
                       }`}
                   >
                     <ShoppingCart className="w-4 h-4" />
@@ -475,15 +475,15 @@ export default function ParentCantinePage() {
                             <span className="text-sm font-semibold text-orange-600">
                               {getJourSemaine(menu.date)}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-900">
                               {new Date(menu.date).toLocaleDateString('fr-FR')}
                             </span>
                             {menu.calories && (
                               <span className="text-xs text-">{menu.calories} cal</span>
                             )}
                           </div>
-                          <p className="font-medium text-gray-800">{menu.plat}</p>
-                          <p className="text-sm text-gray-500">
+                          <p className="font-medium text-gray-900">{menu.plat}</p>
+                          <p className="text-sm text-gray-900">
                             {menu.accompagnement} • {menu.dessert}
                           </p>
                           {menu.allergenes && menu.allergenes.length > 0 && (
@@ -547,17 +547,17 @@ export default function ParentCantinePage() {
 
             {/* Présence du jour */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-semibold text-gray-800 flex items-center gap-2 mb-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
                 <Users className="w-5 h-5 text-purple-600" />
                 Repas du jour
               </h3>
               <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
                 <div>
-                  <p className="text-sm text-gray-500">Statut déjeuner</p>
+                  <p className="text-sm text-gray-900">Statut déjeuner</p>
                   <p className="text-lg font-semibold text-green-600">✅ Réservé</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">Menu du jour</p>
+                  <p className="text-sm text-gray-900">Menu du jour</p>
                   <p className="font-medium">{menus[0]?.plat || "Riz au gras"}</p>
                 </div>
               </div>
@@ -565,7 +565,7 @@ export default function ParentCantinePage() {
                 <button className="flex-1 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition flex items-center justify-center gap-2">
                   <Bell className="w-4 h-4" /> Activer les rappels
                 </button>
-                <button className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                <button className="flex-1 border border-gray-300 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center gap-2">
                   <Calendar className="w-4 h-4" /> Historique
                 </button>
               </div>
@@ -600,10 +600,10 @@ export default function ParentCantinePage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-800">Confirmer la réservation</h2>
+              <h2 className="text-xl font-bold text-gray-900">Confirmer la réservation</h2>
               <button
                 onClick={() => setShowResume(false)}
-                className="text- hover:text-gray-600"
+                className="text- hover:text-gray-900"
                 disabled={submitting}
               >
                 <X className="w-5 h-5" />
@@ -618,11 +618,11 @@ export default function ParentCantinePage() {
                     <div key={menuId} className="flex justify-between items-center">
                       <div>
                         <p className="font-medium">{getJourSemaine(menu.date)}</p>
-                        <p className="text-sm text-gray-500">{menu.plat}</p>
+                        <p className="text-sm text-gray-900">{menu.plat}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">{qty} x {menu.prix.toLocaleString()} GNF</p>
-                        <p className="text-sm text-gray-500">{(qty * menu.prix).toLocaleString()} GNF</p>
+                        <p className="text-sm text-gray-900">{(qty * menu.prix).toLocaleString()} GNF</p>
                       </div>
                     </div>
                   );
@@ -639,7 +639,7 @@ export default function ParentCantinePage() {
                   </div>
                   {enfant && enfant.solde && (
                     <div className="flex justify-between items-center mt-2 text-sm">
-                      <span className="text-gray-500">Solde actuel</span>
+                      <span className="text-gray-900">Solde actuel</span>
                       <span className={`font-medium ${enfant.solde >= Object.entries(quantities).reduce((acc, [menuId, qty]) => {
                         const menu = menus.find(m => m.id === parseInt(menuId));
                         return acc + (qty * (menu?.prix || 0));

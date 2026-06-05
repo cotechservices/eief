@@ -34,17 +34,17 @@ export default function EnseignantClassesPage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold text-gray-800">Mes classes</h1><p className="text-gray-500">Gérez vos classes et vos élèves</p></div>
+      <div><h1 className="text-2xl font-bold text-gray-900">Mes classes</h1><p className="text-gray-900">Gérez vos classes et vos élèves</p></div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {classes.map((classe) => (
           <div key={classe.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white"><h3 className="text-xl font-bold">{classe.nom}</h3><p className="text-sm opacity-90">{classe.niveau}</p></div>
             <div className="p-4 space-y-3">
-              <div className="flex justify-between items-center"><div className="flex items-center gap-2 text-gray-600"><Users className="w-4 h-4" />Élèves</div><span className="font-medium">{classe.effectif}</span></div>
-              <div className="flex justify-between items-center"><div className="flex items-center gap-2 text-gray-600"><Calendar className="w-4 h-4" />Heures/semaine</div><span className="font-medium">{classe.heuresSemaine}h</span></div>
-              <div className="flex justify-between items-center"><div className="flex items-center gap-2 text-gray-600"><CheckCircle className="w-4 h-4" />Présence</div><span className="text-green-600 font-medium">{classe.presence}%</span></div>
-              <div className="flex justify-between items-center"><div className="flex items-center gap-2 text-gray-600"><GraduationCap className="w-4 h-4" />Moyenne</div><span className="text-blue-600 font-medium">{classe.moyenne}/20</span></div>
+              <div className="flex justify-between items-center"><div className="flex items-center gap-2 text-gray-900"><Users className="w-4 h-4" />Élèves</div><span className="font-medium">{classe.effectif}</span></div>
+              <div className="flex justify-between items-center"><div className="flex items-center gap-2 text-gray-900"><Calendar className="w-4 h-4" />Heures/semaine</div><span className="font-medium">{classe.heuresSemaine}h</span></div>
+              <div className="flex justify-between items-center"><div className="flex items-center gap-2 text-gray-900"><CheckCircle className="w-4 h-4" />Présence</div><span className="text-green-600 font-medium">{classe.presence}%</span></div>
+              <div className="flex justify-between items-center"><div className="flex items-center gap-2 text-gray-900"><GraduationCap className="w-4 h-4" />Moyenne</div><span className="text-blue-600 font-medium">{classe.moyenne}/20</span></div>
               <div className="flex gap-2 pt-2">
                 <Link href={`/dashboard/enseignant/classes/${classe.id}/presences`} className="flex-1 text-center text-sm bg-blue-50 text-blue-600 px-2 py-1.5 rounded-lg">Présences</Link>
                 <Link href={`/dashboard/enseignant/classes/${classe.id}/devoirs`} className="flex-1 text-center text-sm bg-orange-50 text-orange-600 px-2 py-1.5 rounded-lg">Devoirs</Link>

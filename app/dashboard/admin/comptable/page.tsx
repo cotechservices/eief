@@ -2,10 +2,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
   Calendar,
   Download,
   Eye,
@@ -90,7 +90,7 @@ export default function ComptableDashboard() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Chargement des données financières...</p>
+          <p className="text-gray-900">Chargement des données financières...</p>
         </div>
       </div>
     );
@@ -101,12 +101,12 @@ export default function ComptableDashboard() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Tableau de bord comptable</h1>
-          <p className="text-gray-500">Gestion financière de l'école</p>
+          <h1 className="text-2xl font-bold text-gray-900">Tableau de bord comptable</h1>
+          <p className="text-gray-900">Gestion financière de l'école</p>
         </div>
         <div className="flex gap-3">
-          <select 
-            value={periode} 
+          <select
+            value={periode}
             onChange={(e) => setPeriode(e.target.value)}
             className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -126,7 +126,7 @@ export default function ComptableDashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Total recettes</p>
+              <p className="text-gray-900 text-sm">Total recettes</p>
               <p className="text-2xl font-bold text-green-600">{stats.totalRecettes.toLocaleString()} GNF</p>
               <p className="text-sm text-green-500 mt-1">+8% vs année dernière</p>
             </div>
@@ -139,7 +139,7 @@ export default function ComptableDashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Total dépenses</p>
+              <p className="text-gray-900 text-sm">Total dépenses</p>
               <p className="text-2xl font-bold text-red-600">{stats.totalDepenses.toLocaleString()} GNF</p>
               <p className="text-sm text-red-500 mt-1">+5% vs année dernière</p>
             </div>
@@ -152,9 +152,9 @@ export default function ComptableDashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Solde actuel</p>
+              <p className="text-gray-900 text-sm">Solde actuel</p>
               <p className="text-2xl font-bold text-blue-600">{stats.solde.toLocaleString()} GNF</p>
-              <p className="text-sm text-gray-500 mt-1">Disponible</p>
+              <p className="text-sm text-gray-900 mt-1">Disponible</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
               <Wallet className="w-6 h-6 text-blue-600" />
@@ -165,9 +165,9 @@ export default function ComptableDashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Taux de recouvrement</p>
+              <p className="text-gray-900 text-sm">Taux de recouvrement</p>
               <p className="text-2xl font-bold text-purple-600">{stats.tauxRecouvrement}%</p>
-              <p className="text-sm text-gray-500 mt-1">Objectif: 95%</p>
+              <p className="text-sm text-gray-900 mt-1">Objectif: 95%</p>
             </div>
             <div className="bg-purple-100 p-3 rounded-lg">
               <CheckCircle className="w-6 h-6 text-purple-600" />
@@ -181,7 +181,7 @@ export default function ComptableDashboard() {
         {/* Évolution des recettes */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-gray-800">Évolution des recettes</h3>
+            <h3 className="font-semibold text-gray-900">Évolution des recettes</h3>
             <Link href="/dashboard/admin/finances/rapports" className="text-blue-600 text-sm hover:underline">Voir détails</Link>
           </div>
           <div className="space-y-3">
@@ -192,7 +192,7 @@ export default function ComptableDashboard() {
                   <span>{item.montant.toLocaleString()} GNF</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-green-500 h-2 rounded-full"
                     style={{ width: `${(item.montant / item.prevision) * 100}%` }}
                   ></div>
@@ -204,12 +204,12 @@ export default function ComptableDashboard() {
 
         {/* Répartition des recettes */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Répartition des recettes</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Répartition des recettes</h3>
           <div className="space-y-3">
             {categoriesRecettes.map((cat, idx) => (
               <div key={idx} className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <cat.icon className="w-4 h-4 text-gray-600" />
+                  <cat.icon className="w-4 h-4 text-gray-900" />
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between text-sm">
@@ -217,7 +217,7 @@ export default function ComptableDashboard() {
                     <span>{cat.montant.toLocaleString()} GNF ({cat.pourcentage}%)</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                    <div 
+                    <div
                       className="bg-blue-500 h-1.5 rounded-full"
                       style={{ width: `${cat.pourcentage}%` }}
                     ></div>
@@ -241,7 +241,7 @@ export default function ComptableDashboard() {
               <div key={impaye.id} className="flex justify-between items-center p-2 bg-white rounded-lg">
                 <div>
                   <p className="font-medium">{impaye.eleve} - {impaye.classe}</p>
-                  <p className="text-sm text-gray-500">{impaye.type} • {impaye.montant.toLocaleString()} GNF</p>
+                  <p className="text-sm text-gray-900">{impaye.type} • {impaye.montant.toLocaleString()} GNF</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-red-600 text-sm">{impaye.retard} jours de retard</span>
@@ -258,35 +258,35 @@ export default function ComptableDashboard() {
       {/* Derniers paiements */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h3 className="font-semibold text-gray-800">Derniers paiements</h3>
+          <h3 className="font-semibold text-gray-900">Derniers paiements</h3>
           <Link href="/dashboard/admin/finances/paiements" className="text-blue-600 text-sm hover:underline">Voir tous →</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Élève</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Classe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Élève</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Classe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Montant</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Mode</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {derniersPaiements.map((paiement) => (
                 <tr key={paiement.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-800">{paiement.eleve}</td>
-                  <td className="px-6 py-4 text-gray-600">{paiement.classe}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">{paiement.eleve}</td>
+                  <td className="px-6 py-4 text-gray-900">{paiement.classe}</td>
                   <td className="px-6 py-4 font-medium">{paiement.montant.toLocaleString()} GNF</td>
                   <td className="px-6 py-4">
-                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-gray-100 text-gray-900 px-2 py-1 rounded-full">
                       {paiement.type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{paiement.date}</td>
+                  <td className="px-6 py-4 text-gray-900">{paiement.date}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1">
                       {paiement.mode === "Mobile Money" && <Smartphone className="w-4 h-4 text-green-600" />}
@@ -316,7 +316,7 @@ export default function ComptableDashboard() {
                     <button className="text-blue-600 hover:text-blue-700 mr-2">
                       <Printer className="w-4 h-4" />
                     </button>
-                    <button className="text-gray-600 hover:text-gray-700">
+                    <button className="text-gray-900 hover:text-gray-900">
                       <Eye className="w-4 h-4" />
                     </button>
                   </td>
@@ -333,25 +333,25 @@ export default function ComptableDashboard() {
           <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-green-600 transition">
             <CreditCard className="w-6 h-6 text-green-600 group-hover:text-white" />
           </div>
-          <p className="text-sm font-medium text-gray-700">Encaisser</p>
+          <p className="text-sm font-medium text-gray-900">Encaisser</p>
         </Link>
         <Link href="/dashboard/admin/finances/rapports" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition">
             <FileText className="w-6 h-6 text-blue-600 group-hover:text-white" />
           </div>
-          <p className="text-sm font-medium text-gray-700">Rapports</p>
+          <p className="text-sm font-medium text-gray-900">Rapports</p>
         </Link>
         <Link href="/dashboard/admin/finances/frais" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-purple-600 transition">
             <DollarSign className="w-6 h-6 text-purple-600 group-hover:text-white" />
           </div>
-          <p className="text-sm font-medium text-gray-700">Frais scolaires</p>
+          <p className="text-sm font-medium text-gray-900">Frais scolaires</p>
         </Link>
         <Link href="/dashboard/admin/finances/salaires" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
           <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-orange-600 transition">
             <Users className="w-6 h-6 text-orange-600 group-hover:text-white" />
           </div>
-          <p className="text-sm font-medium text-gray-700">Salaires</p>
+          <p className="text-sm font-medium text-gray-900">Salaires</p>
         </Link>
       </div>
     </div>

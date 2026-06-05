@@ -2,10 +2,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Edit,
+  Trash2,
   Eye,
   Search,
   Download,
@@ -140,7 +140,7 @@ export default function GestionClassesPage() {
 
   const handleDelete = async () => {
     if (!classeToDelete) return;
-    
+
     setDeleting(true);
     try {
       const response = await fetch(`/api/admin/classes?id=${classeToDelete.id}`, { method: "DELETE" });
@@ -162,19 +162,19 @@ export default function GestionClassesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.frais_inscription || formData.frais_inscription <= 0) {
       addNotification("warning", "Veuillez saisir le montant des frais d'inscription");
       return;
     }
-    
+
     try {
       const response = await fetch("/api/admin/classes", {
         method: editingClasse ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingClasse ? { id: editingClasse.id, ...formData } : formData),
       });
-      
+
       if (response.ok) {
         await fetchClasses();
         setShowForm(false);
@@ -219,7 +219,7 @@ export default function GestionClassesPage() {
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Classes');
-      
+
       const fileName = `classes_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
       addNotification("success", "Export Excel effectué avec succès");
@@ -246,7 +246,7 @@ export default function GestionClassesPage() {
   const niveaux = ["all", ...new Set(classes.map(c => c.niveau))];
 
   const filteredClasses = classes.filter(classe => {
-    const matchesSearch = 
+    const matchesSearch =
       classe.nom?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesNiveau = selectedNiveau === "all" || classe.niveau === selectedNiveau;
     return matchesSearch && matchesNiveau;
@@ -255,7 +255,7 @@ export default function GestionClassesPage() {
   const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
   const paginatedClasses = filteredClasses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const filteredEleves = selectedClasseEleves.filter(eleve => 
+  const filteredEleves = selectedClasseEleves.filter(eleve =>
     eleve.nom?.toLowerCase().includes(searchEleve.toLowerCase()) ||
     eleve.prenom?.toLowerCase().includes(searchEleve.toLowerCase()) ||
     eleve.matricule?.includes(searchEleve)
@@ -284,15 +284,14 @@ export default function GestionClassesPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
-              notification.type === "success" 
-                ? "bg-green-50 border-l-4 border-green-500 text-green-800" 
-                : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -303,7 +302,7 @@ export default function GestionClassesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-600 transition"
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -314,10 +313,10 @@ export default function GestionClassesPage() {
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-black">Gestion des classes</h1>
-          <p className="text-gray-700">Gérez toutes les classes de l'école</p>
+          <p className="text-gray-900">Gérez toutes les classes de l'école</p>
         </div>
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={exportToExcel}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
           >
@@ -333,25 +332,25 @@ export default function GestionClassesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-800 text-sm">Total classes</p><p className="text-2xl font-bold text-blue-600">{totalClasses}</p></div>
+            <div><p className="text-gray-900 text-sm">Total classes</p><p className="text-2xl font-bold text-blue-600">{totalClasses}</p></div>
             <School className="w-8 h-8 text-blue-700" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-800 text-sm">Total élèves</p><p className="text-2xl font-bold text-green-600">{totalEleves}</p></div>
+            <div><p className="text-gray-900 text-sm">Total élèves</p><p className="text-2xl font-bold text-green-600">{totalEleves}</p></div>
             <Users className="w-8 h-8 text-green-700" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-800 text-sm">Capacité totale</p><p className="text-2xl font-bold text-orange-600">{totalCapacite}</p></div>
+            <div><p className="text-gray-900 text-sm">Capacité totale</p><p className="text-2xl font-bold text-orange-600">{totalCapacite}</p></div>
             <GraduationCap className="w-8 h-8 text-orange-700" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-800 text-sm">Taux remplissage</p><p className="text-2xl font-bold text-purple-600">{tauxRemplissageGlobal}%</p></div>
+            <div><p className="text-gray-900 text-sm">Taux remplissage</p><p className="text-2xl font-bold text-purple-600">{tauxRemplissageGlobal}%</p></div>
             <Users className="w-8 h-8 text-purple-700" />
           </div>
         </div>
@@ -363,24 +362,24 @@ export default function GestionClassesPage() {
           <div className="flex-1">
             <div className="relative text-black">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
-              <input 
-                type="text" 
-                placeholder="Rechercher une classe..." 
-                value={searchTerm} 
+              <input
+                type="text"
+                placeholder="Rechercher une classe..."
+                value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
                   setCurrentPage(1);
-                }} 
-                className="w-full pl-9 pr-4 py-2 border rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                }}
+                className="w-full pl-9 pr-4 py-2 border rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
-          <select 
-            value={selectedNiveau} 
+          <select
+            value={selectedNiveau}
             onChange={(e) => {
               setSelectedNiveau(e.target.value);
               setCurrentPage(1);
-            }} 
+            }}
             className="px-3 py-2 border rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Tous les niveaux</option>
@@ -421,7 +420,7 @@ export default function GestionClassesPage() {
                     <td className="px-6 py-4 text-black">
                       <div className="flex items-center gap-2">
                         <div className="w-20 bg-gray-200 rounded-full h-2">
-                          <div 
+                          <div
                             className={`${tauxRemplissage.color} h-2 rounded-full`}
                             style={{ width: `${taux}%` }}
                           ></div>
@@ -441,15 +440,15 @@ export default function GestionClassesPage() {
                         <button onClick={() => handleViewEleves(classe)} className="text-indigo-600 hover:text-indigo-800 transition" title="Voir élèves">
                           <Users className="w-4 h-4" />
                         </button>
-                        <button onClick={() => { 
-                          setEditingClasse(classe); 
-                          setFormData({ 
-                            nom: classe.nom || "", 
-                            niveau: classe.niveau || "", 
+                        <button onClick={() => {
+                          setEditingClasse(classe);
+                          setFormData({
+                            nom: classe.nom || "",
+                            niveau: classe.niveau || "",
                             capacite_max: classe.capacite || 30,
                             frais_inscription: classe.frais_inscription || 0
-                          }); 
-                          setShowForm(true); 
+                          });
+                          setShowForm(true);
                         }} className="text-green-600 hover:text-green-800 transition" title="Modifier">
                           <Edit className="w-4 h-4" />
                         </button>
@@ -469,11 +468,11 @@ export default function GestionClassesPage() {
           <div className="px-6 py-4 border-t flex justify-between items-center">
             <p className="text-sm text-gray-900">{filteredClasses.length} classes</p>
             <div className="flex gap-2 text-black">
-              <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50">
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="px-3 py-1 text-sm">{currentPage} / {totalPages}</span>
-              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50">
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -490,12 +489,12 @@ export default function GestionClassesPage() {
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Confirmer la suppression</h2>
+                <h2 className="text-xl font-bold text-gray-900">Confirmer la suppression</h2>
               </div>
             </div>
-            
+
             <div className="p-6">
-              <p className="text-gray-700 mb-2">
+              <p className="text-gray-900 mb-2">
                 Êtes-vous sûr de vouloir supprimer cette classe ?
               </p>
               <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mb-4">
@@ -506,7 +505,7 @@ export default function GestionClassesPage() {
                 Cette action est irréversible. Tous les élèves de cette classe seront affectés.
               </p>
             </div>
-            
+
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => {
@@ -549,19 +548,19 @@ export default function GestionClassesPage() {
                   <h2 className="text-xl font-bold text-black">Élèves - {selectedClasse.nom}</h2>
                   <p className="text-gray-900 text-sm">Effectif: {selectedClasseEleves.length}/{selectedClasse.capacite}</p>
                 </div>
-                <button onClick={() => setShowElevesModal(false)} className="text-gray-900 hover:text-gray-600">✕</button>
+                <button onClick={() => setShowElevesModal(false)} className="text-gray-900 hover:text-gray-900">✕</button>
               </div>
             </div>
             <div className="p-6 text-black">
               <div className="mb-6">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
-                  <input 
-                    type="text" 
-                    placeholder="Rechercher un élève..." 
-                    value={searchEleve} 
-                    onChange={(e) => { setSearchEleve(e.target.value); setElevesCurrentPage(1); }} 
-                    className="w-full pl-9 pr-4 py-2 text-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  <input
+                    type="text"
+                    placeholder="Rechercher un élève..."
+                    value={searchEleve}
+                    onChange={(e) => { setSearchEleve(e.target.value); setElevesCurrentPage(1); }}
+                    className="w-full pl-9 pr-4 py-2 text-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -572,8 +571,8 @@ export default function GestionClassesPage() {
                       {/* Affichage de la photo ou avatar par défaut */}
                       <div className="flex-shrink-0">
                         {eleve.photo_url ? (
-                          <img 
-                            src={eleve.photo_url} 
+                          <img
+                            src={eleve.photo_url}
                             alt={`${eleve.prenom} ${eleve.nom}`}
                             className="w-12 h-12 rounded-full object-cover border-2 border-blue-300"
                             onError={(e) => {
@@ -583,7 +582,7 @@ export default function GestionClassesPage() {
                             }}
                           />
                         ) : null}
-                        <div 
+                        <div
                           className={`w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center ${eleve.photo_url ? 'hidden' : ''}`}
                         >
                           <User className="w-6 h-6 text-blue-600" />
@@ -593,7 +592,7 @@ export default function GestionClassesPage() {
                         <h3 className="font-semibold text-black">{eleve.prenom} {eleve.nom}</h3>
                         <p className="text-sm text-gray-900">Matricule: {eleve.matricule}</p>
                         <p className="text-sm text-gray-900">Parent: {eleve.parentNom || "-"}</p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-900 mt-1">
                           Né(e) le: {new Date(eleve.dateNaissance).toLocaleDateString()}
                         </p>
                       </div>
@@ -603,11 +602,11 @@ export default function GestionClassesPage() {
               </div>
               {filteredEleves.length === 0 && (
                 <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <Users className="w-12 h-12 text-gray-900 mx-auto mb-3" />
                   <p className="text-gray-900">Aucun élève trouvé</p>
                 </div>
               )}
-              
+
               {/* Pagination des élèves */}
               {totalElevesPages > 1 && (
                 <div className="flex justify-center gap-2 mt-6 pt-4 border-t">
@@ -649,22 +648,22 @@ export default function GestionClassesPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Nom de la classe *</label>
-                <input 
-                  type="text" 
-                  value={formData.nom || ""} 
-                  onChange={(e) => setFormData({...formData, nom: e.target.value})} 
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  required 
+                <input
+                  type="text"
+                  value={formData.nom || ""}
+                  onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                   placeholder="Nom de la classe"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Niveau *</label>
-                <select 
-                  value={formData.niveau || ""} 
-                  onChange={(e) => setFormData({...formData, niveau: e.target.value})} 
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                <select
+                  value={formData.niveau || ""}
+                  onChange={(e) => setFormData({ ...formData, niveau: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 >
                   <option value="">Sélectionner un niveau</option>
@@ -674,27 +673,27 @@ export default function GestionClassesPage() {
                   <option value="Lycée">Lycée</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Capacité max</label>
-                <input 
-                  type="number" 
-                  value={formData.capacite_max ?? 30} 
-                  onChange={(e) => setFormData({...formData, capacite_max: parseInt(e.target.value) || 0})} 
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                <input
+                  type="number"
+                  value={formData.capacite_max ?? 30}
+                  onChange={(e) => setFormData({ ...formData, capacite_max: parseInt(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   min="1"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Frais de scolarité (GNF) *</label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
-                  <input 
-                    type="number" 
-                    value={formData.frais_inscription || ""} 
-                    onChange={(e) => setFormData({...formData, frais_inscription: parseInt(e.target.value) || 0})} 
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  <input
+                    type="number"
+                    value={formData.frais_inscription || ""}
+                    onChange={(e) => setFormData({ ...formData, frais_inscription: parseInt(e.target.value) || 0 })}
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     min="0"
                     step="10000"
                     required
@@ -705,7 +704,7 @@ export default function GestionClassesPage() {
                   Saisissez le montant des frais de scolarité pour cette classe
                 </p>
               </div>
-              
+
               <div className="flex gap-3 pt-4">
                 <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
                   {editingClasse ? "Modifier" : "Créer"}

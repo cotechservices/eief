@@ -105,8 +105,8 @@ export default function FraisScolairesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Frais scolaires</h1>
-          <p className="text-gray-500">Paramétrage des tarifs et frais pour l'année scolaire</p>
+          <h1 className="text-2xl font-bold text-gray-900">Frais scolaires</h1>
+          <p className="text-gray-900">Paramétrage des tarifs et frais pour l'année scolaire</p>
         </div>
         <button onClick={() => openForm(null)} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
           <Plus className="w-4 h-4" /> Nouveau tarif
@@ -117,12 +117,12 @@ export default function FraisScolairesPage() {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fréquence</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Obligatoire</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Nom</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Montant</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Fréquence</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Obligatoire</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -145,7 +145,7 @@ export default function FraisScolairesPage() {
             ))}
             {frais.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">Aucun tarif configuré</td>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-900">Aucun tarif configuré</td>
               </tr>
             )}
           </tbody>
@@ -159,11 +159,11 @@ export default function FraisScolairesPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm mb-1">Nom du frais</label>
-                <input type="text" value={formData.nom} onChange={e => setFormData({...formData, nom: e.target.value})} className="w-full px-3 py-2 border rounded-lg" placeholder="Ex: Scolarité mensuelle 6ème" />
+                <input type="text" value={formData.nom} onChange={e => setFormData({ ...formData, nom: e.target.value })} className="w-full px-3 py-2 border rounded-lg" placeholder="Ex: Scolarité mensuelle 6ème" />
               </div>
               <div>
                 <label className="block text-sm mb-1">Type de frais</label>
-                <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-3 py-2 border rounded-lg">
+                <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} className="w-full px-3 py-2 border rounded-lg">
                   <option value="scolarite">Scolarité</option>
                   <option value="inscription">Inscription</option>
                   <option value="cantine">Cantine</option>
@@ -174,11 +174,11 @@ export default function FraisScolairesPage() {
               </div>
               <div>
                 <label className="block text-sm mb-1">Montant (GNF)</label>
-                <input type="number" value={formData.montant} onChange={e => setFormData({...formData, montant: Number(e.target.value)})} className="w-full px-3 py-2 border rounded-lg" />
+                <input type="number" value={formData.montant} onChange={e => setFormData({ ...formData, montant: Number(e.target.value) })} className="w-full px-3 py-2 border rounded-lg" />
               </div>
               <div>
                 <label className="block text-sm mb-1">Fréquence</label>
-                <select value={formData.frequence} onChange={e => setFormData({...formData, frequence: e.target.value})} className="w-full px-3 py-2 border rounded-lg">
+                <select value={formData.frequence} onChange={e => setFormData({ ...formData, frequence: e.target.value })} className="w-full px-3 py-2 border rounded-lg">
                   <option value="annuel">Annuel</option>
                   <option value="mensuel">Mensuel</option>
                   <option value="trimestriel">Trimestriel</option>
@@ -186,7 +186,7 @@ export default function FraisScolairesPage() {
                 </select>
               </div>
               <div className="flex items-center gap-2">
-                <input type="checkbox" id="ob" checked={formData.obligatoire} onChange={e => setFormData({...formData, obligatoire: e.target.checked})} />
+                <input type="checkbox" id="ob" checked={formData.obligatoire} onChange={e => setFormData({ ...formData, obligatoire: e.target.checked })} />
                 <label htmlFor="ob" className="text-sm">Obligatoire pour tous les élèves ?</label>
               </div>
             </div>

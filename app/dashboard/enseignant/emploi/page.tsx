@@ -32,7 +32,7 @@ export default function EnseignantEmploiPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Mon emploi du temps</h1>
-        <p className="text-gray-500">Mathématiques - Année 2025-2026</p>
+        <p className="text-gray-900">Mathématiques - Année 2025-2026</p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -68,7 +68,7 @@ export default function EnseignantEmploiPage() {
                   {emploi.Lundi[0] && (
                     <div>
                       <p className="font-medium">{emploi.Lundi[0].classe}</p>
-                      <p className="text-xs text-gray-500">{emploi.Lundi[0].salle}</p>
+                      <p className="text-xs text-gray-900">{emploi.Lundi[0].salle}</p>
                     </div>
                   )}
                 </td>
@@ -76,7 +76,7 @@ export default function EnseignantEmploiPage() {
                   {emploi.Mardi[0] && (
                     <div>
                       <p className="font-medium">{emploi.Mardi[0].classe}</p>
-                      <p className="text-xs text-gray-500">{emploi.Mardi[0].salle}</p>
+                      <p className="text-xs text-gray-900">{emploi.Mardi[0].salle}</p>
                     </div>
                   )}
                 </td>
@@ -85,7 +85,7 @@ export default function EnseignantEmploiPage() {
                   {emploi.Jeudi[0] && (
                     <div>
                       <p className="font-medium">{emploi.Jeudi[0].classe}</p>
-                      <p className="text-xs text-gray-500">{emploi.Jeudi[0].salle}</p>
+                      <p className="text-xs text-gray-900">{emploi.Jeudi[0].salle}</p>
                     </div>
                   )}
                 </td>
@@ -99,7 +99,7 @@ export default function EnseignantEmploiPage() {
                   {emploi.Lundi[1] && (
                     <div>
                       <p className="font-medium">{emploi.Lundi[1].classe}</p>
-                      <p className="text-xs text-gray-500">{emploi.Lundi[1].salle}</p>
+                      <p className="text-xs text-gray-900">{emploi.Lundi[1].salle}</p>
                     </div>
                   )}
                 </td>
@@ -110,7 +110,7 @@ export default function EnseignantEmploiPage() {
                   {emploi.Vendredi[0] && (
                     <div>
                       <p className="font-medium">{emploi.Vendredi[0].classe}</p>
-                      <p className="text-xs text-gray-500">{emploi.Vendredi[0].salle}</p>
+                      <p className="text-xs text-gray-900">{emploi.Vendredi[0].salle}</p>
                     </div>
                   )}
                 </td>
@@ -125,7 +125,7 @@ export default function EnseignantEmploiPage() {
                   {emploi.Mercredi[0] && (
                     <div>
                       <p className="font-medium">{emploi.Mercredi[0].classe}</p>
-                      <p className="text-xs text-gray-500">{emploi.Mercredi[0].salle}</p>
+                      <p className="text-xs text-gray-900">{emploi.Mercredi[0].salle}</p>
                     </div>
                   )}
                 </td>
@@ -143,7 +143,7 @@ export default function EnseignantEmploiPage() {
                   {emploi.Jeudi[1] && (
                     <div>
                       <p className="font-medium">{emploi.Jeudi[1].classe}</p>
-                      <p className="text-xs text-gray-500">{emploi.Jeudi[1].salle}</p>
+                      <p className="text-xs text-gray-900">{emploi.Jeudi[1].salle}</p>
                     </div>
                   )}
                 </td>

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
+import {
   Users, Search, Filter, Plus, Edit, Trash2, Eye,
   Download, Printer, ChevronLeft, ChevronRight,
   GraduationCap, Calendar, MapPin, Phone, Mail, User,
@@ -53,7 +53,7 @@ export default function GestionElevesPage() {
   }, []);
 
   const filteredEleves = eleves.filter(eleve => {
-    const matchesSearch = 
+    const matchesSearch =
       eleve.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
       eleve.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
       eleve.matricule.toLowerCase().includes(searchTerm.toLowerCase());
@@ -71,9 +71,9 @@ export default function GestionElevesPage() {
   const classes = ["all", ...new Set(eleves.map(e => e.classe))];
 
   const getStatutBadge = (statut: string) => {
-    switch(statut) {
+    switch (statut) {
       case "actif": return <span className="text-green-600 text-sm flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Actif</span>;
-      case "inactif": return <span className="text-gray-600 text-sm flex items-center gap-1"><XCircle className="w-3 h-3" /> Inactif</span>;
+      case "inactif": return <span className="text-gray-900 text-sm flex items-center gap-1"><XCircle className="w-3 h-3" /> Inactif</span>;
       case "suspendu": return <span className="text-red-600 text-sm flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Suspendu</span>;
       default: return <span>{statut}</span>;
     }
@@ -84,7 +84,7 @@ export default function GestionElevesPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Chargement des élèves...</p>
+          <p className="text-gray-900">Chargement des élèves...</p>
         </div>
       </div>
     );
@@ -95,10 +95,10 @@ export default function GestionElevesPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestion des élèves</h1>
-          <p className="text-gray-500">Gérez tous les élèves de l'école</p>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion des élèves</h1>
+          <p className="text-gray-900">Gérez tous les élèves de l'école</p>
         </div>
-        <button 
+        <button
           onClick={() => { setEditingEleve(null); setShowForm(true); }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
         >
@@ -151,12 +151,12 @@ export default function GestionElevesPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matricule</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom & Prénom</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Classe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Matricule</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Nom & Prénom</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Classe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Parent</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -182,11 +182,11 @@ export default function GestionElevesPage() {
 
         {/* Pagination */}
         <div className="px-6 py-4 border-t flex justify-between items-center">
-          <p className="text-sm text-gray-500">{filteredEleves.length} élèves</p>
+          <p className="text-sm text-gray-900">{filteredEleves.length} élèves</p>
           <div className="flex gap-2">
-            <button onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1} className="p-2 border rounded-lg">◀</button>
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 border rounded-lg">◀</button>
             <span className="px-3 py-1">{currentPage} / {totalPages}</span>
-            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg">▶</button>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg">▶</button>
           </div>
         </div>
       </div>

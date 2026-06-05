@@ -2,9 +2,9 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Search, 
-  Filter, 
+import {
+  Search,
+  Filter,
   Plus,
   Download,
   Printer,
@@ -37,7 +37,7 @@ export default function PaiementsPage() {
   ];
 
   const getStatutBadge = (statut: string) => {
-    switch(statut) {
+    switch (statut) {
       case 'paye':
         return <span className="text-green-600 text-sm flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Payé</span>;
       case 'attente':
@@ -50,7 +50,7 @@ export default function PaiementsPage() {
   };
 
   const getModeIcon = (mode: string) => {
-    switch(mode) {
+    switch (mode) {
       case 'mobile_money':
         return <Smartphone className="w-4 h-4 text-green-600" />;
       case 'especes':
@@ -78,8 +78,8 @@ export default function PaiementsPage() {
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestion des paiements</h1>
-          <p className="text-gray-500">Enregistrez et suivez tous les paiements</p>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion des paiements</h1>
+          <p className="text-gray-900">Enregistrez et suivez tous les paiements</p>
         </div>
         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
           <Plus className="w-4 h-4" />
@@ -141,30 +141,30 @@ export default function PaiementsPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Élève</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Classe</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Élève</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Classe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Parent</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Montant</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Mode</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {paiements.map((paiement) => (
                 <tr key={paiement.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-800">{paiement.eleve}</td>
-                  <td className="px-6 py-4 text-gray-600">{paiement.classe}</td>
-                  <td className="px-6 py-4 text-gray-600">{paiement.parent}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">{paiement.eleve}</td>
+                  <td className="px-6 py-4 text-gray-900">{paiement.classe}</td>
+                  <td className="px-6 py-4 text-gray-900">{paiement.parent}</td>
                   <td className="px-6 py-4 font-medium">{paiement.montant.toLocaleString()} GNF</td>
                   <td className="px-6 py-4">
-                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-gray-100 text-gray-900 px-2 py-1 rounded-full">
                       {getTypeLabel(paiement.type)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{paiement.date}</td>
+                  <td className="px-6 py-4 text-gray-900">{paiement.date}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1">
                       {getModeIcon(paiement.mode)}
@@ -177,7 +177,7 @@ export default function PaiementsPage() {
                       <button className="text-blue-600 hover:text-blue-700">
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-700">
+                      <button className="text-gray-900 hover:text-gray-900">
                         <Printer className="w-4 h-4" />
                       </button>
                     </div>
@@ -187,10 +187,10 @@ export default function PaiementsPage() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Pagination */}
         <div className="px-6 py-4 border-t flex justify-between items-center">
-          <p className="text-sm text-gray-500">Affichage 1-7 sur 45 paiements</p>
+          <p className="text-sm text-gray-900">Affichage 1-7 sur 45 paiements</p>
           <div className="flex gap-2">
             <button className="p-2 border rounded-lg hover:bg-gray-50">
               <ChevronLeft className="w-4 h-4" />

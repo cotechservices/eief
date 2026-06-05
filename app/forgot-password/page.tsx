@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen relative overflow-hidden">
       <br />
       <Header />
-      
+
       {/* Image de fond */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
       <div className="relative z-20 min-h-screen flex items-center justify-center px-4 py-12">
         <div className="max-w-6xl w-full mx-auto">
           <div className="flex flex-col lg:flex-row rounded-2xl overflow-hidden shadow-2xl">
-            
+
             {/* Partie gauche - Texte de pub avec transparence */}
             <div className="lg:w-1/2 bg-black/50 backdrop-blur-md p-8 lg:p-12 flex flex-col justify-center text-white">
               <div className="mb-8">
@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
                     <Lock className="w-7 h-7 text-white" />
                   </div>
                   <span className="text-2xl font-bold"> Mot de passe oublié ?</span>
-                </div>   
+                </div>
               </div>
 
               {/* Avantages */}
@@ -143,10 +143,10 @@ export default function ForgotPasswordPage() {
 
               {/* En-tête */}
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-800">
+                <h1 className="text-2xl font-bold text-gray-900">
                   Mot de passe oublié ?
                 </h1>
-                <p className="text-gray-500 mt-2">
+                <p className="text-gray-900 mt-2">
                   Saisissez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
                 </p>
               </div>
@@ -162,7 +162,7 @@ export default function ForgotPasswordPage() {
                   )}
 
                   <div>
-                    <label className="block text-gray-700 mb-2 font-medium">
+                    <label className="block text-gray-900 mb-2 font-medium">
                       Adresse email
                     </label>
                     <div className="relative">
@@ -171,7 +171,7 @@ export default function ForgotPasswordPage() {
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-800"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
                         placeholder="votre@email.com"
                         required
                         disabled={loading}

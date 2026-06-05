@@ -3,10 +3,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Users, 
-  GraduationCap, 
-  BookOpen, 
+import {
+  Users,
+  GraduationCap,
+  BookOpen,
   Calendar,
   TrendingUp,
   CheckCircle,
@@ -51,7 +51,7 @@ export default function DirecteurDashboard() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Chargement...</p>
+          <p className="text-gray-900">Chargement...</p>
         </div>
       </div>
     );
@@ -60,8 +60,8 @@ export default function DirecteurDashboard() {
   return (
     <div className="space-y-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Tableau de bord Directeur</h1>
-        <p className="text-gray-500">Bienvenue dans l'espace de direction</p>
+        <h1 className="text-2xl font-bold text-gray-900">Tableau de bord Directeur</h1>
+        <p className="text-gray-900">Bienvenue dans l'espace de direction</p>
       </div>
 
       {/* Statistiques */}
@@ -72,19 +72,19 @@ export default function DirecteurDashboard() {
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">Enseignants</p><p className="text-2xl font-bold text-green-600">{stats.totalEnseignants}</p></div>
+            <div><p className="text-gray-900 text-sm">Enseignants</p><p className="text-2xl font-bold text-green-600">{stats.totalEnseignants}</p></div>
             <Users className="w-8 h-8 text-green-200" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">Classes</p><p className="text-2xl font-bold text-purple-600">{stats.totalClasses}</p></div>
+            <div><p className="text-gray-900 text-sm">Classes</p><p className="text-2xl font-bold text-purple-600">{stats.totalClasses}</p></div>
             <GraduationCap className="w-8 h-8 text-purple-200" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
-            <div><p className="text-gray-500 text-sm">Taux de réussite</p><p className="text-2xl font-bold text-orange-600">{stats.tauxReussite}%</p></div>
+            <div><p className="text-gray-900 text-sm">Taux de réussite</p><p className="text-2xl font-bold text-orange-600">{stats.tauxReussite}%</p></div>
             <TrendingUp className="w-8 h-8 text-orange-200" />
           </div>
         </div>
@@ -93,11 +93,11 @@ export default function DirecteurDashboard() {
       {/* Graphiques */}
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Classes les plus peuplées</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Classes les plus peuplées</h3>
           <div className="space-y-4">
             {classesPopulaires.map((classe, idx) => (
               <div key={idx} className="flex justify-between items-center">
-                <div><p className="font-medium">{classe.name}</p><p className="text-sm text-gray-500">{classe.eleves}/{classe.capacite} élèves</p></div>
+                <div><p className="font-medium">{classe.name}</p><p className="text-sm text-gray-900">{classe.eleves}/{classe.capacite} élèves</p></div>
                 <div className="flex items-center gap-3">
                   <div className="w-32 bg-gray-200 rounded-full h-2"><div className={`h-2 rounded-full ${classe.taux >= 90 ? "bg-green-500" : "bg-yellow-500"}`} style={{ width: `${classe.taux}%` }}></div></div>
                   <span className="text-sm font-medium">{classe.taux}%</span>
@@ -108,7 +108,7 @@ export default function DirecteurDashboard() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Activités récentes</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Activités récentes</h3>
           <div className="space-y-3">
             {activitesRecentes.map((activite) => (
               <div key={activite.id} className="flex items-center justify-between p-2 border-b">
@@ -116,7 +116,7 @@ export default function DirecteurDashboard() {
                   {activite.type === "success" && <CheckCircle className="w-4 h-4 text-green-500" />}
                   {activite.type === "warning" && <AlertCircle className="w-4 h-4 text-orange-500" />}
                   {activite.type === "info" && <Eye className="w-4 h-4 text-blue-500" />}
-                  <div><p className="text-sm font-medium">{activite.action}</p><p className="text-xs text-gray-500">Par {activite.utilisateur}</p></div>
+                  <div><p className="text-sm font-medium">{activite.action}</p><p className="text-xs text-gray-900">Par {activite.utilisateur}</p></div>
                 </div>
                 <span className="text-xs text-gray-900">{activite.date}</span>
               </div>

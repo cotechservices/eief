@@ -2,10 +2,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Edit,
+  Trash2,
   Eye,
   Search,
   Download,
@@ -126,7 +126,7 @@ export default function GestionEnseignantsPage() {
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
-    
+
     // Ajuster la largeur des colonnes
     const colWidths = [
       { wch: 12 }, // Matricule
@@ -145,13 +145,13 @@ export default function GestionEnseignantsPage() {
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Enseignants');
-    
+
     const fileName = `enseignants_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
   };
 
   const getStatutBadge = (statut: string) => {
-    switch(statut) {
+    switch (statut) {
       case "actif": return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3 text-black" /> Actif</span>;
       case "inactif": return <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3 text-black" /> Inactif</span>;
       default: return <span className="bg-gray-100 text-black px-2 py-1 rounded-full text-xs">{statut}</span>;
@@ -177,7 +177,7 @@ export default function GestionEnseignantsPage() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
@@ -217,14 +217,14 @@ export default function GestionEnseignantsPage() {
           <p className="text-gray-900">Gérez tous les enseignants de l'école</p>
         </div>
         <div className="flex gap-3 text-black">
-          <button 
-            onClick={handleExportExcel} 
+          <button
+            onClick={handleExportExcel}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
           >
             <Download className="w-4 h-4" /> Exporter Excel
           </button>
-          <button 
-            onClick={() => { setEditingEnseignant(null); setShowForm(true); }} 
+          <button
+            onClick={() => { setEditingEnseignant(null); setShowForm(true); }}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition"
           >
             <Plus className="w-4 h-4" /> Nouvel enseignant
@@ -266,24 +266,24 @@ export default function GestionEnseignantsPage() {
           <div className="flex-1 min-w-[200px]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
-              <input 
-                type="text" 
-                placeholder="Rechercher par nom, prénom, matricule ou email..." 
-                value={searchTerm} 
+              <input
+                type="text"
+                placeholder="Rechercher par nom, prénom, matricule ou email..."
+                value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
                   setCurrentPage(1);
-                }} 
+                }}
                 className="w-full pl-9 pr-4 text-black py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
-          <select 
-            value={selectedStatut} 
+          <select
+            value={selectedStatut}
             onChange={(e) => {
               setSelectedStatut(e.target.value);
               setCurrentPage(1);
-            }} 
+            }}
             className="px-3 py-2 border text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Tous statuts</option>
@@ -326,54 +326,54 @@ export default function GestionEnseignantsPage() {
                           </div>
                           <span className="font-medium text-black">{e.prenom} {e.nom}</span>
                         </div>
-                       </td>
+                      </td>
                       <td className="px-6 py-4 text-black">{e.email}</td>
                       <td className="px-6 py-4 text-black">{e.telephone || "-"}</td>
                       <td className="px-6 py-4 text-black">{e.specialite || "-"}</td>
                       <td className="px-6 py-4">{getStatutBadge(e.statut)}</td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          <button 
-                            onClick={() => { setSelectedEnseignant(e); setShowDetailModal(true); }} 
-                            className="text-blue-700 hover:text-blue-800 transition" 
+                          <button
+                            onClick={() => { setSelectedEnseignant(e); setShowDetailModal(true); }}
+                            className="text-blue-700 hover:text-blue-800 transition"
                             title="Voir détails"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button 
-                            onClick={() => { 
-                              setEditingEnseignant(e); 
-                              setFormData({ 
-                                email: e.email, 
-                                password: "", 
-                                prenom: e.prenom, 
-                                nom: e.nom, 
-                                telephone: e.telephone || "", 
-                                adresse: e.adresse || "", 
-                                specialite: e.specialite || "", 
-                                dateEmbauche: e.dateEmbauche || "", 
-                                salaire: String(e.salaire || "") 
-                              }); 
-                              setShowForm(true); 
-                            }} 
-                            className="text-green-700 hover:text-green-800 transition" 
+                          <button
+                            onClick={() => {
+                              setEditingEnseignant(e);
+                              setFormData({
+                                email: e.email,
+                                password: "",
+                                prenom: e.prenom,
+                                nom: e.nom,
+                                telephone: e.telephone || "",
+                                adresse: e.adresse || "",
+                                specialite: e.specialite || "",
+                                dateEmbauche: e.dateEmbauche || "",
+                                salaire: String(e.salaire || "")
+                              });
+                              setShowForm(true);
+                            }}
+                            className="text-green-700 hover:text-green-800 transition"
                             title="Modifier"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
-                          <button 
-                            onClick={() => handleDelete(e.id)} 
-                            className="text-red-600 hover:text-red-800 transition" 
+                          <button
+                            onClick={() => handleDelete(e.id)}
+                            className="text-red-600 hover:text-red-800 transition"
                             title="Supprimer"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                       </td>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
-               </table>
+              </table>
             </div>
           </div>
 
@@ -386,7 +386,7 @@ export default function GestionEnseignantsPage() {
                   <span className="font-medium">{Math.min(endIndex, filteredEnseignants.length)}</span>{' '}
                   sur <span className="font-medium">{filteredEnseignants.length}</span> enseignants
                 </p>
-                
+
                 <div className="flex items-center gap-2 text-black">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -395,7 +395,7 @@ export default function GestionEnseignantsPage() {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  
+
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
@@ -404,18 +404,17 @@ export default function GestionEnseignantsPage() {
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page as number)}
-                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                            currentPage === page
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${currentPage === page
                               ? 'bg-blue-600 text-white'
                               : 'text-black hover:bg-gray-100'
-                          }`}
+                            }`}
                         >
                           {page}
                         </button>
                       )
                     ))}
                   </div>
-                  
+
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
@@ -437,7 +436,7 @@ export default function GestionEnseignantsPage() {
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold">Fiche enseignant</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-black hover:text-gray-600">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-black hover:text-gray-900">✕</button>
               </div>
             </div>
             <div className="p-6 space-y-6">
@@ -483,15 +482,15 @@ export default function GestionEnseignantsPage() {
               <h2 className="text-xl font-bold">{editingEnseignant ? "Modifier" : "Ajouter"} un enseignant</h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div><label className="block text-sm font-medium mb-1">Nom *</label><input type="text" value={formData.nom} onChange={(e) => setFormData({...formData, nom: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required /></div>
-              <div><label className="block text-sm font-medium mb-1">Prénom *</label><input type="text" value={formData.prenom} onChange={(e) => setFormData({...formData, prenom: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required /></div>
-              <div><label className="block text-sm font-medium mb-1">Email *</label><input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required /></div>
-              {!editingEnseignant && (<div><label className="block text-sm font-medium mb-1">Mot de passe *</label><input type="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required /></div>)}
-              <div><label className="block text-sm font-medium mb-1">Téléphone</label><input type="tel" value={formData.telephone} onChange={(e) => setFormData({...formData, telephone: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-1">Adresse</label><input type="text" value={formData.adresse} onChange={(e) => setFormData({...formData, adresse: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-1">Spécialité</label><input type="text" value={formData.specialite} onChange={(e) => setFormData({...formData, specialite: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-1">Date d'embauche</label><input type="date" value={formData.dateEmbauche} onChange={(e) => setFormData({...formData, dateEmbauche: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
-              <div><label className="block text-sm font-medium mb-1">Salaire (GNF)</label><input type="number" value={formData.salaire} onChange={(e) => setFormData({...formData, salaire: e.target.value})} className="w-full px-3 py-2 border rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-1">Nom *</label><input type="text" value={formData.nom} onChange={(e) => setFormData({ ...formData, nom: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required /></div>
+              <div><label className="block text-sm font-medium mb-1">Prénom *</label><input type="text" value={formData.prenom} onChange={(e) => setFormData({ ...formData, prenom: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required /></div>
+              <div><label className="block text-sm font-medium mb-1">Email *</label><input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required /></div>
+              {!editingEnseignant && (<div><label className="block text-sm font-medium mb-1">Mot de passe *</label><input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required /></div>)}
+              <div><label className="block text-sm font-medium mb-1">Téléphone</label><input type="tel" value={formData.telephone} onChange={(e) => setFormData({ ...formData, telephone: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-1">Adresse</label><input type="text" value={formData.adresse} onChange={(e) => setFormData({ ...formData, adresse: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-1">Spécialité</label><input type="text" value={formData.specialite} onChange={(e) => setFormData({ ...formData, specialite: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-1">Date d'embauche</label><input type="date" value={formData.dateEmbauche} onChange={(e) => setFormData({ ...formData, dateEmbauche: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
+              <div><label className="block text-sm font-medium mb-1">Salaire (GNF)</label><input type="number" value={formData.salaire} onChange={(e) => setFormData({ ...formData, salaire: e.target.value })} className="w-full px-3 py-2 border rounded-lg" /></div>
               <div className="flex gap-3 pt-4">
                 <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">{editingEnseignant ? "Modifier" : "Créer"}</button>
                 <button type="button" onClick={() => setShowForm(false)} className="flex-1 border rounded-lg py-2 hover:bg-gray-50 transition">Annuler</button>

@@ -33,39 +33,39 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
+
       {/* Hero Section */}
-      <div className="relative h-[350px] mt-16 overflow-hidden">        
+      <div className="relative h-[400px] mt-16 overflow-hidden">
         <div className="absolute inset-0 bg-black/50 z-10" />
         {/* Image de fond */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/img/slide2.jpg"
+            src="/img/contact.png"
             alt="École Internationale des Enfants Futur"
             fill
             className="object-cover"
             priority
           />
         </div>
-        
+
         {/* Contenu du Hero */}
         <div className="relative z-20 h-full flex items-center">
           <div className="container mx-auto px-4 text-white">
             <div className="max-w-3xl">
-               <h1 className="text-4xl md:text-5xl font-bold mb-4">Contactez-nous</h1>
-            <p className="text-xl max-w-2xl">
-              Nous sommes à votre écoute. N'hésitez pas à nous contacter.
-            </p>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">Contactez-nous</h1>
+              <p className="text-xl max-w-2xl">
+                Nous sommes à votre écoute. N'hésitez pas à nous contacter.
+              </p>
               <div className="flex flex-wrap gap-4">
-                <Link 
-                  href="#mission" 
+                <Link
+                  href="#mission"
                   className="inline-flex items-center gap-2 bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition"
                 >
                   Découvrir notre mission
                   <ChevronRight className="w-4 h-4" />
                 </Link>
-                <Link 
-                  href="/contact" 
+                <Link
+                  href="/contact"
                   className="inline-flex items-center gap-2 border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition"
                 >
                   Nous contacter
@@ -83,7 +83,7 @@ export default function ContactPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Envoyez-nous un message</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-gray-700 mb-2">Nom complet *</label>
+                <label className="block text-gray-900 mb-2">Nom complet *</label>
                 <input
                   type="text"
                   required
@@ -94,7 +94,7 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-2">Email *</label>
+                <label className="block text-gray-900 mb-2">Email *</label>
                 <input
                   type="email"
                   required
@@ -105,7 +105,7 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-2">Sujet *</label>
+                <label className="block text-gray-900 mb-2">Sujet *</label>
                 <input
                   type="text"
                   required
@@ -116,7 +116,7 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-2">Message *</label>
+                <label className="block text-gray-900 mb-2">Message *</label>
                 <textarea
                   rows={5}
                   required
@@ -147,11 +147,11 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-gray-900">{info.title}</h3>
                     {info.link ? (
-                      <a href={info.link} className="text-gray-600 hover:text-blue-600">
+                      <a href={info.link} className="text-gray-900 hover:text-blue-600">
                         {info.text}
                       </a>
                     ) : (
-                      <p className="text-gray-600">{info.text}</p>
+                      <p className="text-gray-900">{info.text}</p>
                     )}
                   </div>
                 </div>
