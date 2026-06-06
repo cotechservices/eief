@@ -3,6 +3,7 @@
 import { Inter } from "next/font/google";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/pwa/PWAUpdatePrompt";
+import { OfflineManager } from "@/components/pwa/OfflineManager";
 import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           {children}
           <PWAInstallPrompt />
           <PWAUpdatePrompt />
+          <OfflineManager />
         </SessionProvider>
       </body>
     </html>
