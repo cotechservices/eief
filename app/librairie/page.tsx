@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { Search, ShoppingCart, Package, TrendingUp, Star, Filter, ChevronRight, Loader2 } from "lucide-react";
+import { Search, ShoppingCart, Package, TrendingUp, Star, Filter, ChevronRight, Loader2, ImageIcon } from "lucide-react";
 import Image from "next/image";
 
 interface Produit {
@@ -15,6 +15,7 @@ interface Produit {
   prix: number;
   stock: number;
   categorie: string;
+  image_url?: string | null;
 }
 
 export default function LibrairiePage() {
@@ -23,12 +24,14 @@ export default function LibrairiePage() {
   const [cart, setCart] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
   const fetchArticles = async () => {
     try {
       const response = await fetch('/api/public/librairie');
       if (response.ok) {
         const data = await response.json();
+        console.log("Produits chargés:", data); // Debug: voir si image_url est présent
         setProduits(data || []);
       }
     } catch (error) {
@@ -42,35 +45,44 @@ export default function LibrairiePage() {
     fetchArticles();
   }, []);
 
-  const getProductImage = (nom: string, categorie: string) => {
-    const n = nom.toLowerCase();
-    const c = (categorie || "").toLowerCase();
+  // Fonction pour obtenir l'image du produit - PRIORITÉ À L'IMAGE DE LA BD
+  const getProductImage = (produit: Produit) => {
+    // PRIORITÉ 1: Image de la base de données (uploadée dans l'admin)
+    if (produit.image_url && !imageErrors[produit.id]) {
+      console.log(`Image BD pour ${produit.nom}: ${produit.image_url}`);
+      return produit.image_url;
+    }
+    
+    // PRIORITÉ 2: Image de fallback basée sur la catégorie
+    const nom = produit.nom.toLowerCase();
+    const categorie = (produit.categorie || "").toLowerCase();
 
-    if (c === "uniforme" || n.includes("uniforme") || n.includes("tenue") || n.includes("chemise") || n.includes("pantalon") || n.includes("veste")) {
-      if (n.includes("fille") || n.includes("jupe") || n.includes("robe")) {
-        return "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=300&fit=crop";
-      }
+    if (categorie === "uniforme" || nom.includes("uniforme") || nom.includes("tenue") || nom.includes("chemise") || nom.includes("pantalon") || nom.includes("veste")) {
       return "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=400&h=300&fit=crop";
     }
-    if (c === "cahier" || n.includes("cahier") || n.includes("carnet") || n.includes("bloc")) {
-      if (n.includes("200")) {
-        return "https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?w=400&h=300&fit=crop";
-      }
+    if (categorie === "cahier" || nom.includes("cahier") || nom.includes("carnet") || nom.includes("bloc")) {
       return "https://images.unsplash.com/photo-1584779867502-0acf0c50ed7a?w=400&h=300&fit=crop";
     }
-    if (c === "manuel" || n.includes("manuel") || n.includes("livre") || n.includes("dictionnaire")) {
+    if (categorie === "livre" || nom.includes("manuel") || nom.includes("livre") || nom.includes("dictionnaire")) {
       return "https://images.unsplash.com/photo-1509228627152-72ae9ae6841d?w=400&h=300&fit=crop";
     }
-    if (n.includes("sac") || n.includes("cartable") || n.includes("backpack")) {
+    if (nom.includes("sac") || nom.includes("cartable") || nom.includes("backpack")) {
       return "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop";
     }
-    if (n.includes("calculatrice") || n.includes("casio") || n.includes("calcul")) {
+    if (nom.includes("calculatrice") || nom.includes("casio") || nom.includes("calcul")) {
       return "https://images.unsplash.com/photo-1587145823266-9c2e3009b3bc?w=400&h=300&fit=crop";
     }
-    if (n.includes("stylo") || n.includes("crayon") || n.includes("feutre")) {
+    if (nom.includes("stylo") || nom.includes("crayon") || nom.includes("feutre")) {
       return "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=400&h=300&fit=crop";
     }
+    
+    // Image par défaut
     return "https://images.unsplash.com/photo-1584779858347-6b8d9f4d3d6a?w=400&h=300&fit=crop";
+  };
+
+  const handleImageError = (produitId: number) => {
+    console.log(`Erreur chargement image pour le produit ${produitId}`);
+    setImageErrors(prev => ({ ...prev, [produitId]: true }));
   };
 
   const categories = [
@@ -78,8 +90,7 @@ export default function LibrairiePage() {
     { value: "uniforme", label: "Uniformes" },
     { value: "cahier", label: "Cahiers" },
     { value: "fourniture", label: "Fournitures" },
-    { value: "accessoire", label: "Accessoires" },
-    { value: "manuel", label: "Manuels" },
+    { value: "livre", label: "Livres / Manuels" },
     { value: "autre", label: "Autres" }
   ];
 
@@ -95,25 +106,11 @@ export default function LibrairiePage() {
     alert("Produit ajouté au panier !");
   };
 
-  const removeFromCart = (id: number) => {
-    const index = cart.indexOf(id);
-    if (index !== -1) {
-      const newCart = [...cart];
-      newCart.splice(index, 1);
-      setCart(newCart);
-    }
-  };
-
-  const getCartItemCount = (id: number) => {
-    return cart.filter(itemId => itemId === id).length;
-  };
-
   const totalPanier = cart.reduce((total, id) => {
     const produit = produits.find(p => p.id === id);
     return total + (produit?.prix || 0);
   }, 0);
 
-  // Recettes et statistiques calculées
   const totalArticlesDisponibles = produits.length;
   const valeurTotaleStock = produits.reduce((acc, p) => acc + (p.prix * p.stock), 0);
 
@@ -187,29 +184,17 @@ export default function LibrairiePage() {
 
         {/* Panier résumé */}
         {cart.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-4 mb-8 border border-blue-100 animate-in slide-in-from-top duration-300">
+          <div className="bg-white rounded-xl shadow-lg p-4 mb-8 border border-blue-100">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-blue-600" />
                 <span className="font-medium">{cart.length} article(s) dans le panier</span>
               </div>
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="text-sm text-gray-900 max-w-md overflow-hidden text-ellipsis whitespace-nowrap">
-                  {Array.from(new Set(cart)).map((id, idx) => {
-                    const produit = produits.find(p => p.id === id);
-                    return produit && (
-                      <span key={idx} className="inline-block bg-gray-100 rounded-full px-2.5 py-1 text-xs mr-1.5 mb-1.5 font-medium">
-                        {produit.nom} x{getCartItemCount(id)}
-                      </span>
-                    );
-                  })}
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xl font-bold text-blue-600">{totalPanier.toLocaleString()} GNF</span>
-                  <button className="bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition font-semibold text-sm">
-                    Commander
-                  </button>
-                </div>
+              <div className="flex items-center gap-4">
+                <span className="text-xl font-bold text-blue-600">{totalPanier.toLocaleString()} GNF</span>
+                <button className="bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition font-semibold text-sm">
+                  Commander
+                </button>
               </div>
             </div>
           </div>
@@ -253,17 +238,16 @@ export default function LibrairiePage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProduits.map((produit) => {
-              const imageSrc = getProductImage(produit.nom, produit.categorie);
+              const imageSrc = getProductImage(produit);
               return (
                 <div key={produit.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:translate-y-[-2px] transition-all duration-300 group flex flex-col justify-between">
                   <div>
                     <div className="relative h-48 overflow-hidden bg-gray-100">
-                      <Image
+                      <img
                         src={imageSrc}
                         alt={produit.nom}
-                        fill
-                        sizes="(max-w-768px) 100vw, 300px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={() => handleImageError(produit.id)}
                       />
                       <div className="absolute top-3 right-3 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-sm">
                         {produit.categorie}

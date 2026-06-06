@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, BookOpen, User, Calendar, Download, ChevronRight, Filter, Loader2 } from "lucide-react";
+import { Search, BookOpen, User, Calendar, Download, ChevronRight, Loader2 } from "lucide-react";
 
 interface Livre {
   id: number;
@@ -17,6 +17,7 @@ interface Livre {
   disponible: boolean;
   emplacement: string;
   categorie: string;
+  image_url?: string | null;
 }
 
 export default function BibliothequePage() {
@@ -24,12 +25,14 @@ export default function BibliothequePage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
   const fetchLivres = async () => {
     try {
       const response = await fetch('/api/public/bibliotheque');
       if (response.ok) {
         const data = await response.json();
+        console.log("Livres chargés:", data);
         setLivres(data || []);
       }
     } catch (e) {
@@ -43,6 +46,17 @@ export default function BibliothequePage() {
     fetchLivres();
   }, []);
 
+  const handleImageError = (livreId: number) => {
+    setImageErrors(prev => ({ ...prev, [livreId]: true }));
+  };
+
+  const getLivreImage = (livre: Livre) => {
+    if (livre.image_url && !imageErrors[livre.id]) {
+      return livre.image_url;
+    }
+    return null;
+  };
+
   const filteredLivres = livres.filter(livre => {
     const matchesSearch = livre.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       livre.auteur.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -51,7 +65,6 @@ export default function BibliothequePage() {
     return matchesSearch && matchesCategory;
   });
 
-  // Dynamically calculated stats
   const totalLivresExistants = livres.length;
   const totalLivresDisponibles = livres.filter(l => l.disponible).length;
   const totalLivresEmpruntes = livres.filter(l => !l.disponible).length;
@@ -103,7 +116,7 @@ export default function BibliothequePage() {
         <div className="max-w-3xl mx-auto mb-8">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-900" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Rechercher par titre, auteur, ou ISBN..."
@@ -118,9 +131,12 @@ export default function BibliothequePage() {
               className="px-4 py-3 text-black border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
             >
               <option value="all">Toutes les catégories</option>
-              <option value="scolaire">Scolaire & Sciences</option>
-              <option value="litterature">Littérature & Romans</option>
-              <option value="histoire">Histoire & Géo</option>
+              <option value="scolaire">📚 Scolaire & Sciences</option>
+              <option value="litterature">📖 Littérature & Romans</option>
+              <option value="histoire">🏛️ Histoire & Géo</option>
+              <option value="art">🎨 Art & Musique</option>
+              <option value="langues">🌍 Langues</option>
+              <option value="bd">🎭 BD & Mangas</option>
             </select>
           </div>
         </div>
@@ -130,22 +146,22 @@ export default function BibliothequePage() {
           <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
             <BookOpen className="w-8 h-8 text-blue-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-gray-900">{totalLivresExistants}</p>
-            <p className="text-xs text-gray-900">Titres référencés</p>
+            <p className="text-xs text-gray-500">Titres référencés</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
             <User className="w-8 h-8 text-green-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-green-600">{totalLivresDisponibles}</p>
-            <p className="text-xs text-gray-900">Disponibles de suite</p>
+            <p className="text-xs text-gray-500">Disponibles de suite</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
             <Calendar className="w-8 h-8 text-orange-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-gray-900">{totalLivresEmpruntes}</p>
-            <p className="text-xs text-gray-900">Emprunts en cours</p>
+            <p className="text-xs text-gray-500">Emprunts en cours</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
             <Download className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">4</p>
-            <p className="text-xs text-gray-900">Rayons thématiques</p>
+            <p className="text-2xl font-bold text-gray-900">6</p>
+            <p className="text-xs text-gray-500">Rayons thématiques</p>
           </div>
         </div>
 
@@ -161,16 +177,16 @@ export default function BibliothequePage() {
             </div>
           ) : filteredLivres.length === 0 ? (
             <div className="text-center py-16">
-              <BookOpen className="w-12 h-12 text-gray-900 mx-auto mb-3" />
-              <p className="text-gray-900 font-medium">Aucun livre trouvé</p>
-              <p className="text-gray-900 text-xs mt-1">Recherchez avec d'autres mots clés ou une autre catégorie.</p>
+              <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">Aucun livre trouvé</p>
+              <p className="text-gray-400 text-xs mt-1">Recherchez avec d'autres mots clés ou une autre catégorie.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-gray-50/50 border-b border-gray-100">
-                  <tr className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                    <th className="px-6 py-4">Titre</th>
+                  <tr className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-4">Livre</th>
                     <th className="px-6 py-4">Auteur</th>
                     <th className="px-6 py-4">Catégorie</th>
                     <th className="px-6 py-4">Emplacement</th>
@@ -179,41 +195,70 @@ export default function BibliothequePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-sm">
-                  {filteredLivres.map((livre) => (
-                    <tr key={livre.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-gray-900">
-                        {livre.titre}
-                        <div className="text-[10px] text-gray-900 font-normal mt-0.5">ISBN: {livre.isbn || "N/A"}</div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-900">{livre.auteur}</td>
-                      <td className="px-6 py-4">
-                        <span className="text-xs bg-gray-100 text-gray-900 px-2.5 py-1 rounded-full font-medium capitalize">
-                          {livre.categorie}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-900 font-mono text-xs">{livre.emplacement}</td>
-                      <td className="px-6 py-4">
-                        {livre.disponible ? (
-                          <span className="inline-flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-semibold">
-                            Disponible
+                  {filteredLivres.map((livre) => {
+                    const imageUrl = getLivreImage(livre);
+                    return (
+                      <tr key={livre.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {imageUrl ? (
+                              <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                                <img 
+                                  src={imageUrl} 
+                                  alt={livre.titre} 
+                                  className="w-full h-full object-cover"
+                                  onError={() => handleImageError(livre.id)}
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <BookOpen className="w-6 h-6 text-gray-400" />
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-bold text-gray-900">{livre.titre}</p>
+                              <div className="text-[10px] text-gray-500 font-normal">ISBN: {livre.isbn || "N/A"}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">{livre.auteur}</td>
+                        <td className="px-6 py-4">
+                          <span className="text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full font-medium">
+                            {livre.categorie === "scolaire" && "📚 Scolaire"}
+                            {livre.categorie === "litterature" && "📖 Littérature"}
+                            {livre.categorie === "histoire" && "🏛️ Histoire"}
+                            {livre.categorie === "art" && "🎨 Art"}
+                            {livre.categorie === "langues" && "🌍 Langues"}
+                            {livre.categorie === "bd" && "🎭 BD"}
+                            {!livre.categorie && livre.categorie}
                           </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-red-500 bg-red-50 px-2 py-0.5 rounded text-xs font-semibold">
-                            Emprunté
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          disabled={!livre.disponible}
-                          className="text-blue-600 hover:text-blue-800 disabled:text-gray-900 font-semibold text-xs transition"
-                          onClick={() => alert(`Pour réserver "${livre.titre}", veuillez vous rendre à la bibliothèque avec votre identifiant élève.`)}
-                        >
-                          Réserver
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-gray-600 font-mono text-xs">{livre.emplacement}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          {livre.disponible ? (
+                            <span className="inline-flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-semibold">
+                              Disponible
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-red-500 bg-red-50 px-2 py-0.5 rounded text-xs font-semibold">
+                              Emprunté
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            disabled={!livre.disponible}
+                            className="text-blue-600 hover:text-blue-800 disabled:text-gray-300 font-semibold text-xs transition"
+                            onClick={() => alert(`Pour réserver "${livre.titre}", veuillez vous rendre à la bibliothèque avec votre identifiant élève.`)}
+                          >
+                            Réserver
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

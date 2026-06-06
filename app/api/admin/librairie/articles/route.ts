@@ -1,3 +1,4 @@
+// app/api/admin/librairie/articles/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -12,7 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await query(`
-      SELECT * FROM articles_librairie
+      SELECT id, nom, description, prix_unitaire, quantite_stock, categorie, image_url
+      FROM articles_librairie
       ORDER BY nom ASC
     `);
 
@@ -32,13 +34,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nom, description, prix_unitaire, quantite_stock, categorie } = body;
+    const { nom, description, prix_unitaire, quantite_stock, categorie, image_url } = body;
 
     const result = await query(`
-      INSERT INTO articles_librairie (nom, description, prix_unitaire, quantite_stock, categorie)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO articles_librairie (nom, description, prix_unitaire, quantite_stock, categorie, image_url)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
-    `, [nom, description, prix_unitaire, quantite_stock, categorie]);
+    `, [nom, description || null, prix_unitaire, quantite_stock, categorie || 'fourniture', image_url || null]);
 
     return NextResponse.json({ success: true, article: result.rows[0] });
   } catch (error) {
@@ -56,15 +58,29 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, nom, description, prix_unitaire, quantite_stock, categorie } = body;
+    const { id, nom, description, prix_unitaire, quantite_stock, categorie, image_url } = body;
 
-    await query(`
+    if (!id) {
+      return NextResponse.json({ error: "ID manquant" }, { status: 400 });
+    }
+
+    const result = await query(`
       UPDATE articles_librairie 
-      SET nom = $1, description = $2, prix_unitaire = $3, quantite_stock = $4, categorie = $5
-      WHERE id = $6
-    `, [nom, description, prix_unitaire, quantite_stock, categorie, id]);
+      SET nom = $1, 
+          description = $2, 
+          prix_unitaire = $3, 
+          quantite_stock = $4, 
+          categorie = $5,
+          image_url = $6
+      WHERE id = $7
+      RETURNING *
+    `, [nom, description || null, prix_unitaire, quantite_stock, categorie || 'fourniture', image_url || null, id]);
 
-    return NextResponse.json({ success: true });
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: "Article non trouvé" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, article: result.rows[0] });
   } catch (error) {
     console.error("Erreur API Articles Librairie (PUT):", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
