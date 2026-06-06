@@ -392,6 +392,7 @@ export default function AnnoncesPage() {
               <option value="evenement">Événements</option>
               <option value="alerte">Alertes</option>
               <option value="inscription">Inscriptions</option>
+              <option value="inscription">Réinscription</option>
             </select>
           </div>
         </div>
