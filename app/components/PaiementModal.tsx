@@ -8,7 +8,8 @@ interface PaiementModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  preinscriptionId: number;
+  preinscriptionId?: number;
+  reinscriptionId?: number;
   enfantNom: string;
   montantFrais?: number;
 }
@@ -18,6 +19,7 @@ export default function PaiementModal({
   onClose,
   onSuccess,
   preinscriptionId,
+  reinscriptionId,
   enfantNom,
   montantFrais = 500000
 }: PaiementModalProps) {
@@ -34,15 +36,32 @@ export default function PaiementModal({
 
     setLoading(true);
     try {
-      const response = await fetch("/api/admin/preinscriptions/paiement", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      // Déterminer l'URL selon le type (préinscription ou réinscription)
+      let url: string;
+      let bodyPayload: any;
+
+      if (reinscriptionId) {
+        url = "/api/admin/reinscriptions/paiement";
+        bodyPayload = {
+          reinscriptionId,
+          montant,
+          modePaiement,
+          reference: reference || null
+        };
+      } else {
+        url = "/api/admin/preinscriptions/paiement";
+        bodyPayload = {
           preinscriptionId,
           montant,
           modePaiement,
           reference: reference || null
-        }),
+        };
+      }
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyPayload),
       });
 
       const data = await response.json();
@@ -68,7 +87,9 @@ export default function PaiementModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
         <div className="p-6 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-900">Paiement des frais</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            Paiement des frais {reinscriptionId ? "de réinscription" : "d'inscription"}
+          </h2>
           <button onClick={onClose} className="text-gray-900 hover:text-gray-900">
             <X className="w-5 h-5" />
           </button>

@@ -26,7 +26,9 @@ import {
   UserCircle,
   DollarSign,
   Euro,
-  FileText
+  FileText,
+  UserPlus,
+  RefreshCw
 } from "lucide-react";
 import { Providers } from "./providers";
 
@@ -92,11 +94,12 @@ const menuItems = {
   PARENT: [
     { name: "Dashboard", href: "/dashboard/parent", icon: LayoutDashboard },
     { name: "Mes enfants", href: "/dashboard/parent/enfants", icon: Users },
+    { name: "Inscription", href: "/dashboard/parent/inscription", icon: UserPlus },
+    { name: "Réinscription", href: "/dashboard/parent/reinscription", icon: RefreshCw },
     { name: "Finances", href: "/dashboard/parent/finances", icon: CreditCard },
     { name: "Messages", href: "/dashboard/parent/messages", icon: MessageSquare },
     { name: "Transport", href: "/dashboard/parent/transport", icon: Bus },
     { name: "Cantine", href: "/dashboard/parent/cantine", icon: Utensils },
-
   ],
   ELEVE: [
     { name: "Dashboard", href: "/dashboard/eleve", icon: LayoutDashboard },
