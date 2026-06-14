@@ -1,5 +1,6 @@
 -- ============================================
 -- BASE DE DONNÉES : ECOLE_FUTUR_GESTION (SUPABASE)
+-- Généré automatiquement en analysant les routes API du projet
 -- ============================================
 
 -- ============================================
@@ -35,58 +36,38 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
 );
 
 -- ============================================
--- 2. TABLE eleves
+-- 2. TABLE annees_scolaires
+-- (doit être créée avant classes)
 -- ============================================
-CREATE TABLE IF NOT EXISTS eleves (
+CREATE TABLE IF NOT EXISTS annees_scolaires (
     id SERIAL PRIMARY KEY,
-    utilisateur_id INTEGER UNIQUE REFERENCES utilisateurs(id) ON DELETE CASCADE,
-    matricule VARCHAR(50) UNIQUE NOT NULL,
-    date_naissance DATE NOT NULL,
-    lieu_naissance VARCHAR(100),
-    sexe VARCHAR(1) CHECK (sexe IN ('M', 'F')),
-    nationalite VARCHAR(50) DEFAULT 'Guinéenne',
-    classe_id INTEGER,
-    date_inscription DATE DEFAULT CURRENT_DATE,
-    est_inscrit BOOLEAN DEFAULT true,
-    carte_scolaire_url TEXT,
-    photo_url TEXT
+    libelle VARCHAR(20) NOT NULL,
+    date_debut DATE NOT NULL,
+    date_fin DATE NOT NULL,
+    est_active BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================
--- 3. TABLE parents
--- ============================================
-CREATE TABLE IF NOT EXISTS parents (
-    id SERIAL PRIMARY KEY,
-    utilisateur_id INTEGER UNIQUE REFERENCES utilisateurs(id) ON DELETE CASCADE,
-    profession VARCHAR(100),
-    situation_matrimoniale VARCHAR(50)
-);
-
--- ============================================
--- 4. TABLE lien_parent_eleve
--- ============================================
-CREATE TABLE IF NOT EXISTS lien_parent_eleve (
-    parent_id INTEGER REFERENCES parents(id) ON DELETE CASCADE,
-    eleve_id INTEGER REFERENCES eleves(id) ON DELETE CASCADE,
-    lien VARCHAR(50) DEFAULT 'parent',
-    PRIMARY KEY (parent_id, eleve_id)
-);
-
--- ============================================
--- 5. TABLE personnels
+-- 3. TABLE personnels
 -- ============================================
 CREATE TABLE IF NOT EXISTS personnels (
     id SERIAL PRIMARY KEY,
     utilisateur_id INTEGER UNIQUE REFERENCES utilisateurs(id) ON DELETE CASCADE,
     matricule_personnel VARCHAR(50) UNIQUE NOT NULL,
-    type VARCHAR(50) CHECK (type IN ('enseignant', 'admin_enseignant', 'admin_cantine', 'admin_transport', 'admin_bibliotheque', 'admin_librairie', 'comptable', 'surveillant_general', 'directeur_etudes', 'directeur_general')),
+    type VARCHAR(50) CHECK (type IN (
+        'enseignant', 'admin_enseignant', 'admin_cantine', 'admin_transport',
+        'admin_bibliotheque', 'admin_librairie', 'comptable',
+        'surveillant_general', 'directeur_etudes', 'directeur_general'
+    )),
     date_embauche DATE DEFAULT CURRENT_DATE,
     salaire_base INTEGER,
     carte_personnel_url TEXT
 );
 
 -- ============================================
--- 6. TABLE classes
+-- 4. TABLE classes
+-- (doit être créée avant eleves et enseignements)
 -- ============================================
 CREATE TABLE IF NOT EXISTS classes (
     id SERIAL PRIMARY KEY,
@@ -96,20 +77,47 @@ CREATE TABLE IF NOT EXISTS classes (
     capacite_max INTEGER DEFAULT 30,
     titulaire_id INTEGER REFERENCES personnels(id),
     code_acces VARCHAR(20),
-    annee_scolaire_id INTEGER,
+    frais_inscription INTEGER DEFAULT 0,
+    annee_scolaire_id INTEGER REFERENCES annees_scolaires(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================
--- 7. TABLE annees_scolaires
+-- 5. TABLE eleves
 -- ============================================
-CREATE TABLE IF NOT EXISTS annees_scolaires (
+CREATE TABLE IF NOT EXISTS eleves (
     id SERIAL PRIMARY KEY,
-    libelle VARCHAR(20) NOT NULL,
-    date_debut DATE NOT NULL,
-    date_fin DATE NOT NULL,
-    est_active BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    utilisateur_id INTEGER UNIQUE REFERENCES utilisateurs(id) ON DELETE CASCADE,
+    matricule VARCHAR(50) UNIQUE NOT NULL,
+    date_naissance DATE NOT NULL,
+    lieu_naissance VARCHAR(100),
+    sexe VARCHAR(1) CHECK (sexe IN ('M', 'F')),
+    nationalite VARCHAR(50) DEFAULT 'Guinéenne',
+    classe_id INTEGER REFERENCES classes(id),
+    date_inscription DATE DEFAULT CURRENT_DATE,
+    est_inscrit BOOLEAN DEFAULT true,
+    carte_scolaire_url TEXT,
+    photo_url TEXT
+);
+
+-- ============================================
+-- 6. TABLE parents
+-- ============================================
+CREATE TABLE IF NOT EXISTS parents (
+    id SERIAL PRIMARY KEY,
+    utilisateur_id INTEGER UNIQUE REFERENCES utilisateurs(id) ON DELETE CASCADE,
+    profession VARCHAR(100),
+    situation_matrimoniale VARCHAR(50)
+);
+
+-- ============================================
+-- 7. TABLE lien_parent_eleve
+-- ============================================
+CREATE TABLE IF NOT EXISTS lien_parent_eleve (
+    parent_id INTEGER REFERENCES parents(id) ON DELETE CASCADE,
+    eleve_id INTEGER REFERENCES eleves(id) ON DELETE CASCADE,
+    lien VARCHAR(50) DEFAULT 'parent',
+    PRIMARY KEY (parent_id, eleve_id)
 );
 
 -- ============================================
@@ -264,7 +272,7 @@ CREATE TABLE IF NOT EXISTS paiements (
     annee INTEGER,
     mode_paiement VARCHAR(50) CHECK (mode_paiement IN ('mobile_money', 'especes', 'carte')),
     reference_transaction VARCHAR(100),
-    statut VARCHAR(20) DEFAULT 'valide',
+    statut VARCHAR(20) DEFAULT 'valide' CHECK (statut IN ('valide', 'paye', 'en_attente', 'annule')),
     date_paiement DATE DEFAULT CURRENT_DATE,
     reçu_url TEXT,
     saisie_par INTEGER REFERENCES utilisateurs(id)
@@ -272,17 +280,22 @@ CREATE TABLE IF NOT EXISTS paiements (
 
 -- ============================================
 -- 20. TABLE frais_scolaires
+-- (colonnes étendues selon routes API)
 -- ============================================
 CREATE TABLE IF NOT EXISTS frais_scolaires (
     id SERIAL PRIMARY KEY,
+    nom VARCHAR(100),
     type_frais VARCHAR(50) NOT NULL,
     montant INTEGER NOT NULL,
+    obligatoire BOOLEAN DEFAULT true,
+    frequence VARCHAR(50) DEFAULT 'mensuel',
+    niveau VARCHAR(50),
     annee_scolaire_id INTEGER REFERENCES annees_scolaires(id),
     description TEXT
 );
 
 -- ============================================
--- 21. TABLE cantine_menus
+-- 21. TABLE cantine_menus (ancien modèle - vue admin)
 -- ============================================
 CREATE TABLE IF NOT EXISTS cantine_menus (
     id SERIAL PRIMARY KEY,
@@ -294,7 +307,22 @@ CREATE TABLE IF NOT EXISTS cantine_menus (
 );
 
 -- ============================================
--- 22. TABLE reserves_cantine
+-- 22. TABLE menus_cantine (nouveau modèle - vue parent)
+-- ============================================
+CREATE TABLE IF NOT EXISTS menus_cantine (
+    id SERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    plat VARCHAR(255),
+    accompagnement VARCHAR(255),
+    dessert VARCHAR(255),
+    prix DECIMAL(10,2) DEFAULT 5000,
+    allergenes TEXT,
+    calories INTEGER,
+    regime_special BOOLEAN DEFAULT false
+);
+
+-- ============================================
+-- 23. TABLE reserves_cantine (ancien modèle)
 -- ============================================
 CREATE TABLE IF NOT EXISTS reserves_cantine (
     id SERIAL PRIMARY KEY,
@@ -305,7 +333,45 @@ CREATE TABLE IF NOT EXISTS reserves_cantine (
 );
 
 -- ============================================
--- 23. TABLE bus
+-- 24. TABLE inscriptions_cantine (nouveau modèle)
+-- ============================================
+CREATE TABLE IF NOT EXISTS inscriptions_cantine (
+    id SERIAL PRIMARY KEY,
+    eleve_id INTEGER REFERENCES eleves(id) ON DELETE CASCADE,
+    est_actif BOOLEAN DEFAULT true,
+    solde DECIMAL(12,2) DEFAULT 0,
+    preferences_alimentaires TEXT,
+    allergies TEXT,
+    date_inscription DATE DEFAULT CURRENT_DATE
+);
+
+-- ============================================
+-- 25. TABLE reservations_cantine (nouveau modèle)
+-- ============================================
+CREATE TABLE IF NOT EXISTS reservations_cantine (
+    id SERIAL PRIMARY KEY,
+    eleve_id INTEGER REFERENCES eleves(id) ON DELETE CASCADE,
+    menu_id INTEGER REFERENCES menus_cantine(id),
+    date DATE NOT NULL,
+    statut VARCHAR(20) DEFAULT 'confirmee' CHECK (statut IN ('confirmee', 'annulee', 'en_attente')),
+    paye BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- 26. TABLE transactions_cantine
+-- ============================================
+CREATE TABLE IF NOT EXISTS transactions_cantine (
+    id SERIAL PRIMARY KEY,
+    eleve_id INTEGER REFERENCES eleves(id) ON DELETE CASCADE,
+    montant DECIMAL(12,2) NOT NULL,
+    type VARCHAR(20) CHECK (type IN ('credit', 'debit')),
+    description TEXT,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- 27. TABLE bus
 -- ============================================
 CREATE TABLE IF NOT EXISTS bus (
     id SERIAL PRIMARY KEY,
@@ -316,7 +382,7 @@ CREATE TABLE IF NOT EXISTS bus (
 );
 
 -- ============================================
--- 24. TABLE lignes_transport
+-- 28. TABLE lignes_transport
 -- ============================================
 CREATE TABLE IF NOT EXISTS lignes_transport (
     id SERIAL PRIMARY KEY,
@@ -327,7 +393,7 @@ CREATE TABLE IF NOT EXISTS lignes_transport (
 );
 
 -- ============================================
--- 25. TABLE inscriptions_transport
+-- 29. TABLE inscriptions_transport
 -- ============================================
 CREATE TABLE IF NOT EXISTS inscriptions_transport (
     id SERIAL PRIMARY KEY,
@@ -339,7 +405,8 @@ CREATE TABLE IF NOT EXISTS inscriptions_transport (
 );
 
 -- ============================================
--- 26. TABLE livres_bibliotheque
+-- 30. TABLE livres_bibliotheque
+-- (colonnes étendues selon routes API)
 -- ============================================
 CREATE TABLE IF NOT EXISTS livres_bibliotheque (
     id SERIAL PRIMARY KEY,
@@ -348,11 +415,53 @@ CREATE TABLE IF NOT EXISTS livres_bibliotheque (
     isbn VARCHAR(50),
     quantite INTEGER DEFAULT 1,
     disponible INTEGER DEFAULT 1,
-    emplacement VARCHAR(50)
+    emplacement VARCHAR(50),
+    categorie VARCHAR(100),
+    image_url TEXT
 );
 
 -- ============================================
--- 27. TABLE messages
+-- 31. TABLE emprunts_bibliotheque
+-- ============================================
+CREATE TABLE IF NOT EXISTS emprunts_bibliotheque (
+    id SERIAL PRIMARY KEY,
+    livre_id INTEGER REFERENCES livres_bibliotheque(id) ON DELETE CASCADE,
+    eleve_id INTEGER REFERENCES eleves(id) ON DELETE CASCADE,
+    date_emprunt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_retour_prevue TIMESTAMP NOT NULL,
+    date_retour_reelle TIMESTAMP,
+    statut VARCHAR(20) DEFAULT 'en_cours' CHECK (statut IN ('en_cours', 'retourne', 'en_retard'))
+);
+
+-- ============================================
+-- 32. TABLE articles_librairie
+-- ============================================
+CREATE TABLE IF NOT EXISTS articles_librairie (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    description TEXT,
+    prix_unitaire INTEGER NOT NULL,
+    quantite_stock INTEGER DEFAULT 0,
+    categorie VARCHAR(100) DEFAULT 'fourniture',
+    image_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- 33. TABLE ventes_librairie
+-- ============================================
+CREATE TABLE IF NOT EXISTS ventes_librairie (
+    id SERIAL PRIMARY KEY,
+    article_id INTEGER REFERENCES articles_librairie(id) ON DELETE CASCADE,
+    eleve_id INTEGER REFERENCES eleves(id),
+    quantite INTEGER NOT NULL DEFAULT 1,
+    montant_total INTEGER NOT NULL,
+    date_vente TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    vendu_par INTEGER REFERENCES utilisateurs(id)
+);
+
+-- ============================================
+-- 34. TABLE messages
 -- ============================================
 CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,
@@ -365,21 +474,25 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 -- ============================================
--- 28. TABLE annonces
+-- 35. TABLE annonces
+-- (colonnes étendues selon routes API)
 -- ============================================
 CREATE TABLE IF NOT EXISTS annonces (
     id SERIAL PRIMARY KEY,
     titre VARCHAR(255) NOT NULL,
     contenu TEXT NOT NULL,
-    cible VARCHAR(50) CHECK (cible IN ('tous', 'classe', 'parent', 'enseignant')),
+    cible VARCHAR(50) DEFAULT 'tous' CHECK (cible IN ('tous', 'classe', 'parent', 'enseignant')),
+    type VARCHAR(50) DEFAULT 'information',
     classe_id INTEGER REFERENCES classes(id),
-    date_publication TIMESTAMP DEFAULT CURRENT_DATE,
+    image_url TEXT,
+    date_publication TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP,
     date_programmee TIMESTAMP,
     publie_par INTEGER REFERENCES utilisateurs(id)
 );
 
 -- ============================================
--- 29. TABLE logs_activites
+-- 36. TABLE logs_activites
 -- ============================================
 CREATE TABLE IF NOT EXISTS logs_activites (
     id SERIAL PRIMARY KEY,
@@ -391,7 +504,7 @@ CREATE TABLE IF NOT EXISTS logs_activites (
 );
 
 -- ============================================
--- 30. TABLE sessions
+-- 37. TABLE sessions
 -- ============================================
 CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,
@@ -401,7 +514,27 @@ CREATE TABLE IF NOT EXISTS sessions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table des pré-inscriptions
+-- ============================================
+-- 38. TABLE paiements_salaires
+-- ============================================
+CREATE TABLE IF NOT EXISTS paiements_salaires (
+    id SERIAL PRIMARY KEY,
+    personnel_id INTEGER REFERENCES personnels(id) ON DELETE CASCADE,
+    montant INTEGER NOT NULL,
+    mois INTEGER NOT NULL,
+    annee INTEGER NOT NULL,
+    mode_paiement VARCHAR(50),
+    reference_transaction VARCHAR(100),
+    saisie_par INTEGER REFERENCES utilisateurs(id),
+    statut VARCHAR(20) DEFAULT 'paye' CHECK (statut IN ('paye', 'en_attente', 'annule')),
+    date_paiement TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (personnel_id, mois, annee)
+);
+
+-- ============================================
+-- 39. TABLE preinscriptions
+-- (colonnes étendues selon routes API)
+-- ============================================
 CREATE TABLE IF NOT EXISTS preinscriptions (
     id SERIAL PRIMARY KEY,
     parent_id INTEGER REFERENCES parents(id) ON DELETE CASCADE,
@@ -415,16 +548,21 @@ CREATE TABLE IF NOT EXISTS preinscriptions (
     acte_naissance_url TEXT,
     photo_url TEXT,
     bulletin_url TEXT,
-    statut VARCHAR(50) DEFAULT 'en_attente',
+    statut VARCHAR(50) DEFAULT 'en_attente' CHECK (statut IN ('en_attente', 'valide', 'rejete')),
     numero_dossier VARCHAR(50) UNIQUE,
     date_preinscription TIMESTAMP DEFAULT NOW(),
     observations TEXT,
-    traite_par INTEGER,
-    date_traitement TIMESTAMP,
-    CONSTRAINT check_statut CHECK (statut IN ('en_attente', 'valide', 'rejete'))
+    frais_montant INTEGER DEFAULT 0,
+    frais_statut VARCHAR(20) DEFAULT 'non_paye' CHECK (frais_statut IN ('non_paye', 'paye')),
+    frais_mode_paiement VARCHAR(50),
+    frais_reference VARCHAR(100),
+    traite_par INTEGER REFERENCES utilisateurs(id),
+    date_traitement TIMESTAMP
 );
 
--- Table des inscriptions (élèves définitivement inscrits)
+-- ============================================
+-- 40. TABLE inscriptions
+-- ============================================
 CREATE TABLE IF NOT EXISTS inscriptions (
     id SERIAL PRIMARY KEY,
     preinscription_id INTEGER REFERENCES preinscriptions(id) ON DELETE CASCADE,
@@ -438,7 +576,10 @@ CREATE TABLE IF NOT EXISTS inscriptions (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Table des réinscriptions
+-- ============================================
+-- 41. TABLE reinscriptions
+-- (colonnes étendues selon routes API admin)
+-- ============================================
 CREATE TABLE IF NOT EXISTS reinscriptions (
     id SERIAL PRIMARY KEY,
     inscription_id INTEGER REFERENCES inscriptions(id) ON DELETE CASCADE,
@@ -451,12 +592,17 @@ CREATE TABLE IF NOT EXISTS reinscriptions (
     frais_mode_paiement VARCHAR(50),
     frais_reference VARCHAR(100),
     frais_date_paiement TIMESTAMP,
+    acte_naissance_url TEXT,
+    photo_url TEXT,
+    bulletin_url TEXT,
     statut VARCHAR(50) DEFAULT 'en_attente' CHECK (statut IN ('en_attente', 'valide', 'rejete')),
     date_reinscription TIMESTAMP DEFAULT NOW(),
     observations TEXT,
+    date_traitement TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
+
 -- ============================================
 -- INDEX
 -- ============================================
@@ -472,22 +618,30 @@ CREATE INDEX IF NOT EXISTS idx_notes_eleve ON notes(eleve_id);
 CREATE INDEX IF NOT EXISTS idx_enseignements_classe ON enseignements(classe_id);
 CREATE INDEX IF NOT EXISTS idx_enseignements_enseignant ON enseignements(enseignant_id);
 CREATE INDEX IF NOT EXISTS idx_messages_destinataire ON messages(destinataire_id, est_lu);
-CREATE INDEX IF NOT EXISTS idx_preinscriptions_parent_id ON public.preinscriptions(parent_id);
-CREATE INDEX IF NOT EXISTS idx_preinscriptions_statut ON public.preinscriptions(statut);
-CREATE INDEX IF NOT EXISTS idx_preinscriptions_numero_dossier ON public.preinscriptions(numero_dossier);
-CREATE INDEX IF NOT EXISTS idx_preinscriptions_date ON public.preinscriptions(date_preinscription);
-CREATE INDEX IF NOT EXISTS idx_preinscriptions_nom_enfant ON public.preinscriptions(enfant_nom, enfant_prenom);
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_parent_id ON preinscriptions(parent_id);
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_statut ON preinscriptions(statut);
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_numero_dossier ON preinscriptions(numero_dossier);
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_date ON preinscriptions(date_preinscription);
+CREATE INDEX IF NOT EXISTS idx_preinscriptions_nom_enfant ON preinscriptions(enfant_nom, enfant_prenom);
 CREATE INDEX IF NOT EXISTS idx_inscriptions_eleve ON inscriptions(eleve_id);
 CREATE INDEX IF NOT EXISTS idx_inscriptions_parent ON inscriptions(parent_id);
 CREATE INDEX IF NOT EXISTS idx_reinscriptions_eleve ON reinscriptions(eleve_id);
 CREATE INDEX IF NOT EXISTS idx_reinscriptions_annee ON reinscriptions(annee_scolaire_id);
+CREATE INDEX IF NOT EXISTS idx_emprunts_eleve ON emprunts_bibliotheque(eleve_id);
+CREATE INDEX IF NOT EXISTS idx_emprunts_livre ON emprunts_bibliotheque(livre_id);
+CREATE INDEX IF NOT EXISTS idx_ventes_article ON ventes_librairie(article_id);
+CREATE INDEX IF NOT EXISTS idx_paiements_salaires_personnel ON paiements_salaires(personnel_id);
+CREATE INDEX IF NOT EXISTS idx_reservations_cantine_eleve ON reservations_cantine(eleve_id);
+CREATE INDEX IF NOT EXISTS idx_reservations_cantine_date ON reservations_cantine(date);
+CREATE INDEX IF NOT EXISTS idx_transactions_cantine_eleve ON transactions_cantine(eleve_id);
+
 -- ============================================
 -- INITIALISATION ANNÉE SCOLAIRE
 -- ============================================
 
 INSERT INTO annees_scolaires (libelle, date_debut, date_fin, est_active)
 SELECT '2025-2026', '2025-10-01', '2026-06-30', true
-WHERE NOT EXISTS (SELECT 1 FROM annees_scolaires);
+WHERE NOT EXISTS (SELECT 1 FROM annees_scolaires WHERE libelle = '2025-2026');
 
 -- ============================================
 -- CRÉATION ADMIN
@@ -501,7 +655,7 @@ SELECT 'admin@eief.com',
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'admin@eief.com');
 
 -- ============================================
--- CRÉATION PARENT
+-- CRÉATION PARENT TEST
 -- ============================================
 
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
@@ -511,7 +665,7 @@ SELECT 'parent@eief.com',
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'parent@eief.com');
 
 -- ============================================
--- CRÉATION ÉLÈVE
+-- CRÉATION ÉLÈVE TEST
 -- ============================================
 
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
@@ -521,17 +675,17 @@ SELECT 'eleve@eief.com',
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'eleve@eief.com');
 
 -- ============================================
--- CRÉATION ENSEIGNANT
+-- CRÉATION ENSEIGNANT TEST
 -- ============================================
 
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
 SELECT 'professeur@eief.com', 
        '$2b$10$Cl.LbpccIdc1.rBfxmuvGuhrvsgOasr/kus9dyvifHCojG8ZiPR72',
        'Pierre', 'Enseignant', 'ENSEIGNANT', true
-WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'professeur@eief.com');
+WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'professeur@eief.com');;
 
 -- ============================================
--- CRÉATION COMPTABLE
+-- CRÉATION COMPTABLE TEST
 -- ============================================
 
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
@@ -541,7 +695,7 @@ SELECT 'comptable@eief.com',
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'comptable@eief.com');
 
 -- ============================================
--- CRÉATION DIRECTEUR
+-- CRÉATION DIRECTEUR TEST
 -- ============================================
 
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
