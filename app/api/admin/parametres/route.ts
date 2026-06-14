@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
-    if (!session || userRole !== "SUPER_ADMIN") {
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE")) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
-    if (!session || userRole !== "SUPER_ADMIN") {
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE")) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -55,7 +55,7 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
-    if (!session || userRole !== "SUPER_ADMIN") {
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE")) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -80,7 +80,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
-    if (!session || userRole !== "SUPER_ADMIN") {
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE")) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 

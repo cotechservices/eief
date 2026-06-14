@@ -6,7 +6,7 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    if (path.startsWith("/admin") && token?.role !== "SUPER_ADMIN") {
+    if (path.startsWith("/admin") && token?.role !== "SUPER_ADMIN" && token?.role !== "COMPTABLE") {
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
     if (path.startsWith("/parent") && token?.role !== "PARENT") {

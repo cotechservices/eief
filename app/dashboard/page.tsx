@@ -33,10 +33,10 @@ async function DashboardRedirect() {
     redirect("/dashboard/directeur");
   }
 
-  // COMPTABLE vers son propre dashboard
+  // COMPTABLE vers admin
   if (role === "COMPTABLE") {
-    console.log("Redirection vers /dashboard/comptable");
-    redirect("/dashboard/comptable");
+    console.log("Redirection vers /dashboard/admin");
+    redirect("/dashboard/admin");
   }
 
   if (role === "ENSEIGNANT") {

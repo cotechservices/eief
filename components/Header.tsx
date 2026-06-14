@@ -19,6 +19,7 @@ const menuItems = [
 const dropdownItems = [
   { name: "Cantine", href: "/cantine" },
   { name: "Transport", href: "/transport" },
+  { name: "Activités", href: "/activites" },
   { name: "Bibliothèque", href: "/bibliotheque" },
   { name: "Librairie", href: "/librairie" },
   { name: "Contact", href: "/contact" },
@@ -85,8 +86,8 @@ export default function Header() {
                   key={item.name}
                   href={item.href}
                   className={`relative flex items-center gap-1 transition font-medium ${active
-                      ? "text-blue-600 border-b-2 border-blue-600 pb-0.5"
-                      : "text-black hover:text-blue-600"
+                    ? "text-blue-600 border-b-2 border-blue-600 pb-0.5"
+                    : "text-black hover:text-blue-600"
                     }`}
                 >
                   {item.name}

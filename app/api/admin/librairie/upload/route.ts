@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
     
-    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "ADMIN_LIBRAIRIE" && userRole !== "DIRECTEUR_GENERAL")) {
+    if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "ADMIN_LIBRAIRIE" && userRole !== "DIRECTEUR_GENERAL" && userRole !== "COMPTABLE")) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 

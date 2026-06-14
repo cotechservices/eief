@@ -144,7 +144,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     // Utiliser les noms exacts des rôles dans votre base de données
     if (userRole === "SUPER_ADMIN") return menuItems.SUPER_ADMIN;
     if (userRole === "DIRECTEUR_GENERAL") return menuItems.DIRECTEUR;  // ← CORRIGÉ
-    if (userRole === "COMPTABLE") return menuItems.COMPTABLE;
+    if (userRole === "COMPTABLE") return menuItems.SUPER_ADMIN;
     if (userRole === "ENSEIGNANT") return menuItems.ENSEIGNANT;
     if (userRole === "PARENT") return menuItems.PARENT;
     if (userRole === "ELEVE") return menuItems.ELEVE;
