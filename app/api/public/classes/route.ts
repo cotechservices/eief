@@ -5,7 +5,7 @@ import { query } from "@/lib/db";
 export async function GET() {
   try {
     const result = await query(`
-      SELECT id, nom, niveau
+      SELECT id, nom, niveau, frais_inscription
       FROM classes
       ORDER BY niveau, nom
     `);

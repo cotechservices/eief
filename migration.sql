@@ -101,6 +101,11 @@ ALTER TABLE paiements
   CHECK (statut IN ('valide', 'paye', 'en_attente', 'annule'));
 
 -- ============================================
+-- TABLE parents : élargir situation_matrimoniale pour stocker les infos mère en JSON
+-- ============================================
+ALTER TABLE parents ALTER COLUMN situation_matrimoniale TYPE TEXT;
+
+-- ============================================
 -- NOUVELLES TABLES (créées seulement si absentes)
 -- ============================================
 

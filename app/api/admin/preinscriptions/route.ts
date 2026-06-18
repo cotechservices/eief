@@ -48,7 +48,9 @@ export async function GET(request: NextRequest) {
         u.nom as parent_nom,
         u.prenom as parent_prenom,
         u.email as parent_email,
-        u.telephone as parent_telephone
+        u.telephone as parent_telephone,
+        pa.profession as parent_profession,
+        pa.situation_matrimoniale as mere_info
       FROM preinscriptions p
       JOIN parents pa ON p.parent_id = pa.id
       JOIN utilisateurs u ON pa.utilisateur_id = u.id

@@ -73,6 +73,37 @@ export async function GET(
       WHERE e.id = $1
     `, [eleveId]);
 
+    // Récupérer le montant du transport
+    const transport = await query(`
+      SELECT COALESCE(SUM(l.prix), 0) as total_transport
+      FROM inscriptions_transport it
+      JOIN lignes_transport l ON it.ligne_id = l.id
+      WHERE it.eleve_id = $1 AND it.est_actif = true
+    `, [eleveId]);
+
+    // Récupérer le montant de la cantine
+    const cantine = await query(`
+      SELECT COALESCE(SUM(m.prix), 0) as total_cantine
+      FROM reservations_cantine r
+      JOIN menus_cantine m ON r.menu_id = m.id
+      WHERE r.eleve_id = $1 AND r.statut = 'confirmee'
+    `, [eleveId]);
+
+    // Récupérer les fournitures achetées
+    const fournitures = await query(`
+      SELECT COALESCE(SUM(v.quantite * a.prix_unitaire), 0) as total_fournitures
+      FROM ventes_librairie v
+      JOIN articles_librairie a ON v.article_id = a.id
+      WHERE v.eleve_id = $1
+    `, [eleveId]);
+
+    // Récupérer les mensualités
+    const scolarite = await query(`
+      SELECT COALESCE(SUM(montant), 0) as total_scolarite
+      FROM paiements
+      WHERE eleve_id = $1 AND type_frais = 'mensualite' AND statut = 'valide'
+    `, [eleveId]);
+
     // Récupérer le détail des paiements
     const paiementsDetail = await query(`
       SELECT 
@@ -87,22 +118,46 @@ export async function GET(
       LIMIT 10
     `, [eleveId]);
 
+    // Calcul des totaux
+    const fraisInscriptionTotal = Number(fraisInscription.rows[0]?.frais_inscription) || 0;
+    const totalTransport = Number(transport.rows[0]?.total_transport) || 0;
+    const totalCantine = Number(cantine.rows[0]?.total_cantine) || 0;
+    const totalFournitures = Number(fournitures.rows[0]?.total_fournitures) || 0;
+    const totalScolarite = Number(scolarite.rows[0]?.total_scolarite) || 0;
+    const totalPaye = Number(paiements.rows[0]?.total_paye) || 0;
+
+    // Total général des frais
+    const totalFraisGeneral = fraisInscriptionTotal + totalTransport + totalCantine + totalFournitures + totalScolarite;
+    const soldeRestant = totalFraisGeneral - totalPaye;
+
     // Logs de débogage
     console.log(`=== STATS pour eleve_id ${eleveId} ===`);
-    console.log("Paiements:", paiements.rows);
-    console.log("Frais inscription:", fraisInscription.rows);
-    console.log("Notes trouvées:", notes.rows.length);
+    console.log("Frais inscription:", fraisInscriptionTotal);
+    console.log("Transport:", totalTransport);
+    console.log("Cantine:", totalCantine);
+    console.log("Fournitures:", totalFournitures);
+    console.log("Scolarité:", totalScolarite);
+    console.log("Total payé:", totalPaye);
+    console.log("Total général:", totalFraisGeneral);
+    console.log("Solde restant:", soldeRestant);
 
     return NextResponse.json({
       notes: notes.rows,
       presences: presences.rows[0] || { total: 0, presents: 0, absents: 0, retards: 0 },
       paiements: {
-        total_paye: paiements.rows[0]?.total_paye || 0,
-        nombre_paiements: paiements.rows[0]?.nombre_paiements || 0,
+        total_paye: totalPaye,
+        nombre_paiements: Number(paiements.rows[0]?.nombre_paiements) || 0,
         details: paiementsDetail.rows || []
       },
-      frais_inscription_total: fraisInscription.rows[0]?.frais_inscription || 0,
-      solde_restant: (fraisInscription.rows[0]?.frais_inscription || 0) - (paiements.rows[0]?.total_paye || 0)
+      // Détail des frais par catégorie
+      frais_inscription: fraisInscriptionTotal,
+      transport: totalTransport,
+      cantine: totalCantine,
+      fournitures: totalFournitures,
+      scolarite: totalScolarite,
+      // Totaux globaux
+      total_frais_general: totalFraisGeneral,
+      solde_restant: soldeRestant
     });
   } catch (error) {
     console.error("Erreur:", error);

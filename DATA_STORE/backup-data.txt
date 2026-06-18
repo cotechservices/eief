@@ -1,0 +1,1 @@
+PS C:\xampp8.2\htdocs\projets\EIEF\ecole-futur-gestion> pg_dump "postgresql://postgres.zwdpyhpbcrcccqgsthnc:12345%2ECOTECHSERVICES@aws-0-eu-west-1.pooler.supabase.com:5432/postgres" > backup_database-eief.sql

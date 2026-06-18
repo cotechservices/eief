@@ -23,10 +23,12 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
-  X
+  X,
+  Plus
 } from "lucide-react";
 import PaiementModal from "../../../components/PaiementModal";
 import * as XLSX from 'xlsx';
+import Link from "next/link";
 
 interface Preinscription {
   id: number;
@@ -35,6 +37,8 @@ interface Preinscription {
   parent_prenom: string;
   parent_email: string;
   parent_telephone: string;
+  parent_profession: string;
+  mere_info: string | null;
   enfant_nom: string;
   enfant_prenom: string;
   date_naissance: string;
@@ -380,13 +384,22 @@ export default function GestionPreinscriptionsPage() {
           <h1 className="text-2xl font-bold text-black">Gestion des pré-inscriptions</h1>
           <p className="text-gray-900">Gérez les demandes d'inscription, les documents et les paiements</p>
         </div>
-        <button
-          onClick={exportToExcel}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          Exporter Excel
-        </button>
+        <div className="flex gap-3">
+          <Link
+            href="/register"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nouvelle pré-inscription
+          </Link>
+          <button
+            onClick={exportToExcel}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Exporter Excel
+          </button>
+        </div>
       </div>
 
       {/* Statistiques */}
@@ -701,25 +714,74 @@ export default function GestionPreinscriptionsPage() {
                 </div>
               </div>
 
-              {/* Informations parent */}
+              {/* Informations des parents */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                   <User className="w-5 h-5 text-blue-900" />
-                  Informations du parent
+                  Informations des parents
                 </h3>
-                <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-900">Nom complet</p>
-                    <p className="font-medium text-black">{selectedPreinscription.parent_prenom} {selectedPreinscription.parent_nom}</p>
+
+                {/* Email commun */}
+                <div className="bg-gray-50 p-3 rounded-lg mb-4">
+                  <p className="text-sm text-gray-500">Email (commun)</p>
+                  <p className="font-medium text-black">{selectedPreinscription.parent_email}</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Père */}
+                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">👨 Père</h4>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs text-gray-500">Nom complet</p>
+                        <p className="font-medium text-black">{selectedPreinscription.parent_prenom} {selectedPreinscription.parent_nom}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Téléphone</p>
+                        <p className="font-medium text-black">{selectedPreinscription.parent_telephone || "Non renseigné"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Profession</p>
+                        <p className="font-medium text-black">{selectedPreinscription.parent_profession || "Non renseigné"}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Email</p>
-                    <p className="font-medium text-black">{selectedPreinscription.parent_email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Téléphone</p>
-                    <p className="font-medium text-black">{selectedPreinscription.parent_telephone}</p>
-                  </div>
+
+                  {/* Mère */}
+                  {(() => {
+                    let mereData: any = null;
+                    try {
+                      if (selectedPreinscription.mere_info) {
+                        mereData = typeof selectedPreinscription.mere_info === 'string'
+                          ? JSON.parse(selectedPreinscription.mere_info)
+                          : selectedPreinscription.mere_info;
+                      }
+                    } catch (e) { /* ignore parse errors */ }
+
+                    return (
+                      <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg">
+                        <h4 className="font-semibold text-pink-800 mb-3 text-sm uppercase tracking-wide">👩 Mère</h4>
+                        {mereData && (mereData.mereNom || mereData.merePrenom) ? (
+                          <div className="space-y-2">
+                            <div>
+                              <p className="text-xs text-gray-500">Nom complet</p>
+                              <p className="font-medium text-black">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Téléphone</p>
+                              <p className="font-medium text-black">{mereData.merePhone || "Non renseigné"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Profession</p>
+                              <p className="font-medium text-black">{mereData.mereProfession || "Non renseigné"}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-400 italic">Non renseigné</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 

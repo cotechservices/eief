@@ -21,7 +21,10 @@ import {
   Wallet,
   Trash2,
   AlertTriangle,
-  X
+  X,
+  Plus,
+  ShoppingCart,
+  Utensils
 } from "lucide-react";
 
 interface Enfant {
@@ -50,6 +53,7 @@ interface Preinscription {
   frais_montant: number;
   photo_url: string | null;
 }
+
 interface Stats {
   notes: Array<{ matiere: string; moyenne: number; coefficient: number }>;
   presences: { total: number; presents: number; absents: number; retards: number };
@@ -58,8 +62,13 @@ interface Stats {
     nombre_paiements: number;
     details?: Array<{ montant: number; type_frais: string; mode_paiement: string; date_paiement: string }>;
   };
-  frais_inscription_total?: number;
-  solde_restant?: number;
+  frais_inscription: number;
+  transport: number;
+  cantine: number;
+  fournitures: number;
+  scolarite: number;
+  total_frais_general: number;
+  solde_restant: number;
 }
 
 interface Notification {
@@ -105,7 +114,6 @@ export default function ParentDashboard() {
     fetchData();
   }, []);
 
-  // Dans fetchData, filtrez les pré-inscriptions pour n'afficher que celles en attente
   const fetchData = async () => {
     try {
       const [enfantsRes, preinscriptionsRes] = await Promise.all([
@@ -118,7 +126,7 @@ export default function ParentDashboard() {
 
       setEnfants(enfantsData);
 
-      // 🔥 CORRECTION : Ne garder que les pré-inscriptions en attente
+      // Ne garder que les pré-inscriptions en attente
       const preinscriptionsEnAttente = preinscriptionsData.filter(p => p.statut === "en_attente");
       setPreinscriptions(preinscriptionsEnAttente);
 
@@ -171,7 +179,6 @@ export default function ParentDashboard() {
     }
   };
 
-  // Fonction d'annulation de pré-inscription
   const handleCancelPreinscription = async () => {
     if (!preinscriptionToCancel) return;
 
@@ -187,7 +194,7 @@ export default function ParentDashboard() {
         addNotification("success", `Pré-inscription de ${preinscriptionToCancel.enfant_prenom} ${preinscriptionToCancel.enfant_nom} annulée avec succès`);
         setShowConfirmModal(false);
         setPreinscriptionToCancel(null);
-        fetchData(); // Recharger la liste
+        fetchData();
       } else {
         addNotification("error", data.error || "Erreur lors de l'annulation");
       }
@@ -224,7 +231,7 @@ export default function ParentDashboard() {
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
-  // Dans statsGlobales, modifiez le calcul de totalPaye
+  // Calcul des statistiques globales avec toutes les catégories
   const statsGlobales = {
     totalEnfants: enfants.length,
     totalPreinscriptions: preinscriptions.length,
@@ -232,8 +239,20 @@ export default function ParentDashboard() {
     preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
     totalAbsences: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.absents) || 0), 0),
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
+    
+    // Totaux par catégorie
+    totalFraisInscription: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.frais_inscription) || 0), 0),
+    totalTransport: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.transport) || 0), 0),
+    totalCantine: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.cantine) || 0), 0),
+    totalFournitures: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.fournitures) || 0), 0),
+    totalScolarite: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.scolarite) || 0), 0),
+    
+    // Totaux globaux
+    totalFraisGeneral: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.total_frais_general) || 0), 0),
     totalPaye: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0),
+    soldeRestant: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.solde_restant) || 0), 0),
   };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -280,8 +299,8 @@ export default function ParentDashboard() {
         <p className="text-gray-900">Bienvenue dans votre espace de suivi scolaire</p>
       </div>
 
-      {/* Statistiques globales */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {/* Statistiques globales simplifiées */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
           <div className="flex items-center gap-2 mb-1"><Users className="w-5 h-5" /><p className="text-sm opacity-90">Enfants inscrits</p></div>
           <p className="text-3xl font-bold">{statsGlobales.totalEnfants}</p>
@@ -296,8 +315,74 @@ export default function ParentDashboard() {
           <p className="text-xs text-gray-900">Retards: {statsGlobales.totalRetards}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5" /><p className="text-sm">Frais payés</p></div>
-          <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5" /><p className="text-sm">Solde restant</p></div>
+          <p className="text-lg font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
+        </div>
+      </div>
+
+      {/* Détail des frais par catégorie */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Wallet className="w-5 h-5 text-blue-600" />
+          Détail des frais scolaires
+        </h3>
+        
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="bg-blue-50 rounded-lg p-3 text-center">
+            <p className="text-xs text-gray-600">Inscription</p>
+            <p className="text-sm font-bold text-blue-600">{statsGlobales.totalFraisInscription.toLocaleString()} GNF</p>
+          </div>
+          <div className="bg-green-50 rounded-lg p-3 text-center">
+            <p className="text-xs text-gray-600">Transport</p>
+            <p className="text-sm font-bold text-green-600">{statsGlobales.totalTransport.toLocaleString()} GNF</p>
+          </div>
+          <div className="bg-pink-50 rounded-lg p-3 text-center">
+            <p className="text-xs text-gray-600">Cantine</p>
+            <p className="text-sm font-bold text-pink-600">{statsGlobales.totalCantine.toLocaleString()} GNF</p>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-3 text-center">
+            <p className="text-xs text-gray-600">Fournitures</p>
+            <p className="text-sm font-bold text-purple-600">{statsGlobales.totalFournitures.toLocaleString()} GNF</p>
+          </div>
+          <div className="bg-orange-50 rounded-lg p-3 text-center">
+            <p className="text-xs text-gray-600">Scolarité</p>
+            <p className="text-sm font-bold text-orange-600">{statsGlobales.totalScolarite.toLocaleString()} GNF</p>
+          </div>
+        </div>
+        
+        <div className="mt-4 flex justify-between items-center border-t pt-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Total général :</span>
+            <span className="text-sm font-bold text-blue-700">{statsGlobales.totalFraisGeneral.toLocaleString()} GNF</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Déjà payé :</span>
+            <span className="text-sm font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Solde :</span>
+            <span className={`text-sm font-bold ${statsGlobales.soldeRestant > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              {statsGlobales.soldeRestant.toLocaleString()} GNF
+            </span>
+          </div>
+          {/* Barre de progression */}
+          <div className="flex-1 mx-4">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                style={{ 
+                  width: `${statsGlobales.totalFraisGeneral > 0 
+                    ? Math.min(100, (statsGlobales.totalPaye / statsGlobales.totalFraisGeneral) * 100) 
+                    : 0}%` 
+                }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 text-right mt-1">
+              {statsGlobales.totalFraisGeneral > 0 
+                ? Math.round((statsGlobales.totalPaye / statsGlobales.totalFraisGeneral) * 100) 
+                : 0}% payé
+            </p>
+          </div>
         </div>
       </div>
 
@@ -309,7 +394,11 @@ export default function ParentDashboard() {
               <FileText className="w-5 h-5 text-purple-600" />
               Mes pré-inscriptions
             </h2>
-            <Link href="/register" className="text-sm text-blue-600 hover:underline">
+            <Link
+              href="/register"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
               Nouvelle pré-inscription
             </Link>
           </div>
@@ -347,16 +436,28 @@ export default function ParentDashboard() {
                               }}
                               className="flex-1 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
                             >
-                              <CreditCard className="w-4 h-4" />
-                              Payer {(p.frais_montant || 500000).toLocaleString()} GNF
+                              Payer l'inscription
                             </button>
                             <button
                               onClick={() => openConfirmCancel(p)}
                               className="px-3 py-1.5 bg-red-100 text-red-600 text-sm rounded-lg hover:bg-red-200 transition flex items-center gap-1"
                               title="Annuler la pré-inscription"
-                            >
+                            > Supprimer
                               <Trash2 className="w-4 h-4" />
                             </button>
+                             {/* Section Pré-inscriptions 
+                            <Link
+                              href={`/dashboard/parent/transport?preinscriptionId=${p.id}`}
+                              className="flex-1 bg-indigo-600 text-white text-sm py-1.5 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                              <Bus className="w-4 h-4" />
+                              Transport
+                            </Link>
+                            <Link
+                              href={`/dashboard/parent/cantine?preinscriptionId=${p.id}`}
+                              className="flex-1 bg-pink-600 text-white text-sm py-1.5 rounded-lg hover:bg-pink-700 transition flex items-center justify-center gap-2">
+                              <Calendar className="w-4 h-4" />
+                              Cantine
+                            </Link>*/}
                           </>
                         )}
                         {p.frais_statut === "paye" && p.statut === "en_attente" && (
@@ -432,43 +533,72 @@ export default function ParentDashboard() {
                         <span className="font-medium text-orange-600">{stats.presences?.absents || 0} abs. / {stats.presences?.retards || 0} ret.</span>
                       </div>
 
-                      {/* Frais d'inscription total */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-900 text-sm flex items-center gap-1"><Wallet className="w-4 h-4" /> Frais de scolarité</span>
-                        <span className="font-medium text-blue-600">{stats.frais_inscription_total?.toLocaleString() || 0} GNF</span>
-                      </div>
-
-                      {/* Total payé */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-900 text-sm flex items-center gap-1"><CreditCard className="w-4 h-4" /> Total payé</span>
-                        <span className="font-medium text-green-600">{stats.paiements?.total_paye?.toLocaleString() || 0} GNF</span>
-                      </div>
-
-                      {/* Solde restant */}
-                      {stats.solde_restant !== undefined && stats.solde_restant > 0 && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-900 text-sm flex items-center gap-1"><AlertTriangle className="w-4 h-4" /> Solde restant</span>
-                          <span className="font-medium text-orange-600">{stats.solde_restant.toLocaleString()} GNF</span>
+                      {/* Détail des frais par catégorie */}
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-xs text-gray-600 mb-2 font-semibold">Détail des frais :</p>
+                        <div className="grid grid-cols-2 gap-1 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Inscription :</span>
+                            <span className="font-medium text-blue-600">{stats.frais_inscription?.toLocaleString() || 0} GNF</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Transport :</span>
+                            <span className="font-medium text-green-600">{stats.transport?.toLocaleString() || 0} GNF</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Cantine :</span>
+                            <span className="font-medium text-pink-600">{stats.cantine?.toLocaleString() || 0} GNF</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Fournitures :</span>
+                            <span className="font-medium text-purple-600">{stats.fournitures?.toLocaleString() || 0} GNF</span>
+                          </div>
+                          <div className="flex justify-between col-span-2">
+                            <span className="text-gray-600">Scolarité (mensualités) :</span>
+                            <span className="font-medium text-orange-600">{stats.scolarite?.toLocaleString() || 0} GNF</span>
+                          </div>
                         </div>
-                      )}
+                        
+                        <div className="mt-2 flex justify-between items-center bg-gray-50 p-2 rounded-lg">
+                          <span className="text-xs font-semibold text-gray-700">Total à payer :</span>
+                          <span className="text-sm font-bold text-blue-700">{stats.total_frais_general?.toLocaleString() || 0} GNF</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text-xs text-gray-600">Déjà payé :</span>
+                          <span className="text-xs font-medium text-green-600">{stats.paiements?.total_paye?.toLocaleString() || 0} GNF</span>
+                        </div>
+                        
+                        {stats.solde_restant > 0 ? (
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-xs text-gray-600">Solde :</span>
+                            <span className="text-xs font-medium text-red-600">{stats.solde_restant.toLocaleString()} GNF</span>
+                          </div>
+                        ) : (
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-xs text-gray-600">Statut :</span>
+                            <span className="text-xs font-medium text-green-600">✅ Tout est payé</span>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Barre de progression des paiements */}
-                      {stats.frais_inscription_total && stats.frais_inscription_total > 0 && (
+                      {stats.total_frais_general > 0 && (
                         <div className="mt-2">
                           <div className="flex justify-between text-xs text-gray-900 mb-1">
                             <span>Progression des paiements</span>
-                            <span>{Math.round(((stats.paiements?.total_paye || 0) / stats.frais_inscription_total) * 100)}%</span>
+                            <span>{Math.round(((stats.paiements?.total_paye || 0) / stats.total_frais_general) * 100)}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
                               className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                              style={{ width: `${Math.min(100, ((stats.paiements?.total_paye || 0) / stats.frais_inscription_total) * 100)}%` }}
+                              style={{ width: `${Math.min(100, ((stats.paiements?.total_paye || 0) / stats.total_frais_general) * 100)}%` }}
                             />
                           </div>
                         </div>
                       )}
 
-                      {/* Détail des derniers paiements (optionnel) */}
+                      {/* Détail des derniers paiements */}
                       {stats.paiements?.details && stats.paiements.details.length > 0 && (
                         <div className="mt-3 pt-3 border-t">
                           <p className="text-xs text-gray-900 mb-2">Derniers paiements:</p>
@@ -484,6 +614,7 @@ export default function ParentDashboard() {
                         </div>
                       )}
 
+                      {/* Matières */}
                       {stats.notes && stats.notes.length > 0 && (
                         <div className="mt-2 pt-2 border-t">
                           <p className="text-xs text-gray-900 mb-1">Matières:</p>
@@ -504,6 +635,26 @@ export default function ParentDashboard() {
                   >
                     Voir le détail <Eye className="w-4 h-4" />
                   </Link>
+                  <div className="flex gap-2 mt-2">
+                    <Link
+                      href={`/dashboard/parent/transport?enfantId=${enfant.eleve_id}`}
+                      className="flex-1 bg-indigo-600 text-white text-sm py-1.5 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+                    >
+                      <Bus className="w-4 h-4" /> Transport
+                    </Link>
+                    <Link
+                      href={`/dashboard/parent/cantine?enfantId=${enfant.eleve_id}`}
+                      className="flex-1 bg-pink-600 text-white text-sm py-1.5 rounded-lg hover:bg-pink-700 transition flex items-center justify-center gap-2"
+                    >
+                      <Utensils className="w-4 h-4" /> Cantine
+                    </Link>
+                    <Link
+                      href={`/dashboard/parent/librairie?enfantId=${enfant.eleve_id}`}
+                      className="flex-1 bg-purple-600 text-white text-sm py-1.5 rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2"
+                    >
+                      <ShoppingCart className="w-4 h-4" /> Librairie
+                    </Link>
+                  </div>
                 </div>
               </div>
             );

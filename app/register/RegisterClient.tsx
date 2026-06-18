@@ -656,7 +656,7 @@ export default function RegisterPage() {
 
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    📌 Récapitulatif : Vous allez inscrire <strong>{enfants.length}</strong> enfant(s).<br />
+                    Récapitulatif : Vous allez inscrire <strong>{enfants.length}</strong> enfant(s).<br />
                     Après validation, vous recevrez un email de confirmation pour chaque enfant.
                   </p>
                 </div>

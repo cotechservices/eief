@@ -329,7 +329,7 @@ export default function LibrairiePage() {
         )}
       </div>
 
-      {/* Formulaire Article */}
+      {/* Formulaire Article - CORRIGÉ */}
       {showArticleForm && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -373,25 +373,66 @@ export default function LibrairiePage() {
 
               <div>
                 <label className="block text-sm mb-1">Nom de l'article *</label>
-                <input required type="text" value={articleData.nom} onChange={e => setArticleData({ ...articleData, nom: e.target.value })} className="w-full border p-2 rounded-lg" />
+                <input 
+                  required 
+                  type="text" 
+                  value={articleData.nom || ""} 
+                  onChange={e => setArticleData({ ...articleData, nom: e.target.value })} 
+                  className="w-full border p-2 rounded-lg" 
+                />
               </div>
               <div>
                 <label className="block text-sm mb-1">Description</label>
-                <textarea rows={2} value={articleData.description} onChange={e => setArticleData({ ...articleData, description: e.target.value })} className="w-full border p-2 rounded-lg" />
+                <textarea 
+                  rows={2} 
+                  value={articleData.description || ""} 
+                  onChange={e => setArticleData({ ...articleData, description: e.target.value })} 
+                  className="w-full border p-2 rounded-lg" 
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm mb-1">Prix Unitaire (GNF) *</label>
-                  <input required type="number" min="0" value={articleData.prix_unitaire} onChange={e => setArticleData({ ...articleData, prix_unitaire: parseInt(e.target.value) })} className="w-full border p-2 rounded-lg" />
+                  <input 
+                    required 
+                    type="number" 
+                    min="0" 
+                    value={articleData.prix_unitaire ?? 0} 
+                    onChange={e => {
+                      const val = parseInt(e.target.value);
+                      setArticleData({ 
+                        ...articleData, 
+                        prix_unitaire: isNaN(val) ? 0 : val 
+                      });
+                    }} 
+                    className="w-full border p-2 rounded-lg" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm mb-1">Quantité en stock *</label>
-                  <input required type="number" min="0" value={articleData.quantite_stock} onChange={e => setArticleData({ ...articleData, quantite_stock: parseInt(e.target.value) })} className="w-full border p-2 rounded-lg" />
+                  <input 
+                    required 
+                    type="number" 
+                    min="0" 
+                    value={articleData.quantite_stock ?? 0} 
+                    onChange={e => {
+                      const val = parseInt(e.target.value);
+                      setArticleData({ 
+                        ...articleData, 
+                        quantite_stock: isNaN(val) ? 0 : val 
+                      });
+                    }} 
+                    className="w-full border p-2 rounded-lg" 
+                  />
                 </div>
               </div>
               <div>
                 <label className="block text-sm mb-1">Catégorie</label>
-                <select value={articleData.categorie} onChange={e => setArticleData({ ...articleData, categorie: e.target.value })} className="w-full border p-2 rounded-lg">
+                <select 
+                  value={articleData.categorie || "fourniture"} 
+                  onChange={e => setArticleData({ ...articleData, categorie: e.target.value })} 
+                  className="w-full border p-2 rounded-lg"
+                >
                   <option value="fourniture">Fourniture scolaire</option>
                   <option value="uniforme">Uniforme / Tenue</option>
                   <option value="livre">Livre / Cahier</option>
@@ -410,7 +451,7 @@ export default function LibrairiePage() {
         </div>
       )}
 
-      {/* Formulaire Vente */}
+      {/* Formulaire Vente - CORRIGÉ */}
       {showVenteForm && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
@@ -418,7 +459,12 @@ export default function LibrairiePage() {
             <form onSubmit={handleVenteSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm mb-1">Article</label>
-                <select required value={venteData.article_id} onChange={e => setVenteData({ ...venteData, article_id: e.target.value })} className="w-full border p-2 rounded-lg">
+                <select 
+                  required 
+                  value={venteData.article_id} 
+                  onChange={e => setVenteData({ ...venteData, article_id: e.target.value })} 
+                  className="w-full border p-2 rounded-lg"
+                >
                   <option value="">Sélectionner un article</option>
                   {articles.filter(a => a.quantite_stock > 0).map(a => (
                     <option key={a.id} value={a.id}>{a.nom} - {a.prix_unitaire.toLocaleString()} GNF (Stock: {a.quantite_stock})</option>
@@ -427,7 +473,11 @@ export default function LibrairiePage() {
               </div>
               <div>
                 <label className="block text-sm mb-1">Élève (Optionnel)</label>
-                <select value={venteData.eleve_id} onChange={e => setVenteData({ ...venteData, eleve_id: e.target.value })} className="w-full border p-2 rounded-lg">
+                <select 
+                  value={venteData.eleve_id} 
+                  onChange={e => setVenteData({ ...venteData, eleve_id: e.target.value })} 
+                  className="w-full border p-2 rounded-lg"
+                >
                   <option value="">Vente libre / Anonyme</option>
                   {eleves.map(e => (
                     <option key={e.id} value={e.id}>{e.prenom} {e.nom} ({e.matricule})</option>
@@ -436,7 +486,20 @@ export default function LibrairiePage() {
               </div>
               <div>
                 <label className="block text-sm mb-1">Quantité</label>
-                <input required type="number" min="1" value={venteData.quantite} onChange={e => setVenteData({ ...venteData, quantite: parseInt(e.target.value) })} className="w-full border p-2 rounded-lg" />
+                <input 
+                  required 
+                  type="number" 
+                  min="1" 
+                  value={venteData.quantite || 1} 
+                  onChange={e => {
+                    const val = parseInt(e.target.value);
+                    setVenteData({ 
+                      ...venteData, 
+                      quantite: isNaN(val) || val < 1 ? 1 : val 
+                    });
+                  }} 
+                  className="w-full border p-2 rounded-lg" 
+                />
               </div>
               <div className="flex justify-end gap-3 mt-6">
                 <button type="button" onClick={() => setShowVenteForm(false)} className="px-4 py-2 border rounded-lg">Annuler</button>

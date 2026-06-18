@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { parent, parentId, enfants } = body;
 
-    console.log("Données reçues:", { parent: parent?.email, parentId, enfantsCount: enfants?.length });
+    console.log("Données reçues:", { parentEmail: parent?.email, parentId, enfantsCount: enfants?.length });
 
     if (!enfants || enfants.length === 0) {
       return NextResponse.json(
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     else if (parent) {
       console.log("Nouveau parent - création de compte");
       
-      if (!parent.email || !parent.password || !parent.prenom || !parent.nom) {
+      if (!parent.email || !parent.password || !parent.pereNom || !parent.perePrenom) {
         return NextResponse.json(
           { success: false, message: "Informations parent incomplètes" },
           { status: 400 }
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         const newUser = await query(
           `INSERT INTO utilisateurs (email, password, prenom, nom, telephone, adresse, role, est_actif) 
            VALUES ($1, $2, $3, $4, $5, $6, 'PARENT', true) RETURNING id`,
-          [parent.email, hashedPassword, parent.prenom, parent.nom, parent.phone, parent.adresse || null]
+          [parent.email, hashedPassword, parent.perePrenom, parent.pereNom, parent.perePhone || null, parent.adresse || null]
         );
         utilisateurId = newUser.rows[0].id;
         console.log("Nouvel utilisateur créé ID:", utilisateurId);
@@ -96,10 +96,16 @@ export async function POST(request: NextRequest) {
         parentIdToUse = existingParent.rows[0].id;
         console.log("Parent existant ID:", parentIdToUse);
       } else {
+        const mereInfo = JSON.stringify({
+          mereNom: parent.mereNom || null,
+          merePrenom: parent.merePrenom || null,
+          merePhone: parent.merePhone || null,
+          mereProfession: parent.mereProfession || null,
+        });
         const newParent = await query(
-          `INSERT INTO parents (utilisateur_id, profession) 
-           VALUES ($1, $2) RETURNING id`,
-          [utilisateurId, parent.profession || "Non renseigné"]
+          `INSERT INTO parents (utilisateur_id, profession, situation_matrimoniale) 
+           VALUES ($1, $2, $3) RETURNING id`,
+          [utilisateurId, parent.pereProfession || "Non renseigné", mereInfo]
         );
         parentIdToUse = newParent.rows[0].id;
         console.log("Nouveau parent créé ID:", parentIdToUse);
