@@ -35,7 +35,7 @@ import { Providers } from "./providers";
 const menuItems = {
   SUPER_ADMIN: [
     { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
-    { name: "Preinscriptions", href: "/dashboard/admin/preinscriptions", icon: Users },
+    { name: "Inscriptions", href: "/dashboard/admin/preinscriptions", icon: Users },
     { name: "Réinscriptions", href: "/dashboard/admin/reinscriptions", icon: Users },
     { name: "Élèves", href: "/dashboard/admin/eleves", icon: Users },
     { name: "Classes", href: "/dashboard/admin/classes", icon: GraduationCap },

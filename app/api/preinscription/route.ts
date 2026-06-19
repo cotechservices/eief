@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
   console.log("=== API PREINSCRIPTION POST CALLED ===");
-  
+
   try {
     const body = await request.json();
     const { parent, parentId, enfants } = body;
@@ -20,57 +20,57 @@ export async function POST(request: NextRequest) {
     }
 
     let parentIdToUse: number;
-    
+
     // Cas 1: Parent déjà connecté (parentId fourni - peut être parent_id ou utilisateur_id)
     if (parentId) {
-    console.log("Parent déjà connecté - ID reçu:", parentId);
-    
-    // Vérifier d'abord si c'est un parent_id
-    let verifyParent = await query(
+      console.log("Parent déjà connecté - ID reçu:", parentId);
+
+      // Vérifier d'abord si c'est un parent_id
+      let verifyParent = await query(
         "SELECT id FROM parents WHERE id = $1",
         [parentId]
-    );
-    
-    // Si ce n'est pas un parent_id, vérifier si c'est un utilisateur_id
-    if (verifyParent.rows.length === 0) {
+      );
+
+      // Si ce n'est pas un parent_id, vérifier si c'est un utilisateur_id
+      if (verifyParent.rows.length === 0) {
         verifyParent = await query(
-        "SELECT id FROM parents WHERE utilisateur_id = $1",
-        [parentId]
+          "SELECT id FROM parents WHERE utilisateur_id = $1",
+          [parentId]
         );
-    }
-    
-    if (verifyParent.rows.length === 0) {
+      }
+
+      if (verifyParent.rows.length === 0) {
         return NextResponse.json(
-        { success: false, message: "Parent non trouvé" },
-        { status: 404 }
+          { success: false, message: "Parent non trouvé" },
+          { status: 404 }
         );
-    }
-    
-    parentIdToUse = verifyParent.rows[0].id;
-    console.log("Parent existant validé - ID:", parentIdToUse);
+      }
+
+      parentIdToUse = verifyParent.rows[0].id;
+      console.log("Parent existant validé - ID:", parentIdToUse);
     }
     // Cas 2: Nouveau parent (création de compte)
     else if (parent) {
       console.log("Nouveau parent - création de compte");
-      
+
       if (!parent.email || !parent.password || !parent.pereNom || !parent.perePrenom) {
         return NextResponse.json(
           { success: false, message: "Informations parent incomplètes" },
           { status: 400 }
         );
       }
-      
+
       // 1. Chercher ou créer l'utilisateur
       let utilisateurId: number;
       const existingUser = await query(
         "SELECT id FROM utilisateurs WHERE email = $1",
         [parent.email]
       );
-      
+
       if (existingUser.rows.length > 0) {
         utilisateurId = existingUser.rows[0].id;
         console.log("Utilisateur existant ID:", utilisateurId);
-        
+
         await query(
           "UPDATE utilisateurs SET role = 'PARENT' WHERE id = $1 AND role != 'PARENT'",
           [utilisateurId]
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         parentIdToUse = newParent.rows[0].id;
         console.log("Nouveau parent créé ID:", parentIdToUse);
       }
-      
+
     } else {
       return NextResponse.json(
         { success: false, message: "Aucune information parent fournie" },
@@ -170,9 +170,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("ERREUR:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        message: (error as Error).message 
+      {
+        success: false,
+        message: (error as Error).message
       },
       { status: 500 }
     );

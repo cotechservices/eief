@@ -353,7 +353,7 @@ export default function AdminDashboard() {
           <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-yellow-600 transition">
             <Clock className="w-6 h-6 text-yellow-600 group-hover:text-white" />
           </div>
-          <p className="text-sm font-medium">Pré-inscriptions</p>
+          <p className="text-sm font-medium">Inscriptions</p>
         </Link>
       </div>
     </div>
