@@ -25,67 +25,73 @@ import {
   Printer,
   Mail,
   Wrench,
-  Droplet
+  Droplet,
+  Plus
 } from "lucide-react";
 
 export default function ComptabilitePage() {
   const [loading, setLoading] = useState(true);
   const [periode, setPeriode] = useState("mois");
-  const [filter, setFilter] = useState("all");
+  const [data, setData] = useState<any>(null);
+  const [showDepenseForm, setShowDepenseForm] = useState(false);
+  const [newDepense, setNewDepense] = useState({
+    categorie: "Fournitures",
+    montant: "",
+    description: "",
+  });
 
-  // Données simulées - À remplacer par vos données réelles
-  const stats = {
-    totalRecettes: 12500000,
-    totalDepenses: 4800000,
-    solde: 7700000,
-    encours: 3250000,
-    previsionMois: 14500000,
-    tauxRecouvrement: 78,
-    nombreEleves: 1250,
-    nombreClasses: 32
-  };
-
-  const recettesParMois = [
-    { mois: "Oct", montant: 12000000, prevision: 12500000 },
-    { mois: "Nov", montant: 11800000, prevision: 12500000 },
-    { mois: "Déc", montant: 11500000, prevision: 12500000 },
-    { mois: "Jan", montant: 12200000, prevision: 12500000 },
-    { mois: "Fév", montant: 11900000, prevision: 12500000 },
-    { mois: "Mar", montant: 12100000, prevision: 12500000 },
-    { mois: "Avr", montant: 12300000, prevision: 12500000 },
-  ];
-
-  const derniersPaiements = [
-    { id: 1, eleve: "Ibrahim Diallo", classe: "5ème A", montant: 150000, type: "Mensualité", date: "2025-05-20", statut: "payé", mode: "Mobile Money" },
-    { id: 2, eleve: "Aïssatou Souaré", classe: "3ème A", montant: 200000, type: "Inscription", date: "2025-05-19", statut: "payé", mode: "Espèces" },
-    { id: 3, eleve: "Mamadou Konaté", classe: "Terminale", montant: 150000, type: "Mensualité", date: "2025-05-18", statut: "en_attente", mode: "Carte" },
-    { id: 4, eleve: "Fatoumata Barry", classe: "6ème A", montant: 100000, type: "Cantine", date: "2025-05-17", statut: "payé", mode: "Mobile Money" },
-    { id: 5, eleve: "Mohamed Camara", classe: "4ème A", montant: 80000, type: "Transport", date: "2025-05-16", statut: "impayé", mode: "-" },
-  ];
-
-  const categoriesRecettes = [
-    { name: "Inscriptions", montant: 2450000, pourcentage: 20, icon: Users },
-    { name: "Mensualités", montant: 6250000, pourcentage: 50, icon: GraduationCap },
-    { name: "Cantine", montant: 1250000, pourcentage: 10, icon: Utensils },
-    { name: "Transport", montant: 1000000, pourcentage: 8, icon: Bus },
-    { name: "Bibliothèque", montant: 625000, pourcentage: 5, icon: BookOpen },
-    { name: "Autres", montant: 875000, pourcentage: 7, icon: DollarSign },
-  ];
-
-  const depensesParCategorie = [
-    { name: "Salaires", montant: 2500000, pourcentage: 52, icon: Users },
-    { name: "Fournitures", montant: 800000, pourcentage: 17, icon: BookOpen },
-    { name: "Maintenance", montant: 500000, pourcentage: 10, icon: Wrench },  // ← Changé
-    { name: "Eau/Électricité", montant: 400000, pourcentage: 8, icon: Droplet },
-    { name: "Transport", montant: 350000, pourcentage: 7, icon: Bus },
-    { name: "Autres", montant: 250000, pourcentage: 6, icon: DollarSign },
+  const categoriesDisponibles = [
+    "Fournitures",
+    "Maintenance",
+    "Eau/Électricité",
+    "Équipement",
+    "Transport",
+    "Autre"
   ];
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
-  }, []);
+    fetchDashboardData();
+  }, [periode]);
 
-  if (loading) {
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/comptable/dashboard");
+      if (res.ok) {
+        const json = await res.json();
+        setData(json);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAjoutDepense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin/finances/depenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newDepense),
+      });
+      if (res.ok) {
+        alert("Dépense enregistrée avec succès");
+        setShowDepenseForm(false);
+        setNewDepense({ categorie: "Fournitures", montant: "", description: "" });
+        fetchDashboardData(); // Rafraîchir les stats
+      } else {
+        const error = await res.json();
+        alert(error.error || "Erreur lors de l'ajout");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors de l'ajout");
+    }
+  };
+
+  if (loading || !data) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -96,6 +102,18 @@ export default function ComptabilitePage() {
     );
   }
 
+  const { stats, derniersPaiements, impayes, categoriesRecettes, evolutionRecettes } = data;
+
+  const getIconForCategory = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.includes('inscription')) return Users;
+    if (lower.includes('mensualit')) return GraduationCap;
+    if (lower.includes('cantine')) return Utensils;
+    if (lower.includes('transport')) return Bus;
+    if (lower.includes('biblioth')) return BookOpen;
+    return DollarSign;
+  };
+
   return (
     <div className="space-y-6">
       {/* En-tête */}
@@ -105,15 +123,13 @@ export default function ComptabilitePage() {
           <p className="text-gray-900">Gestion financière de l'école</p>
         </div>
         <div className="flex gap-3">
-          <select
-            value={periode}
-            onChange={(e) => setPeriode(e.target.value)}
-            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <button
+            onClick={() => setShowDepenseForm(true)}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition flex items-center gap-2"
           >
-            <option value="mois">Ce mois</option>
-            <option value="trimestre">Ce trimestre</option>
-            <option value="annee">Cette année</option>
-          </select>
+            <Plus className="w-4 h-4" />
+            Sortie de caisse (Dépense)
+          </button>
           <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
             <Download className="w-4 h-4" />
             Exporter
@@ -128,7 +144,6 @@ export default function ComptabilitePage() {
             <div>
               <p className="text-gray-900 text-sm">Total recettes</p>
               <p className="text-2xl font-bold text-green-600">{stats.totalRecettes.toLocaleString()} GNF</p>
-              <p className="text-sm text-green-500 mt-1">+8% vs année dernièrer</p>
             </div>
             <div className="bg-green-100 p-3 rounded-lg">
               <TrendingUp className="w-6 h-6 text-green-600" />
@@ -139,9 +154,8 @@ export default function ComptabilitePage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-900 text-sm">Total dépenses</p>
+              <p className="text-gray-900 text-sm">Total dépenses (Salaires + autres)</p>
               <p className="text-2xl font-bold text-red-600">{stats.totalDepenses.toLocaleString()} GNF</p>
-              <p className="text-sm text-red-500 mt-1">+5% vs année dernière</p>
             </div>
             <div className="bg-red-100 p-3 rounded-lg">
               <TrendingDown className="w-6 h-6 text-red-600" />
@@ -153,11 +167,13 @@ export default function ComptabilitePage() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-900 text-sm">Solde actuel</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.solde.toLocaleString()} GNF</p>
-              <p className="text-sm text-gray-900 mt-1">Disponible</p>
+              <p className={`text-2xl font-bold ${stats.solde >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                {stats.solde.toLocaleString()} GNF
+              </p>
+              <p className="text-sm text-gray-900 mt-1">Trésorerie disponible</p>
             </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Wallet className="w-6 h-6 text-blue-600" />
+            <div className={`${stats.solde >= 0 ? 'bg-blue-100' : 'bg-red-100'} p-3 rounded-lg`}>
+              <Wallet className={`w-6 h-6 ${stats.solde >= 0 ? 'text-blue-600' : 'text-red-600'}`} />
             </div>
           </div>
         </div>
@@ -167,7 +183,7 @@ export default function ComptabilitePage() {
             <div>
               <p className="text-gray-900 text-sm">Taux de recouvrement</p>
               <p className="text-2xl font-bold text-purple-600">{stats.tauxRecouvrement}%</p>
-              <p className="text-sm text-gray-900 mt-1">Objectif: 95%</p>
+              <p className="text-sm text-gray-900 mt-1">Impayés: {stats.encours.toLocaleString()} GNF</p>
             </div>
             <div className="bg-purple-100 p-3 rounded-lg">
               <CheckCircle className="w-6 h-6 text-purple-600" />
@@ -180,22 +196,30 @@ export default function ComptabilitePage() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Évolution des recettes */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Évolution des recettes</h3>
-          <div className="space-y-3">
-            {recettesParMois.map((item, idx) => (
-              <div key={idx}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>{item.mois}</span>
-                  <span>{item.montant.toLocaleString()} GNF</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-green-500 h-2 rounded-full"
-                    style={{ width: `${(item.montant / item.prevision) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+          <h3 className="font-semibold text-gray-900 mb-4">Aperçu financier (Mois en cours)</h3>
+          <div className="space-y-6">
+             {evolutionRecettes.map((item: any, idx: number) => (
+               <div key={idx} className="space-y-4">
+                 <div>
+                   <div className="flex justify-between text-sm mb-1">
+                     <span className="font-medium text-green-700">Recettes ({item.mois})</span>
+                     <span className="font-bold">{item.recettes.toLocaleString()} GNF</span>
+                   </div>
+                   <div className="w-full bg-gray-200 rounded-full h-2">
+                     <div className="bg-green-500 h-2 rounded-full w-full"></div>
+                   </div>
+                 </div>
+                 <div>
+                   <div className="flex justify-between text-sm mb-1">
+                     <span className="font-medium text-red-700">Dépenses ({item.mois})</span>
+                     <span className="font-bold">{item.depenses.toLocaleString()} GNF</span>
+                   </div>
+                   <div className="w-full bg-gray-200 rounded-full h-2">
+                     <div className="bg-red-500 h-2 rounded-full w-full" style={{ width: `${Math.min(100, (item.depenses / (item.recettes || 1)) * 100)}%` }}></div>
+                   </div>
+                 </div>
+               </div>
+             ))}
           </div>
         </div>
 
@@ -203,25 +227,29 @@ export default function ComptabilitePage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h3 className="font-semibold text-gray-900 mb-4">Répartition des recettes</h3>
           <div className="space-y-3">
-            {categoriesRecettes.map((cat, idx) => (
-              <div key={idx} className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <cat.icon className="w-4 h-4 text-gray-900" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between text-sm">
-                    <span>{cat.name}</span>
-                    <span>{cat.montant.toLocaleString()} GNF ({cat.pourcentage}%)</span>
+            {categoriesRecettes.map((cat: any, idx: number) => {
+              const Icon = getIconForCategory(cat.name);
+              return (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Icon className="w-4 h-4 text-gray-900" />
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                    <div
-                      className="bg-blue-500 h-1.5 rounded-full"
-                      style={{ width: `${cat.pourcentage}%` }}
-                    ></div>
+                  <div className="flex-1">
+                    <div className="flex justify-between text-sm">
+                      <span>{cat.name}</span>
+                      <span>{cat.montant.toLocaleString()} GNF ({cat.pourcentage}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                      <div
+                        className="bg-blue-500 h-1.5 rounded-full"
+                        style={{ width: `${cat.pourcentage}%` }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+            {categoriesRecettes.length === 0 && <p className="text-sm text-gray-500">Aucune recette valide pour l'instant.</p>}
           </div>
         </div>
       </div>
@@ -229,20 +257,7 @@ export default function ComptabilitePage() {
       {/* Derniers paiements */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h3 className="font-semibold text-gray-900">Derniers paiements</h3>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="pl-9 pr-4 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <button className="p-1.5 border rounded-lg hover:bg-gray-50">
-              <Filter className="w-4 h-4 text-gray-900" />
-            </button>
-          </div>
+          <h3 className="font-semibold text-gray-900">10 Dernières rentrées de caisse</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -253,13 +268,11 @@ export default function ComptabilitePage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Montant</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Mode</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {derniersPaiements.map((paiement) => (
+              {derniersPaiements.map((paiement: any) => (
                 <tr key={paiement.id}>
                   <td className="px-6 py-4 font-medium text-gray-900">{paiement.eleve}</td>
                   <td className="px-6 py-4 text-gray-900">{paiement.classe}</td>
@@ -271,73 +284,72 @@ export default function ComptabilitePage() {
                   </td>
                   <td className="px-6 py-4 text-gray-900">{paiement.date}</td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-1">
-                      {paiement.mode === "Mobile Money" && <Smartphone className="w-4 h-4 text-green-600" />}
-                      {paiement.mode === "Espèces" && <Wallet className="w-4 h-4 text-blue-600" />}
-                      {paiement.mode === "Carte" && <CreditCard className="w-4 h-4 text-purple-600" />}
-                      <span className="text-sm">{paiement.mode}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {paiement.statut === "payé" && (
+                    {paiement.statut === "valide" ? (
                       <span className="text-green-600 text-sm flex items-center gap-1">
-                        <CheckCircle className="w-4 h-4" /> Payé
+                        <CheckCircle className="w-4 h-4" /> Validé
                       </span>
-                    )}
-                    {paiement.statut === "en_attente" && (
+                    ) : (
                       <span className="text-yellow-600 text-sm flex items-center gap-1">
-                        <Clock className="w-4 h-4" /> En attente
+                        <Clock className="w-4 h-4" /> {paiement.statut}
                       </span>
                     )}
-                    {paiement.statut === "impayé" && (
-                      <span className="text-red-600 text-sm flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" /> Impayé
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <button className="text-blue-600 hover:text-blue-700 mr-2">
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="text-gray-900 hover:text-gray-900">
-                      <Printer className="w-4 h-4" />
-                    </button>
                   </td>
                 </tr>
               ))}
+              {derniersPaiements.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">Aucun paiement récent.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-4 border-t flex justify-between items-center">
-          <p className="text-sm text-gray-900">Affichage 5 sur 45 paiements</p>
-          <button className="text-blue-600 text-sm hover:underline">Voir tous les paiements →</button>
-        </div>
       </div>
 
-      {/* Alertes et impayés */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
-          <h3 className="font-semibold text-yellow-800 mb-3 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" />
-            Paiements en retard
-          </h3>
-          <p className="text-yellow-700 text-sm mb-4">3 familles ont des paiements en retard</p>
-          <button className="text-yellow-800 text-sm font-medium hover:underline">
-            Envoyer des rappels →
-          </button>
+      {/* Modal Ajout Dépense */}
+      {showDepenseForm && (
+        <div className="fixed inset-0 bg-black/50 text-black flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h2 className="text-xl font-bold mb-4">Enregistrer une sortie de caisse</h2>
+            <form onSubmit={handleAjoutDepense} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Catégorie</label>
+                <select 
+                  value={newDepense.categorie}
+                  onChange={(e) => setNewDepense({...newDepense, categorie: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  {categoriesDisponibles.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Montant (GNF)</label>
+                <input 
+                  type="number"
+                  required
+                  value={newDepense.montant}
+                  onChange={(e) => setNewDepense({...newDepense, montant: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Description / Motif</label>
+                <textarea 
+                  value={newDepense.description}
+                  onChange={(e) => setNewDepense({...newDepense, description: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                ></textarea>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="submit" className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition">Enregistrer</button>
+                <button type="button" onClick={() => setShowDepenseForm(false)} className="flex-1 border py-2 rounded-lg hover:bg-gray-50 transition">Annuler</button>
+              </div>
+            </form>
+          </div>
         </div>
+      )}
 
-        <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
-          <h3 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-            <Mail className="w-5 h-5" />
-            Prochains échéances
-          </h3>
-          <p className="text-blue-700 text-sm mb-4">Mensualités de Mai à payer avant le 31/05</p>
-          <button className="text-blue-800 text-sm font-medium hover:underline">
-            Générer les factures →
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

@@ -231,7 +231,7 @@ export default function ParentDashboard() {
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
-  // Calcul des statistiques globales avec toutes les catégories
+  // Calcul des statistiques globales avec les données réelles
   const statsGlobales = {
     totalEnfants: enfants.length,
     totalPreinscriptions: preinscriptions.length,
@@ -239,14 +239,14 @@ export default function ParentDashboard() {
     preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
     totalAbsences: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.absents) || 0), 0),
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
-    
-    // Totaux par catégorie
+
+    // Totaux par catégorie (valeurs réelles depuis l'API)
     totalFraisInscription: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.frais_inscription) || 0), 0),
     totalTransport: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.transport) || 0), 0),
     totalCantine: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.cantine) || 0), 0),
     totalFournitures: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.fournitures) || 0), 0),
     totalScolarite: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.scolarite) || 0), 0),
-    
+
     // Totaux globaux
     totalFraisGeneral: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.total_frais_general) || 0), 0),
     totalPaye: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0),
@@ -299,7 +299,7 @@ export default function ParentDashboard() {
         <p className="text-gray-900">Bienvenue dans votre espace de suivi scolaire</p>
       </div>
 
-      {/* Statistiques globales simplifiées */}
+      {/* Statistiques globales avec données réelles */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
           <div className="flex items-center gap-2 mb-1"><Users className="w-5 h-5" /><p className="text-sm opacity-90">Enfants inscrits</p></div>
@@ -320,13 +320,13 @@ export default function ParentDashboard() {
         </div>
       </div>
 
-      {/* Détail des frais par catégorie */}
+      {/* Détail des frais par catégorie - DONNÉES RÉELLES */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Wallet className="w-5 h-5 text-blue-600" />
           Détail des frais scolaires
         </h3>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <div className="bg-blue-50 rounded-lg p-3 text-center">
             <p className="text-xs text-gray-600">Inscription</p>
@@ -349,8 +349,8 @@ export default function ParentDashboard() {
             <p className="text-sm font-bold text-orange-600">{statsGlobales.totalScolarite.toLocaleString()} GNF</p>
           </div>
         </div>
-        
-        <div className="mt-4 flex justify-between items-center border-t pt-4">
+
+        <div className="mt-4 flex flex-wrap justify-between items-center border-t pt-4 gap-2">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Total général :</span>
             <span className="text-sm font-bold text-blue-700">{statsGlobales.totalFraisGeneral.toLocaleString()} GNF</span>
@@ -366,27 +366,27 @@ export default function ParentDashboard() {
             </span>
           </div>
           {/* Barre de progression */}
-          <div className="flex-1 mx-4">
+          <div className="flex-1 min-w-[100px]">
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${statsGlobales.totalFraisGeneral > 0 
-                    ? Math.min(100, (statsGlobales.totalPaye / statsGlobales.totalFraisGeneral) * 100) 
-                    : 0}%` 
+                style={{
+                  width: `${statsGlobales.totalFraisGeneral > 0
+                    ? Math.min(100, (statsGlobales.totalPaye / statsGlobales.totalFraisGeneral) * 100)
+                    : 0}%`
                 }}
               />
             </div>
             <p className="text-xs text-gray-500 text-right mt-1">
-              {statsGlobales.totalFraisGeneral > 0 
-                ? Math.round((statsGlobales.totalPaye / statsGlobales.totalFraisGeneral) * 100) 
+              {statsGlobales.totalFraisGeneral > 0
+                ? Math.round((statsGlobales.totalPaye / statsGlobales.totalFraisGeneral) * 100)
                 : 0}% payé
             </p>
           </div>
         </div>
       </div>
 
-      {/* Section Pré-inscriptions */}
+      {/* Section Pré-inscriptions - avec montants réels */}
       {preinscriptions.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -399,7 +399,7 @@ export default function ParentDashboard() {
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Nouvelle pré-inscription
+              Nouvelle inscription
             </Link>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
@@ -420,13 +420,17 @@ export default function ParentDashboard() {
                           <h3 className="font-semibold text-black">{p.enfant_prenom} {p.enfant_nom}</h3>
                           <p className="text-sm text-gray-900">{p.classe}</p>
                           <p className="text-xs text-gray-900 mt-1">Dossier: {p.numero_dossier}</p>
+                          {/* AFFICHAGE DU MONTANT RÉEL */}
+                          <p className="text-xs font-medium text-blue-600 mt-1">
+                            Frais: {p.frais_montant?.toLocaleString() || 0} GNF
+                          </p>
                         </div>
                         <div className="text-right">
                           {getStatutBadge(p.statut)}
                           <div className="mt-1">{getFraisBadge(p.frais_statut)}</div>
                         </div>
                       </div>
-                      <div className="mt-3 flex gap-2">
+                      <div className="mt-3 flex flex-wrap gap-2">
                         {p.frais_statut !== "paye" && p.statut === "en_attente" && (
                           <>
                             <button
@@ -434,30 +438,17 @@ export default function ParentDashboard() {
                                 setSelectedPreinscription(p);
                                 setShowPaiementModal(true);
                               }}
-                              className="flex-1 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
+                              className="flex-1 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 min-w-[100px]"
                             >
-                              Payer l'inscription
+                              Payer {p.frais_montant?.toLocaleString()} GNF
                             </button>
                             <button
                               onClick={() => openConfirmCancel(p)}
                               className="px-3 py-1.5 bg-red-100 text-red-600 text-sm rounded-lg hover:bg-red-200 transition flex items-center gap-1"
                               title="Annuler la pré-inscription"
-                            > Supprimer
+                            >
                               <Trash2 className="w-4 h-4" />
                             </button>
-                             {/* Section Pré-inscriptions 
-                            <Link
-                              href={`/dashboard/parent/transport?preinscriptionId=${p.id}`}
-                              className="flex-1 bg-indigo-600 text-white text-sm py-1.5 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2">
-                              <Bus className="w-4 h-4" />
-                              Transport
-                            </Link>
-                            <Link
-                              href={`/dashboard/parent/cantine?preinscriptionId=${p.id}`}
-                              className="flex-1 bg-pink-600 text-white text-sm py-1.5 rounded-lg hover:bg-pink-700 transition flex items-center justify-center gap-2">
-                              <Calendar className="w-4 h-4" />
-                              Cantine
-                            </Link>*/}
                           </>
                         )}
                         {p.frais_statut === "paye" && p.statut === "en_attente" && (
@@ -485,7 +476,7 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {/* Liste des enfants inscrits */}
+      {/* Liste des enfants inscrits - avec détails réels */}
       <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
         <GraduationCap className="w-5 h-5 text-blue-600" />
         Mes enfants inscrits
@@ -533,7 +524,7 @@ export default function ParentDashboard() {
                         <span className="font-medium text-orange-600">{stats.presences?.absents || 0} abs. / {stats.presences?.retards || 0} ret.</span>
                       </div>
 
-                      {/* Détail des frais par catégorie */}
+                      {/* Détail des frais par catégorie - DONNÉES RÉELLES */}
                       <div className="mt-3 pt-3 border-t">
                         <p className="text-xs text-gray-600 mb-2 font-semibold">Détail des frais :</p>
                         <div className="grid grid-cols-2 gap-1 text-xs">
@@ -558,17 +549,17 @@ export default function ParentDashboard() {
                             <span className="font-medium text-orange-600">{stats.scolarite?.toLocaleString() || 0} GNF</span>
                           </div>
                         </div>
-                        
+
                         <div className="mt-2 flex justify-between items-center bg-gray-50 p-2 rounded-lg">
                           <span className="text-xs font-semibold text-gray-700">Total à payer :</span>
                           <span className="text-sm font-bold text-blue-700">{stats.total_frais_general?.toLocaleString() || 0} GNF</span>
                         </div>
-                        
+
                         <div className="flex justify-between items-center mt-1">
                           <span className="text-xs text-gray-600">Déjà payé :</span>
                           <span className="text-xs font-medium text-green-600">{stats.paiements?.total_paye?.toLocaleString() || 0} GNF</span>
                         </div>
-                        
+
                         {stats.solde_restant > 0 ? (
                           <div className="flex justify-between items-center mt-1">
                             <span className="text-xs text-gray-600">Solde :</span>
@@ -582,7 +573,7 @@ export default function ParentDashboard() {
                         )}
                       </div>
 
-                      {/* Barre de progression des paiements */}
+                      {/* Barre de progression des paiements - avec données réelles */}
                       {stats.total_frais_general > 0 && (
                         <div className="mt-2">
                           <div className="flex justify-between text-xs text-gray-900 mb-1">
@@ -598,16 +589,17 @@ export default function ParentDashboard() {
                         </div>
                       )}
 
-                      {/* Détail des derniers paiements */}
+                      {/* Détail des derniers paiements - DONNÉES RÉELLES */}
                       {stats.paiements?.details && stats.paiements.details.length > 0 && (
                         <div className="mt-3 pt-3 border-t">
                           <p className="text-xs text-gray-900 mb-2">Derniers paiements:</p>
                           <div className="space-y-1">
-                            {stats.paiements.details.slice(0, 2).map((p, idx) => (
+                            {stats.paiements.details.slice(0, 3).map((p, idx) => (
                               <div key={idx} className="flex justify-between text-xs">
                                 <span className="text-black">{new Date(p.date_paiement).toLocaleDateString()}</span>
                                 <span className="font-medium text-green-600">{p.montant.toLocaleString()} GNF</span>
                                 <span className="text-black capitalize">{p.mode_paiement}</span>
+                                <span className="text-gray-500 text-[10px]">{p.type_frais}</span>
                               </div>
                             ))}
                           </div>
@@ -619,9 +611,9 @@ export default function ParentDashboard() {
                         <div className="mt-2 pt-2 border-t">
                           <p className="text-xs text-gray-900 mb-1">Matières:</p>
                           <div className="flex flex-wrap gap-1">
-                            {stats.notes.slice(0, 3).map((note, idx) => (
+                            {stats.notes.slice(0, 4).map((note, idx) => (
                               <span key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                                {note.matiere}
+                                {note.matiere} ({note.moyenne}/20)
                               </span>
                             ))}
                           </div>
@@ -635,22 +627,22 @@ export default function ParentDashboard() {
                   >
                     Voir le détail <Eye className="w-4 h-4" />
                   </Link>
-                  <div className="flex gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-2">
                     <Link
                       href={`/dashboard/parent/transport?enfantId=${enfant.eleve_id}`}
-                      className="flex-1 bg-indigo-600 text-white text-sm py-1.5 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+                      className="flex-1 bg-indigo-600 text-white text-sm py-1.5 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2 min-w-[80px]"
                     >
                       <Bus className="w-4 h-4" /> Transport
                     </Link>
                     <Link
                       href={`/dashboard/parent/cantine?enfantId=${enfant.eleve_id}`}
-                      className="flex-1 bg-pink-600 text-white text-sm py-1.5 rounded-lg hover:bg-pink-700 transition flex items-center justify-center gap-2"
+                      className="flex-1 bg-pink-600 text-white text-sm py-1.5 rounded-lg hover:bg-pink-700 transition flex items-center justify-center gap-2 min-w-[80px]"
                     >
                       <Utensils className="w-4 h-4" /> Cantine
                     </Link>
                     <Link
                       href={`/dashboard/parent/librairie?enfantId=${enfant.eleve_id}`}
-                      className="flex-1 bg-purple-600 text-white text-sm py-1.5 rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2"
+                      className="flex-1 bg-purple-600 text-white text-sm py-1.5 rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2 min-w-[80px]"
                     >
                       <ShoppingCart className="w-4 h-4" /> Librairie
                     </Link>
@@ -749,9 +741,9 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {/* Modal Paiement */}
+      {/* Modal Paiement - avec montant réel */}
       {showPaiementModal && selectedPreinscription && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 ">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="p-6 border-b">
               <h2 className="text-xl font-bold text-black">Paiement des frais d'inscription</h2>
@@ -821,7 +813,7 @@ export default function ParentDashboard() {
                     value={reference}
                     onChange={(e) => setReference(e.target.value)}
                     placeholder={modePaiement === "orange_money" ? "Ex: #OM-123456789" : "Ex: VISA-****-1234"}
-                    className=" text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <p className="text-xs text-gray-900 mt-1">
                     {modePaiement === "orange_money"
@@ -839,7 +831,7 @@ export default function ParentDashboard() {
                   : "bg-green-600 text-white hover:bg-green-700"
                   }`}
               >
-                {paiementLoading ? "Traitement..." : "Confirmer le paiement"}
+                {paiementLoading ? "Traitement..." : `Confirmer le paiement de ${selectedPreinscription.frais_montant.toLocaleString()} GNF`}
               </button>
             </div>
           </div>

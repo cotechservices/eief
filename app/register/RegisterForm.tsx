@@ -38,6 +38,32 @@ interface Fourniture {
   selectedQty: number;
 }
 
+interface TransportOption {
+  id: number;
+  nom: string;
+  prix: number;
+  selected: boolean;
+  horaireMatin?: string;
+  horaireSoir?: string;
+  immatriculation?: string;
+  chauffeur?: string;
+  capacite?: number;
+  inscrits?: number;
+}
+
+interface CantineOption {
+  id: number;
+  nom: string;
+  prix: number;
+  prix_annuel: number;
+  selected: boolean;
+  date?: string;
+  plat?: string;
+  accompagnement?: string;
+  dessert?: string;
+  regime_special?: boolean;
+}
+
 export default function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -102,12 +128,14 @@ export default function RegisterForm() {
   const [suppliesError, setSuppliesError] = useState<string | null>(null);
 
   // Transport
-  const [transportOptions, setTransportOptions] = useState<Array<{ id: number; nom: string; prix: number; selected: boolean }>>([]);
+  const [transportOptions, setTransportOptions] = useState<TransportOption[]>([]);
   const [totalTransport, setTotalTransport] = useState(0);
+  const [loadingTransport, setLoadingTransport] = useState(false);
 
   // Cantine
-  const [cantineOptions, setCantineOptions] = useState<Array<{ id: number; nom: string; prix: number; selected: boolean }>>([]);
+  const [cantineOptions, setCantineOptions] = useState<CantineOption[]>([]);
   const [totalCantine, setTotalCantine] = useState(0);
+  const [loadingCantine, setLoadingCantine] = useState(false);
 
   // Boutons d'action pour les étapes facultatives
   const [skipSupplies, setSkipSupplies] = useState(false);
@@ -191,39 +219,67 @@ export default function RegisterForm() {
     }
   };
 
-  const fetchTransportOptions = async () => {
+    const fetchTransportOptions = async () => {
     try {
+      setLoadingTransport(true);
       const res = await fetch("/api/public/transport");
       const data = await res.json();
-      const items = data.map((item: any) => ({
-        id: item.id,
-        nom: item.nom || "Transport scolaire",
-        prix: item.prix || 80000,
-        selected: false,
-      }));
-      setTransportOptions(items.length > 0 ? items : [{ id: 1, nom: "Transport scolaire", prix: 80000, selected: false }]);
+      
+      if (Array.isArray(data) && data.length > 0) {
+        const items = data.map((item: any) => ({
+          id: item.id,
+          nom: item.nom || "Transport scolaire",
+          prix: Number(item.prix) || 0,
+          selected: false,
+          horaireMatin: item.horaire_matin || "07:30",
+          horaireSoir: item.horaire_soir || "16:30",
+          immatriculation: item.immatriculation || null,
+          chauffeur: item.chauffeur || null,
+          capacite: item.capacite || 0,
+          inscrits: item.inscrits || 0
+        }));
+        setTransportOptions(items);
+      } else {
+        setTransportOptions([]);
+      }
     } catch (e) {
       console.error("Erreur chargement transport", e);
-      setTransportOptions([{ id: 1, nom: "Transport scolaire", prix: 80000, selected: false }]);
+      setTransportOptions([]);
+    } finally {
+      setLoadingTransport(false);
     }
   };
 
-  const fetchCantineOptions = async () => {
-    try {
-      const res = await fetch("/api/public/cantine");
-      const data = await res.json();
+    const fetchCantineOptions = async () => {
+  try {
+    setLoadingCantine(true);
+    const res = await fetch("/api/public/cantine");
+    const data = await res.json();
+    
+    if (Array.isArray(data) && data.length > 0) {
       const items = data.map((item: any) => ({
         id: item.id,
-        nom: item.nom || "Cantine scolaire",
-        prix: item.prix || 50000,
+        nom: item.plat || "Menu du jour",
+        prix: Number(item.prix) || 0,        // Prix journalier
+        prix_annuel: Number(item.prix_annuel) || 0, // ⭐ Prix annuel
         selected: false,
+        date: item.date,
+        plat: item.plat,
+        accompagnement: item.accompagnement,
+        dessert: item.dessert,
+        regime_special: item.regime_special || false
       }));
-      setCantineOptions(items.length > 0 ? items : [{ id: 1, nom: "Cantine scolaire", prix: 50000, selected: false }]);
-    } catch (e) {
-      console.error("Erreur chargement cantine", e);
-      setCantineOptions([{ id: 1, nom: "Cantine scolaire", prix: 50000, selected: false }]);
+      setCantineOptions(items);
+    } else {
+      setCantineOptions([]);
     }
-  };
+  } catch (e) {
+    console.error("Erreur chargement cantine", e);
+    setCantineOptions([]);
+  } finally {
+    setLoadingCantine(false);
+  }
+};
 
   // Pré-remplir les informations du parent si connecté
   useEffect(() => {
@@ -323,13 +379,14 @@ export default function RegisterForm() {
     setTotalTransport(total);
   };
 
-  const toggleCantine = (index: number) => {
-    const newOptions = [...cantineOptions];
-    newOptions[index].selected = !newOptions[index].selected;
-    setCantineOptions(newOptions);
-    const total = newOptions.filter(o => o.selected).reduce((sum, o) => sum + o.prix, 0);
-    setTotalCantine(total);
-  };
+ const toggleCantine = (index: number) => {
+  const newOptions = [...cantineOptions];
+  newOptions[index].selected = !newOptions[index].selected;
+  setCantineOptions(newOptions);
+  // ⭐ Utiliser prix_annuel au lieu de prix
+  const total = newOptions.filter(o => o.selected).reduce((sum, o) => sum + (o.prix_annuel || 0), 0);
+  setTotalCantine(total);
+};
 
   const uploadFile = async (file: File, enfantId: string, type: string): Promise<string | null> => {
     const formData = new FormData();
@@ -758,8 +815,8 @@ export default function RegisterForm() {
               <>
                 <p className="text-gray-900">Créez un mot de passe pour accéder à la plateforme</p>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3"><p className="text-xs font-semibold text-blue-700 mb-1">👨 Père</p><p className="text-sm text-gray-800 font-medium">{pereInfo.prenom} {pereInfo.nom}</p><p className="text-xs text-gray-500">{pereInfo.phone}</p>{pereInfo.profession && <p className="text-xs text-gray-500">{pereInfo.profession}</p>}</div>
-                  {(mereInfo.nom || mereInfo.prenom) && (<div className="bg-pink-50 border border-pink-200 rounded-lg p-3"><p className="text-xs font-semibold text-pink-700 mb-1">👩 Mère</p><p className="text-sm text-gray-800 font-medium">{mereInfo.prenom} {mereInfo.nom}</p><p className="text-xs text-gray-500">{mereInfo.phone}</p>{mereInfo.profession && <p className="text-xs text-gray-500">{mereInfo.profession}</p>}</div>)}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3"><p className="text-xs font-semibold text-blue-700 mb-1">Père</p><p className="text-sm text-gray-800 font-medium">{pereInfo.prenom} {pereInfo.nom}</p><p className="text-xs text-gray-500">{pereInfo.phone}</p>{pereInfo.profession && <p className="text-xs text-gray-500">{pereInfo.profession}</p>}</div>
+                  {(mereInfo.nom || mereInfo.prenom) && (<div className="bg-pink-50 border border-pink-200 rounded-lg p-3"><p className="text-xs font-semibold text-pink-700 mb-1">Mère</p><p className="text-sm text-gray-800 font-medium">{mereInfo.prenom} {mereInfo.nom}</p><p className="text-xs text-gray-500">{mereInfo.phone}</p>{mereInfo.profession && <p className="text-xs text-gray-500">{mereInfo.profession}</p>}</div>)}
                 </div>
                 <p className="text-sm text-gray-500">📧 Email commun : <strong>{compteInfo.email}</strong></p>
                 <div><label className="block text-gray-900 mb-2">Mot de passe *</label><input type={showPassword ? "text" : "password"} name="password" value={compteInfo.password} onChange={handleCompteChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Minimum 6 caractères" required /></div>
@@ -844,8 +901,8 @@ export default function RegisterForm() {
                         <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                           <div className="flex-1">
                             <p className="font-medium text-gray-800">{item.nom}</p>
-                            <p className="text-sm text-gray-500">{item.prix_unitaire.toLocaleString()} GNF</p>
-                            <p className="text-xs text-gray-400">Stock: {item.quantite_stock}</p>
+                            <p className="text-sm text-gray-800">{item.prix_unitaire.toLocaleString()} GNF</p>
+                            <p className="text-xs text-gray-600">Stock: {item.quantite_stock}</p>
                           </div>
                           <div className="flex items-center gap-3">
                             <button
@@ -855,7 +912,7 @@ export default function RegisterForm() {
                                 e.stopPropagation();
                                 handleSupplyChange(idx, -1);
                               }}
-                              className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-700"
                               disabled={item.selectedQty === 0}
                             >
                               <Minus className="w-4 h-4" />
@@ -868,7 +925,7 @@ export default function RegisterForm() {
                                 e.stopPropagation();
                                 handleSupplyChange(idx, 1);
                               }}
-                              className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-700"
                               disabled={item.selectedQty >= item.quantite_stock}
                             >
                               <Plus className="w-4 h-4" />
@@ -895,130 +952,188 @@ export default function RegisterForm() {
 
             {/* Transport scolaire */}
             <div className="border border-green-200 rounded-xl p-5 bg-green-50/30">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <Bus className="w-5 h-5 text-green-600" />
-                  <h3 className="text-lg font-semibold text-green-900">Transport scolaire</h3>
-                  {!skipTransport && totalTransport > 0 && (
-                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-semibold">
-                      {totalTransport.toLocaleString()} GNF
-                    </span>
+  <div className="flex justify-between items-center mb-4">
+    <div className="flex items-center gap-2">
+      <Bus className="w-5 h-5 text-green-600" />
+      <h3 className="text-lg font-semibold text-green-900">Transport scolaire</h3>
+      {!skipTransport && totalTransport > 0 && (
+        <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-semibold">
+          {totalTransport.toLocaleString()} GNF
+        </span>
+      )}
+    </div>
+    <button
+      type="button"
+      onClick={() => {
+        if (skipTransport) {
+          setSkipTransport(false);
+          if (transportOptions.length === 0) fetchTransportOptions();
+        } else {
+          setTransportOptions(transportOptions.map(t => ({ ...t, selected: false })));
+          setTotalTransport(0);
+          setSkipTransport(true);
+        }
+      }}
+      className={`text-sm font-medium transition ${skipTransport ? "text-green-600 hover:text-green-800" : "text-red-600 hover:text-red-800"}`}
+    >
+      {skipTransport ? "Ajouter le transport" : "Ignorer le transport"}
+    </button>
+  </div>
+
+  {!skipTransport ? (
+    <>
+      {loadingTransport ? (
+        <div className="flex justify-center items-center py-4">
+          <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+          <span className="ml-2 text-gray-600">Chargement des options de transport...</span>
+        </div>
+      ) : transportOptions.length === 0 ? (
+        <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+          <p>Aucune option de transport disponible pour le moment.</p>
+          <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
+        </div>
+      ) : (
+        <>
+          <p className="text-sm text-gray-600 mb-4">Sélectionnez le transport pour vos enfants</p>
+          <div className="space-y-3 max-h-60 overflow-y-auto">
+            {transportOptions.map((item, idx) => (
+              <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
+                <div>
+                  <p className="font-medium text-gray-800">{item.nom}</p>
+                  {item.prix > 0 ? (
+                    <p className="text-sm text-gray-500">{item.prix.toLocaleString()} GNF</p>
+                  ) : (
+                    <p className="text-sm text-gray-400">Prix non défini</p>
                   )}
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (skipTransport) {
-                      setSkipTransport(false);
-                    } else {
-                      setTransportOptions(transportOptions.map(t => ({ ...t, selected: false })));
-                      setTotalTransport(0);
-                      setSkipTransport(true);
-                    }
-                  }}
-                  className={`text-sm font-medium transition ${skipTransport ? "text-green-600 hover:text-green-800" : "text-red-600 hover:text-red-800"}`}
+                  onClick={() => toggleTransport(idx)}
+                  disabled={item.prix <= 0}
+                  className={`px-4 py-2 rounded-lg transition ${
+                    item.selected 
+                      ? "bg-green-600 text-white hover:bg-green-700" 
+                      : item.prix > 0 
+                        ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
                 >
-                  {skipTransport ? "Ajouter le transport" : "Ignorer le transport"}
+                  {item.selected ? "✓ Sélectionné" : item.prix > 0 ? "Ajouter" : "Indisponible"}
                 </button>
               </div>
-
-              {!skipTransport ? (
-                <>
-                  <p className="text-sm text-gray-600 mb-4">Sélectionnez le transport pour vos enfants</p>
-                  <div className="space-y-3">
-                    {transportOptions.map((item, idx) => (
-                      <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border">
-                        <div>
-                          <p className="font-medium text-gray-800">{item.nom}</p>
-                          <p className="text-sm text-gray-500">{item.prix.toLocaleString()} GNF</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => toggleTransport(idx)}
-                          className={`px-4 py-2 rounded-lg transition ${item.selected ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-200 text-gray-600 hover:bg-gray-300"}`}
-                        >
-                          {item.selected ? "✓ Sélectionné" : "Ajouter"}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  {transportOptions.filter(t => t.selected).length > 0 && (
-                    <div className="mt-4 text-right font-semibold text-green-700">
-                      Total transport : {totalTransport.toLocaleString()} GNF
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-                  <p>Vous avez choisi de ne pas utiliser le transport scolaire.</p>
-                  <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
-                </div>
-              )}
+            ))}
+          </div>
+          {transportOptions.filter(t => t.selected).length > 0 && (
+            <div className="mt-4 text-right font-semibold text-green-700">
+              Total transport : {totalTransport.toLocaleString()} GNF
             </div>
+          )}
+        </>
+      )}
+    </>
+  ) : (
+    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+      <p>Vous avez choisi de ne pas utiliser le transport scolaire.</p>
+      <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
+    </div>
+  )}
+</div>
 
             {/* Cantine scolaire */}
-            <div className="border border-orange-200 rounded-xl p-5 bg-orange-50/30">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <Utensils className="w-5 h-5 text-orange-600" />
-                  <h3 className="text-lg font-semibold text-orange-900">Cantine scolaire</h3>
-                  {!skipCantine && totalCantine > 0 && (
-                    <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs font-semibold">
-                      {totalCantine.toLocaleString()} GNF
-                    </span>
+          <div className="border border-orange-200 rounded-xl p-5 bg-orange-50/30">
+  <div className="flex justify-between items-center mb-4">
+    <div className="flex items-center gap-2">
+      <Utensils className="w-5 h-5 text-orange-600" />
+      <h3 className="text-lg font-semibold text-orange-900">Cantine scolaire</h3>
+      {!skipCantine && totalCantine > 0 && (
+        <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs font-semibold">
+          {totalCantine.toLocaleString()} GNF
+        </span>
+      )}
+    </div>
+    <button
+      type="button"
+      onClick={() => {
+        if (skipCantine) {
+          setSkipCantine(false);
+          if (cantineOptions.length === 0) fetchCantineOptions();
+        } else {
+          setCantineOptions(cantineOptions.map(c => ({ ...c, selected: false })));
+          setTotalCantine(0);
+          setSkipCantine(true);
+        }
+      }}
+      className={`text-sm font-medium transition ${skipCantine ? "text-orange-600 hover:text-orange-800" : "text-red-600 hover:text-red-800"}`}
+    >
+      {skipCantine ? "Ajouter la cantine" : "Ignorer la cantine"}
+    </button>
+  </div>
+
+  {!skipCantine ? (
+    <>
+      {loadingCantine ? (
+        <div className="flex justify-center items-center py-4">
+          <Loader2 className="w-6 h-6 animate-spin text-orange-600" />
+          <span className="ml-2 text-gray-600">Chargement des menus...</span>
+        </div>
+      ) : cantineOptions.length === 0 ? (
+        <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+          <p>Aucun menu disponible pour le moment.</p>
+          <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
+        </div>
+      ) : (
+        <>
+          <p className="text-sm text-gray-600 mb-4">Sélectionnez la cantine pour vos enfants</p>
+          <div className="space-y-3 max-h-60 overflow-y-auto">
+            {cantineOptions.map((item, idx) => (
+              <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
+                <div className="flex-1">
+                  <p className="font-medium text-gray-800">{item.nom}</p>
+                  {/* Afficher le prix annuel */}
+                  {item.prix_annuel > 0 ? (
+                    <p className="text-sm text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
+                  ) : (
+                    <p className="text-sm text-gray-400">Prix non défini</p>
+                  )}
+                  {item.plat && (
+                    <p className="text-xs text-gray-500">🍽️ {item.plat}</p>
+                  )}
+                  {item.accompagnement && (
+                    <p className="text-xs text-gray-400">+ {item.accompagnement}</p>
                   )}
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (skipCantine) {
-                      setSkipCantine(false);
-                    } else {
-                      setCantineOptions(cantineOptions.map(c => ({ ...c, selected: false })));
-                      setTotalCantine(0);
-                      setSkipCantine(true);
-                    }
-                  }}
-                  className={`text-sm font-medium transition ${skipCantine ? "text-orange-600 hover:text-orange-800" : "text-red-600 hover:text-red-800"}`}
+                  onClick={() => toggleCantine(idx)}
+                  disabled={item.prix_annuel <= 0}
+                  className={`px-4 py-2 rounded-lg transition ${
+                    item.selected 
+                      ? "bg-orange-600 text-white hover:bg-orange-700" 
+                      : item.prix_annuel > 0
+                        ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
                 >
-                  {skipCantine ? "Ajouter la cantine" : "Ignorer la cantine"}
+                  {item.selected ? "✓ Sélectionné" : item.prix_annuel > 0 ? "Ajouter" : "Indisponible"}
                 </button>
               </div>
-
-              {!skipCantine ? (
-                <>
-                  <p className="text-sm text-gray-600 mb-4">Sélectionnez la cantine pour vos enfants</p>
-                  <div className="space-y-3">
-                    {cantineOptions.map((item, idx) => (
-                      <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border">
-                        <div>
-                          <p className="font-medium text-gray-800">{item.nom}</p>
-                          <p className="text-sm text-gray-500">{item.prix.toLocaleString()} GNF</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => toggleCantine(idx)}
-                          className={`px-4 py-2 rounded-lg transition ${item.selected ? "bg-orange-600 text-white hover:bg-orange-700" : "bg-gray-200 text-gray-600 hover:bg-gray-300"}`}
-                        >
-                          {item.selected ? "✓ Sélectionné" : "Ajouter"}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  {cantineOptions.filter(c => c.selected).length > 0 && (
-                    <div className="mt-4 text-right font-semibold text-orange-700">
-                      Total cantine : {totalCantine.toLocaleString()} GNF
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-                  <p>Vous avez choisi de ne pas utiliser la cantine scolaire.</p>
-                  <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
-                </div>
-              )}
+            ))}
+          </div>
+          {cantineOptions.filter(c => c.selected).length > 0 && (
+            <div className="mt-4 text-right font-semibold text-orange-700">
+              Total cantine (annuel) : {totalCantine.toLocaleString()} GNF
             </div>
-
+          )}
+        </>
+      )}
+    </>
+  ) : (
+    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+      <p>Vous avez choisi de ne pas utiliser la cantine scolaire.</p>
+      <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
+    </div>
+  )}
+</div>
             {/* Récapitulatif des services */}
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <h4 className="font-semibold text-blue-800 mb-3">📊 Récapitulatif des coûts</h4>

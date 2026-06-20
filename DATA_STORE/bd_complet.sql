@@ -1,10 +1,10 @@
 -- ============================================
 -- BASE DE DONNÉES : ECOLE_FUTUR_GESTION (SUPABASE)
--- Généré automatiquement en analysant les routes API du projet
+-- Structure complète extraite du dump
 -- ============================================
 
 -- ============================================
--- 1. TABLE utilisateurs
+-- 1. TABLE utilisateurs (version dump avec colonnes supplémentaires)
 -- ============================================
 CREATE TABLE IF NOT EXISTS utilisateurs (
     id SERIAL PRIMARY KEY,
@@ -16,18 +16,10 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
     adresse TEXT,
     photo_url TEXT,
     role VARCHAR(50) NOT NULL CHECK (role IN (
-        'SUPER_ADMIN',
-        'DIRECTEUR_GENERAL',
-        'DIRECTEUR_ETUDES',
-        'COMPTABLE',
-        'SURVEILLANT_GENERAL',
-        'ADMIN_CANTINE',
-        'ADMIN_TRANSPORT',
-        'ADMIN_BIBLIOTHEQUE',
-        'ENSEIGNANT',
-        'PARENT',
-        'ELEVE',
-        'ADMIN_LIBRAIRIE'
+        'SUPER_ADMIN', 'DIRECTEUR_GENERAL', 'DIRECTEUR_ETUDES',
+        'COMPTABLE', 'SURVEILLANT_GENERAL', 'ADMIN_CANTINE',
+        'ADMIN_TRANSPORT', 'ADMIN_BIBLIOTHEQUE', 'ENSEIGNANT',
+        'PARENT', 'ELEVE', 'ADMIN_LIBRAIRIE'
     )),
     est_actif BOOLEAN DEFAULT true,
     derniere_connexion TIMESTAMP,
@@ -37,7 +29,6 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
 
 -- ============================================
 -- 2. TABLE annees_scolaires
--- (doit être créée avant classes)
 -- ============================================
 CREATE TABLE IF NOT EXISTS annees_scolaires (
     id SERIAL PRIMARY KEY,
@@ -49,7 +40,7 @@ CREATE TABLE IF NOT EXISTS annees_scolaires (
 );
 
 -- ============================================
--- 3. TABLE personnels
+-- 3. TABLE personnels (version dump)
 -- ============================================
 CREATE TABLE IF NOT EXISTS personnels (
     id SERIAL PRIMARY KEY,
@@ -66,8 +57,7 @@ CREATE TABLE IF NOT EXISTS personnels (
 );
 
 -- ============================================
--- 4. TABLE classes
--- (doit être créée avant eleves et enseignements)
+-- 4. TABLE classes (version dump avec colonnes supplémentaires)
 -- ============================================
 CREATE TABLE IF NOT EXISTS classes (
     id SERIAL PRIMARY KEY,
@@ -83,7 +73,7 @@ CREATE TABLE IF NOT EXISTS classes (
 );
 
 -- ============================================
--- 5. TABLE eleves
+-- 5. TABLE eleves (version dump avec colonnes supplémentaires)
 -- ============================================
 CREATE TABLE IF NOT EXISTS eleves (
     id SERIAL PRIMARY KEY,
@@ -101,7 +91,7 @@ CREATE TABLE IF NOT EXISTS eleves (
 );
 
 -- ============================================
--- 6. TABLE parents
+-- 6. TABLE parents (version dump avec colonnes supplémentaires)
 -- ============================================
 CREATE TABLE IF NOT EXISTS parents (
     id SERIAL PRIMARY KEY,
@@ -131,7 +121,7 @@ CREATE TABLE IF NOT EXISTS matieres (
 );
 
 -- ============================================
--- 9. TABLE enseignements
+-- 9. TABLE enseignements (version dump avec colonnes supplémentaires)
 -- ============================================
 CREATE TABLE IF NOT EXISTS enseignements (
     id SERIAL PRIMARY KEY,
@@ -145,7 +135,7 @@ CREATE TABLE IF NOT EXISTS enseignements (
 );
 
 -- ============================================
--- 10. TABLE lecons
+-- 10. TABLE lecons (version dump avec colonnes supplémentaires)
 -- ============================================
 CREATE TABLE IF NOT EXISTS lecons (
     id SERIAL PRIMARY KEY,
@@ -159,7 +149,7 @@ CREATE TABLE IF NOT EXISTS lecons (
 );
 
 -- ============================================
--- 11. TABLE devoirs
+-- 11. TABLE devoirs (version dump avec colonnes supplémentaires)
 -- ============================================
 CREATE TABLE IF NOT EXISTS devoirs (
     id SERIAL PRIMARY KEY,
@@ -232,7 +222,7 @@ CREATE TABLE IF NOT EXISTS reponses_eleves_qcm (
 );
 
 -- ============================================
--- 17. TABLE notes
+-- 17. TABLE notes (version dump)
 -- ============================================
 CREATE TABLE IF NOT EXISTS notes (
     id SERIAL PRIMARY KEY,
@@ -261,7 +251,7 @@ CREATE TABLE IF NOT EXISTS presences (
 );
 
 -- ============================================
--- 19. TABLE paiements
+-- 19. TABLE paiements (version dump)
 -- ============================================
 CREATE TABLE IF NOT EXISTS paiements (
     id SERIAL PRIMARY KEY,
@@ -274,13 +264,12 @@ CREATE TABLE IF NOT EXISTS paiements (
     reference_transaction VARCHAR(100),
     statut VARCHAR(20) DEFAULT 'valide' CHECK (statut IN ('valide', 'paye', 'en_attente', 'annule')),
     date_paiement DATE DEFAULT CURRENT_DATE,
-    reçu_url TEXT,
+    "reçu_url" TEXT,
     saisie_par INTEGER REFERENCES utilisateurs(id)
 );
 
 -- ============================================
 -- 20. TABLE frais_scolaires
--- (colonnes étendues selon routes API)
 -- ============================================
 CREATE TABLE IF NOT EXISTS frais_scolaires (
     id SERIAL PRIMARY KEY,
@@ -295,7 +284,7 @@ CREATE TABLE IF NOT EXISTS frais_scolaires (
 );
 
 -- ============================================
--- 21. TABLE cantine_menus (ancien modèle - vue admin)
+-- 21. TABLE cantine_menus
 -- ============================================
 CREATE TABLE IF NOT EXISTS cantine_menus (
     id SERIAL PRIMARY KEY,
@@ -307,7 +296,7 @@ CREATE TABLE IF NOT EXISTS cantine_menus (
 );
 
 -- ============================================
--- 22. TABLE menus_cantine (nouveau modèle - vue parent)
+-- 22. TABLE menus_cantine
 -- ============================================
 CREATE TABLE IF NOT EXISTS menus_cantine (
     id SERIAL PRIMARY KEY,
@@ -322,7 +311,7 @@ CREATE TABLE IF NOT EXISTS menus_cantine (
 );
 
 -- ============================================
--- 23. TABLE reserves_cantine (ancien modèle)
+-- 23. TABLE reserves_cantine
 -- ============================================
 CREATE TABLE IF NOT EXISTS reserves_cantine (
     id SERIAL PRIMARY KEY,
@@ -333,7 +322,7 @@ CREATE TABLE IF NOT EXISTS reserves_cantine (
 );
 
 -- ============================================
--- 24. TABLE inscriptions_cantine (nouveau modèle)
+-- 24. TABLE inscriptions_cantine
 -- ============================================
 CREATE TABLE IF NOT EXISTS inscriptions_cantine (
     id SERIAL PRIMARY KEY,
@@ -346,7 +335,7 @@ CREATE TABLE IF NOT EXISTS inscriptions_cantine (
 );
 
 -- ============================================
--- 25. TABLE reservations_cantine (nouveau modèle)
+-- 25. TABLE reservations_cantine
 -- ============================================
 CREATE TABLE IF NOT EXISTS reservations_cantine (
     id SERIAL PRIMARY KEY,
@@ -406,7 +395,6 @@ CREATE TABLE IF NOT EXISTS inscriptions_transport (
 
 -- ============================================
 -- 30. TABLE livres_bibliotheque
--- (colonnes étendues selon routes API)
 -- ============================================
 CREATE TABLE IF NOT EXISTS livres_bibliotheque (
     id SERIAL PRIMARY KEY,
@@ -475,7 +463,6 @@ CREATE TABLE IF NOT EXISTS messages (
 
 -- ============================================
 -- 35. TABLE annonces
--- (colonnes étendues selon routes API)
 -- ============================================
 CREATE TABLE IF NOT EXISTS annonces (
     id SERIAL PRIMARY KEY,
@@ -532,8 +519,7 @@ CREATE TABLE IF NOT EXISTS paiements_salaires (
 );
 
 -- ============================================
--- 39. TABLE preinscriptions
--- (colonnes étendues selon routes API)
+-- 39. TABLE preinscriptions (version dump complète)
 -- ============================================
 CREATE TABLE IF NOT EXISTS preinscriptions (
     id SERIAL PRIMARY KEY,
@@ -552,12 +538,12 @@ CREATE TABLE IF NOT EXISTS preinscriptions (
     numero_dossier VARCHAR(50) UNIQUE,
     date_preinscription TIMESTAMP DEFAULT NOW(),
     observations TEXT,
+    traite_par INTEGER REFERENCES utilisateurs(id),  -- ⭐ COLONNE SUPPRÉMENTAIRE DU DUMP
+    date_traitement TIMESTAMP,                       -- ⭐ COLONNE SUPPRÉMENTAIRE DU DUMP
     frais_montant INTEGER DEFAULT 0,
     frais_statut VARCHAR(20) DEFAULT 'non_paye' CHECK (frais_statut IN ('non_paye', 'paye')),
     frais_mode_paiement VARCHAR(50),
-    frais_reference VARCHAR(100),
-    traite_par INTEGER REFERENCES utilisateurs(id),
-    date_traitement TIMESTAMP
+    frais_reference VARCHAR(100)
 );
 
 -- ============================================
@@ -577,17 +563,16 @@ CREATE TABLE IF NOT EXISTS inscriptions (
 );
 
 -- ============================================
--- 41. TABLE reinscriptions
--- (colonnes étendues selon routes API admin)
+-- 41. TABLE reinscriptions (version dump)
 -- ============================================
-CREATE TABLE IF EXISTS public.reinscriptions (
+CREATE TABLE IF NOT EXISTS public.reinscriptions (
     id SERIAL PRIMARY KEY,
     inscription_id INTEGER REFERENCES inscriptions(id) ON DELETE CASCADE,
     eleve_id INTEGER REFERENCES eleves(id) ON DELETE CASCADE,
     parent_id INTEGER REFERENCES parents(id) ON DELETE CASCADE,
     annee_scolaire_id INTEGER REFERENCES annees_scolaires(id),
     classe_id INTEGER REFERENCES classes(id),
-    montant_frais INTEGER, 
+    montant_frais INTEGER DEFAULT 500000,
     frais_statut VARCHAR(50) DEFAULT 'non_paye' CHECK (frais_statut IN ('non_paye', 'paye')),
     frais_mode_paiement VARCHAR(50),
     frais_reference VARCHAR(100),
@@ -600,30 +585,29 @@ CREATE TABLE IF EXISTS public.reinscriptions (
     acte_naissance_url TEXT,
     photo_url TEXT,
     bulletin_url TEXT,
-    date_traitement TIMESTAMP,
-    -- Colonnes de copie (pour éviter les JOIN)
-    numero_dossier VARCHAR(50) UNIQUE,
-    enfant_nom VARCHAR(100),
-    enfant_prenom VARCHAR(100),
-    date_naissance DATE,
-    lieu_naissance VARCHAR(200),
-    sexe VARCHAR(10),
-    niveau VARCHAR(50),
-    classe_nom VARCHAR(50),
-    parent_nom VARCHAR(100),
-    parent_prenom VARCHAR(100),
-    parent_email VARCHAR(100),
-    parent_telephone VARCHAR(20)
+    date_traitement TIMESTAMP
 );
 
+-- Ajouter les colonnes manquantes à la table reinscriptions
+ALTER TABLE public.reinscriptions 
+ADD COLUMN IF NOT EXISTS numero_dossier VARCHAR(50) UNIQUE,
+ADD COLUMN IF NOT EXISTS enfant_nom VARCHAR(100),
+ADD COLUMN IF NOT EXISTS enfant_prenom VARCHAR(100),
+ADD COLUMN IF NOT EXISTS date_naissance DATE,
+ADD COLUMN IF NOT EXISTS lieu_naissance VARCHAR(200),
+ADD COLUMN IF NOT EXISTS sexe VARCHAR(10),
+ADD COLUMN IF NOT EXISTS niveau VARCHAR(50),
+ADD COLUMN IF NOT EXISTS classe_nom VARCHAR(50),
+ADD COLUMN IF NOT EXISTS parent_nom VARCHAR(100),
+ADD COLUMN IF NOT EXISTS parent_prenom VARCHAR(100),
+ADD COLUMN IF NOT EXISTS parent_email VARCHAR(100),
+ADD COLUMN IF NOT EXISTS parent_telephone VARCHAR(20);
 -- ============================================
--- INDEX
+-- INDEX (versions du dump)
 -- ============================================
 
-CREATE INDEX IF NOT EXISTS idx_utilisateurs_email ON utilisateurs(email);
-CREATE INDEX IF NOT EXISTS idx_utilisateurs_role ON utilisateurs(role);
-CREATE INDEX IF NOT EXISTS idx_eleves_matricule ON eleves(matricule);
 CREATE INDEX IF NOT EXISTS idx_eleves_classe ON eleves(classe_id);
+CREATE INDEX IF NOT EXISTS idx_eleves_matricule ON eleves(matricule);
 CREATE INDEX IF NOT EXISTS idx_presences_date ON presences(date);
 CREATE INDEX IF NOT EXISTS idx_paiements_eleve ON paiements(eleve_id);
 CREATE INDEX IF NOT EXISTS idx_paiements_date ON paiements(date_paiement);
@@ -640,17 +624,7 @@ CREATE INDEX IF NOT EXISTS idx_inscriptions_eleve ON inscriptions(eleve_id);
 CREATE INDEX IF NOT EXISTS idx_inscriptions_parent ON inscriptions(parent_id);
 CREATE INDEX IF NOT EXISTS idx_reinscriptions_eleve ON reinscriptions(eleve_id);
 CREATE INDEX IF NOT EXISTS idx_reinscriptions_annee ON reinscriptions(annee_scolaire_id);
-CREATE INDEX IF NOT EXISTS idx_emprunts_eleve ON emprunts_bibliotheque(eleve_id);
-CREATE INDEX IF NOT EXISTS idx_emprunts_livre ON emprunts_bibliotheque(livre_id);
-CREATE INDEX IF NOT EXISTS idx_ventes_article ON ventes_librairie(article_id);
-CREATE INDEX IF NOT EXISTS idx_paiements_salaires_personnel ON paiements_salaires(personnel_id);
-CREATE INDEX IF NOT EXISTS idx_reservations_cantine_eleve ON reservations_cantine(eleve_id);
-CREATE INDEX IF NOT EXISTS idx_reservations_cantine_date ON reservations_cantine(date);
-CREATE INDEX IF NOT EXISTS idx_transactions_cantine_eleve ON transactions_cantine(eleve_id);
-CREATE INDEX idx_reinscriptions_eleve ON reinscriptions(eleve_id);
-CREATE INDEX idx_reinscriptions_annee ON reinscriptions(annee_scolaire_id);
-CREATE INDEX idx_reinscriptions_statut ON reinscriptions(statut);
-CREATE INDEX idx_reinscriptions_numero_dossier ON reinscriptions(numero_dossier);
+CREATE INDEX IF NOT EXISTS idx_reinscriptions_statut ON reinscriptions(statut);
 
 -- ============================================
 -- INITIALISATION ANNÉE SCOLAIRE
@@ -661,19 +635,14 @@ SELECT '2025-2026', '2025-10-01', '2026-06-30', true
 WHERE NOT EXISTS (SELECT 1 FROM annees_scolaires WHERE libelle = '2025-2026');
 
 -- ============================================
--- CRÉATION ADMIN
+-- CRÉATION DES COMPTES TESTS
 -- ============================================
 
--- Mot de passe hashé pour 'admin123'
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
 SELECT 'admin@eief.com', 
        '$2b$10$Cl.LbpccIdc1.rBfxmuvGuhrvsgOasr/kus9dyvifHCojG8ZiPR72',
        'Super', 'Admin', 'SUPER_ADMIN', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'admin@eief.com');
-
--- ============================================
--- CRÉATION PARENT TEST
--- ============================================
 
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
 SELECT 'parent@eief.com', 
@@ -681,29 +650,17 @@ SELECT 'parent@eief.com',
        'Jean', 'Parent', 'PARENT', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'parent@eief.com');
 
--- ============================================
--- CRÉATION ÉLÈVE TEST
--- ============================================
-
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
 SELECT 'eleve@eief.com', 
        '$2b$10$Cl.LbpccIdc1.rBfxmuvGuhrvsgOasr/kus9dyvifHCojG8ZiPR72',
        'Marie', 'Eleve', 'ELEVE', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'eleve@eief.com');
 
--- ============================================
--- CRÉATION ENSEIGNANT TEST
--- ============================================
-
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
 SELECT 'professeur@eief.com', 
        '$2b$10$Cl.LbpccIdc1.rBfxmuvGuhrvsgOasr/kus9dyvifHCojG8ZiPR72',
        'Pierre', 'Enseignant', 'ENSEIGNANT', true
-WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'professeur@eief.com');;
-
--- ============================================
--- CRÉATION COMPTABLE TEST
--- ============================================
+WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'professeur@eief.com');
 
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
 SELECT 'comptable@eief.com', 
@@ -711,21 +668,11 @@ SELECT 'comptable@eief.com',
        'Claire', 'Comptable', 'COMPTABLE', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'comptable@eief.com');
 
--- ============================================
--- CRÉATION DIRECTEUR TEST
--- ============================================
-
 INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
 SELECT 'directeur@eief.com', 
        '$2b$10$Cl.LbpccIdc1.rBfxmuvGuhrvsgOasr/kus9dyvifHCojG8ZiPR72',
        'Paul', 'Directeur', 'DIRECTEUR_GENERAL', true
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'directeur@eief.com');
-
--- ============================================
--- AFFICHAGE DES UTILISATEURS CRÉÉS
--- ============================================
-
-SELECT id, email, nom, prenom, role FROM utilisateurs;
 
 -- ============================================
 -- FIN DU SCRIPT

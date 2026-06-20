@@ -1,3 +1,4 @@
+// app/api/admin/cantine/route.ts
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -11,10 +12,17 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    // 1. Menus de la semaine/mois
+    // 1. Menus de la semaine/mois avec le prix et prix_annuel
     const menusResult = await query(`
       SELECT 
-        m.id, m.date, m.plat, m.accompagnement, m.dessert, m.regime_special,
+        m.id, 
+        m.date, 
+        m.plat, 
+        m.accompagnement, 
+        m.dessert, 
+        m.regime_special,
+        COALESCE(m.prix, 5000) as prix,
+        COALESCE(m.prix_annuel, 0) as prix_annuel,
         (SELECT COUNT(*) FROM reserves_cantine r WHERE r.date = m.date) as inscrits,
         (SELECT COUNT(*) FROM reserves_cantine r WHERE r.date = m.date AND r.est_present = true) as presents
       FROM cantine_menus m
@@ -22,17 +30,15 @@ export async function GET() {
       LIMIT 30
     `);
 
-    // Prix fictif par défaut car le prix n'est pas dans la table cantine_menus
-    const prixMenuDefaut = 5000;
-
     const menus = menusResult.rows.map(r => ({
       id: r.id,
       date: r.date ? new Date(r.date).toISOString().split('T')[0] : "",
       plat: r.plat || "-",
       accompagnement: r.accompagnement || "-",
       dessert: r.dessert || "-",
-      regime_special: r.regime_special,
-      prix: prixMenuDefaut,
+      regime_special: r.regime_special || false,
+      prix: Number(r.prix) || 5000,
+      prix_annuel: Number(r.prix_annuel) || 0,
       inscrits: parseInt(r.inscrits || 0),
       presents: parseInt(r.presents || 0)
     }));
@@ -90,13 +96,21 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { date, plat, accompagnement, dessert, regime_special } = body;
+    const { date, plat, accompagnement, dessert, regime_special, prix, prix_annuel } = body;
 
     const result = await query(`
-      INSERT INTO cantine_menus (date, plat, accompagnement, dessert, regime_special)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO cantine_menus (date, plat, accompagnement, dessert, regime_special, prix, prix_annuel)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
-    `, [date, plat, accompagnement, dessert, regime_special || false]);
+    `, [
+      date, 
+      plat, 
+      accompagnement, 
+      dessert, 
+      regime_special || false,
+      prix || 5000,
+      prix_annuel || 0
+    ]);
 
     return NextResponse.json({ success: true, menu: result.rows[0] });
   } catch (error) {
@@ -114,13 +128,28 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { id, date, plat, accompagnement, dessert, regime_special } = body;
+    const { id, date, plat, accompagnement, dessert, regime_special, prix, prix_annuel } = body;
 
     await query(`
       UPDATE cantine_menus 
-      SET date = $1, plat = $2, accompagnement = $3, dessert = $4, regime_special = $5
-      WHERE id = $6
-    `, [date, plat, accompagnement, dessert, regime_special || false, id]);
+      SET date = $1, 
+          plat = $2, 
+          accompagnement = $3, 
+          dessert = $4, 
+          regime_special = $5,
+          prix = $6,
+          prix_annuel = $7
+      WHERE id = $8
+    `, [
+      date, 
+      plat, 
+      accompagnement, 
+      dessert, 
+      regime_special || false,
+      prix || 5000,
+      prix_annuel || 0,
+      id
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

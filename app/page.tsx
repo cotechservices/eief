@@ -494,19 +494,19 @@ export default function HomePage() {
             </div>
             <p className="text-gray-900 italic mb-4">"Une école moderne avec des infrastructures de qualité. Ma fille adore ses cours de robotique !"</p>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div>
+              <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg"></div>
               <div><p className="font-semibold text-gray-900 text-sm">Mme Diallo</p><p className="text-xs text-gray-900">Parent d'élève</p></div>
             </div>
           </div>
           <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition">
             <div className="flex items-center gap-1 mb-4">{[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}</div>
             <p className="text-gray-900 italic mb-4">"La plateforme en ligne est un vrai plus. Je peux suivre les notes et les devoirs de mon fils partout."</p>
-            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👨</div><div><p className="font-semibold text-gray-900 text-sm">M. Camara</p><p className="text-xs text-gray-900">Parent d'élève</p></div></div>
+            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg"></div><div><p className="font-semibold text-gray-900 text-sm">M. Camara</p><p className="text-xs text-gray-900">Parent d'élève</p></div></div>
           </div>
           <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition">
             <div className="flex items-center gap-1 mb-4">{[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}</div>
             <p className="text-gray-900 italic mb-4">"Les enseignants sont compétents et l'ambiance est excellente. Je recommande vivement."</p>
-            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg">👩</div><div><p className="font-semibold text-gray-900 text-sm">Mme Barry</p><p className="text-xs text-gray-900">Parent d'élève</p></div></div>
+            <div className="flex items-center gap-3"><div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-lg"></div><div><p className="font-semibold text-gray-900 text-sm">Mme Barry</p><p className="text-xs text-gray-900">Parent d'élève</p></div></div>
           </div>
         </div>
       </div>

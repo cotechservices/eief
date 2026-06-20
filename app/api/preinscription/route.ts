@@ -8,9 +8,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { parent, parentId, enfants } = body;
+    const { parent, parentId, enfants, fournitures_commande, montant_fournitures } = body;
 
-    console.log("Données reçues:", { parentEmail: parent?.email, parentId, enfantsCount: enfants?.length });
+    console.log("Données reçues:", { 
+      parentEmail: parent?.email, 
+      parentId, 
+      enfantsCount: enfants?.length,
+      fournituresCount: fournitures_commande?.length || 0,
+      montantFournitures: montant_fournitures || 0
+    });
 
     if (!enfants || enfants.length === 0) {
       return NextResponse.json(
@@ -126,14 +132,26 @@ export async function POST(request: NextRequest) {
       const random = Math.floor(Math.random() * 10000);
       const numeroDossier = `PRE-${annee}-${timestamp.slice(-6)}-${random}`;
 
-      console.log("Insertion enfant:", enfant.prenom, enfant.nom);
+      // Récupérer le montant des frais d'inscription pour la classe
+      let montantFrais = 0;
+      if (enfant.classe) {
+        const classeResult = await query(
+          "SELECT frais_inscription FROM classes WHERE LOWER(nom) = LOWER($1)",
+          [enfant.classe]
+        );
+        if (classeResult.rows.length > 0) {
+          montantFrais = classeResult.rows[0].frais_inscription || 0;
+        }
+      }
+
+      console.log("Insertion enfant:", enfant.prenom, enfant.nom, "Classe:", enfant.classe, "Frais:", montantFrais);
 
       const result = await query(
         `INSERT INTO preinscriptions (
           parent_id, enfant_nom, enfant_prenom, date_naissance, lieu_naissance, 
           sexe, niveau, classe, statut, numero_dossier, date_preinscription,
-          acte_naissance_url, photo_url, bulletin_url
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'en_attente', $9, NOW(), $10, $11, $12)
+          acte_naissance_url, photo_url, bulletin_url, frais_montant
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'en_attente', $9, NOW(), $10, $11, $12, $13)
         RETURNING id, numero_dossier`,
         [
           parentIdToUse,
@@ -148,11 +166,77 @@ export async function POST(request: NextRequest) {
           enfant.acteNaissanceUrl || null,
           enfant.photoUrl || null,
           enfant.bulletinUrl || null,
+          montantFrais
         ]
       );
 
+      const preinscriptionId = result.rows[0].id;
+
+      // ⭐ 4. Enregistrer les fournitures commandées pour cette pré-inscription
+      if (fournitures_commande && fournitures_commande.length > 0) {
+        console.log(`Enregistrement de ${fournitures_commande.length} fournitures pour la pré-inscription ${preinscriptionId}`);
+        for (const fourniture of fournitures_commande) {
+          await query(
+            `INSERT INTO commandes_fournitures (
+              preinscription_id, 
+              article_id, 
+              quantite, 
+              prix_unitaire
+            ) VALUES ($1, $2, $3, $4)`,
+            [
+              preinscriptionId,
+              fourniture.id,
+              fourniture.quantite,
+              fourniture.prix_unitaire
+            ]
+          );
+        }
+        console.log(`✅ ${fournitures_commande.length} fournitures enregistrées avec succès`);
+      }
+
+      // ⭐ 5. Enregistrer le transport sélectionné
+      if (body.transport && body.transport.length > 0) {
+        console.log(`Enregistrement du transport pour la pré-inscription ${preinscriptionId}`);
+        // Le transport sera lié à l'élève après validation de la pré-inscription
+        // On stocke les données dans une table temporaire ou on les passe en paramètre
+        // Pour l'instant, on les enregistre dans une table de liaison préinscription_transport
+        for (const transport of body.transport) {
+          await query(
+            `INSERT INTO preinscription_transport (
+              preinscription_id, 
+              ligne_id, 
+              prix
+            ) VALUES ($1, $2, $3)`,
+            [
+              preinscriptionId,
+              transport.id,
+              transport.prix
+            ]
+          );
+        }
+      }
+
+      // ⭐ 6. Enregistrer la cantine sélectionnée
+      if (body.cantine && body.cantine.length > 0) {
+        console.log(`Enregistrement de la cantine pour la pré-inscription ${preinscriptionId}`);
+        for (const cantine of body.cantine) {
+          await query(
+            `INSERT INTO preinscription_cantine (
+              preinscription_id, 
+              menu_id, 
+              prix
+            ) VALUES ($1, $2, $3)`,
+            [
+              preinscriptionId,
+              cantine.id,
+              cantine.prix
+            ]
+          );
+        }
+      }
+
       preinscriptions.push({
-        id: result.rows[0].id,
+        id: preinscriptionId,
         numeroDossier: result.rows[0].numero_dossier,
         enfant: `${enfant.prenom} ${enfant.nom}`
       });

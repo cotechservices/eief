@@ -1,3 +1,4 @@
+// app/api/admin/transport/route.ts
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -11,11 +12,19 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    // 1. Liste des bus et leurs trajets
+    // 1. Liste des bus et leurs trajets avec prix_abonnement
     const busResult = await query(`
       SELECT 
-        b.id, b.immatriculation, b.chauffeur_nom as chauffeur, b.capacite,
-        l.nom as trajet, l.horaire_matin, l.horaire_soir,
+        b.id, 
+        b.immatriculation, 
+        b.chauffeur_nom as chauffeur, 
+        b.chauffeur_tel,
+        b.capacite,
+        l.id as ligne_id,
+        l.nom as trajet, 
+        l.horaire_matin, 
+        l.horaire_soir,
+        l.prix_abonnement,
         (SELECT COUNT(*) FROM inscriptions_transport i WHERE i.ligne_id = l.id AND i.est_actif = true) as inscrits
       FROM bus b
       LEFT JOIN lignes_transport l ON l.bus_id = b.id
@@ -26,11 +35,13 @@ export async function GET() {
       id: r.id,
       immatriculation: r.immatriculation,
       chauffeur: r.chauffeur || "Non assigné",
+      chauffeur_tel: r.chauffeur_tel || "",
       capacite: r.capacite || 0,
       inscrits: parseInt(r.inscrits || 0),
       trajet: r.trajet || "Aucun trajet",
       horaireMatin: r.horaire_matin || "-",
       horaireSoir: r.horaire_soir || "-",
+      prix_abonnement: parseInt(r.prix_abonnement) || 0, // ⭐ Ajout du prix
       statut: "actif"
     }));
 
@@ -73,7 +84,16 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { immatriculation, chauffeur, chauffeur_tel, capacite, trajet, horaireMatin, horaireSoir } = body;
+    const { 
+      immatriculation, 
+      chauffeur, 
+      chauffeur_tel, 
+      capacite, 
+      trajet, 
+      horaireMatin, 
+      horaireSoir,
+      prix_abonnement  // ⭐ Ajout du prix
+    } = body;
 
     // 1. Insérer le bus
     const busResult = await query(`
@@ -84,12 +104,18 @@ export async function POST(request: Request) {
 
     const busId = busResult.rows[0].id;
 
-    // 2. Insérer la ligne de transport associée
+    // 2. Insérer la ligne de transport associée avec prix_abonnement
     if (trajet) {
       await query(`
-        INSERT INTO lignes_transport (nom, bus_id, horaire_matin, horaire_soir)
-        VALUES ($1, $2, $3, $4)
-      `, [trajet, busId, horaireMatin || null, horaireSoir || null]);
+        INSERT INTO lignes_transport (nom, bus_id, horaire_matin, horaire_soir, prix_abonnement)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [
+        trajet, 
+        busId, 
+        horaireMatin || null, 
+        horaireSoir || null,
+        parseInt(prix_abonnement) || 0  // ⭐ Insertion du prix
+      ]);
     }
 
     return NextResponse.json({ success: true });
@@ -108,7 +134,17 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { id, immatriculation, chauffeur, chauffeur_tel, capacite, trajet, horaireMatin, horaireSoir } = body;
+    const { 
+      id, 
+      immatriculation, 
+      chauffeur, 
+      chauffeur_tel, 
+      capacite, 
+      trajet, 
+      horaireMatin, 
+      horaireSoir,
+      prix_abonnement  // ⭐ Ajout du prix
+    } = body;
 
     // 1. Mettre à jour le bus
     await query(`
@@ -117,19 +153,31 @@ export async function PUT(request: Request) {
       WHERE id = $5
     `, [immatriculation, parseInt(capacite || 0), chauffeur, chauffeur_tel || null, id]);
 
-    // 2. Mettre à jour ou insérer la ligne de transport
+    // 2. Mettre à jour ou insérer la ligne de transport avec prix_abonnement
     const ligneCheck = await query('SELECT id FROM lignes_transport WHERE bus_id = $1', [id]);
     if (ligneCheck.rows.length > 0) {
       await query(`
         UPDATE lignes_transport
-        SET nom = $1, horaire_matin = $2, horaire_soir = $3
-        WHERE bus_id = $4
-      `, [trajet, horaireMatin || null, horaireSoir || null, id]);
+        SET nom = $1, horaire_matin = $2, horaire_soir = $3, prix_abonnement = $4
+        WHERE bus_id = $5
+      `, [
+        trajet, 
+        horaireMatin || null, 
+        horaireSoir || null,
+        parseInt(prix_abonnement) || 0,  // ⭐ Mise à jour du prix
+        id
+      ]);
     } else if (trajet) {
       await query(`
-        INSERT INTO lignes_transport (nom, bus_id, horaire_matin, horaire_soir)
-        VALUES ($1, $2, $3, $4)
-      `, [trajet, id, horaireMatin || null, horaireSoir || null]);
+        INSERT INTO lignes_transport (nom, bus_id, horaire_matin, horaire_soir, prix_abonnement)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [
+        trajet, 
+        id, 
+        horaireMatin || null, 
+        horaireSoir || null,
+        parseInt(prix_abonnement) || 0  // ⭐ Insertion du prix
+      ]);
     }
 
     return NextResponse.json({ success: true });

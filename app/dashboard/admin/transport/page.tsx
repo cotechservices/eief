@@ -15,6 +15,7 @@ interface BusItem {
   horaireMatin: string;
   horaireSoir: string;
   statut: string;
+  prix_abonnement?: number;
 }
 
 export default function TransportPage() {
@@ -32,7 +33,8 @@ export default function TransportPage() {
     capacite: 30,
     trajet: "",
     horaireMatin: "07:30",
-    horaireSoir: "16:30"
+    horaireSoir: "16:30",
+    prix_abonnement: 50000
   });
 
   const fetchTransport = async () => {
@@ -68,7 +70,8 @@ export default function TransportPage() {
       capacite: 30,
       trajet: "",
       horaireMatin: "07:30",
-      horaireSoir: "16:30"
+      horaireSoir: "16:30",
+      prix_abonnement: 50000
     });
     setShowForm(true);
   };
@@ -82,7 +85,8 @@ export default function TransportPage() {
       capacite: item.capacite,
       trajet: item.trajet === "Aucun trajet" ? "" : item.trajet,
       horaireMatin: item.horaireMatin === "-" ? "07:30" : item.horaireMatin,
-      horaireSoir: item.horaireSoir === "-" ? "16:30" : item.horaireSoir
+      horaireSoir: item.horaireSoir === "-" ? "16:30" : item.horaireSoir,
+      prix_abonnement: item.prix_abonnement || 50000
     });
     setShowForm(true);
   };
@@ -103,7 +107,8 @@ export default function TransportPage() {
         setShowForm(false);
         fetchTransport();
       } else {
-        alert("Erreur lors de l'enregistrement du bus");
+        const error = await response.json();
+        alert(error.error || "Erreur lors de l'enregistrement du bus");
       }
     } catch (error) {
       console.error("Erreur soumission transport:", error);
@@ -196,6 +201,7 @@ export default function TransportPage() {
                 <th className="px-6 py-3">Trajet / Ligne</th>
                 <th className="px-6 py-3">Horaires</th>
                 <th className="px-6 py-3">Élèves / Capacité</th>
+                <th className="px-6 py-3">Prix</th>
                 <th className="px-6 py-3">Taux</th>
                 <th className="px-6 py-3">Actions</th>
               </tr>
@@ -220,6 +226,9 @@ export default function TransportPage() {
                     </td>
                     <td className="px-6 py-4 text-gray-900">
                       <span className="font-semibold">{b.inscrits}</span> / {b.capacite} places
+                    </td>
+                    <td className="px-6 py-4 text-gray-900 font-medium">
+                      {(b.prix_abonnement || 0).toLocaleString()} GNF
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -247,7 +256,7 @@ export default function TransportPage() {
               })}
               {bus.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-gray-900">Aucun bus disponible.</td>
+                  <td colSpan={8} className="px-6 py-8 text-center text-gray-900">Aucun bus disponible.</td>
                 </tr>
               )}
             </tbody>
@@ -258,7 +267,7 @@ export default function TransportPage() {
       {/* Form modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 animate-fade-in">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-100">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-100 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">
                 {editingBus ? "Modifier le bus" : "Ajouter un bus"}
@@ -310,21 +319,34 @@ export default function TransportPage() {
                     type="number"
                     min="1"
                     value={formData.capacite}
-                    onChange={e => setFormData({ ...formData, capacite: parseInt(e.target.value) })}
+                    onChange={e => setFormData({ ...formData, capacite: parseInt(e.target.value) || 0 })}
                     className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1">Nom du Trajet</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Prix abonnement (GNF)</label>
                   <input
                     required
-                    type="text"
-                    placeholder="Ex: Ligne Lambanyi-Dixinn"
-                    value={formData.trajet}
-                    onChange={e => setFormData({ ...formData, trajet: e.target.value })}
+                    type="number"
+                    min="0"
+                    step="1000"
+                    placeholder="Ex: 50000"
+                    value={formData.prix_abonnement}
+                    onChange={e => setFormData({ ...formData, prix_abonnement: parseInt(e.target.value) || 0 })}
                     className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Nom du Trajet</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="Ex: Ligne Lambanyi-Dixinn"
+                  value={formData.trajet}
+                  onChange={e => setFormData({ ...formData, trajet: e.target.value })}
+                  className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

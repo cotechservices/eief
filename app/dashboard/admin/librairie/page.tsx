@@ -50,6 +50,9 @@ export default function LibrairiePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // État pour le prix formaté (avec séparateur de milliers)
+  const [prixFormate, setPrixFormate] = useState("");
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -71,6 +74,35 @@ export default function LibrairiePage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Fonction pour formater un nombre en GNF
+  const formatPrix = (valeur: number) => {
+    return new Intl.NumberFormat('fr-FR').format(valeur);
+  };
+
+  // Fonction pour parser un nombre depuis une chaîne formatée
+  const parsePrix = (valeur: string) => {
+    // Supprimer tous les séparateurs de milliers (espaces, points, virgules)
+    const clean = valeur.replace(/[^\d]/g, '');
+    return parseInt(clean) || 0;
+  };
+
+  // Gérer le changement du prix
+  const handlePrixChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    // Supprimer tout ce qui n'est pas un chiffre
+    const digitsOnly = rawValue.replace(/[^\d]/g, '');
+    const numericValue = parseInt(digitsOnly) || 0;
+    
+    // Mettre à jour le prix formaté
+    setPrixFormate(formatPrix(numericValue));
+    
+    // Mettre à jour les données
+    setArticleData({ 
+      ...articleData, 
+      prix_unitaire: numericValue 
+    });
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -136,6 +168,7 @@ export default function LibrairiePage() {
         setEditingArticle(null);
         setSelectedFile(null);
         setPreviewUrl("");
+        setPrixFormate("");
         fetchData();
       } else {
         const error = await res.json();
@@ -147,6 +180,16 @@ export default function LibrairiePage() {
     } finally {
       setUploading(false);
     }
+  };
+
+  // Lors de l'ouverture du formulaire d'édition, formater le prix
+  const openEditForm = (article: Article) => {
+    setEditingArticle(article);
+    setArticleData(article);
+    setPrixFormate(formatPrix(article.prix_unitaire));
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setShowArticleForm(true);
   };
 
   const handleDeleteArticle = async (id: number) => {
@@ -231,7 +274,14 @@ export default function LibrairiePage() {
             <input type="text" placeholder="Rechercher..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm text-gray-900" />
           </div>
           {activeTab === "articles" ? (
-            <button onClick={() => { setEditingArticle(null); setArticleData({ nom: "", description: "", prix_unitaire: 0, quantite_stock: 0, categorie: "fourniture", image_url: "" }); setSelectedFile(null); setPreviewUrl(""); setShowArticleForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
+            <button onClick={() => { 
+              setEditingArticle(null); 
+              setArticleData({ nom: "", description: "", prix_unitaire: 0, quantite_stock: 0, categorie: "fourniture", image_url: "" }); 
+              setPrixFormate("");
+              setSelectedFile(null); 
+              setPreviewUrl(""); 
+              setShowArticleForm(true); 
+            }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
               <Plus className="w-4 h-4" /> Ajouter un article
             </button>
           ) : (
@@ -276,14 +326,14 @@ export default function LibrairiePage() {
                     <td className="px-6 py-4">
                       <span className="bg-gray-100 text-gray-900 px-2 py-1 rounded-full text-xs capitalize">{a.categorie}</span>
                     </td>
-                    <td className="px-6 py-4 text-right font-medium">{a.prix_unitaire.toLocaleString()} GNF</td>
+                    <td className="px-6 py-4 text-right font-medium">{formatPrix(a.prix_unitaire)} GNF</td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-2 py-1 rounded-full text-xs font-bold ${a.quantite_stock > 10 ? "bg-green-100 text-green-700" : a.quantite_stock > 0 ? "bg-orange-100 text-orange-700" : "bg-red-100 text-red-700"}`}>
                         {a.quantite_stock}
                       </span>
                     </td>
                     <td className="px-6 py-4 flex gap-2">
-                      <button onClick={() => { setEditingArticle(a); setArticleData(a); setSelectedFile(null); setPreviewUrl(""); setShowArticleForm(true); }} className="text-blue-600"><Edit className="w-4 h-4" /></button>
+                      <button onClick={() => openEditForm(a)} className="text-blue-600"><Edit className="w-4 h-4" /></button>
                       <button onClick={() => handleDeleteArticle(a.id)} className="text-red-600"><Trash2 className="w-4 h-4" /></button>
                     </td>
                   </tr>
@@ -316,7 +366,7 @@ export default function LibrairiePage() {
                     <td className="px-6 py-4 font-medium">{v.article_nom}</td>
                     <td className="px-6 py-4 text-sm">{v.eleve_nom || "Vente libre"}</td>
                     <td className="px-6 py-4 text-center">{v.quantite}</td>
-                    <td className="px-6 py-4 text-right font-bold text-green-600">{v.montant_total.toLocaleString()} GNF</td>
+                    <td className="px-6 py-4 text-right font-bold text-green-600">{formatPrix(v.montant_total)} GNF</td>
                     <td className="px-6 py-4 text-sm">{v.vendeur}</td>
                   </tr>
                 ))}
@@ -329,7 +379,7 @@ export default function LibrairiePage() {
         )}
       </div>
 
-      {/* Formulaire Article - CORRIGÉ */}
+      {/* Formulaire Article - CORRIGÉ avec formatage du prix */}
       {showArticleForm && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -393,34 +443,38 @@ export default function LibrairiePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm mb-1">Prix Unitaire (GNF) *</label>
-                  <input 
-                    required 
-                    type="number" 
-                    min="0" 
-                    value={articleData.prix_unitaire ?? 0} 
-                    onChange={e => {
-                      const val = parseInt(e.target.value);
-                      setArticleData({ 
-                        ...articleData, 
-                        prix_unitaire: isNaN(val) ? 0 : val 
-                      });
-                    }} 
-                    className="w-full border p-2 rounded-lg" 
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">GNF</span>
+                    <input 
+                      required 
+                      type="text" 
+                      inputMode="numeric"
+                      value={prixFormate || (articleData.prix_unitaire ? formatPrix(articleData.prix_unitaire) : "")} 
+                      onChange={handlePrixChange}
+                      placeholder="0"
+                      className="w-full pl-12 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Saisissez uniquement des chiffres</p>
                 </div>
                 <div>
                   <label className="block text-sm mb-1">Quantité en stock *</label>
                   <input 
                     required 
                     type="number" 
-                    min="0" 
-                    value={articleData.quantite_stock ?? 0} 
+                    min="0"
+                    placeholder="0"
+                    value={articleData.quantite_stock === 0 && !editingArticle ? "" : articleData.quantite_stock ?? 0} 
                     onChange={e => {
-                      const val = parseInt(e.target.value);
-                      setArticleData({ 
-                        ...articleData, 
-                        quantite_stock: isNaN(val) ? 0 : val 
-                      });
+                      const value = e.target.value;
+                      if (value === "") {
+                        setArticleData({ ...articleData, quantite_stock: 0 });
+                      } else {
+                        const val = parseInt(value);
+                        if (!isNaN(val) && val >= 0) {
+                          setArticleData({ ...articleData, quantite_stock: val });
+                        }
+                      }
                     }} 
                     className="w-full border p-2 rounded-lg" 
                   />
@@ -451,7 +505,7 @@ export default function LibrairiePage() {
         </div>
       )}
 
-      {/* Formulaire Vente - CORRIGÉ */}
+      {/* Formulaire Vente */}
       {showVenteForm && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
@@ -467,7 +521,7 @@ export default function LibrairiePage() {
                 >
                   <option value="">Sélectionner un article</option>
                   {articles.filter(a => a.quantite_stock > 0).map(a => (
-                    <option key={a.id} value={a.id}>{a.nom} - {a.prix_unitaire.toLocaleString()} GNF (Stock: {a.quantite_stock})</option>
+                    <option key={a.id} value={a.id}>{a.nom} - {formatPrix(a.prix_unitaire)} GNF (Stock: {a.quantite_stock})</option>
                   ))}
                 </select>
               </div>

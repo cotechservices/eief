@@ -24,7 +24,10 @@ import {
   AlertTriangle,
   Loader2,
   X,
-  Plus
+  Plus,
+  ShoppingCart,  // ⭐ Ajout
+  Bus,           // ⭐ Ajout
+  Utensils       // ⭐ Ajout
 } from "lucide-react";
 import PaiementModal from "../../../components/PaiementModal";
 import * as XLSX from 'xlsx';
@@ -57,6 +60,36 @@ interface Preinscription {
   bulletin_url: string | null;
 }
 
+interface DetailsFrais {
+  inscription: number;
+  cantine: number;
+  transport: number;
+  librairie: number;
+  scolarite: number;
+  total: number;
+  paye: number;
+  reste: number;
+}
+
+// ⭐ Ajout des interfaces pour les services
+interface ServiceItem {
+  nom: string;
+  quantite?: number;
+  prix_unitaire?: number;
+  total?: number;
+  prix?: number;
+  horaire_matin?: string;
+  horaire_soir?: string;
+  est_actif?: boolean;
+}
+
+interface PreinscriptionDetail extends Preinscription {
+  details_frais: DetailsFrais;
+  fournitures_commandees: ServiceItem[];
+  transport_selectionne: ServiceItem[];
+  cantine_selectionnee: ServiceItem[];
+}
+
 interface Notification {
   id: number;
   type: "success" | "error" | "warning" | "info";
@@ -75,6 +108,8 @@ export default function GestionPreinscriptionsPage() {
   const [observations, setObservations] = useState("");
   const [showPaiementModal, setShowPaiementModal] = useState(false);
   const [paiementPreinscription, setPaiementPreinscription] = useState<Preinscription | null>(null);
+  const [preinscriptionDetail, setPreinscriptionDetail] = useState<PreinscriptionDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   // États pour le modal de confirmation
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -86,17 +121,14 @@ export default function GestionPreinscriptionsPage() {
 
   const itemsPerPage = 10;
 
-  // Fonction pour ajouter une notification
   const addNotification = (type: Notification["type"], message: string) => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, type, message }]);
-    // Auto-supprimer après 5 secondes
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }, 5000);
   };
 
-  // Fonction pour supprimer une notification
   const removeNotification = (id: number) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
@@ -114,11 +146,9 @@ export default function GestionPreinscriptionsPage() {
       if (searchTerm) params.append("search", searchTerm);
 
       const response = await fetch(`/api/admin/preinscriptions?${params}`);
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-
       const data = await response.json();
       setPreinscriptions(data);
       setCurrentPage(1);
@@ -128,6 +158,23 @@ export default function GestionPreinscriptionsPage() {
       addNotification("error", "Erreur lors du chargement des pré-inscriptions");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPreinscriptionDetail = async (id: number) => {
+    setLoadingDetail(true);
+    try {
+      const response = await fetch(`/api/admin/preinscriptions?id=${id}`);
+      if (!response.ok) {
+        throw new Error("Erreur chargement détails");
+      }
+      const data = await response.json();
+      setPreinscriptionDetail(data);
+    } catch (error) {
+      console.error("Erreur:", error);
+      addNotification("error", "Erreur lors du chargement des détails des frais");
+    } finally {
+      setLoadingDetail(false);
     }
   };
 
@@ -143,13 +190,11 @@ export default function GestionPreinscriptionsPage() {
 
   const handleDelete = async () => {
     if (!preinscriptionToDelete) return;
-
     setDeleting(true);
     try {
       const response = await fetch(`/api/admin/preinscriptions?id=${preinscriptionToDelete.id}`, {
         method: "DELETE",
       });
-
       if (response.ok) {
         await fetchPreinscriptions();
         if (selectedPreinscription?.id === preinscriptionToDelete.id) {
@@ -184,9 +229,7 @@ export default function GestionPreinscriptionsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, statut, observations }),
       });
-
       const data = await response.json();
-
       if (response.ok) {
         fetchPreinscriptions();
         setShowDetailModal(false);
@@ -237,7 +280,6 @@ export default function GestionPreinscriptionsPage() {
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
-
       const colWidths = [
         { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 25 },
         { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 20 },
@@ -245,10 +287,8 @@ export default function GestionPreinscriptionsPage() {
         { wch: 12 }, { wch: 15 }, { wch: 30 }
       ];
       ws['!cols'] = colWidths;
-
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Preinscriptions');
-
       const fileName = `preinscriptions_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
       addNotification("success", "Export Excel effectué avec succès");
@@ -295,7 +335,6 @@ export default function GestionPreinscriptionsPage() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
@@ -385,90 +424,53 @@ export default function GestionPreinscriptionsPage() {
           <p className="text-gray-900">Gérez les demandes d'inscription, les documents et les paiements</p>
         </div>
         <div className="flex gap-3">
-          <Link
-            href="/register"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Nouvelle inscription
+          <Link href="/register" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Nouvelle inscription
           </Link>
-          <button
-            onClick={exportToExcel}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Exporter Excel
+          <button onClick={exportToExcel} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+            <Download className="w-4 h-4" /> Exporter Excel
           </button>
         </div>
       </div>
 
       {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {/* Carte 1 - Total */}
+        {/* ... statistiques inchangées ... */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-900 text-sm">Total</p>
-              <p className="text-2xl font-bold text-blue-600">{preinscriptions.length}</p>
-            </div>
+            <div><p className="text-gray-900 text-sm">Total</p><p className="text-2xl font-bold text-blue-600">{preinscriptions.length}</p></div>
             <FileText className="w-8 h-8 text-blue-700" />
           </div>
         </div>
-
-        {/* Carte 2 - En attente */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-900 text-sm">En attente</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {preinscriptions.filter(p => p.statut === "en_attente").length}
-              </p>
-            </div>
+            <div><p className="text-gray-900 text-sm">En attente</p><p className="text-2xl font-bold text-yellow-600">{preinscriptions.filter(p => p.statut === "en_attente").length}</p></div>
             <Clock className="w-8 h-8 text-yellow-700" />
           </div>
         </div>
-
-        {/* Carte 3 - Validées */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-900 text-sm">Validées</p>
-              <p className="text-2xl font-bold text-green-600">
-                {preinscriptions.filter(p => p.statut === "valide").length}
-              </p>
-            </div>
+            <div><p className="text-gray-900 text-sm">Validées</p><p className="text-2xl font-bold text-green-600">{preinscriptions.filter(p => p.statut === "valide").length}</p></div>
             <CheckCircle className="w-8 h-8 text-green-700" />
           </div>
         </div>
-
-        {/* Carte 4 - Rejetées */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-900 text-sm">Rejetées</p>
-              <p className="text-2xl font-bold text-red-600">
-                {preinscriptions.filter(p => p.statut === "rejete").length}
-              </p>
-            </div>
+            <div><p className="text-gray-900 text-sm">Rejetées</p><p className="text-2xl font-bold text-red-600">{preinscriptions.filter(p => p.statut === "rejete").length}</p></div>
             <XCircle className="w-8 h-8 text-red-700" />
           </div>
         </div>
-
-        {/* Carte 5 - Paiements */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-900 text-sm">Paiements</p>
-              <p className="text-2xl font-bold text-purple-600">
-                {preinscriptions.filter(p => p.frais_statut === "paye").length}
-              </p>
-            </div>
+            <div><p className="text-gray-900 text-sm">Paiements</p><p className="text-2xl font-bold text-purple-600">{preinscriptions.filter(p => p.frais_statut === "paye").length}</p></div>
             <Wallet className="w-8 h-8 text-purple-700" />
           </div>
         </div>
       </div>
+
       {/* Filtres */}
       <div className="bg-white rounded-xl shadow-sm p-4 text-black">
+        {/* ... filtres inchangés ... */}
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
@@ -510,6 +512,7 @@ export default function GestionPreinscriptionsPage() {
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
+                {/* ... tableau inchangé ... */}
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-black uppercase">Dossier</th>
@@ -547,7 +550,7 @@ export default function GestionPreinscriptionsPage() {
                               <CreditCard className="w-4 h-4" />
                             </button>
                           )}
-                          <button onClick={() => { setSelectedPreinscription(p); setObservations(p.observations || ""); setShowDetailModal(true); }} className="text-blue-600 hover:text-blue-700 transition" title="Voir détails">
+                          <button onClick={() => { setSelectedPreinscription(p); setObservations(p.observations || ""); loadPreinscriptionDetail(p.id); setShowDetailModal(true); }} className="text-blue-600 hover:text-blue-700 transition" title="Voir détails">
                             <Eye className="w-4 h-4" />
                           </button>
                           <button onClick={() => openConfirmModal(p.id, p.enfant_nom, p.enfant_prenom)} className="text-red-600 hover:text-red-700 transition" title="Supprimer">
@@ -567,44 +570,24 @@ export default function GestionPreinscriptionsPage() {
             <div className="bg-white rounded-xl shadow-sm p-4">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <p className="text-sm text-gray-900">
-                  Affichage de <span className="font-medium">{startIndex + 1}</span> à{' '}
-                  <span className="font-medium">{Math.min(endIndex, filteredPreinscriptions.length)}</span>{' '}
-                  sur <span className="font-medium">{filteredPreinscriptions.length}</span> résultats
+                  Affichage de <span className="font-medium">{startIndex + 1}</span> à <span className="font-medium">{Math.min(endIndex, filteredPreinscriptions.length)}</span> sur <span className="font-medium">{filteredPreinscriptions.length}</span> résultats
                 </p>
-
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                  >
+                  <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
                     <ChevronLeft className="w-4 h-4 text-black" />
                   </button>
-
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
                         <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-900">...</span>
                       ) : (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page as number)}
-                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'text-gray-900 hover:bg-gray-100'
-                            }`}
-                        >
+                        <button key={page} onClick={() => setCurrentPage(page as number)} className={`px-3 py-1 rounded-lg text-sm font-medium transition ${currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-900 hover:bg-gray-100'}`}>
                           {page}
                         </button>
                       )
                     ))}
                   </div>
-
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                  >
+                  <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
                     <ChevronRight className="w-4 h-4 text-black" />
                   </button>
                 </div>
@@ -626,47 +609,15 @@ export default function GestionPreinscriptionsPage() {
                 <h2 className="text-xl font-bold text-gray-900">Confirmer la suppression</h2>
               </div>
             </div>
-
             <div className="p-6">
-              <p className="text-gray-900 mb-2">
-                Êtes-vous sûr de vouloir supprimer cette pré-inscription ?
-              </p>
-              <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mb-4">
-                {preinscriptionToDelete.prenom} {preinscriptionToDelete.nom}
-              </p>
-              <p className="text-sm text-red-600 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4" />
-                Cette action est irréversible. Toutes les données associées seront supprimées.
-              </p>
+              <p className="text-gray-900 mb-2">Êtes-vous sûr de vouloir supprimer cette pré-inscription ?</p>
+              <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mb-4">{preinscriptionToDelete.prenom} {preinscriptionToDelete.nom}</p>
+              <p className="text-sm text-red-600 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Cette action est irréversible. Toutes les données associées seront supprimées.</p>
             </div>
-
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowConfirmModal(false);
-                  setPreinscriptionToDelete(null);
-                }}
-                className="px-4 py-2 text-black border rounded-lg hover:bg-gray-100 transition"
-                disabled={deleting}
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2 disabled:opacity-50"
-              >
-                {deleting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Suppression...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-4 h-4" />
-                    Supprimer
-                  </>
-                )}
+              <button onClick={() => { setShowConfirmModal(false); setPreinscriptionToDelete(null); }} className="px-4 py-2 text-black border rounded-lg hover:bg-gray-100 transition" disabled={deleting}>Annuler</button>
+              <button onClick={handleDelete} disabled={deleting} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2 disabled:opacity-50">
+                {deleting ? <><Loader2 className="w-4 h-4 animate-spin" /> Suppression...</> : <><Trash2 className="w-4 h-4" /> Supprimer</>}
               </button>
             </div>
           </div>
@@ -675,11 +626,11 @@ export default function GestionPreinscriptionsPage() {
 
       {/* Modal Détail */}
       {showDetailModal && selectedPreinscription && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 ">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto ">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-black">Détail de la pré-inscription</h2>
+                <h2 className="text-xl font-bold text-black">Détail de l'inscription</h2>
                 <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">✕</button>
               </div>
             </div>
@@ -716,245 +667,249 @@ export default function GestionPreinscriptionsPage() {
 
               {/* Informations des parents */}
               <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <User className="w-5 h-5 text-blue-900" />
-                  Informations des parents
-                </h3>
-
-                {/* Email commun */}
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2"><User className="w-5 h-5 text-blue-900" /> Informations des parents</h3>
                 <div className="bg-gray-50 p-3 rounded-lg mb-4">
                   <p className="text-sm text-gray-500">Email (commun)</p>
                   <p className="font-medium text-black">{selectedPreinscription.parent_email}</p>
                 </div>
-
                 <div className="grid md:grid-cols-2 gap-4">
-                  {/* Père */}
                   <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                    <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">👨 Père</h4>
+                    <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">Père</h4>
                     <div className="space-y-2">
-                      <div>
-                        <p className="text-xs text-gray-500">Nom complet</p>
-                        <p className="font-medium text-black">{selectedPreinscription.parent_prenom} {selectedPreinscription.parent_nom}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Téléphone</p>
-                        <p className="font-medium text-black">{selectedPreinscription.parent_telephone || "Non renseigné"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">Profession</p>
-                        <p className="font-medium text-black">{selectedPreinscription.parent_profession || "Non renseigné"}</p>
-                      </div>
+                      <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-black">{selectedPreinscription.parent_prenom} {selectedPreinscription.parent_nom}</p></div>
+                      <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-black">{selectedPreinscription.parent_telephone || "Non renseigné"}</p></div>
+                      <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-black">{selectedPreinscription.parent_profession || "Non renseigné"}</p></div>
                     </div>
                   </div>
-
-                  {/* Mère */}
-                  {(() => {
-                    let mereData: any = null;
-                    try {
-                      if (selectedPreinscription.mere_info) {
-                        mereData = typeof selectedPreinscription.mere_info === 'string'
-                          ? JSON.parse(selectedPreinscription.mere_info)
-                          : selectedPreinscription.mere_info;
-                      }
-                    } catch (e) { /* ignore parse errors */ }
-
-                    return (
-                      <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg">
-                        <h4 className="font-semibold text-pink-800 mb-3 text-sm uppercase tracking-wide">👩 Mère</h4>
-                        {mereData && (mereData.mereNom || mereData.merePrenom) ? (
-                          <div className="space-y-2">
-                            <div>
-                              <p className="text-xs text-gray-500">Nom complet</p>
-                              <p className="font-medium text-black">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Téléphone</p>
-                              <p className="font-medium text-black">{mereData.merePhone || "Non renseigné"}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Profession</p>
-                              <p className="font-medium text-black">{mereData.mereProfession || "Non renseigné"}</p>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-400 italic">Non renseigné</p>
-                        )}
-                      </div>
-                    );
-                  })()}
+                  <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg">
+                    <h4 className="font-semibold text-pink-800 mb-3 text-sm uppercase tracking-wide">Mère</h4>
+                    {(() => {
+                      let mereData: any = null;
+                      try {
+                        if (selectedPreinscription.mere_info) {
+                          mereData = typeof selectedPreinscription.mere_info === 'string' ? JSON.parse(selectedPreinscription.mere_info) : selectedPreinscription.mere_info;
+                        }
+                      } catch (e) {}
+                      return mereData && (mereData.mereNom || mereData.merePrenom) ? (
+                        <div className="space-y-2">
+                          <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-black">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p></div>
+                          <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-black">{mereData.merePhone || "Non renseigné"}</p></div>
+                          <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-black">{mereData.mereProfession || "Non renseigné"}</p></div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">Non renseigné</p>
+                      );
+                    })()}
+                  </div>
                 </div>
               </div>
 
               {/* Informations enfant */}
               <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-green-600" />
-                  Informations de l'enfant
-                </h3>
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-green-600" /> Informations de l'enfant</h3>
                 <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-900">Nom complet</p>
-                    <p className="font-medium text-black">{selectedPreinscription.enfant_prenom} {selectedPreinscription.enfant_nom}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Date de naissance</p>
-                    <p className="font-medium text-black" >{new Date(selectedPreinscription.date_naissance).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Lieu de naissance</p>
-                    <p className="font-medium text-black">{selectedPreinscription.lieu_naissance || "Non renseigné"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Sexe</p>
-                    <p className="font-medium text-black">{selectedPreinscription.sexe === "M" ? "Masculin" : "Féminin"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Niveau</p>
-                    <p className="font-medium text-black">{selectedPreinscription.niveau}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Classe souhaitée</p>
-                    <p className="font-medium text-black">{selectedPreinscription.classe}</p>
-                  </div>
+                  <div><p className="text-sm text-gray-900">Nom complet</p><p className="font-medium text-black">{selectedPreinscription.enfant_prenom} {selectedPreinscription.enfant_nom}</p></div>
+                  <div><p className="text-sm text-gray-900">Date de naissance</p><p className="font-medium text-black">{new Date(selectedPreinscription.date_naissance).toLocaleDateString()}</p></div>
+                  <div><p className="text-sm text-gray-900">Lieu de naissance</p><p className="font-medium text-black">{selectedPreinscription.lieu_naissance || "Non renseigné"}</p></div>
+                  <div><p className="text-sm text-gray-900">Sexe</p><p className="font-medium text-black">{selectedPreinscription.sexe === "M" ? "Masculin" : "Féminin"}</p></div>
+                  <div><p className="text-sm text-gray-900">Niveau</p><p className="font-medium text-black">{selectedPreinscription.niveau}</p></div>
+                  <div><p className="text-sm text-gray-900">Classe souhaitée</p><p className="font-medium text-black">{selectedPreinscription.classe}</p></div>
                 </div>
               </div>
 
               {/* Documents téléchargés */}
               <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-purple-600" />
-                  Documents joints
-                </h3>
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2"><FileText className="w-5 h-5 text-purple-600" /> Documents joints</h3>
                 <div className="grid md:grid-cols-3 gap-4">
-                  {/* Acte de naissance */}
                   <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <File className="w-5 h-5 text-blue-600" />
-                      <span className="font-medium text-black">Acte de naissance</span>
-                    </div>
-                    {selectedPreinscription.acte_naissance_url ? (
-                      <a href={selectedPreinscription.acte_naissance_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                        Voir le document <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ) : (
-                      <p className="text-gray-900 text-sm">Non téléchargé</p>
-                    )}
+                    <div className="flex items-center gap-2 mb-2"><File className="w-5 h-5 text-blue-600" /><span className="font-medium text-black">Acte de naissance</span></div>
+                    {selectedPreinscription.acte_naissance_url ? <a href={selectedPreinscription.acte_naissance_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">Voir le document <ExternalLink className="w-3 h-3" /></a> : <p className="text-gray-900 text-sm">Non téléchargé</p>}
                   </div>
-
-                  {/* Photo d'identité */}
                   <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Image className="w-5 h-5 text-green-600" />
-                      <span className="font-medium text-black">Photo d'identité</span>
-                    </div>
-                    {selectedPreinscription.photo_url ? (
-                      <a href={selectedPreinscription.photo_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                        Voir la photo <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ) : (
-                      <p className="text-gray-900 text-sm">Non téléchargée</p>
-                    )}
+                    <div className="flex items-center gap-2 mb-2"><Image className="w-5 h-5 text-green-600" /><span className="font-medium text-black">Photo d'identité</span></div>
+                    {selectedPreinscription.photo_url ? <a href={selectedPreinscription.photo_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">Voir la photo <ExternalLink className="w-3 h-3" /></a> : <p className="text-gray-900 text-sm">Non téléchargée</p>}
                   </div>
-
-                  {/* Bulletin */}
                   <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="w-5 h-5 text-orange-600" />
-                      <span className="font-medium text-black">Bulletin scolaire</span>
-                    </div>
-                    {selectedPreinscription.bulletin_url ? (
-                      <a href={selectedPreinscription.bulletin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                        Voir le bulletin <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ) : (
-                      <p className="text-gray-900 text-sm">Non téléchargé</p>
-                    )}
+                    <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-orange-600" /><span className="font-medium text-black">Bulletin scolaire</span></div>
+                    {selectedPreinscription.bulletin_url ? <a href={selectedPreinscription.bulletin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">Voir le bulletin <ExternalLink className="w-3 h-3" /></a> : <p className="text-gray-900 text-sm">Non téléchargé</p>}
                   </div>
                 </div>
               </div>
-              {/* Paiement */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-purple-600" />
-                  Informations de paiement
-                </h3>
-                <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-900">Montant des frais</p>
-                    <p className="font-bold text-lg text-green-600">
-                      {selectedPreinscription.frais_montant?.toLocaleString()} GNF
-                    </p>
-                    {selectedPreinscription.classe && (
-                      <p className="text-xs text-gray-900 mt-1">
-                        (Frais pour la classe {selectedPreinscription.classe})
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Statut paiement</p>
-                    {getFraisBadge(selectedPreinscription.frais_statut)}
-                  </div>
-                  {selectedPreinscription.frais_mode_paiement && (
-                    <div>
-                      <p className="text-sm text-gray-900">Mode de paiement</p>
-                      <p className="capitalize text-black">{selectedPreinscription.frais_mode_paiement.replace("_", " ")}</p>
+
+              {/* ⭐ SECTION SERVICES SÉLECTIONNÉS - AJOUTÉE */}
+              {(preinscriptionDetail?.fournitures_commandees?.length > 0 || 
+                preinscriptionDetail?.transport_selectionne?.length > 0 || 
+                preinscriptionDetail?.cantine_selectionnee?.length > 0) && (
+                <div>
+                  <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5 text-blue-600" />
+                    Services sélectionnés
+                  </h3>
+
+                  {/* Fournitures commandées */}
+                  {preinscriptionDetail?.fournitures_commandees?.length > 0 && (
+                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 mb-3">
+                      <h4 className="font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                        <ShoppingCart className="w-4 h-4" /> Fournitures commandées
+                      </h4>
+                      <div className="space-y-1">
+                        {preinscriptionDetail.fournitures_commandees.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm border-b border-purple-100 pb-1">
+                            <span className="text-gray-700">{item.nom} x{item.quantite}</span>
+                            <span className="font-medium text-purple-600">{item.total?.toLocaleString()} GNF</span>
+                          </div>
+                        ))}
+                        <div className="pt-1 flex justify-between font-semibold text-purple-800">
+                          <span>Total fournitures</span>
+                          <span>
+                            {preinscriptionDetail.fournitures_commandees.reduce((acc, item) => acc + (item.total || 0), 0).toLocaleString()} GNF
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Transport sélectionné */}
+                  {preinscriptionDetail?.transport_selectionne?.length > 0 && (
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200 mb-3">
+                      <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                        <Bus className="w-4 h-4" /> Transport scolaire
+                      </h4>
+                      <div className="space-y-1">
+                        {preinscriptionDetail.transport_selectionne.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm border-b border-green-100 pb-1">
+                            <span className="text-gray-700">{item.nom}</span>
+                            <span className="font-medium text-green-600">{item.prix?.toLocaleString()} GNF</span>
+                          </div>
+                        ))}
+                        <div className="pt-1 flex justify-between font-semibold text-green-800">
+                          <span>Total transport</span>
+                          <span>
+                            {preinscriptionDetail.transport_selectionne.reduce((acc, item) => acc + (item.prix || 0), 0).toLocaleString()} GNF
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cantine sélectionnée */}
+                  {preinscriptionDetail?.cantine_selectionnee?.length > 0 && (
+                    <div className="bg-orange-50 p-4 rounded-lg border border-orange-200 mb-3">
+                      <h4 className="font-semibold text-orange-800 mb-2 flex items-center gap-2">
+                        <Utensils className="w-4 h-4" /> Cantine scolaire
+                      </h4>
+                      <div className="space-y-1">
+                        {preinscriptionDetail.cantine_selectionnee.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm border-b border-orange-100 pb-1">
+                            <span className="text-gray-700">{item.nom}</span>
+                            <span className="font-medium text-orange-600">{item.prix?.toLocaleString()} GNF</span>
+                          </div>
+                        ))}
+                        <div className="pt-1 flex justify-between font-semibold text-orange-800">
+                          <span>Total cantine</span>
+                          <span>
+                            {preinscriptionDetail.cantine_selectionnee.reduce((acc, item) => acc + (item.prix || 0), 0).toLocaleString()} GNF
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* === SECTION DÉTAIL DES FRAIS === */}
+              <div>
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-purple-600" />
+                  Détail des frais scolaires
+                </h3>
+
+                {loadingDetail ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                  </div>
+                ) : preinscriptionDetail?.details_frais ? (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <p className="text-xs text-gray-600">Inscription</p>
+                        <p className="font-bold text-blue-600">{preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
+                        <p className="text-xs text-gray-600">Cantine</p>
+                        <p className="font-bold text-pink-600">{preinscriptionDetail.details_frais.cantine.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                        <p className="text-xs text-gray-600">Transport</p>
+                        <p className="font-bold text-green-600">{preinscriptionDetail.details_frais.transport.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                        <p className="text-xs text-gray-600">Frais de fourniture</p>
+                        <p className="font-bold text-purple-600">{preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                        <p className="text-xs text-gray-600">Scolarité</p>
+                        <p className="font-bold text-orange-600">{preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
+                        <p className="text-xs text-gray-600 font-semibold"> Total à payer</p>
+                        <p className="font-bold text-gray-800 text-lg">{preinscriptionDetail.details_frais.total.toLocaleString()} GNF</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
+                      <div><p className="text-xs text-gray-600">Déjà payé</p><p className="font-bold text-green-600">{preinscriptionDetail.details_frais.paye.toLocaleString()} GNF</p></div>
+                      <div><p className="text-xs text-gray-600">Reste à payer</p><p className={`font-bold ${preinscriptionDetail.details_frais.reste > 0 ? 'text-red-600' : 'text-green-600'}`}>{preinscriptionDetail.details_frais.reste.toLocaleString()} GNF</p></div>
+                      <div>
+                        <p className="text-xs text-gray-600">Statut</p>
+                        {preinscriptionDetail.details_frais.reste === 0 ? (
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Tout payé</span>
+                        ) : preinscriptionDetail.details_frais.paye > 0 ? (
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Partiel</span>
+                        ) : (
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {preinscriptionDetail.details_frais.total > 0 && (
+                      <div className="mt-3">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>Progression des paiements</span>
+                          <span>{Math.round((preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-green-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%` }} />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-4 text-gray-500"><p>Chargement des informations de frais...</p></div>
+                )}
               </div>
+
               {/* Observations */}
               <div>
                 <label className="block text-black mb-2">Observations</label>
-                <textarea
-                  value={observations}
-                  onChange={(e) => setObservations(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 text-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ajouter une observation..."
-                />
+                <textarea value={observations} onChange={(e) => setObservations(e.target.value)} rows={3} className="w-full px-3 py-2 text-black border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ajouter une observation..." />
               </div>
             </div>
 
             <div className="p-6 border-t bg-gray-50 flex justify-between gap-3">
               {selectedPreinscription.statut === "en_attente" && (
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => handleUpdateStatut(selectedPreinscription.id, "rejete")}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                  >
-                    Rejeter
-                  </button>
+                  <button onClick={() => handleUpdateStatut(selectedPreinscription.id, "rejete")} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Rejeter</button>
                   {selectedPreinscription.frais_statut === "paye" ? (
-                    <button
-                      onClick={() => handleUpdateStatut(selectedPreinscription.id, "valide")}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                    >
-                      Valider l'inscription
-                    </button>
+                    <button onClick={() => handleUpdateStatut(selectedPreinscription.id, "valide")} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">Valider l'inscription</button>
                   ) : (
-                    <button
-                      onClick={() => { setShowDetailModal(false); handleOpenPaiement(selectedPreinscription); }}
-                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-                    >
-                      Enregistrer le paiement
-                    </button>
+                    <button onClick={() => { setShowDetailModal(false); handleOpenPaiement(selectedPreinscription); }} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">Enregistrer le paiement</button>
                   )}
                 </div>
               )}
               <div className="flex gap-3 ml-auto">
-                <button
-                  onClick={() => openConfirmModal(selectedPreinscription.id, selectedPreinscription.enfant_nom, selectedPreinscription.enfant_prenom)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Supprimer
-                </button>
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  className="px-4 py-2 text-black border rounded-lg hover:bg-gray-50 transition"
-                >
-                  Fermer
-                </button>
+                <button onClick={() => openConfirmModal(selectedPreinscription.id, selectedPreinscription.enfant_nom, selectedPreinscription.enfant_prenom)} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"><Trash2 className="w-4 h-4" /> Supprimer</button>
+                <button onClick={() => setShowDetailModal(false)} className="px-4 py-2 text-black border rounded-lg hover:bg-gray-50 transition">Fermer</button>
               </div>
             </div>
           </div>
