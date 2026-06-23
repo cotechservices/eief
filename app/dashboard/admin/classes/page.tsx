@@ -35,6 +35,10 @@ interface Classe {
   frais_inscription: number;
   statut: "active" | "inactive";
   horaires: string;
+  premier_versement: number;
+  deuxieme_versement: number;
+  troisieme_versement: number;
+  total_versement: number;
 }
 
 interface Eleve {
@@ -76,12 +80,14 @@ export default function GestionClassesPage() {
     nom: "",
     niveau: "",
     capacite_max: 30,
-    frais_inscription: 0
+    frais_inscription: 0,
+    premier_versement: 0,
+    deuxieme_versement: 0,
+    troisieme_versement: 0,
+    total_versement: 0
   });
 
-  // État pour les notifications
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  // État pour le modal de confirmation
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [classeToDelete, setClasseToDelete] = useState<{ id: number; nom: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -89,7 +95,14 @@ export default function GestionClassesPage() {
   const itemsPerPage = 10;
   const elevesPerPage = 8;
 
-  // Fonction pour ajouter une notification
+  // Mise à jour automatique du total
+  useEffect(() => {
+    const total = (formData.premier_versement || 0) + 
+                  (formData.deuxieme_versement || 0) + 
+                  (formData.troisieme_versement || 0);
+    setFormData(prev => ({ ...prev, total_versement: total }));
+  }, [formData.premier_versement, formData.deuxieme_versement, formData.troisieme_versement]);
+
   const addNotification = (type: Notification["type"], message: string) => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, type, message }]);
@@ -98,7 +111,6 @@ export default function GestionClassesPage() {
     }, 5000);
   };
 
-  // Fonction pour supprimer une notification
   const removeNotification = (id: number) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
@@ -163,8 +175,24 @@ export default function GestionClassesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validation des frais d'inscription
     if (!formData.frais_inscription || formData.frais_inscription <= 0) {
       addNotification("warning", "Veuillez saisir le montant des frais d'inscription");
+      return;
+    }
+
+    // Validation des échéances
+    if (!formData.premier_versement || formData.premier_versement <= 0 ||
+        !formData.deuxieme_versement || formData.deuxieme_versement <= 0 ||
+        !formData.troisieme_versement || formData.troisieme_versement <= 0) {
+      addNotification("warning", "Veuillez saisir les montants des 3 versements");
+      return;
+    }
+
+    // Vérification de la cohérence des montants
+    const totalPayable = formData.premier_versement + formData.deuxieme_versement + formData.troisieme_versement;
+    if (totalPayable !== formData.frais_inscription) {
+      addNotification("warning", `Le total des versements (${totalPayable.toLocaleString()} GNF) ne correspond pas aux frais de scolarité (${formData.frais_inscription.toLocaleString()} GNF)`);
       return;
     }
 
@@ -179,7 +207,16 @@ export default function GestionClassesPage() {
         await fetchClasses();
         setShowForm(false);
         setEditingClasse(null);
-        setFormData({ nom: "", niveau: "", capacite_max: 30, frais_inscription: 0 });
+        setFormData({ 
+          nom: "", 
+          niveau: "", 
+          capacite_max: 30, 
+          frais_inscription: 0,
+          premier_versement: 0,
+          deuxieme_versement: 0,
+          troisieme_versement: 0,
+          total_versement: 0
+        });
         addNotification("success", editingClasse ? "Classe modifiée avec succès" : "Classe créée avec succès");
       } else {
         const error = await response.json();
@@ -207,13 +244,18 @@ export default function GestionClassesPage() {
         'Effectif': c.effectif || 0,
         'Capacité': c.capacite || 0,
         'Taux remplissage': c.capacite > 0 ? `${Math.round(((c.effectif || 0) / c.capacite) * 100)}%` : 'N/A',
-        'Frais inscription': `${(c.frais_inscription || 0).toLocaleString()} GNF`,
+        'Frais scolarité': `${(c.frais_inscription || 0).toLocaleString()} GNF`,
+        '1er Versement': `${(c.premier_versement || 0).toLocaleString()} GNF`,
+        '2ème Versement': `${(c.deuxieme_versement || 0).toLocaleString()} GNF`,
+        '3ème Versement': `${(c.troisieme_versement || 0).toLocaleString()} GNF`,
+        'Total Versements': `${(c.total_versement || 0).toLocaleString()} GNF`,
         'Statut': c.statut === 'active' ? 'Active' : 'Inactive'
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
       const colWidths = [
-        { wch: 20 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 20 }, { wch: 10 }
+        { wch: 20 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, 
+        { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 10 }
       ];
       ws['!cols'] = colWidths;
 
@@ -322,7 +364,20 @@ export default function GestionClassesPage() {
           >
             <Download className="w-4 h-4" /> Exporter Excel
           </button>
-          <button onClick={() => { setEditingClasse(null); setShowForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
+          <button onClick={() => { 
+            setEditingClasse(null); 
+            setFormData({
+              nom: "",
+              niveau: "",
+              capacite_max: 30,
+              frais_inscription: 0,
+              premier_versement: 0,
+              deuxieme_versement: 0,
+              troisieme_versement: 0,
+              total_versement: 0
+            });
+            setShowForm(true); 
+          }} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
             <Plus className="w-4 h-4" /> Nouvelle classe
           </button>
         </div>
@@ -388,7 +443,7 @@ export default function GestionClassesPage() {
         </div>
       </div>
 
-      {/* Tableau */}
+      {/* Tableau des classes */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -399,6 +454,7 @@ export default function GestionClassesPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Effectif</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Taux</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Frais</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Plan de paiement</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
               </tr>
@@ -421,8 +477,8 @@ export default function GestionClassesPage() {
                       <div className="flex items-center gap-2">
                         <div className="w-20 bg-gray-200 rounded-full h-2">
                           <div
-                            className={`${tauxRemplissage.color} h-2 rounded-full`}
-                            style={{ width: `${taux}%` }}
+                            className={`${tauxRemplissage.color} h-2 rounded-full transition-all`}
+                            style={{ width: `${Math.min(taux, 100)}%` }}
                           ></div>
                         </div>
                         <span className="text-xs text-black">{taux}%</span>
@@ -430,8 +486,27 @@ export default function GestionClassesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
-                        <DollarSign className="w-4 h-4 text-green-600" />
                         <span className="font-mono text-sm font-bold text-black">{classe.frais_inscription?.toLocaleString()} GNF</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-gray-500 w-24">1er Versement:</span>
+                          <span className="font-medium text-blue-600">{classe.premier_versement?.toLocaleString()} GNF</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-gray-500 w-24">2ème Versement:</span>
+                          <span className="font-medium text-blue-600">{classe.deuxieme_versement?.toLocaleString()} GNF</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-gray-500 w-24">3ème Versement:</span>
+                          <span className="font-medium text-blue-600">{classe.troisieme_versement?.toLocaleString()} GNF</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs border-t pt-1 mt-1">
+                          <span className="text-gray-700 font-medium w-24">Total:</span>
+                          <span className="font-bold text-green-700">{classe.total_versement?.toLocaleString()} GNF</span>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">{getStatutBadge(classe.statut)}</td>
@@ -446,7 +521,11 @@ export default function GestionClassesPage() {
                             nom: classe.nom || "",
                             niveau: classe.niveau || "",
                             capacite_max: classe.capacite || 30,
-                            frais_inscription: classe.frais_inscription || 0
+                            frais_inscription: classe.frais_inscription || 0,
+                            premier_versement: classe.premier_versement || 0,
+                            deuxieme_versement: classe.deuxieme_versement || 0,
+                            troisieme_versement: classe.troisieme_versement || 0,
+                            total_versement: classe.total_versement || 0
                           });
                           setShowForm(true);
                         }} className="text-green-600 hover:text-green-800 transition" title="Modifier">
@@ -538,7 +617,8 @@ export default function GestionClassesPage() {
           </div>
         </div>
       )}
-      {/* Modal Élèves - Version avec photo */}
+
+      {/* Modal Élèves */}
       {showElevesModal && selectedClasse && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[85vh] overflow-y-auto">
@@ -568,7 +648,6 @@ export default function GestionClassesPage() {
                 {paginatedEleves.map((eleve) => (
                   <div key={eleve.id} className="bg-gray-50 rounded-lg p-4 hover:shadow-md transition">
                     <div className="flex items-start gap-3">
-                      {/* Affichage de la photo ou avatar par défaut */}
                       <div className="flex-shrink-0">
                         {eleve.photo_url ? (
                           <img
@@ -576,7 +655,6 @@ export default function GestionClassesPage() {
                             alt={`${eleve.prenom} ${eleve.nom}`}
                             className="w-12 h-12 rounded-full object-cover border-2 border-blue-300"
                             onError={(e) => {
-                              // Si l'image ne charge pas, afficher l'avatar par défaut
                               (e.target as HTMLImageElement).style.display = 'none';
                               (e.target as HTMLImageElement).nextSibling?.style.removeProperty('display');
                             }}
@@ -606,8 +684,6 @@ export default function GestionClassesPage() {
                   <p className="text-gray-900">Aucun élève trouvé</p>
                 </div>
               )}
-
-              {/* Pagination des élèves */}
               {totalElevesPages > 1 && (
                 <div className="flex justify-center gap-2 mt-6 pt-4 border-t">
                   <button
@@ -638,78 +714,202 @@ export default function GestionClassesPage() {
           </div>
         </div>
       )}
-      {/* Modal Formulaire */}
+
+      {/* Modal Formulaire avec plan de paiement */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-black">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-bold">{editingClasse ? "Modifier" : "Ajouter"} une classe</h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b sticky top-0 bg-white z-10">
+              <h2 className="text-xl font-bold text-black">{editingClasse ? "Modifier" : "Ajouter"} une classe</h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Nom de la classe *</label>
-                <input
-                  type="text"
-                  value={formData.nom || ""}
-                  onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  placeholder="Nom de la classe"
-                />
+              {/* Informations générales */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom de la classe *</label>
+                  <input
+                    type="text"
+                    value={formData.nom || ""}
+                    onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                    required
+                    placeholder="Ex: 6ème A"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Niveau *</label>
+                  <select
+                    value={formData.niveau || ""}
+                    onChange={(e) => setFormData({ ...formData, niveau: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                    required
+                  >
+                    <option value="">Sélectionner un niveau</option>
+                    <option value="Maternelle">Maternelle</option>
+                    <option value="Primaire">Primaire</option>
+                    <option value="Collège">Collège</option>
+                    <option value="Lycée">Lycée</option>
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Niveau *</label>
-                <select
-                  value={formData.niveau || ""}
-                  onChange={(e) => setFormData({ ...formData, niveau: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Sélectionner un niveau</option>
-                  <option value="Maternelle">Maternelle</option>
-                  <option value="Primaire">Primaire</option>
-                  <option value="Collège">Collège</option>
-                  <option value="Lycée">Lycée</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Capacité max</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Capacité maximale</label>
                 <input
                   type="number"
-                  value={formData.capacite_max ?? 30}
+                  value={formData.capacite_max || 30}
                   onChange={(e) => setFormData({ ...formData, capacite_max: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                   min="1"
+                  placeholder="Nombre maximum d'élèves"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Frais de scolarité (GNF) *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Frais de scolarité (GNF) *</label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="number"
                     value={formData.frais_inscription || ""}
                     onChange={(e) => setFormData({ ...formData, frais_inscription: parseInt(e.target.value) || 0 })}
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     min="0"
                     step="10000"
                     required
-                    placeholder="Ex: 350000"
+                    placeholder="Ex: 5900000"
                   />
                 </div>
-                <p className="text-xs text-gray-900 mt-1">
-                  Saisissez le montant des frais de scolarité pour cette classe
+                <p className="text-xs text-gray-500 mt-1">
+                  Montant total des frais de scolarité pour cette classe
                 </p>
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
-                  {editingClasse ? "Modifier" : "Créer"}
+              {/* ⭐ Plan de paiement avec 3 versements */}
+              <div className="border-t pt-4 mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <DollarSign className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-semibold text-gray-900">Plan de paiement</h3>
+                  <span className="text-xs text-gray-500">(3 versements)</span>
+                </div>
+                
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        1er Versement *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={formData.premier_versement || ""}
+                          onChange={(e) => setFormData({ ...formData, premier_versement: parseInt(e.target.value) || 0 })}
+                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                          min="0"
+                          step="10000"
+                          required
+                          placeholder="Ex: 2800000"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">1er paiement</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        2ème Versement *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={formData.deuxieme_versement || ""}
+                          onChange={(e) => setFormData({ ...formData, deuxieme_versement: parseInt(e.target.value) || 0 })}
+                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                          min="0"
+                          step="10000"
+                          required
+                          placeholder="Ex: 2100000"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">2ème paiement</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        3ème Versement *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={formData.troisieme_versement || ""}
+                          onChange={(e) => setFormData({ ...formData, troisieme_versement: parseInt(e.target.value) || 0 })}
+                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                          min="0"
+                          step="10000"
+                          required
+                          placeholder="Ex: 1000000"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">3ème paiement</p>
+                    </div>
+                  </div>
+
+                  {/* Affichage du total */}
+                  <div className="mt-4 p-3 bg-white rounded-lg border border-blue-300 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Total des versements</span>
+                      <span className="text-xs text-gray-500">
+                        ({formData.premier_versement?.toLocaleString() || 0} + {formData.deuxieme_versement?.toLocaleString() || 0} + {formData.troisieme_versement?.toLocaleString() || 0})
+                      </span>
+                    </div>
+                    <span className={`font-bold text-lg ${formData.total_versement === formData.frais_inscription ? 'text-green-600' : 'text-red-600'}`}>
+                      {formData.total_versement?.toLocaleString() || 0} GNF
+                    </span>
+                  </div>
+
+                  {/* Message d'alerte si le total ne correspond pas */}
+                  {formData.total_versement > 0 && formData.frais_inscription > 0 && 
+                   formData.total_versement !== formData.frais_inscription && (
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2 text-sm text-yellow-800">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                      <span>
+                        Le total des versements ({formData.total_versement.toLocaleString()} GNF) 
+                        ne correspond pas aux frais de scolarité ({formData.frais_inscription.toLocaleString()} GNF)
+                      </span>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500 mt-2">
+                    💡 Ces montants seront appliqués à toutes les pré-inscriptions de cette classe
+                  </p>
+                </div>
+              </div>
+
+              {/* Boutons d'action */}
+              <div className="flex gap-3 pt-4 border-t">
+                <button 
+                  type="submit" 
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
+                >
+                  {editingClasse ? (
+                    <>
+                      <Edit className="w-4 h-4" />
+                      Modifier la classe
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      Créer la classe
+                    </>
+                  )}
                 </button>
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 border rounded-lg py-2 hover:bg-gray-50 text-black transition">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setShowForm(false);
+                    setEditingClasse(null);
+                  }} 
+                  className="flex-1 border rounded-lg py-2 hover:bg-gray-50 text-black transition"
+                >
                   Annuler
                 </button>
               </div>

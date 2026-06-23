@@ -38,12 +38,11 @@ export async function GET(request: NextRequest) {
           pa.situation_matrimoniale as mere_info,
           -- Frais de la classe
           COALESCE(c.frais_inscription, 0) as frais_montant,
-          -- ⭐ Frais de cantine ANNUEL : récupérer prix_annuel depuis cantine_menus
+          -- Frais de cantine ANNUEL
           COALESCE(
             (SELECT cm.prix_annuel
              FROM cantine_menus cm
-             WHERE EXTRACT(YEAR FROM cm.date) = EXTRACT(YEAR FROM CURRENT_DATE)
-               AND EXTRACT(MONTH FROM cm.date) = EXTRACT(MONTH FROM CURRENT_DATE)
+             ORDER BY cm.date DESC
              LIMIT 1),
             0
           ) as frais_cantine,
@@ -53,7 +52,7 @@ export async function GET(request: NextRequest) {
              FROM lignes_transport lt),
             0
           ) as frais_transport,
-          -- ⭐ Frais de fourniture : calcul direct depuis commandes_fournitures
+          -- Frais de fourniture
           COALESCE(
             (SELECT SUM(cf.quantite * cf.prix_unitaire)
              FROM commandes_fournitures cf
@@ -70,16 +69,14 @@ export async function GET(request: NextRequest) {
                )),
             0
           ) as frais_scolarite,
-          -- ⭐ Frais déjà payés : correction de la jointure
+          -- ⭐⭐⭐ FRAIS DÉJÀ PAYÉS : UNIQUEMENT LES ÉCHÉANCES PAYÉES ⭐⭐⭐
           COALESCE(
-            (SELECT SUM(pai.montant) 
-             FROM paiements pai
-             JOIN eleves e ON pai.eleve_id = e.id
-             JOIN inscriptions i ON i.eleve_id = e.id
-             WHERE i.preinscription_id = p.id AND pai.statut = 'valide'),
+            (SELECT SUM(e.montant) 
+             FROM echeances_paiement e
+             WHERE e.preinscription_id = p.id AND e.statut = 'paye'),
             0
           ) as frais_paye,
-          -- Récupérer les fournitures commandées avec leurs totaux
+          -- Récupérer les fournitures commandées
           COALESCE(
             (SELECT JSON_AGG(
               JSON_BUILD_OBJECT(
@@ -99,39 +96,53 @@ export async function GET(request: NextRequest) {
             (SELECT JSON_AGG(
               JSON_BUILD_OBJECT(
                 'nom', lt.nom,
-                'prix', lt.prix_abonnement,
+                'prix', pt.prix,
                 'horaire_matin', lt.horaire_matin,
                 'horaire_soir', lt.horaire_soir
               )
             )
-            FROM inscriptions_transport it
-            JOIN lignes_transport lt ON it.ligne_id = lt.id
-            WHERE it.eleve_id = (
-              SELECT e.id FROM eleves e 
-              JOIN inscriptions i ON i.eleve_id = e.id 
-              WHERE i.preinscription_id = p.id 
-              LIMIT 1
-            ) AND it.est_actif = true),
+            FROM preinscription_transport pt
+            JOIN lignes_transport lt ON pt.ligne_id = lt.id
+            WHERE pt.preinscription_id = p.id),
             '[]'::json
           ) as transport_selectionne,
           -- Récupérer la cantine sélectionnée
           COALESCE(
             (SELECT JSON_AGG(
               JSON_BUILD_OBJECT(
-                'nom', 'Cantine scolaire',
-                'prix', COALESCE(ic.solde, 0),
-                'est_actif', ic.est_actif
+                'nom', cm.plat || ' - ' || cm.accompagnement,
+                'prix', pc.prix,
+                'date', cm.date
               )
             )
-            FROM inscriptions_cantine ic
-            WHERE ic.eleve_id = (
-              SELECT e.id FROM eleves e 
-              JOIN inscriptions i ON i.eleve_id = e.id 
-              WHERE i.preinscription_id = p.id 
-              LIMIT 1
-            ) AND ic.est_actif = true),
+            FROM preinscription_cantine pc
+            JOIN cantine_menus cm ON pc.menu_id = cm.id
+            WHERE pc.preinscription_id = p.id),
             '[]'::json
-          ) as cantine_selectionnee
+          ) as cantine_selectionnee,
+          -- ⭐ Récupérer les échéances de paiement
+          COALESCE(
+            (SELECT JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'id', e.id,
+                'type', e.type,
+                'echeance', e.echeance,
+                'montant', e.montant,
+                'statut', e.statut,
+                'date_echeance', e.date_echeance,
+                'date_paiement', e.date_paiement
+              )
+              ORDER BY 
+                CASE e.echeance
+                  WHEN '1er_versement' THEN 1
+                  WHEN '2eme_versement' THEN 2
+                  WHEN '3eme_versement' THEN 3
+                END
+            )
+            FROM echeances_paiement e
+            WHERE e.preinscription_id = p.id),
+            '[]'::json
+          ) as echeances_paiement
         FROM preinscriptions p
         JOIN parents pa ON p.parent_id = pa.id
         JOIN utilisateurs u ON pa.utilisateur_id = u.id
@@ -155,6 +166,35 @@ export async function GET(request: NextRequest) {
       const totalFrais = fraisInscription + fraisCantine + fraisTransport + fraisLibrairie + fraisScolarite;
       const fraisPaye = Number(data.frais_paye) || 0;
 
+      // ⭐ Vérifier si toutes les échéances d'inscription sont payées
+      const echeances = data.echeances_paiement || [];
+      const echeancesInscription = echeances.filter((e: any) => e.type === 'inscription');
+      const toutesPayees = echeancesInscription.length > 0 && echeancesInscription.every((e: any) => e.statut === 'paye');
+      
+      // ⭐ Mettre à jour le statut - Version corrigée sans 'partiel'
+      let fraisStatut = data.frais_statut;
+      
+      if (toutesPayees && fraisStatut !== 'paye') {
+        // Toutes les échéances sont payées -> statut 'paye'
+        await query(`
+          UPDATE preinscriptions 
+          SET frais_statut = 'paye'
+          WHERE id = $1
+        `, [id]);
+        fraisStatut = 'paye';
+        console.log(`✅ Statut paiement mis à jour pour la pré-inscription ${id}: paye`);
+      } else if (fraisPaye > 0 && fraisPaye < totalFrais) {
+        // Paiement partiel -> on NE met pas à jour le statut (on garde 'en_attente' ou 'non_paye')
+        // On ne fait rien, le statut reste tel quel
+        console.log(`⚠️ Paiement partiel pour la pré-inscription ${id}: ${fraisPaye}/${totalFrais} - statut inchangé (${fraisStatut})`);
+        // On peut ajouter une note dans observations si besoin
+        // await query(`
+        //   UPDATE preinscriptions 
+        //   SET observations = CONCAT(COALESCE(observations, ''), ' - Paiement partiel effectué')
+        //   WHERE id = $1
+        // `, [id]);
+      }
+
       console.log("📊 Détails des frais calculés:", {
         inscription: fraisInscription,
         cantine: fraisCantine,
@@ -163,14 +203,21 @@ export async function GET(request: NextRequest) {
         scolarite: fraisScolarite,
         total: totalFrais,
         paye: fraisPaye,
-        reste: Math.max(0, totalFrais - fraisPaye)
+        reste: Math.max(0, totalFrais - fraisPaye),
+        fraisStatut: fraisStatut,
+        echeances: echeances.length,
+        toutesPayees: toutesPayees
       });
 
       return NextResponse.json({
         ...data,
+        frais_statut: fraisStatut,
+        // ⭐ Ajouter un flag pour indiquer si le paiement est partiel
+        est_partiel: fraisPaye > 0 && fraisPaye < totalFrais,
         fournitures_commandees: data.fournitures_commandees || [],
         transport_selectionne: data.transport_selectionne || [],
         cantine_selectionnee: data.cantine_selectionnee || [],
+        echeances_paiement: echeances,
         details_frais: {
           inscription: fraisInscription,
           cantine: fraisCantine,
@@ -211,7 +258,40 @@ export async function GET(request: NextRequest) {
         u.email as parent_email,
         u.telephone as parent_telephone,
         pa.profession as parent_profession,
-        pa.situation_matrimoniale as mere_info
+        pa.situation_matrimoniale as mere_info,
+        -- ⭐ Calculer le statut de paiement basé sur les échéances
+        CASE 
+          WHEN p.frais_statut = 'paye' THEN 'paye'
+          WHEN EXISTS (
+            SELECT 1 FROM echeances_paiement e 
+            WHERE e.preinscription_id = p.id 
+              AND e.type = 'inscription' 
+              AND e.statut != 'paye'
+          ) AND EXISTS (
+            SELECT 1 FROM echeances_paiement e 
+            WHERE e.preinscription_id = p.id 
+              AND e.type = 'inscription' 
+              AND e.statut = 'paye'
+          ) THEN 'partiel'
+          WHEN EXISTS (
+            SELECT 1 FROM echeances_paiement e 
+            WHERE e.preinscription_id = p.id 
+              AND e.type = 'inscription'
+          ) AND NOT EXISTS (
+            SELECT 1 FROM echeances_paiement e 
+            WHERE e.preinscription_id = p.id 
+              AND e.type = 'inscription' 
+              AND e.statut != 'paye'
+          ) THEN 'paye'
+          ELSE p.frais_statut
+        END as frais_statut_calcule,
+        -- ⭐ Calculer le montant payé pour la liste
+        COALESCE(
+          (SELECT SUM(e.montant) 
+           FROM echeances_paiement e
+           WHERE e.preinscription_id = p.id AND e.statut = 'paye'),
+          0
+        ) as frais_paye_calcule
       FROM preinscriptions p
       JOIN parents pa ON p.parent_id = pa.id
       JOIN utilisateurs u ON pa.utilisateur_id = u.id
@@ -233,7 +313,14 @@ export async function GET(request: NextRequest) {
 
     const result = await query(sql, params);
     
-    return NextResponse.json(result.rows);
+    // ⭐ Mettre à jour le frais_statut avec la valeur calculée
+    const rows = result.rows.map(row => ({
+      ...row,
+      frais_statut: row.frais_statut_calcule || row.frais_statut,
+      frais_paye: Number(row.frais_paye_calcule) || 0
+    }));
+    
+    return NextResponse.json(rows);
   } catch (error) {
     console.error("Erreur GET:", error);
     return NextResponse.json(
@@ -263,12 +350,32 @@ export async function PUT(request: NextRequest) {
 
     // Vérifier le paiement si on essaie de valider
     if (statut === "valide") {
+      // ⭐ Vérifier si toutes les échéances d'inscription sont payées
+      const echeancesResult = await query(`
+        SELECT COUNT(*) as total, 
+               SUM(CASE WHEN statut = 'paye' THEN 1 ELSE 0 END) as payees
+        FROM echeances_paiement 
+        WHERE preinscription_id = $1 AND type = 'inscription'
+      `, [id]);
+      
+      const totalEcheances = Number(echeancesResult.rows[0]?.total) || 0;
+      const payeesEcheances = Number(echeancesResult.rows[0]?.payees) || 0;
+      
+      // Si des échéances existent, vérifier qu'elles sont toutes payées
+      if (totalEcheances > 0 && payeesEcheances < totalEcheances) {
+        return NextResponse.json(
+          { error: "❌ Toutes les échéances d'inscription doivent être payées avant la validation" },
+          { status: 400 }
+        );
+      }
+      
+      // Vérifier aussi le statut général
       const preinscription = await query(
         "SELECT frais_statut, frais_montant, classe, frais_mode_paiement, frais_reference FROM preinscriptions WHERE id = $1",
         [id]
       );
       
-      if (preinscription.rows[0]?.frais_statut !== "paye") {
+      if (preinscription.rows[0]?.frais_statut !== "paye" && totalEcheances === 0) {
         return NextResponse.json(
           { error: "❌ Le paiement des frais est requis avant la validation" },
           { status: 400 }
@@ -357,7 +464,7 @@ export async function PUT(request: NextRequest) {
           VALUES ($1, $2, $3, $4, $5, 'active')
         `, [id, newEleve.rows[0].id, data.parent_id, matricule, anneeScolaire.rows[0]?.id || null]);
 
-        // 7. Convertir le mode de paiement pour la table paiements
+        // 7. Convertir le mode de paiement
         let modePaiementValide = 'especes';
         if (data.frais_mode_paiement === 'orange_money') {
           modePaiementValide = 'mobile_money';
@@ -367,39 +474,53 @@ export async function PUT(request: NextRequest) {
           modePaiementValide = 'especes';
         }
 
-        // 8. INSÉRER LE PAIEMENT DANS LA TABLE paiements
-        const currentYear = new Date().getFullYear();
-        const currentMonth = new Date().getMonth() + 1;
-        
-        await query(`
-          INSERT INTO paiements (
-            eleve_id, 
-            montant, 
-            type_frais, 
-            mode_paiement, 
-            reference_transaction, 
-            statut, 
-            date_paiement,
-            mois,
-            annee,
-            saisie_par
-          )
-          VALUES ($1, $2, 'inscription', $3, $4, 'valide', NOW(), $5, $6, $7)
-        `, [
-          newEleve.rows[0].id, 
-          montantFrais, 
-          modePaiementValide, 
-          data.frais_reference || null,
-          currentMonth,
-          currentYear,
-          (session.user as any).id
-        ]);
+        // ⭐ 8. INSÉRER LE PAIEMENT UNIQUEMENT SI LES FRAIS N'ONT PAS DÉJÀ ÉTÉ PAYÉS
+        const fraisInfo = await query(
+          `SELECT frais_statut FROM preinscriptions WHERE id = $1`,
+          [id]
+        );
+        const fraisStatut = fraisInfo.rows[0]?.frais_statut;
+
+        if (fraisStatut !== 'paye' && totalEcheances === 0) {
+          const currentYear = new Date().getFullYear();
+          const currentMonth = new Date().getMonth() + 1;
+
+          await query(`
+            INSERT INTO paiements (
+              eleve_id,
+              preinscription_id,
+              montant,
+              type_frais,
+              mode_paiement,
+              reference_transaction,
+              statut,
+              date_paiement,
+              mois,
+              annee,
+              saisie_par
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, 'valide', NOW(), $7, $8, $9)
+          `, [
+            newEleve.rows[0].id,
+            id,
+            montantFrais,
+            'inscription',
+            modePaiementValide,
+            data.frais_reference || null,
+            currentMonth,
+            currentYear,
+            (session.user as any).id
+          ]);
+
+          console.log(`✅ Paiement créé pour l'élève ${data.enfant_prenom} ${data.enfant_nom}`);
+        } else {
+          console.log(`⚠️ Les frais sont déjà marqués comme payés ou payés via échéances pour la pré-inscription ${id}`);
+        }
 
         console.log(`✅ Élève créé: ${data.enfant_prenom} ${data.enfant_nom}`);
         console.log(`   - Matricule: ${matricule}`);
         console.log(`   - Classe ID: ${classeId}`);
-        console.log(`   - Frais: ${montantFrais} GNF inséré dans paiements`);
-        console.log(`   - Mode: ${modePaiementValide}`);
+        console.log(`   - Frais: ${montantFrais} GNF`);
 
       } catch (createError) {
         console.error("Erreur lors de la création de l'élève:", createError);

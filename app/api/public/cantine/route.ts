@@ -4,10 +4,11 @@ import { query } from "@/lib/db";
 
 export async function GET() {
   try {
+    // ⭐ Supprimer la condition WHERE date >= CURRENT_DATE
+    // ⭐ Récupérer tous les menus avec un prix_annuel valide
     const result = await query(`
       SELECT 
         id, 
-        date, 
         plat, 
         accompagnement, 
         dessert, 
@@ -15,18 +16,30 @@ export async function GET() {
         prix_annuel,
         regime_special
       FROM cantine_menus
-      WHERE date >= CURRENT_DATE
-      ORDER BY date ASC
-      LIMIT 30
+      WHERE prix_annuel IS NOT NULL AND prix_annuel > 0
+      ORDER BY prix_annuel ASC
+      LIMIT 10
     `);
+
+    // Si aucun menu n'existe, créer un menu par défaut
+    if (result.rows.length === 0) {
+      return NextResponse.json([{
+        id: 0,
+        plat: "Cantine scolaire",
+        accompagnement: "",
+        dessert: "",
+        prix: 0,
+        prix_annuel: 2500000,
+        regime_special: false
+      }]);
+    }
 
     const menus = result.rows.map(r => ({
       id: r.id,
-      date: r.date ? new Date(r.date).toISOString().split('T')[0] : "",
       plat: r.plat || "Menu du jour",
       accompagnement: r.accompagnement || "",
       dessert: r.dessert || "",
-      prix: Number(r.prix) || 5000,
+      prix: Number(r.prix) || 0,
       prix_annuel: Number(r.prix_annuel) || 0,
       regime_special: r.regime_special || false
     }));

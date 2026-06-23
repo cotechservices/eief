@@ -25,11 +25,12 @@ import {
   Loader2,
   X,
   Plus,
-  ShoppingCart,  // ⭐ Ajout
-  Bus,           // ⭐ Ajout
-  Utensils       // ⭐ Ajout
+  ShoppingCart,
+  Bus,
+  Utensils
 } from "lucide-react";
-import PaiementModal from "../../../components/PaiementModal";
+// ⭐ Remplacer PaiementModal par PaiementPlanModal
+import PaiementPlanModal from "@/components/PaiementPlanModal";
 import * as XLSX from 'xlsx';
 import Link from "next/link";
 
@@ -71,7 +72,6 @@ interface DetailsFrais {
   reste: number;
 }
 
-// ⭐ Ajout des interfaces pour les services
 interface ServiceItem {
   nom: string;
   quantite?: number;
@@ -314,6 +314,9 @@ export default function GestionPreinscriptionsPage() {
     if (fraisStatut === "paye") {
       return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
     }
+    if (fraisStatut === "partiel") {
+      return <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Partiel</span>;
+    }
     return <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
@@ -435,7 +438,6 @@ export default function GestionPreinscriptionsPage() {
 
       {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {/* ... statistiques inchangées ... */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div><p className="text-gray-900 text-sm">Total</p><p className="text-2xl font-bold text-blue-600">{preinscriptions.length}</p></div>
@@ -470,7 +472,6 @@ export default function GestionPreinscriptionsPage() {
 
       {/* Filtres */}
       <div className="bg-white rounded-xl shadow-sm p-4 text-black">
-        {/* ... filtres inchangés ... */}
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
@@ -512,7 +513,6 @@ export default function GestionPreinscriptionsPage() {
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                {/* ... tableau inchangé ... */}
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-black uppercase">Dossier</th>
@@ -624,6 +624,7 @@ export default function GestionPreinscriptionsPage() {
         </div>
       )}
 
+      {/* Modal Détail -*/}
       {/* Modal Détail */}
       {showDetailModal && selectedPreinscription && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -735,93 +736,11 @@ export default function GestionPreinscriptionsPage() {
                   </div>
                 </div>
               </div>
-
-              {/* ⭐ SECTION SERVICES SÉLECTIONNÉS - AJOUTÉE */}
-              {(preinscriptionDetail?.fournitures_commandees?.length > 0 || 
-                preinscriptionDetail?.transport_selectionne?.length > 0 || 
-                preinscriptionDetail?.cantine_selectionnee?.length > 0) && (
-                <div>
-                  <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                    <ShoppingCart className="w-5 h-5 text-blue-600" />
-                    Services sélectionnés
-                  </h3>
-
-                  {/* Fournitures commandées */}
-                  {preinscriptionDetail?.fournitures_commandees?.length > 0 && (
-                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 mb-3">
-                      <h4 className="font-semibold text-purple-800 mb-2 flex items-center gap-2">
-                        <ShoppingCart className="w-4 h-4" /> Fournitures commandées
-                      </h4>
-                      <div className="space-y-1">
-                        {preinscriptionDetail.fournitures_commandees.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-sm border-b border-purple-100 pb-1">
-                            <span className="text-gray-700">{item.nom} x{item.quantite}</span>
-                            <span className="font-medium text-purple-600">{item.total?.toLocaleString()} GNF</span>
-                          </div>
-                        ))}
-                        <div className="pt-1 flex justify-between font-semibold text-purple-800">
-                          <span>Total fournitures</span>
-                          <span>
-                            {preinscriptionDetail.fournitures_commandees.reduce((acc, item) => acc + (item.total || 0), 0).toLocaleString()} GNF
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Transport sélectionné */}
-                  {preinscriptionDetail?.transport_selectionne?.length > 0 && (
-                    <div className="bg-green-50 p-4 rounded-lg border border-green-200 mb-3">
-                      <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
-                        <Bus className="w-4 h-4" /> Transport scolaire
-                      </h4>
-                      <div className="space-y-1">
-                        {preinscriptionDetail.transport_selectionne.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-sm border-b border-green-100 pb-1">
-                            <span className="text-gray-700">{item.nom}</span>
-                            <span className="font-medium text-green-600">{item.prix?.toLocaleString()} GNF</span>
-                          </div>
-                        ))}
-                        <div className="pt-1 flex justify-between font-semibold text-green-800">
-                          <span>Total transport</span>
-                          <span>
-                            {preinscriptionDetail.transport_selectionne.reduce((acc, item) => acc + (item.prix || 0), 0).toLocaleString()} GNF
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Cantine sélectionnée */}
-                  {preinscriptionDetail?.cantine_selectionnee?.length > 0 && (
-                    <div className="bg-orange-50 p-4 rounded-lg border border-orange-200 mb-3">
-                      <h4 className="font-semibold text-orange-800 mb-2 flex items-center gap-2">
-                        <Utensils className="w-4 h-4" /> Cantine scolaire
-                      </h4>
-                      <div className="space-y-1">
-                        {preinscriptionDetail.cantine_selectionnee.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-sm border-b border-orange-100 pb-1">
-                            <span className="text-gray-700">{item.nom}</span>
-                            <span className="font-medium text-orange-600">{item.prix?.toLocaleString()} GNF</span>
-                          </div>
-                        ))}
-                        <div className="pt-1 flex justify-between font-semibold text-orange-800">
-                          <span>Total cantine</span>
-                          <span>
-                            {preinscriptionDetail.cantine_selectionnee.reduce((acc, item) => acc + (item.prix || 0), 0).toLocaleString()} GNF
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* === SECTION DÉTAIL DES FRAIS === */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-purple-600" />
-                  Détail des frais scolaires
+                  Détail des paiements
                 </h3>
 
                 {loadingDetail ? (
@@ -915,15 +834,21 @@ export default function GestionPreinscriptionsPage() {
           </div>
         </div>
       )}
-
+      {/* ⭐ MODAL PAIEMENT AVEC PaiementPlanModal */}
       {showPaiementModal && paiementPreinscription && (
-        <PaiementModal
+        <PaiementPlanModal
           isOpen={showPaiementModal}
-          onClose={() => setShowPaiementModal(false)}
-          onSuccess={handlePaiementSuccess}
+          onClose={() => {
+            setShowPaiementModal(false);
+            setPaiementPreinscription(null);
+          }}
+          onSuccess={() => {
+            handlePaiementSuccess();
+            setShowPaiementModal(false);
+          }}
           preinscriptionId={paiementPreinscription.id}
           enfantNom={`${paiementPreinscription.enfant_prenom} ${paiementPreinscription.enfant_nom}`}
-          montantFrais={500000}
+          niveau={paiementPreinscription.niveau || "Primaire"}
         />
       )}
     </div>

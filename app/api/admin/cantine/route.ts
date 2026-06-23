@@ -21,8 +21,8 @@ export async function GET() {
         m.accompagnement, 
         m.dessert, 
         m.regime_special,
-        COALESCE(m.prix, 5000) as prix,
-        COALESCE(m.prix_annuel, 0) as prix_annuel,
+        m.prix,
+        m.prix_annuel,
         (SELECT COUNT(*) FROM reserves_cantine r WHERE r.date = m.date) as inscrits,
         (SELECT COUNT(*) FROM reserves_cantine r WHERE r.date = m.date AND r.est_present = true) as presents
       FROM cantine_menus m
@@ -37,8 +37,8 @@ export async function GET() {
       accompagnement: r.accompagnement || "-",
       dessert: r.dessert || "-",
       regime_special: r.regime_special || false,
-      prix: Number(r.prix) || 5000,
-      prix_annuel: Number(r.prix_annuel) || 0,
+      prix: r.prix !== null && r.prix !== undefined ? Number(r.prix) : null,
+      prix_annuel: r.prix_annuel !== null && r.prix_annuel !== undefined ? Number(r.prix_annuel) : null,
       inscrits: parseInt(r.inscrits || 0),
       presents: parseInt(r.presents || 0)
     }));
@@ -98,6 +98,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { date, plat, accompagnement, dessert, regime_special, prix, prix_annuel } = body;
 
+    // ⭐ Convertir les valeurs vides en NULL
+    const prixValue = prix !== "" && prix !== null && prix !== undefined ? parseInt(prix) : null;
+    const prixAnnuelValue = prix_annuel !== "" && prix_annuel !== null && prix_annuel !== undefined ? parseInt(prix_annuel) : null;
+
     const result = await query(`
       INSERT INTO cantine_menus (date, plat, accompagnement, dessert, regime_special, prix, prix_annuel)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -108,8 +112,8 @@ export async function POST(request: Request) {
       accompagnement, 
       dessert, 
       regime_special || false,
-      prix || 5000,
-      prix_annuel || 0
+      prixValue,
+      prixAnnuelValue
     ]);
 
     return NextResponse.json({ success: true, menu: result.rows[0] });
@@ -130,6 +134,14 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { id, date, plat, accompagnement, dessert, regime_special, prix, prix_annuel } = body;
 
+    if (!id) {
+      return NextResponse.json({ error: "ID requis" }, { status: 400 });
+    }
+
+    // ⭐ Convertir les valeurs vides en NULL
+    const prixValue = prix !== "" && prix !== null && prix !== undefined ? parseInt(prix) : null;
+    const prixAnnuelValue = prix_annuel !== "" && prix_annuel !== null && prix_annuel !== undefined ? parseInt(prix_annuel) : null;
+
     await query(`
       UPDATE cantine_menus 
       SET date = $1, 
@@ -146,8 +158,8 @@ export async function PUT(request: Request) {
       accompagnement, 
       dessert, 
       regime_special || false,
-      prix || 5000,
-      prix_annuel || 0,
+      prixValue,
+      prixAnnuelValue,
       id
     ]);
 
@@ -171,9 +183,38 @@ export async function DELETE(request: Request) {
     
     if (!id) return NextResponse.json({ error: "ID manquant" }, { status: 400 });
 
-    await query('DELETE FROM cantine_menus WHERE id = $1', [id]);
+    // Vérifier si le menu est référencé dans preinscription_cantine
+    const checkPreinscription = await query(`
+      SELECT COUNT(*) as count FROM preinscription_cantine WHERE menu_id = $1
+    `, [id]);
 
-    return NextResponse.json({ success: true });
+    const preinscriptionCount = parseInt(checkPreinscription.rows[0]?.count || 0);
+
+    // Vérifier si le menu est référencé dans reservations_cantine
+    const checkReservations = await query(`
+      SELECT COUNT(*) as count FROM reservations_cantine WHERE menu_id = $1
+    `, [id]);
+
+    const reservationCount = parseInt(checkReservations.rows[0]?.count || 0);
+
+    if (preinscriptionCount > 0 || reservationCount > 0) {
+      // Supprimer les références dans preinscription_cantine
+      await query('DELETE FROM preinscription_cantine WHERE menu_id = $1', [id]);
+      
+      // Supprimer les références dans reservations_cantine
+      await query('DELETE FROM reservations_cantine WHERE menu_id = $1', [id]);
+      
+      console.log(`🗑️ Suppression des références: ${preinscriptionCount} dans preinscription_cantine, ${reservationCount} dans reservations_cantine`);
+    }
+
+    // Supprimer le menu
+    const result = await query('DELETE FROM cantine_menus WHERE id = $1 RETURNING id', [id]);
+
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: "Menu non trouvé" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: "Menu supprimé avec succès" });
   } catch (error) {
     console.error("Erreur API Cantine (DELETE):", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

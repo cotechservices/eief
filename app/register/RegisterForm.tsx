@@ -902,7 +902,6 @@ export default function RegisterForm() {
                           <div className="flex-1">
                             <p className="font-medium text-gray-800">{item.nom}</p>
                             <p className="text-sm text-gray-800">{item.prix_unitaire.toLocaleString()} GNF</p>
-                            <p className="text-xs text-gray-600">Stock: {item.quantite_stock}</p>
                           </div>
                           <div className="flex items-center gap-3">
                             <button

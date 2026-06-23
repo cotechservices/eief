@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import PaiementPlanModal from "@/components/PaiementPlanModal";
 import {
   Users,
   CreditCard,
@@ -24,7 +25,12 @@ import {
   X,
   Plus,
   ShoppingCart,
-  Utensils
+  Utensils,
+  Camera,
+  File,
+  ExternalLink,
+  Image,
+  User
 } from "lucide-react";
 
 interface Enfant {
@@ -45,6 +51,8 @@ interface Preinscription {
   enfant_nom: string;
   enfant_prenom: string;
   date_naissance: string;
+  lieu_naissance?: string;
+  sexe?: string;
   niveau: string;
   classe: string;
   statut: "en_attente" | "valide" | "rejete";
@@ -52,6 +60,8 @@ interface Preinscription {
   frais_statut: string;
   frais_montant: number;
   photo_url: string | null;
+  acte_naissance_url?: string | null;
+  bulletin_url?: string | null;
 }
 
 interface Stats {
@@ -71,11 +81,47 @@ interface Stats {
   solde_restant: number;
 }
 
+interface PreinscriptionDetail extends Preinscription {
+  details_frais: {
+    inscription: number;
+    cantine: number;
+    transport: number;
+    librairie: number;
+    scolarite: number;
+    total: number;
+    paye: number;
+    reste: number;
+  };
+  parent_nom: string;
+  parent_prenom: string;
+  parent_email: string;
+  parent_telephone: string;
+  parent_profession: string;
+  mere_info: string | null;
+  acte_naissance_url: string | null;
+  bulletin_url: string | null;
+  photo_url: string | null;
+}
+
 interface Notification {
   id: number;
   type: "success" | "error" | "warning" | "info";
   message: string;
 }
+
+// Valeurs par défaut pour les stats
+const DEFAULT_STATS: Stats = {
+  notes: [],
+  presences: { total: 0, presents: 0, absents: 0, retards: 0 },
+  paiements: { total_paye: 0, nombre_paiements: 0, details: [] },
+  frais_inscription: 0,
+  transport: 0,
+  cantine: 0,
+  fournitures: 0,
+  scolarite: 0,
+  total_frais_general: 0,
+  solde_restant: 0
+};
 
 export default function ParentDashboard() {
   const [enfants, setEnfants] = useState<Enfant[]>([]);
@@ -87,6 +133,12 @@ export default function ParentDashboard() {
   const [modePaiement, setModePaiement] = useState("");
   const [reference, setReference] = useState("");
   const [paiementLoading, setPaiementLoading] = useState(false);
+
+  // États pour le modal de détails
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedPreinscriptionDetail, setSelectedPreinscriptionDetail] = useState<Preinscription | null>(null);
+  const [preinscriptionDetail, setPreinscriptionDetail] = useState<PreinscriptionDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   // États pour l'annulation
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -115,7 +167,9 @@ export default function ParentDashboard() {
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
+      // 1. Récupérer les enfants et les pré-inscriptions
       const [enfantsRes, preinscriptionsRes] = await Promise.all([
         fetch("/api/parent/enfants"),
         fetch("/api/parent/preinscriptions")
@@ -124,23 +178,91 @@ export default function ParentDashboard() {
       const enfantsData = await enfantsRes.json();
       const preinscriptionsData = await preinscriptionsRes.json();
 
+      console.log("👨‍👧‍👦 Enfants reçus:", enfantsData);
+      console.log("📋 Pré-inscriptions reçues:", preinscriptionsData);
+
       setEnfants(enfantsData);
 
       // Ne garder que les pré-inscriptions en attente
-      const preinscriptionsEnAttente = preinscriptionsData.filter(p => p.statut === "en_attente");
+      const preinscriptionsEnAttente = preinscriptionsData.filter((p: Preinscription) => p.statut === "en_attente");
       setPreinscriptions(preinscriptionsEnAttente);
 
-      // Charger les statistiques pour chaque enfant
-      for (const enfant of enfantsData) {
-        const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
-        const statsData = await statsResponse.json();
-        setStatsEnfant(prev => ({ ...prev, [enfant.eleve_id]: statsData }));
-      }
+      // 2. Charger les statistiques pour chaque enfant
+      const statsPromises = enfantsData.map(async (enfant: Enfant) => {
+        try {
+          console.log(`📊 Chargement des stats pour l'enfant ${enfant.eleve_id} (${enfant.prenom} ${enfant.nom})`);
+          const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
+
+          if (!statsResponse.ok) {
+            console.error(`❌ Erreur HTTP ${statsResponse.status} pour l'enfant ${enfant.eleve_id}`);
+            return { eleveId: enfant.eleve_id, stats: { ...DEFAULT_STATS } };
+          }
+
+          const statsData = await statsResponse.json();
+          console.log(`✅ Stats pour ${enfant.prenom}:`, statsData);
+
+          // Valider et nettoyer les données
+          const validatedStats: Stats = {
+            notes: statsData.notes || [],
+            presences: statsData.presences || { total: 0, presents: 0, absents: 0, retards: 0 },
+            paiements: {
+              total_paye: Number(statsData.paiements?.total_paye) || 0,
+              nombre_paiements: Number(statsData.paiements?.nombre_paiements) || 0,
+              details: statsData.paiements?.details || []
+            },
+            frais_inscription: Number(statsData.frais_inscription) || 0,
+            transport: Number(statsData.transport) || 0,
+            cantine: Number(statsData.cantine) || 0,
+            fournitures: Number(statsData.fournitures) || 0,
+            scolarite: Number(statsData.scolarite) || 0,
+            total_frais_general: Number(statsData.total_frais_general) || 0,
+            solde_restant: Number(statsData.solde_restant) || 0
+          };
+
+          return { eleveId: enfant.eleve_id, stats: validatedStats };
+        } catch (error) {
+          console.error(`❌ Erreur chargement stats pour enfant ${enfant.eleve_id}:`, error);
+          return { eleveId: enfant.eleve_id, stats: { ...DEFAULT_STATS } };
+        }
+      });
+
+      const statsResults = await Promise.all(statsPromises);
+
+      // Mettre à jour les stats
+      const newStatsEnfant: { [key: number]: Stats } = {};
+      statsResults.forEach(({ eleveId, stats }) => {
+        newStatsEnfant[eleveId] = stats;
+      });
+      setStatsEnfant(newStatsEnfant);
+
+      console.log("📊 Statistiques finales:", newStatsEnfant);
+
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("❌ Erreur globale:", error);
       addNotification("error", "Erreur lors du chargement des données");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPreinscriptionDetail = async (id: number) => {
+    setLoadingDetail(true);
+    try {
+      const response = await fetch(`/api/parent/preinscriptions/${id}`);
+      if (!response.ok) {
+        throw new Error("Erreur chargement détails");
+      }
+      const data = await response.json();
+      console.log("📋 Détails pré-inscription reçus:", data);
+      
+      // ⭐ S'assurer que les URLs des documents sont bien présentes
+      // data.acte_naissance_url, data.bulletin_url, data.photo_url
+      setPreinscriptionDetail(data);
+    } catch (error) {
+      console.error("Erreur:", error);
+      addNotification("error", "Erreur lors du chargement des détails");
+    } finally {
+      setLoadingDetail(false);
     }
   };
 
@@ -320,72 +442,6 @@ export default function ParentDashboard() {
         </div>
       </div>
 
-      {/* Détail des frais par catégorie - DONNÉES RÉELLES */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Wallet className="w-5 h-5 text-blue-600" />
-          Détail des frais scolaires
-        </h3>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <div className="bg-blue-50 rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-600">Inscription</p>
-            <p className="text-sm font-bold text-blue-600">{statsGlobales.totalFraisInscription.toLocaleString()} GNF</p>
-          </div>
-          <div className="bg-green-50 rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-600">Transport</p>
-            <p className="text-sm font-bold text-green-600">{statsGlobales.totalTransport.toLocaleString()} GNF</p>
-          </div>
-          <div className="bg-pink-50 rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-600">Cantine</p>
-            <p className="text-sm font-bold text-pink-600">{statsGlobales.totalCantine.toLocaleString()} GNF</p>
-          </div>
-          <div className="bg-purple-50 rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-600">Fournitures</p>
-            <p className="text-sm font-bold text-purple-600">{statsGlobales.totalFournitures.toLocaleString()} GNF</p>
-          </div>
-          <div className="bg-orange-50 rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-600">Scolarité</p>
-            <p className="text-sm font-bold text-orange-600">{statsGlobales.totalScolarite.toLocaleString()} GNF</p>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap justify-between items-center border-t pt-4 gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Total général :</span>
-            <span className="text-sm font-bold text-blue-700">{statsGlobales.totalFraisGeneral.toLocaleString()} GNF</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Déjà payé :</span>
-            <span className="text-sm font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Solde :</span>
-            <span className={`text-sm font-bold ${statsGlobales.soldeRestant > 0 ? 'text-red-600' : 'text-green-600'}`}>
-              {statsGlobales.soldeRestant.toLocaleString()} GNF
-            </span>
-          </div>
-          {/* Barre de progression */}
-          <div className="flex-1 min-w-[100px]">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                style={{
-                  width: `${statsGlobales.totalFraisGeneral > 0
-                    ? Math.min(100, (statsGlobales.totalPaye / statsGlobales.totalFraisGeneral) * 100)
-                    : 0}%`
-                }}
-              />
-            </div>
-            <p className="text-xs text-gray-500 text-right mt-1">
-              {statsGlobales.totalFraisGeneral > 0
-                ? Math.round((statsGlobales.totalPaye / statsGlobales.totalFraisGeneral) * 100)
-                : 0}% payé
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Section Pré-inscriptions - avec montants réels */}
       {preinscriptions.length > 0 && (
         <div className="mb-8">
@@ -420,10 +476,6 @@ export default function ParentDashboard() {
                           <h3 className="font-semibold text-black">{p.enfant_prenom} {p.enfant_nom}</h3>
                           <p className="text-sm text-gray-900">{p.classe}</p>
                           <p className="text-xs text-gray-900 mt-1">Dossier: {p.numero_dossier}</p>
-                          {/* AFFICHAGE DU MONTANT RÉEL */}
-                          <p className="text-xs font-medium text-blue-600 mt-1">
-                            Frais: {p.frais_montant?.toLocaleString() || 0} GNF
-                          </p>
                         </div>
                         <div className="text-right">
                           {getStatutBadge(p.statut)}
@@ -440,7 +492,18 @@ export default function ParentDashboard() {
                               }}
                               className="flex-1 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 min-w-[100px]"
                             >
-                              Payer {p.frais_montant?.toLocaleString()} GNF
+                              Payer l'inscription
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedPreinscriptionDetail(p);
+                                loadPreinscriptionDetail(p.id);
+                                setShowDetailModal(true);
+                              }}
+                              className="px-3 py-1.5 bg-blue-100 text-blue-600 text-sm rounded-lg hover:bg-blue-200 transition flex items-center gap-1"
+                              title="Voir les détails de la pré-inscription"
+                            >
+                              <Eye className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => openConfirmCancel(p)}
@@ -452,9 +515,21 @@ export default function ParentDashboard() {
                           </>
                         )}
                         {p.frais_statut === "paye" && p.statut === "en_attente" && (
-                          <div className="flex-1 bg-yellow-100 text-yellow-700 text-sm py-1.5 rounded-lg text-center">
-                            En attente de validation
-                          </div>
+                          <>
+                            <button
+                              onClick={() => {
+                                setSelectedPreinscriptionDetail(p);
+                                loadPreinscriptionDetail(p.id);
+                                setShowDetailModal(true);
+                              }}
+                              className="flex-1 bg-blue-100 text-blue-600 text-sm py-1.5 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-1"
+                            >
+                              <Eye className="w-4 h-4" /> Voir détails
+                            </button>
+                            <div className="flex-1 bg-yellow-100 text-yellow-700 text-sm py-1.5 rounded-lg text-center">
+                              En attente de validation
+                            </div>
+                          </>
                         )}
                         {p.statut === "valide" && (
                           <div className="flex-1 bg-green-100 text-green-700 text-sm py-1.5 rounded-lg text-center">
@@ -473,184 +548,6 @@ export default function ParentDashboard() {
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Liste des enfants inscrits - avec détails réels */}
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <GraduationCap className="w-5 h-5 text-blue-600" />
-        Mes enfants inscrits
-      </h2>
-
-      {enfants.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-          <Users className="w-16 h-16 text-gray-900 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">Aucun enfant inscrit</h3>
-          <p className="text-gray-900 mt-2">Vous n'avez pas encore d'enfant inscrit dans l'école.</p>
-          <Link href="/register" className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Inscrire un enfant</Link>
-        </div>
-      ) : (
-        <div className="grid md:grid-cols-2 gap-6">
-          {enfants.map((enfant) => {
-            const stats = statsEnfant[enfant.eleve_id];
-
-            return (
-              <div key={enfant.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition">
-                <div className="bg-blue-600 p-4 text-white">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center gap-3">
-                        {enfant.photo_url ? (
-                          <img src={enfant.photo_url} alt="photo" className="w-12 h-12 rounded-full object-cover border-2 border-white" />
-                        ) : (
-                          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                            <Users className="w-6 h-6 text-white" />
-                          </div>
-                        )}
-                        <div>
-                          <h3 className="text-xl font-bold">{enfant.prenom} {enfant.nom}</h3>
-                          <p className="text-sm opacity-90">{enfant.classe_nom}</p>
-                          <p className="text-xs opacity-75 mt-1">Matricule: {enfant.matricule}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4 space-y-3">
-                  {stats && (
-                    <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-900 text-sm flex items-center gap-1"><AlertCircle className="w-4 h-4" /> Absences/Retards</span>
-                        <span className="font-medium text-orange-600">{stats.presences?.absents || 0} abs. / {stats.presences?.retards || 0} ret.</span>
-                      </div>
-
-                      {/* Détail des frais par catégorie - DONNÉES RÉELLES */}
-                      <div className="mt-3 pt-3 border-t">
-                        <p className="text-xs text-gray-600 mb-2 font-semibold">Détail des frais :</p>
-                        <div className="grid grid-cols-2 gap-1 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Inscription :</span>
-                            <span className="font-medium text-blue-600">{stats.frais_inscription?.toLocaleString() || 0} GNF</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Transport :</span>
-                            <span className="font-medium text-green-600">{stats.transport?.toLocaleString() || 0} GNF</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Cantine :</span>
-                            <span className="font-medium text-pink-600">{stats.cantine?.toLocaleString() || 0} GNF</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Fournitures :</span>
-                            <span className="font-medium text-purple-600">{stats.fournitures?.toLocaleString() || 0} GNF</span>
-                          </div>
-                          <div className="flex justify-between col-span-2">
-                            <span className="text-gray-600">Scolarité (mensualités) :</span>
-                            <span className="font-medium text-orange-600">{stats.scolarite?.toLocaleString() || 0} GNF</span>
-                          </div>
-                        </div>
-
-                        <div className="mt-2 flex justify-between items-center bg-gray-50 p-2 rounded-lg">
-                          <span className="text-xs font-semibold text-gray-700">Total à payer :</span>
-                          <span className="text-sm font-bold text-blue-700">{stats.total_frais_general?.toLocaleString() || 0} GNF</span>
-                        </div>
-
-                        <div className="flex justify-between items-center mt-1">
-                          <span className="text-xs text-gray-600">Déjà payé :</span>
-                          <span className="text-xs font-medium text-green-600">{stats.paiements?.total_paye?.toLocaleString() || 0} GNF</span>
-                        </div>
-
-                        {stats.solde_restant > 0 ? (
-                          <div className="flex justify-between items-center mt-1">
-                            <span className="text-xs text-gray-600">Solde :</span>
-                            <span className="text-xs font-medium text-red-600">{stats.solde_restant.toLocaleString()} GNF</span>
-                          </div>
-                        ) : (
-                          <div className="flex justify-between items-center mt-1">
-                            <span className="text-xs text-gray-600">Statut :</span>
-                            <span className="text-xs font-medium text-green-600">✅ Tout est payé</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Barre de progression des paiements - avec données réelles */}
-                      {stats.total_frais_general > 0 && (
-                        <div className="mt-2">
-                          <div className="flex justify-between text-xs text-gray-900 mb-1">
-                            <span>Progression des paiements</span>
-                            <span>{Math.round(((stats.paiements?.total_paye || 0) / stats.total_frais_general) * 100)}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                              style={{ width: `${Math.min(100, ((stats.paiements?.total_paye || 0) / stats.total_frais_general) * 100)}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Détail des derniers paiements - DONNÉES RÉELLES */}
-                      {stats.paiements?.details && stats.paiements.details.length > 0 && (
-                        <div className="mt-3 pt-3 border-t">
-                          <p className="text-xs text-gray-900 mb-2">Derniers paiements:</p>
-                          <div className="space-y-1">
-                            {stats.paiements.details.slice(0, 3).map((p, idx) => (
-                              <div key={idx} className="flex justify-between text-xs">
-                                <span className="text-black">{new Date(p.date_paiement).toLocaleDateString()}</span>
-                                <span className="font-medium text-green-600">{p.montant.toLocaleString()} GNF</span>
-                                <span className="text-black capitalize">{p.mode_paiement}</span>
-                                <span className="text-gray-500 text-[10px]">{p.type_frais}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Matières */}
-                      {stats.notes && stats.notes.length > 0 && (
-                        <div className="mt-2 pt-2 border-t">
-                          <p className="text-xs text-gray-900 mb-1">Matières:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {stats.notes.slice(0, 4).map((note, idx) => (
-                              <span key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                                {note.matiere} ({note.moyenne}/20)
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  <Link
-                    href={`/dashboard/parent/enfants/${enfant.eleve_id}`}
-                    className="w-full mt-3 text-blue-600 text-sm font-medium flex items-center justify-center gap-1 hover:gap-2 transition-all"
-                  >
-                    Voir le détail <Eye className="w-4 h-4" />
-                  </Link>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Link
-                      href={`/dashboard/parent/transport?enfantId=${enfant.eleve_id}`}
-                      className="flex-1 bg-indigo-600 text-white text-sm py-1.5 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2 min-w-[80px]"
-                    >
-                      <Bus className="w-4 h-4" /> Transport
-                    </Link>
-                    <Link
-                      href={`/dashboard/parent/cantine?enfantId=${enfant.eleve_id}`}
-                      className="flex-1 bg-pink-600 text-white text-sm py-1.5 rounded-lg hover:bg-pink-700 transition flex items-center justify-center gap-2 min-w-[80px]"
-                    >
-                      <Utensils className="w-4 h-4" /> Cantine
-                    </Link>
-                    <Link
-                      href={`/dashboard/parent/librairie?enfantId=${enfant.eleve_id}`}
-                      className="flex-1 bg-purple-600 text-white text-sm py-1.5 rounded-lg hover:bg-purple-700 transition flex items-center justify-center gap-2 min-w-[80px]"
-                    >
-                      <ShoppingCart className="w-4 h-4" /> Librairie
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
         </div>
       )}
 
@@ -681,6 +578,309 @@ export default function ParentDashboard() {
           <p className="text-sm font-medium">Emploi du temps</p>
         </Link>
       </div>
+
+      {/* Modal Détail Pré-inscription */}
+      {showDetailModal && selectedPreinscriptionDetail && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b sticky top-0 bg-white">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-black">Détail de la pré-inscription</h2>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">✕</button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* En-tête avec photo */}
+              <div className="flex items-start gap-6 pb-6 border-b">
+                <div className="flex-shrink-0">
+                  {selectedPreinscriptionDetail.photo_url ? (
+                    <img src={selectedPreinscriptionDetail.photo_url} alt="Photo" className="w-32 h-32 rounded-lg object-cover shadow-md" />
+                  ) : (
+                    <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Camera className="w-12 h-12 text-gray-900" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="bg-gray-50 p-3 rounded-lg mb-3">
+                    <p className="text-sm text-gray-900">Numéro de dossier</p>
+                    <p className="font-mono text-xl font-bold text-blue-600">{selectedPreinscriptionDetail.numero_dossier}</p>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-900">Statut dossier</p>
+                      {getStatutBadge(selectedPreinscriptionDetail.statut)}
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-900">Paiement</p>
+                      {getFraisBadge(selectedPreinscriptionDetail.frais_statut)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informations des parents */}
+              {preinscriptionDetail && (
+                <div>
+                  <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                    <User className="w-5 h-5 text-blue-900" /> Informations des parents
+                  </h3>
+                  <div className="bg-gray-50 p-3 rounded-lg mb-4">
+                    <p className="text-sm text-gray-500">Email (commun)</p>
+                    <p className="font-medium text-black">{preinscriptionDetail.parent_email}</p>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                      <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">Père</h4>
+                      <div className="space-y-2">
+                        <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-black">{preinscriptionDetail.parent_prenom} {preinscriptionDetail.parent_nom}</p></div>
+                        <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-black">{preinscriptionDetail.parent_telephone || "Non renseigné"}</p></div>
+                        <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-black">{preinscriptionDetail.parent_profession || "Non renseigné"}</p></div>
+                      </div>
+                    </div>
+                    <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg">
+                      <h4 className="font-semibold text-pink-800 mb-3 text-sm uppercase tracking-wide">Mère</h4>
+                      {(() => {
+                        let mereData: any = null;
+                        try {
+                          if (preinscriptionDetail.mere_info) {
+                            mereData = typeof preinscriptionDetail.mere_info === 'string' 
+                              ? JSON.parse(preinscriptionDetail.mere_info) 
+                              : preinscriptionDetail.mere_info;
+                          }
+                        } catch (e) {}
+                        return mereData && (mereData.mereNom || mereData.merePrenom) ? (
+                          <div className="space-y-2">
+                            <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-black">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p></div>
+                            <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-black">{mereData.merePhone || "Non renseigné"}</p></div>
+                            <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-black">{mereData.mereProfession || "Non renseigné"}</p></div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-400 italic">Non renseigné</p>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Informations de l'enfant */}
+              <div>
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-green-600" /> Informations de l'enfant
+                </h3>
+                <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+                  <div>
+                    <p className="text-sm text-gray-900">Nom complet</p>
+                    <p className="font-medium text-black">{selectedPreinscriptionDetail.enfant_prenom} {selectedPreinscriptionDetail.enfant_nom}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">Date de naissance</p>
+                    <p className="font-medium text-black">{new Date(selectedPreinscriptionDetail.date_naissance).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">Lieu de naissance</p>
+                    <p className="font-medium text-black">{selectedPreinscriptionDetail.lieu_naissance || "Non renseigné"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">Sexe</p>
+                    <p className="font-medium text-black">{selectedPreinscriptionDetail.sexe === "M" ? "Masculin" : "Féminin"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">Niveau</p>
+                    <p className="font-medium text-black">{selectedPreinscriptionDetail.niveau}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">Classe souhaitée</p>
+                    <p className="font-medium text-black">{selectedPreinscriptionDetail.classe}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ⭐ Documents téléchargés - CORRIGÉ */}
+              <div>
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-purple-600" /> Documents joints
+                </h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {/* Acte de naissance */}
+                  <div className="border rounded-lg p-4 hover:shadow-md transition">
+                    <div className="flex items-center gap-2 mb-2">
+                      <File className="w-5 h-5 text-blue-600" />
+                      <span className="font-medium text-black">Acte de naissance</span>
+                    </div>
+                    {(() => {
+                      // ⭐ Utiliser les données de preinscriptionDetail ou de selectedPreinscriptionDetail
+                      const acteUrl = preinscriptionDetail?.acte_naissance_url || selectedPreinscriptionDetail?.acte_naissance_url;
+                      console.log("📄 Acte URL:", acteUrl);
+                      return acteUrl ? (
+                        <a 
+                          href={acteUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                        >
+                          Voir le document <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <p className="text-gray-500 text-sm">Non téléchargé</p>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Photo d'identité */}
+                  <div className="border rounded-lg p-4 hover:shadow-md transition">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Image className="w-5 h-5 text-green-600" />
+                      <span className="font-medium text-black">Photo d'identité</span>
+                    </div>
+                    {(() => {
+                      const photoUrl = preinscriptionDetail?.photo_url || selectedPreinscriptionDetail?.photo_url;
+                      return photoUrl ? (
+                        <a 
+                          href={photoUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                        >
+                          Voir la photo <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <p className="text-gray-500 text-sm">Non téléchargée</p>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Bulletin scolaire */}
+                  <div className="border rounded-lg p-4 hover:shadow-md transition">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileText className="w-5 h-5 text-orange-600" />
+                      <span className="font-medium text-black">Bulletin scolaire</span>
+                    </div>
+                    {(() => {
+                      const bulletinUrl = preinscriptionDetail?.bulletin_url || selectedPreinscriptionDetail?.bulletin_url;
+                      return bulletinUrl ? (
+                        <a 
+                          href={bulletinUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                        >
+                          Voir le bulletin <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <p className="text-gray-500 text-sm">Non téléchargé</p>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Détail des paiements */}
+              <div>
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-purple-600" />
+                  Détail des paiements
+                </h3>
+
+                {loadingDetail ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                  </div>
+                ) : preinscriptionDetail?.details_frais ? (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <p className="text-xs text-gray-600">Inscription</p>
+                        <p className="font-bold text-blue-600">{preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
+                        <p className="text-xs text-gray-600">Cantine</p>
+                        <p className="font-bold text-pink-600">{preinscriptionDetail.details_frais.cantine.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                        <p className="text-xs text-gray-600">Transport</p>
+                        <p className="font-bold text-green-600">{preinscriptionDetail.details_frais.transport.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                        <p className="text-xs text-gray-600">Frais de fourniture</p>
+                        <p className="font-bold text-purple-600">{preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                        <p className="text-xs text-gray-600">Scolarité</p>
+                        <p className="font-bold text-orange-600">{preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF</p>
+                      </div>
+                      <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
+                        <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
+                        <p className="font-bold text-gray-800 text-lg">{preinscriptionDetail.details_frais.total.toLocaleString()} GNF</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
+                      <div>
+                        <p className="text-xs text-gray-600">Déjà payé</p>
+                        <p className="font-bold text-green-600">{preinscriptionDetail.details_frais.paye.toLocaleString()} GNF</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Reste à payer</p>
+                        <p className={`font-bold ${preinscriptionDetail.details_frais.reste > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {preinscriptionDetail.details_frais.reste.toLocaleString()} GNF
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Statut</p>
+                        {preinscriptionDetail.details_frais.reste === 0 ? (
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" /> Tout payé
+                          </span>
+                        ) : preinscriptionDetail.details_frais.paye > 0 ? (
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> Partiel
+                          </span>
+                        ) : (
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <XCircle className="w-3 h-3" /> Non payé
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {preinscriptionDetail.details_frais.total > 0 && (
+                      <div className="mt-3">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>Progression des paiements</span>
+                          <span>{Math.round((preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
+                            style={{ width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%` }} 
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    <p>Chargement des informations de frais...</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Fermer */}
+              <div className="flex justify-end">
+                <button 
+                  onClick={() => setShowDetailModal(false)} 
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmation d'annulation */}
       {showConfirmModal && preinscriptionToCancel && (
@@ -741,101 +941,22 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {/* Modal Paiement - avec montant réel */}
+      {/* Modal Paiement */}
       {showPaiementModal && selectedPreinscription && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-bold text-black">Paiement des frais d'inscription</h2>
-              <p className="text-gray-900 text-sm">
-                {selectedPreinscription.enfant_prenom} {selectedPreinscription.enfant_nom} - {selectedPreinscription.classe}
-              </p>
-            </div>
-            <div className="p-6 space-y-6">
-              <div className="bg-blue-50 p-4 rounded-lg text-center">
-                <p className="text-sm text-gray-900">Montant à payer</p>
-                <p className="text-2xl font-bold text-blue-700">{selectedPreinscription.frais_montant.toLocaleString()} GNF</p>
-              </div>
-
-              <div>
-                <label className="block text-gray-900 mb-2">Mode de paiement *</label>
-                <div className="grid grid-cols-3 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setModePaiement("especes")}
-                    className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === "especes"
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
-                      }`}
-                  >
-                    <Wallet className="w-6 h-6 text-green-900" />
-                    <span className="text-xs text-black">Espèces</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setModePaiement("orange_money")}
-                    className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === "orange_money"
-                      ? "border-orange-500 bg-orange-50"
-                      : "border-gray-200 hover:border-gray-300"
-                      }`}
-                  >
-                    <Smartphone className="w-6 h-6 text-orange-600" />
-                    <span className="text-xs text-black">Orange Money</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setModePaiement("carte")}
-                    className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === "carte"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                      }`}
-                  >
-                    <CreditCard className="w-6 h-6 text-blue-700" />
-                    <span className="text-xs text-black">Carte Visa</span>
-                  </button>
-                </div>
-              </div>
-
-              {modePaiement === "especes" && (
-                <div className="bg-yellow-50 p-3 rounded-lg">
-                  <p className="text-sm text-yellow-700">
-                    Paiement en espèces à effectuer à la caisse de l'école.
-                    Un email sera envoyé au comptable pour validation.
-                  </p>
-                </div>
-              )}
-
-              {(modePaiement === "orange_money" || modePaiement === "carte") && (
-                <div>
-                  <label className="block text-gray-900 mb-2">Numéro de transaction</label>
-                  <input
-                    type="text"
-                    value={reference}
-                    onChange={(e) => setReference(e.target.value)}
-                    placeholder={modePaiement === "orange_money" ? "Ex: #OM-123456789" : "Ex: VISA-****-1234"}
-                    className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <p className="text-xs text-gray-900 mt-1">
-                    {modePaiement === "orange_money"
-                      ? "Entrez le numéro de transaction reçu par SMS"
-                      : "Entrez le numéro de transaction de votre carte"}
-                  </p>
-                </div>
-              )}
-
-              <button
-                onClick={handlePaiement}
-                disabled={!modePaiement || paiementLoading}
-                className={`w-full py-3 rounded-lg font-semibold transition ${!modePaiement || paiementLoading
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-green-600 text-white hover:bg-green-700"
-                  }`}
-              >
-                {paiementLoading ? "Traitement..." : `Confirmer le paiement de ${selectedPreinscription.frais_montant.toLocaleString()} GNF`}
-              </button>
-            </div>
-          </div>
-        </div>
+        <PaiementPlanModal
+          isOpen={showPaiementModal}
+          onClose={() => {
+            setShowPaiementModal(false);
+            setSelectedPreinscription(null);
+          }}
+          onSuccess={() => {
+            fetchData();
+            addNotification("success", "Paiement effectué avec succès !");
+          }}
+          preinscriptionId={selectedPreinscription.id}
+          enfantNom={`${selectedPreinscription.enfant_prenom} ${selectedPreinscription.enfant_nom}`}
+          niveau={selectedPreinscription.niveau}
+        />
       )}
     </div>
   );

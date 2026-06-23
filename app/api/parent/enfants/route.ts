@@ -17,11 +17,14 @@ export async function GET() {
       SELECT 
         e.id,
         e.matricule,
-        e.id as eleve_id,                    -- ← CORRECTION: utilisez e.id au lieu de e.utilisateur_id
+        e.id as eleve_id,
         u.nom,
         u.prenom,
         c.nom as classe_nom,
         c.niveau,
+        e.sexe,
+        e.date_naissance,
+        e.lieu_naissance,
         c.frais_inscription as frais_inscription_classe,
         COALESCE(e.photo_url, pre.photo_url) as photo_url,
         COALESCE((
@@ -29,19 +32,97 @@ export async function GET() {
           FROM notes n 
           WHERE n.eleve_id = e.id 
           AND n.type_note = 'composition'
-        ), 0) as moyenne
+        ), 0) as moyenne,
+        -- ⭐ Frais d'inscription (depuis la classe)
+        COALESCE(c.frais_inscription, 0) as frais_inscription,
+        -- ⭐ Frais de cantine (prix annuel du dernier menu) - COMME DANS L'ADMIN
+        COALESCE(
+          (SELECT cm.prix_annuel
+           FROM cantine_menus cm
+           ORDER BY cm.date DESC
+           LIMIT 1),
+          0
+        ) as frais_cantine,
+        -- ⭐ Frais de transport (somme des abonnements) - COMME DANS L'ADMIN
+        COALESCE(
+          (SELECT SUM(lt.prix_abonnement) 
+           FROM lignes_transport lt),
+          0
+        ) as frais_transport,
+        -- ⭐ Frais de fourniture (commandes liées à la pré-inscription) - COMME DANS L'ADMIN
+        COALESCE(
+          (SELECT SUM(cf.quantite * cf.prix_unitaire)
+           FROM commandes_fournitures cf
+           WHERE cf.preinscription_id = pre.id),
+          0
+        ) as frais_librairie,
+        -- ⭐ Frais de scolarité (mensualités) - COMME DANS L'ADMIN
+        COALESCE(
+          (SELECT SUM(f.montant) 
+           FROM frais_scolaires f
+           WHERE f.type_frais = 'mensualite' 
+             AND f.annee_scolaire_id = (
+               SELECT id FROM annees_scolaires WHERE est_active = true LIMIT 1
+             )),
+          0
+        ) as frais_scolarite,
+        -- ⭐⭐⭐ Frais déjà payés : utiliser eleve_id (comme dans l'admin) ⭐⭐⭐
+        COALESCE(
+          (SELECT SUM(pai.montant) 
+           FROM paiements pai
+           WHERE pai.eleve_id = e.id AND pai.statut = 'valide'),
+          0
+        ) as frais_paye
       FROM inscriptions i
       JOIN eleves e ON i.eleve_id = e.id
       JOIN utilisateurs u ON e.utilisateur_id = u.id
       LEFT JOIN classes c ON e.classe_id = c.id
-      LEFT JOIN preinscriptions pre ON pre.enfant_nom = u.nom AND pre.enfant_prenom = u.prenom
+      LEFT JOIN preinscriptions pre ON i.preinscription_id = pre.id
       JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id
       JOIN parents p ON lpe.parent_id = p.id
       JOIN utilisateurs pu ON p.utilisateur_id = pu.id
       WHERE pu.email = $1 AND i.statut = 'active'
     `, [userEmail]);
 
-    return NextResponse.json(result.rows);
+    // Calculer les totaux pour chaque enfant
+    const enfantsAvecFrais = result.rows.map((enfant: any) => {
+      const fraisInscription = Number(enfant.frais_inscription) || 0;
+      const fraisCantine = Number(enfant.frais_cantine) || 0;
+      const fraisTransport = Number(enfant.frais_transport) || 0;
+      const fraisLibrairie = Number(enfant.frais_librairie) || 0;
+      const fraisScolarite = Number(enfant.frais_scolarite) || 0;
+      const fraisPaye = Number(enfant.frais_paye) || 0;
+      
+      const totalFrais = fraisInscription + fraisCantine + fraisTransport + fraisLibrairie + fraisScolarite;
+      const reste = Math.max(0, totalFrais - fraisPaye);
+
+      console.log(`📊 Frais pour ${enfant.prenom} ${enfant.nom}:`, {
+        inscription: fraisInscription,
+        cantine: fraisCantine,
+        transport: fraisTransport,
+        librairie: fraisLibrairie,
+        scolarite: fraisScolarite,
+        total: totalFrais,
+        paye: fraisPaye,
+        reste: reste
+      });
+
+      return {
+        ...enfant,
+        details_frais: {
+          inscription: fraisInscription,
+          cantine: fraisCantine,
+          transport: fraisTransport,
+          librairie: fraisLibrairie,
+          scolarite: fraisScolarite,
+          total: totalFrais,
+          paye: fraisPaye,
+          reste: reste
+        }
+      };
+    });
+
+    return NextResponse.json(enfantsAvecFrais);
   } catch (error) {
     console.error("Erreur:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

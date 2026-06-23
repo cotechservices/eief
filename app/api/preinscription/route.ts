@@ -15,7 +15,9 @@ export async function POST(request: NextRequest) {
       parentId, 
       enfantsCount: enfants?.length,
       fournituresCount: fournitures_commande?.length || 0,
-      montantFournitures: montant_fournitures || 0
+      montantFournitures: montant_fournitures || 0,
+      montantTransport: body.montant_transport || 0,
+      montantCantine: body.montant_cantine || 0
     });
 
     if (!enfants || enfants.length === 0) {
@@ -197,9 +199,6 @@ export async function POST(request: NextRequest) {
       // ⭐ 5. Enregistrer le transport sélectionné
       if (body.transport && body.transport.length > 0) {
         console.log(`Enregistrement du transport pour la pré-inscription ${preinscriptionId}`);
-        // Le transport sera lié à l'élève après validation de la pré-inscription
-        // On stocke les données dans une table temporaire ou on les passe en paramètre
-        // Pour l'instant, on les enregistre dans une table de liaison préinscription_transport
         for (const transport of body.transport) {
           await query(
             `INSERT INTO preinscription_transport (
@@ -235,6 +234,9 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // ⭐ 7. Créer le plan de paiement et les échéances
+      await createPlanPaiement(preinscriptionId, enfant.niveau, body);
+
       preinscriptions.push({
         id: preinscriptionId,
         numeroDossier: result.rows[0].numero_dossier,
@@ -261,4 +263,92 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// ⭐ Fonction utilitaire pour calculer la date d'échéance
+function getEcheanceDate(echeance: string): Date {
+  const date = new Date();
+  if (echeance === '1er_versement') {
+    return date;
+  } else if (echeance === '2eme_versement') {
+    date.setMonth(date.getMonth() + 2);
+    return date;
+  } else if (echeance === '3eme_versement') {
+    date.setMonth(date.getMonth() + 4);
+    return date;
+  }
+  return date;
+}
+
+// ⭐ Fonction utilitaire pour créer les échéances
+async function createEcheances(
+  preinscriptionId: number,
+  type: string,
+  montantTotal: number,
+  echeancesList: string[]
+) {
+  if (montantTotal <= 0) return;
+  
+  const montantParEcheance = Math.round(montantTotal / echeancesList.length);
+  console.log(`📦 ${type}: ${montantTotal} GNF - ${montantParEcheance} GNF par échéance`);
+  
+  for (const echeance of echeancesList) {
+    const dateEcheance = getEcheanceDate(echeance);
+    
+    await query(`
+      INSERT INTO echeances_paiement (
+        preinscription_id, 
+        type, 
+        echeance, 
+        montant,
+        date_echeance,
+        statut
+      ) VALUES ($1, $2, $3, $4, $5, 'en_attente')
+    `, [preinscriptionId, type, echeance, montantParEcheance, dateEcheance]);
+  }
+  console.log(`✅ ${echeancesList.length} échéances de ${type} créées`);
+}
+
+// ⭐ Fonction pour créer le plan de paiement et les échéances
+async function createPlanPaiement(preinscriptionId: number, niveau: string, body: any) {
+  console.log(`📊 Création du plan de paiement pour la pré-inscription ${preinscriptionId}`);
+
+  // Récupérer le plan de paiement selon le niveau
+  const planResult = await query(`
+    SELECT * FROM plans_paiement_niveaux 
+    WHERE LOWER(niveau) = LOWER($1)
+  `, [niveau]);
+
+  if (planResult.rows.length === 0) {
+    console.log(`⚠️ Aucun plan trouvé pour le niveau: ${niveau}`);
+    return;
+  }
+
+  const plan = planResult.rows[0];
+  console.log(`📋 Plan trouvé: ${plan.niveau} - Total: ${plan.total}`);
+
+  // Mettre à jour la pré-inscription avec le plan
+  await query(`
+    UPDATE preinscriptions 
+    SET plan_paiement_id = $1, 
+        montant_total_plan = $2,
+        montant_restant_plan = $2
+    WHERE id = $3
+  `, [plan.id, plan.total, preinscriptionId]);
+
+  const echeancesList = ['1er_versement', '2eme_versement', '3eme_versement'];
+
+  // 7.1 Créer les échéances pour l'inscription
+  await createEcheances(preinscriptionId, 'inscription', plan.total, echeancesList);
+
+  // 7.2 Créer les échéances pour le transport si sélectionné
+  await createEcheances(preinscriptionId, 'transport', body.montant_transport || 0, echeancesList);
+
+  // 7.3 Créer les échéances pour la cantine si sélectionnée
+  await createEcheances(preinscriptionId, 'cantine', body.montant_cantine || 0, echeancesList);
+
+  // 7.4 Créer les échéances pour les fournitures si sélectionnées
+  await createEcheances(preinscriptionId, 'fournitures', body.montant_fournitures || 0, echeancesList);
+
+  console.log(`✅ Plan de paiement complété pour la pré-inscription ${preinscriptionId}`);
 }
