@@ -34,10 +34,70 @@ import {
   Bus
 } from "lucide-react";
 
+interface DashboardStats {
+  general: {
+    totalEleves: number;
+    totalEnseignants: number;
+    totalClasses: number;
+    totalParents: number;
+    preinscriptionsEnAttente: number;
+    hommes: number;
+    femmes: number;
+  };
+  financieres: {
+    totalRecettes: number;
+    totalDepenses: number;
+    solde: number;
+    tauxRecouvrement: number;
+    evolutionRecettes: Array<{ mois: string; recettes: number; depenses: number }>;
+    categoriesRecettes: Array<{ name: string; montant: number; pourcentage: number }>;
+    derniersPaiements: Array<{
+      id: number;
+      eleve: string;
+      classe: string;
+      montant: number;
+      type: string;
+      date: string;
+      mode: string;
+    }>;
+    // ⭐ Nouveaux champs pour le total à payer
+    totalScolarite: number;
+    totalTransport: number;
+    totalCantine: number;
+    totalFournitures: number;
+    totalAPayer: number;
+    totalPaye: number;
+    soldeRestant: number;
+  };
+}
+
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<any>({
-    general: {},
-    financieres: {}
+  const [stats, setStats] = useState<DashboardStats>({
+    general: {
+      totalEleves: 0,
+      totalEnseignants: 0,
+      totalClasses: 0,
+      totalParents: 0,
+      preinscriptionsEnAttente: 0,
+      hommes: 0,
+      femmes: 0
+    },
+    financieres: {
+      totalRecettes: 0,
+      totalDepenses: 0,
+      solde: 0,
+      tauxRecouvrement: 0,
+      evolutionRecettes: [],
+      categoriesRecettes: [],
+      derniersPaiements: [],
+      totalScolarite: 0,
+      totalTransport: 0,
+      totalCantine: 0,
+      totalFournitures: 0,
+      totalAPayer: 0,
+      totalPaye: 0,
+      soldeRestant: 0
+    }
   });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,7 +112,27 @@ export default function AdminDashboard() {
     try {
       const response = await fetch("/api/dashboard/stats");
       const data = await response.json();
-      setStats(data);
+      
+      // ⭐ Calculer le total à payer à partir des données
+      const totalScolarite = data.financieres?.totalScolarite || 0;
+      const totalTransport = data.financieres?.totalTransport || 0;
+      const totalCantine = data.financieres?.totalCantine || 0;
+      const totalFournitures = data.financieres?.totalFournitures || 0;
+      const totalAPayer = totalScolarite + totalTransport + totalCantine + totalFournitures;
+      
+      setStats({
+        general: data.general || stats.general,
+        financieres: {
+          ...data.financieres,
+          totalScolarite,
+          totalTransport,
+          totalCantine,
+          totalFournitures,
+          totalAPayer,
+          totalPaye: data.financieres?.totalPaye || 0,
+          soldeRestant: data.financieres?.soldeRestant || 0
+        }
+      });
     } catch (error) {
       console.error("Erreur chargement dashboard:", error);
     } finally {
@@ -176,7 +256,7 @@ export default function AdminDashboard() {
         </h2>
       </div>
 
-      {/* Cartes financières */}
+      {/* ⭐ Cartes financières avec le Total à payer */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
@@ -199,20 +279,22 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-900 text-sm">Solde actuel</p>
-              <p className="text-2xl font-bold text-blue-600">{(financieres.solde || 0).toLocaleString()} GNF</p>
+              <p className="text-gray-900 text-sm">Total à payer</p>
+              <p className="text-2xl font-bold text-orange-600">{(financieres.totalAPayer || 0).toLocaleString()} GNF</p>
             </div>
-            <div className="bg-blue-100 p-3 rounded-lg"><Wallet className="w-6 h-6 text-blue-600" /></div>
+            <div className="bg-orange-100 p-3 rounded-lg"><Wallet className="w-6 h-6 text-orange-600" /></div>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-900 text-sm">Taux de recouvrement</p>
-              <p className="text-2xl font-bold text-purple-600">{financieres.tauxRecouvrement || 0}%</p>
-              <p className="text-sm text-gray-900 mt-1">Objectif: 95%</p>
+              <p className="text-gray-900 text-sm">Solde restant</p>
+              <p className={`text-2xl font-bold ${(financieres.soldeRestant || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {(financieres.soldeRestant || 0).toLocaleString()} GNF
+              </p>
+              <p className="text-xs text-gray-500">Déjà payé: {(financieres.totalPaye || 0).toLocaleString()} GNF</p>
             </div>
-            <div className="bg-purple-100 p-3 rounded-lg"><CheckCircle className="w-6 h-6 text-purple-600" /></div>
+            <div className="bg-red-100 p-3 rounded-lg"><CreditCard className="w-6 h-6 text-red-600" /></div>
           </div>
         </div>
       </div>
@@ -274,58 +356,6 @@ export default function AdminDashboard() {
               );
             })}
           </div>
-        </div>
-      </div>
-
-      {/* Derniers paiements */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h3 className="font-semibold text-gray-900">Derniers paiements</h3>
-          <button className="text-blue-600 text-sm hover:underline">Voir tous →</button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Élève</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Classe</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Montant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Mode</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {paginatedPaiements.map((paiement: any) => (
-                <tr key={paiement.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{paiement.eleve}</td>
-                  <td className="px-6 py-4 text-gray-900">{paiement.classe}</td>
-                  <td className="px-6 py-4 text-right font-medium">{parseInt(paiement.montant).toLocaleString()} GNF</td>
-                  <td className="px-6 py-4"><span className="text-xs bg-gray-100 text-gray-900 px-2 py-1 rounded-full">{paiement.type}</span></td>
-                  <td className="px-6 py-4 text-gray-900">{new Date(paiement.date).toLocaleDateString()}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1">
-                      {paiement.mode === "mobile_money" && <Smartphone className="w-4 h-4 text-green-600" />}
-                      {paiement.mode === "especes" && <Wallet className="w-4 h-4 text-blue-600" />}
-                      {paiement.mode === "carte" && <CreditCard className="w-4 h-4 text-purple-600" />}
-                      <span className="text-sm">{paiement.mode === "mobile_money" ? "Orange Money" : paiement.mode}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-green-600 text-sm flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Payé</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button className="text-blue-600"><Printer className="w-4 h-4" /></button>
-                      <button className="text-gray-900"><Eye className="w-4 h-4" /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
 

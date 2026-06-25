@@ -27,19 +27,130 @@ export async function GET() {
     const preinscriptions = await query("SELECT COUNT(*) as total FROM preinscriptions WHERE statut = 'en_attente'");
 
     // ========== STATISTIQUES FINANCIÈRES ==========
-    // Total recettes
-    const recettes = await query(`
-      SELECT COALESCE(SUM(montant), 0) as total 
+
+    // ⭐⭐⭐ 1. TOTAL RECETTES (Paiements validés) ⭐⭐⭐
+    const recettesResult = await query(`
+      SELECT COALESCE(SUM(montant), 0) as total_recettes
       FROM paiements 
+      WHERE statut IN ('valide', 'paye')
+    `);
+    const totalRecettes = Number(recettesResult.rows[0]?.total_recettes) || 0;
+
+    // ⭐⭐⭐ 2. TOTAL DÉPENSES ⭐⭐⭐
+    const depensesResult = await query(`
+      SELECT COALESCE(SUM(montant), 0) as total_depenses
+      FROM depenses 
       WHERE statut = 'valide'
     `);
+    const totalDepenses = Number(depensesResult.rows[0]?.total_depenses) || 0;
 
-    // Total dépenses
-    const depenses = await query(`
-      SELECT COALESCE(SUM(montant), 0) as total 
-      FROM paiements 
-      WHERE statut = 'valide' AND type_frais IN ('salaire', 'depense')
+    // ⭐⭐⭐ 3. TOTAL À PAYER (TOUTES LES PRÉ-INSCRIPTIONS NON PAYÉES) ⭐⭐⭐
+
+    // 3a. Frais d'inscription depuis TOUTES les pré-inscriptions (en_attente + valide)
+    const fraisInscription = await query(`
+      SELECT COALESCE(SUM(p.frais_montant), 0) as total_inscription
+      FROM preinscriptions p
+      WHERE p.statut IN ('en_attente', 'valide') AND p.frais_statut != 'paye'
     `);
+
+    // 3b. Transport depuis TOUTES les pré-inscriptions
+    const transport = await query(`
+      SELECT COALESCE(SUM(pt.prix), 0) as total_transport
+      FROM preinscriptions p
+      JOIN preinscription_transport pt ON pt.preinscription_id = p.id
+      WHERE p.statut IN ('en_attente', 'valide')
+    `);
+
+    // 3c. Cantine depuis TOUTES les pré-inscriptions
+    const cantine = await query(`
+      SELECT COALESCE(SUM(pc.prix), 0) as total_cantine
+      FROM preinscriptions p
+      JOIN preinscription_cantine pc ON pc.preinscription_id = p.id
+      WHERE p.statut IN ('en_attente', 'valide')
+    `);
+
+    // 3d. Fournitures depuis TOUTES les pré-inscriptions
+    const fournitures = await query(`
+      SELECT COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total_fournitures
+      FROM preinscriptions p
+      JOIN commandes_fournitures cf ON cf.preinscription_id = p.id
+      WHERE p.statut IN ('en_attente', 'valide')
+    `);
+
+    // 3e. Mensualités (scolarité) - pour tous les élèves
+    const scolarite = await query(`
+      SELECT COALESCE(SUM(f.montant), 0) as total_scolarite
+      FROM frais_scolaires f
+      WHERE f.type_frais = 'mensualite' 
+        AND f.annee_scolaire_id = (
+          SELECT id FROM annees_scolaires WHERE est_active = true LIMIT 1
+        )
+    `);
+
+    const totalInscription = Number(fraisInscription.rows[0]?.total_inscription) || 0;
+    const totalTransport = Number(transport.rows[0]?.total_transport) || 0;
+    const totalCantine = Number(cantine.rows[0]?.total_cantine) || 0;
+    const totalFournitures = Number(fournitures.rows[0]?.total_fournitures) || 0;
+    const totalScolarite = Number(scolarite.rows[0]?.total_scolarite) || 0;
+
+    // ⭐ TOTAL À PAYER GLOBAL
+    const totalAPayer = totalInscription + totalTransport + totalCantine + totalFournitures + totalScolarite;
+
+    // ⭐⭐⭐ 4. DÉJÀ PAYÉ = TOTAL RECETTES ⭐⭐⭐
+    const totalPaye = totalRecettes;
+
+    // ⭐⭐⭐ 5. SOLDE RESTANT = UNIQUEMENT POUR LES PRÉ-INSCRIPTIONS PARTIELLEMENT PAYÉES ⭐⭐⭐
+
+    // Récupérer les pré-inscriptions avec statut 'partiel'
+    const partiellementPayes = await query(`
+      SELECT 
+        p.id,
+        p.frais_montant,
+        p.frais_statut,
+        COALESCE(
+          (SELECT SUM(e.montant) 
+           FROM echeances_paiement e
+           WHERE e.preinscription_id = p.id AND e.statut = 'paye'),
+          0
+        ) as montant_paye
+      FROM preinscriptions p
+      WHERE p.statut IN ('en_attente', 'valide')
+        AND p.frais_statut = 'partiel'
+    `);
+
+    // Calculer le solde restant pour les partiellement payés
+    let soldeRestantPartiel = 0;
+    for (const row of partiellementPayes.rows) {
+      // Récupérer les échéances non payées (en_attente)
+      const echeancesNonPayees = await query(`
+        SELECT COALESCE(SUM(montant), 0) as total_restant
+        FROM echeances_paiement
+        WHERE preinscription_id = $1 AND statut = 'en_attente'
+      `, [row.id]);
+      soldeRestantPartiel += Number(echeancesNonPayees.rows[0]?.total_restant) || 0;
+    }
+
+    // ⭐ Le solde restant affiché = solde restant des partiellement payés
+    const soldeRestant = soldeRestantPartiel;
+
+    // ⭐⭐⭐ 6. TAUX DE RECOUVREMENT = (Déjà payé / Total à payer) * 100 ⭐⭐⭐
+    const tauxRecouvrement = totalAPayer > 0 ? Math.round((totalPaye / totalAPayer) * 100) : 0;
+
+    console.log("📊 DASHBOARD FINANCIER:", {
+      totalRecettes,
+      totalDepenses,
+      totalInscription,
+      totalTransport,
+      totalCantine,
+      totalFournitures,
+      totalScolarite,
+      totalAPayer,
+      totalPaye,
+      soldeRestant,
+      soldeRestantPartiel,
+      tauxRecouvrement,
+      nbPartiellementPayes: partiellementPayes.rows.length
+    });
 
     // Derniers paiements
     const derniersPaiements = await query(`
@@ -56,48 +167,50 @@ export async function GET() {
       JOIN eleves e ON p.eleve_id = e.id
       JOIN utilisateurs u ON e.utilisateur_id = u.id
       LEFT JOIN classes c ON e.classe_id = c.id
+      WHERE p.statut IN ('valide', 'paye')
       ORDER BY p.date_paiement DESC
       LIMIT 10
     `);
 
     // Paiements par type
     const paiementsParType = await query(`
-      SELECT type_frais, COALESCE(SUM(montant), 0) as total
+      SELECT 
+        CASE 
+          WHEN type_frais = 'inscription' THEN 'Inscription'
+          WHEN type_frais = 'mensualite' THEN 'Mensualité'
+          WHEN type_frais = 'cantine' THEN 'Cantine'
+          WHEN type_frais = 'transport' THEN 'Transport'
+          WHEN type_frais = 'bibliotheque' THEN 'Bibliothèque'
+          ELSE 'Autre'
+        END as name,
+        COALESCE(SUM(montant), 0) as montant
       FROM paiements 
-      WHERE statut = 'valide'
+      WHERE statut IN ('valide', 'paye')
       GROUP BY type_frais
     `);
 
-    const totalRecettes = recettes.rows[0]?.total || 0;
-    const totalDepenses = depenses.rows[0]?.total || 0;
-    const solde = totalRecettes - totalDepenses;
-    const tauxRecouvrement = totalRecettes > 0 ? Math.round((totalRecettes / (totalRecettes + totalDepenses)) * 100) : 0;
+    const totalRecettesCat = paiementsParType.rows.reduce((acc, row) => acc + Number(row.montant), 0);
+    const categoriesRecettes = paiementsParType.rows.map((cat: any) => ({
+      name: cat.name,
+      montant: Number(cat.montant),
+      pourcentage: totalRecettesCat > 0 ? Math.round((Number(cat.montant) / totalRecettesCat) * 100) : 0
+    }));
 
     // Évolution mensuelle
     const evolution = await query(`
       SELECT 
         TO_CHAR(date_paiement, 'Mon') as mois,
-        COALESCE(SUM(CASE WHEN type_frais NOT IN ('salaire', 'depense') THEN montant ELSE 0 END), 0) as recettes,
-        COALESCE(SUM(CASE WHEN type_frais IN ('salaire', 'depense') THEN montant ELSE 0 END), 0) as depenses
+        COALESCE(SUM(montant), 0) as recettes,
+        0 as depenses
       FROM paiements
-      WHERE date_paiement >= NOW() - INTERVAL '6 months'
+      WHERE statut IN ('valide', 'paye')
+        AND date_paiement >= NOW() - INTERVAL '6 months'
       GROUP BY EXTRACT(MONTH FROM date_paiement), TO_CHAR(date_paiement, 'Mon')
       ORDER BY EXTRACT(MONTH FROM date_paiement) DESC
       LIMIT 6
     `);
 
-    // Répartition des recettes par catégorie
-    const categoriesRecettes = paiementsParType.rows.map((cat: any) => {
-      const pourcentage = totalRecettes > 0 ? Math.round((cat.total / totalRecettes) * 100) : 0;
-      let name = cat.type_frais;
-      if (name === "inscription") name = "Inscription";
-      else if (name === "mensualite") name = "Mensualité";
-      else if (name === "cantine") name = "Cantine";
-      else if (name === "transport") name = "Transport";
-      else if (name === "bibliotheque") name = "Bibliothèque";
-      else name = "Autre";
-      return { name, montant: cat.total, pourcentage };
-    });
+    const solde = totalRecettes - totalDepenses;
 
     return NextResponse.json({
       general: {
@@ -111,13 +224,25 @@ export async function GET() {
         totalPaiementsAnnee: totalRecettes
       },
       financieres: {
-        totalRecettes,
-        totalDepenses,
-        solde,
-        tauxRecouvrement,
+        // ⭐ CHAMPS PRINCIPAUX
+        totalRecettes: totalRecettes,
+        totalDepenses: totalDepenses,
+        solde: solde,
+        tauxRecouvrement: tauxRecouvrement,
+        // ⭐ TOTAL À PAYER
+        totalAPayer: totalAPayer,
+        totalPaye: totalPaye,
+        soldeRestant: soldeRestant, // ⭐ Seulement les partiellement payés
+        // ⭐ DÉTAIL DES FRAIS
+        totalScolarite: totalScolarite,
+        totalTransport: totalTransport,
+        totalCantine: totalCantine,
+        totalFournitures: totalFournitures,
+        totalInscription: totalInscription,
+        // ⭐ AUTRES CHAMPS
         evolutionRecettes: evolution.rows.reverse(),
         derniersPaiements: derniersPaiements.rows,
-        categoriesRecettes
+        categoriesRecettes: categoriesRecettes
       }
     });
   } catch (error) {

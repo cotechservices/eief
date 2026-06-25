@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 
       // ⭐ 2. Récupérer le plan de paiement (par ID ou par niveau)
       let planData = null;
-      
+
       // Essayer d'abord avec plan_paiement_id
       if (data.plan_paiement_id) {
         const planResult = await query(`
@@ -63,12 +63,12 @@ export async function GET(request: Request) {
           FROM plans_paiement_niveaux
           WHERE id = $1 AND type_inscription = 'inscription'
         `, [data.plan_paiement_id]);
-        
+
         if (planResult.rows.length > 0) {
           planData = planResult.rows[0];
         }
       }
-      
+
       // Si pas de plan trouvé, essayer par niveau
       if (!planData) {
         const planResult = await query(`
@@ -82,10 +82,10 @@ export async function GET(request: Request) {
           FROM plans_paiement_niveaux
           WHERE LOWER(niveau) = LOWER($1) AND type_inscription = 'inscription'
         `, [niveau]);
-        
+
         if (planResult.rows.length > 0) {
           planData = planResult.rows[0];
-          
+
           // ⭐ Mettre à jour la pré-inscription avec l'ID du plan trouvé
           await query(`
             UPDATE preinscriptions 
@@ -172,6 +172,11 @@ export async function GET(request: Request) {
         GROUP BY p.id
       `, [preinscriptionId]);
 
+      const totalTransport = Number(transport.rows[0]?.total_transport) || 0;
+      const totalCantine = Number(cantine.rows[0]?.total_cantine) || 0;
+      const totalFournitures = Number(fournitures.rows[0]?.total_fournitures) || 0;
+      const totalServices = totalTransport + totalCantine + totalFournitures;
+
       // ⭐ 5. Récupérer les échéances
       let echeancesResult = await query(`
         SELECT 
@@ -191,6 +196,9 @@ export async function GET(request: Request) {
             WHEN '1er_versement' THEN 1
             WHEN '2eme_versement' THEN 2
             WHEN '3eme_versement' THEN 3
+            WHEN 'transport' THEN 4
+            WHEN 'cantine' THEN 5
+            WHEN 'fournitures' THEN 6
           END
       `, [preinscriptionId]);
 
@@ -203,42 +211,142 @@ export async function GET(request: Request) {
             ($1, 'inscription', '2eme_versement', $3, CURRENT_DATE + INTERVAL '2 months', 'en_attente'),
             ($1, 'inscription', '3eme_versement', $4, CURRENT_DATE + INTERVAL '4 months', 'en_attente')
         `, [preinscriptionId, plan.premier_versement, plan.deuxieme_versement, plan.troisieme_versement]);
-
-        // Recharger les échéances
-        echeancesResult = await query(`
-          SELECT 
-            id,
-            type,
-            echeance,
-            montant,
-            statut,
-            date_echeance,
-            date_paiement,
-            reference_transaction,
-            mode_paiement
-          FROM echeances_paiement
-          WHERE preinscription_id = $1
-          ORDER BY 
-            CASE echeance
-              WHEN '1er_versement' THEN 1
-              WHEN '2eme_versement' THEN 2
-              WHEN '3eme_versement' THEN 3
-            END
-        `, [preinscriptionId]);
       }
 
-      // ⭐ 7. Calculer les totaux des services
-      const totalTransport = Number(transport.rows[0]?.total_transport) || 0;
-      const totalCantine = Number(cantine.rows[0]?.total_cantine) || 0;
-      const totalFournitures = Number(fournitures.rows[0]?.total_fournitures) || 0;
-      const totalServices = totalTransport + totalCantine + totalFournitures;
+      // ⭐ 7. CRÉER LES ÉCHÉANCES POUR LES SERVICES OPTIONNELS SI ELLES N'EXISTENT PAS
+      if (totalServices > 0) {
+        // Vérifier si des échéances de services existent déjà
+        const servicesExist = await query(`
+          SELECT COUNT(*) as count 
+          FROM echeances_paiement 
+          WHERE preinscription_id = $1 
+            AND type IN ('transport', 'cantine', 'fournitures')
+        `, [preinscriptionId]);
 
-      // ⭐ 8. Filtrer les échéances d'inscription
+        const count = parseInt(servicesExist.rows[0].count);
+
+        // Si aucune échéance de service n'existe, les créer
+        if (count === 0) {
+          // Créer une échéance pour le transport
+          if (totalTransport > 0) {
+            await query(`
+              INSERT INTO echeances_paiement (
+                preinscription_id, 
+                type, 
+                echeance, 
+                montant, 
+                date_echeance, 
+                statut,
+                created_at,
+                updated_at
+              ) VALUES (
+                $1, 
+                'transport', 
+                'transport', 
+                $2, 
+                CURRENT_DATE + INTERVAL '1 month', 
+                'en_attente',
+                NOW(),
+                NOW()
+              )
+            `, [preinscriptionId, totalTransport]);
+            console.log(`✅ Échéance transport créée: ${totalTransport} GNF`);
+          }
+
+          // Créer une échéance pour la cantine
+          if (totalCantine > 0) {
+            await query(`
+              INSERT INTO echeances_paiement (
+                preinscription_id, 
+                type, 
+                echeance, 
+                montant, 
+                date_echeance, 
+                statut,
+                created_at,
+                updated_at
+              ) VALUES (
+                $1, 
+                'cantine', 
+                'cantine', 
+                $2, 
+                CURRENT_DATE + INTERVAL '1 month', 
+                'en_attente',
+                NOW(),
+                NOW()
+              )
+            `, [preinscriptionId, totalCantine]);
+            console.log(`✅ Échéance cantine créée: ${totalCantine} GNF`);
+          }
+
+          // Créer une échéance pour les fournitures
+          if (totalFournitures > 0) {
+            await query(`
+              INSERT INTO echeances_paiement (
+                preinscription_id, 
+                type, 
+                echeance, 
+                montant, 
+                date_echeance, 
+                statut,
+                created_at,
+                updated_at
+              ) VALUES (
+                $1, 
+                'fournitures', 
+                'fournitures', 
+                $2, 
+                CURRENT_DATE + INTERVAL '1 month', 
+                'en_attente',
+                NOW(),
+                NOW()
+              )
+            `, [preinscriptionId, totalFournitures]);
+            console.log(`✅ Échéance fournitures créée: ${totalFournitures} GNF`);
+          }
+
+          // Mettre à jour le montant restant de la pré-inscription
+          await query(`
+            UPDATE preinscriptions 
+            SET montant_restant_plan = montant_restant_plan + $1
+            WHERE id = $2
+          `, [totalServices, preinscriptionId]);
+
+          console.log(`✅ Total des services ajouté au montant restant: ${totalServices} GNF`);
+        }
+      }
+
+      // ⭐ 8. Recharger les échéances après création des services
+      echeancesResult = await query(`
+        SELECT 
+          id,
+          type,
+          echeance,
+          montant,
+          statut,
+          date_echeance,
+          date_paiement,
+          reference_transaction,
+          mode_paiement
+        FROM echeances_paiement
+        WHERE preinscription_id = $1
+        ORDER BY 
+          CASE echeance
+            WHEN '1er_versement' THEN 1
+            WHEN '2eme_versement' THEN 2
+            WHEN '3eme_versement' THEN 3
+            WHEN 'transport' THEN 4
+            WHEN 'cantine' THEN 5
+            WHEN 'fournitures' THEN 6
+          END
+      `, [preinscriptionId]);
+
+      // ⭐ 9. Filtrer les échéances d'inscription
       const echeancesInscription = echeancesResult.rows.filter(
         (e: any) => e.type === 'inscription'
       );
 
-      // ⭐ 9. Construire la réponse
+      // ⭐ 10. Construire la réponse
       const response = {
         ...data,
         plan: plan,

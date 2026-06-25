@@ -616,6 +616,28 @@ CREATE TABLE IF EXISTS public.reinscriptions (
     parent_telephone VARCHAR(20)
 );
 
+-- =========================================================
+-- 0. CRÉATION DE LA TABLE depenses (si elle n'existe pas)
+-- =========================================================
+CREATE TABLE IF NOT EXISTS depenses (
+  id             SERIAL PRIMARY KEY,
+  categorie      VARCHAR(100) NOT NULL,
+  montant        INTEGER NOT NULL,
+  description    TEXT,
+  date_depense   TIMESTAMPTZ DEFAULT NOW(),
+  sous_categorie VARCHAR(100),
+  reference      VARCHAR(100),
+  fournisseur    VARCHAR(200),
+  numero_recu    VARCHAR(100),
+  saisi_par      INTEGER REFERENCES utilisateurs(id) ON DELETE SET NULL,
+  valide_par     INTEGER REFERENCES utilisateurs(id) ON DELETE SET NULL,
+  statut         VARCHAR(20) DEFAULT 'valide' CHECK (statut IN ('valide', 'annule', 'en_attente')),
+  exercice_annee INTEGER DEFAULT EXTRACT(YEAR FROM NOW()),
+  exercice_mois  INTEGER DEFAULT EXTRACT(MONTH FROM NOW()),
+  created_at     TIMESTAMPTZ DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ============================================
 -- INDEX
 -- ============================================
@@ -651,6 +673,11 @@ CREATE INDEX idx_reinscriptions_eleve ON reinscriptions(eleve_id);
 CREATE INDEX idx_reinscriptions_annee ON reinscriptions(annee_scolaire_id);
 CREATE INDEX idx_reinscriptions_statut ON reinscriptions(statut);
 CREATE INDEX idx_reinscriptions_numero_dossier ON reinscriptions(numero_dossier);
+
+-- Créer les index pour depenses
+CREATE INDEX IF NOT EXISTS idx_depenses_date ON depenses(date_depense);
+CREATE INDEX IF NOT EXISTS idx_depenses_categorie ON depenses(categorie);
+CREATE INDEX IF NOT EXISTS idx_depenses_annee_mois ON depenses(exercice_annee, exercice_mois);
 
 -- ============================================
 -- INITIALISATION ANNÉE SCOLAIRE

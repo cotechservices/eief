@@ -25,7 +25,7 @@ import {
   Loader2,
   X
 } from "lucide-react";
-import PaiementModal from "../../../components/PaiementModal";
+import PaiementModal from "@/components/PaiementPlanModal";
 import * as XLSX from 'xlsx';
 
 interface Reinscription {

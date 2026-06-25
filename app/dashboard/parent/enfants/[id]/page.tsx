@@ -22,7 +22,11 @@ import {
   CheckCircle,
   Download,
   Eye,
-  Clock
+  Clock,
+  File,
+  Image,
+  ExternalLink,
+  Camera
 } from "lucide-react";
 
 // Types
@@ -37,6 +41,8 @@ interface EleveDetail {
   classe_nom: string;
   niveau: string;
   photo_url: string | null;
+  acte_naissance_url?: string | null;
+  bulletin_url?: string | null;
   moyenne_generale: number;
   appreciation: { text: string; color: string; bg: string };
   taux_presence: string;
@@ -139,6 +145,7 @@ export default function EnfantDetailPage() {
         throw new Error(`HTTP ${response.status}`);
       }
       const result = await response.json();
+      console.log("📊 Données reçues:", result);
       setData(result);
     } catch (error) {
       console.error("Erreur:", error);
@@ -201,7 +208,14 @@ export default function EnfantDetailPage() {
         </Link>
         <div className="flex items-center gap-4 flex-1">
           {eleve.photo_url ? (
-            <img src={eleve.photo_url} alt="photo" className="w-16 h-16 rounded-full object-cover border-2 border-blue-500" />
+            <img 
+              src={eleve.photo_url} 
+              alt="photo" 
+              className="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
           ) : (
             <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
               <User className="w-8 h-8 text-gray-500" />
@@ -277,7 +291,80 @@ export default function EnfantDetailPage() {
         </div>
       </div>
 
-      {/* ⭐ SECTION DÉTAIL DES PAIEMENTS - Version Admin */}
+      {/* ⭐ SECTION DOCUMENTS - AJOUTÉE */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-purple-600" />
+            Documents joints
+          </h2>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Acte de naissance */}
+            <div className="border rounded-lg p-4 hover:shadow-md transition">
+              <div className="flex items-center gap-2 mb-2">
+                <File className="w-5 h-5 text-blue-600" />
+                <span className="font-medium text-gray-900">Acte de naissance</span>
+              </div>
+              {eleve.acte_naissance_url ? (
+                <a 
+                  href={eleve.acte_naissance_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                >
+                  Voir le document <ExternalLink className="w-3 h-3" />
+                </a>
+              ) : (
+                <p className="text-gray-500 text-sm">Non téléchargé</p>
+              )}
+            </div>
+
+            {/* Photo d'identité */}
+            <div className="border rounded-lg p-4 hover:shadow-md transition">
+              <div className="flex items-center gap-2 mb-2">
+                <Image className="w-5 h-5 text-green-600" />
+                <span className="font-medium text-gray-900">Photo d'identité</span>
+              </div>
+              {eleve.photo_url ? (
+                <a 
+                  href={eleve.photo_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                >
+                  Voir la photo <ExternalLink className="w-3 h-3" />
+                </a>
+              ) : (
+                <p className="text-gray-500 text-sm">Non téléchargée</p>
+              )}
+            </div>
+
+            {/* Bulletin scolaire */}
+            <div className="border rounded-lg p-4 hover:shadow-md transition">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="w-5 h-5 text-orange-600" />
+                <span className="font-medium text-gray-900">Bulletin scolaire</span>
+              </div>
+              {eleve.bulletin_url ? (
+                <a 
+                  href={eleve.bulletin_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                >
+                  Voir le bulletin <ExternalLink className="w-3 h-3" />
+                </a>
+              ) : (
+                <p className="text-gray-500 text-sm">Non téléchargé</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION DÉTAIL DES PAIEMENTS */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -366,42 +453,7 @@ export default function EnfantDetailPage() {
           )}
         </div>
       </div>
-
-      {/* Historique des paiements */}
-      {frais.paiements && frais.paiements.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-purple-600" />
-              Historique des paiements
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-gray-600">Date</th>
-                    <th className="px-4 py-2 text-left text-gray-600">Type</th>
-                    <th className="px-4 py-2 text-left text-gray-600">Mode</th>
-                    <th className="px-4 py-2 text-right text-gray-600">Montant</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {frais.paiements.map((p, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50">
-                      <td className="px-4 py-2">{new Date(p.date_paiement).toLocaleDateString()}</td>
-                      <td className="px-4 py-2 capitalize">{p.type_frais}</td>
-                      <td className="px-4 py-2 capitalize">{p.mode_paiement}</td>
-                      <td className="px-4 py-2 text-right font-medium text-green-600">{p.montant.toLocaleString()} GNF</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* Notes par matière */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">

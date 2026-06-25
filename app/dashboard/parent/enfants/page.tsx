@@ -26,7 +26,8 @@ import {
   File,
   ExternalLink,
   Camera,
-  Plus
+  Plus,
+  FileText
 } from "lucide-react";
 
 interface DetailsFrais {
@@ -139,12 +140,25 @@ export default function MesEnfantsPage() {
     loadEnfantDetail(enfant.eleve_id);
   };
 
+  // ⭐ STATISTIQUES CORRIGÉES AVEC DONNÉES RÉELLES
   const statsGlobales = {
     totalEnfants: enfants.length,
+    
+    // Absences et retards réels
     totalAbsences: Object.values(statsEnfant).reduce((acc, s) => acc + (s.presences?.absents || 0), 0),
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (s.presences?.retards || 0), 0),
+    
+    // ⭐ Montant total à payer = Scolarité + Transport + Cantine + Fournitures
+    totalAPayer: enfants.reduce((acc, e) => {
+      const frais = e.details_frais;
+      // Le total est la somme de tous les frais (scolarité, transport, cantine, fournitures)
+      return acc + (frais?.total || 0);
+    }, 0),
+    
+    // ⭐ Frais déjà payés (basé sur les paiements réels)
     totalPaye: enfants.reduce((acc, e) => acc + (e.details_frais?.paye || 0), 0),
-    totalFraisGeneral: enfants.reduce((acc, e) => acc + (e.details_frais?.total || 0), 0),
+    
+    // ⭐ Solde restant
     soldeRestant: enfants.reduce((acc, e) => acc + (e.details_frais?.reste || 0), 0),
   };
 
@@ -211,8 +225,9 @@ export default function MesEnfantsPage() {
         </div>
       </div>
 
-      {/* Statistiques globales */}
+      {/* ⭐ STATISTIQUES GLOBALES AVEC DONNÉES RÉELLES */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Enfants inscrits */}
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
@@ -222,31 +237,42 @@ export default function MesEnfantsPage() {
             <Users className="w-8 h-8 text-blue-600" />
           </div>
         </div>
+
+        {/* Absences totales */}
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Absences totales</p>
               <p className="text-2xl font-bold text-orange-600">{statsGlobales.totalAbsences}</p>
+              <p className="text-xs text-gray-400">Retards: {statsGlobales.totalRetards}</p>
             </div>
             <Calendar className="w-8 h-8 text-orange-600" />
           </div>
         </div>
+
+        {/* ⭐ Montant total à payer (Scolarité + Transport + Cantine + Fournitures) */}
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Frais payés</p>
-              <p className="text-2xl font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
+              <p className="text-gray-500 text-sm">Total à payer</p>
+              <p className="text-2xl font-bold text-red-600">{statsGlobales.totalAPayer.toLocaleString()} GNF</p>
+              <p className="text-xs text-gray-400">Scolarité + Transport + Cantine + Fournitures</p>
             </div>
-            <CreditCard className="w-8 h-8 text-green-600" />
+            <CreditCard className="w-8 h-8 text-red-600" />
           </div>
         </div>
+
+        {/* Solde restant */}
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Solde restant</p>
-              <p className="text-2xl font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
+              <p className={`text-2xl font-bold ${statsGlobales.soldeRestant > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {statsGlobales.soldeRestant.toLocaleString()} GNF
+              </p>
+              <p className="text-xs text-gray-400">Déjà payé: {statsGlobales.totalPaye.toLocaleString()} GNF</p>
             </div>
-            <Wallet className="w-8 h-8 text-red-600" />
+            <Wallet className={`w-8 h-8 ${statsGlobales.soldeRestant > 0 ? 'text-red-600' : 'text-green-600'}`} />
           </div>
         </div>
       </div>
@@ -297,7 +323,9 @@ export default function MesEnfantsPage() {
 
                     return (
                       <tr key={e.id} className="hover:bg-gray-50 transition duration-150">
-                        <td className="px-6 py-4 whitespace-nowrap"><span className="font-mono text-sm font-semibold text-blue-600">{e.matricule}</span></td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="font-mono text-sm font-semibold text-blue-600">{e.matricule}</span>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {e.photo_url ? (
                             <img src={e.photo_url} alt="photo" className="w-10 h-10 rounded-full object-cover border" />
@@ -323,11 +351,17 @@ export default function MesEnfantsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {statusPaiement === "paye" ? (
-                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max"><CheckCircle className="w-3 h-3" /> Payé</span>
+                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <CheckCircle className="w-3 h-3" /> Payé
+                            </span>
                           ) : statusPaiement === "partiel" ? (
-                            <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max"><Clock className="w-3 h-3" /> Partiel</span>
+                            <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <Clock className="w-3 h-3" /> Partiel
+                            </span>
                           ) : (
-                            <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max"><XCircle className="w-3 h-3" /> Non payé</span>
+                            <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <XCircle className="w-3 h-3" /> Non payé
+                            </span>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -412,11 +446,25 @@ export default function MesEnfantsPage() {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* En-tête avec photo */}
+              {/* En-tête avec photo - ⭐ Utiliser enfantDetail pour la photo */}
               <div className="flex items-start gap-6 pb-6 border-b">
                 <div className="flex-shrink-0">
-                  {selectedEnfant.photo_url ? (
-                    <img src={selectedEnfant.photo_url} alt="Photo" className="w-32 h-32 rounded-lg object-cover shadow-md border" />
+                  {enfantDetail?.eleve?.photo_url ? (
+                    <img 
+                      src={enfantDetail.eleve.photo_url} 
+                      alt="Photo" 
+                      className="w-32 h-32 rounded-lg object-cover shadow-md border" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        const parent = (e.target as HTMLImageElement).parentElement;
+                        if (parent) {
+                          const fallback = document.createElement('div');
+                          fallback.className = 'w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center border';
+                          fallback.innerHTML = `<svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`;
+                          parent.appendChild(fallback);
+                        }
+                      }}
+                    />
                   ) : (
                     <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center border">
                       <Camera className="w-12 h-12 text-gray-400" />
@@ -431,23 +479,31 @@ export default function MesEnfantsPage() {
                   <div className="flex gap-4">
                     <div className="bg-gray-50 p-3 rounded-lg border">
                       <p className="text-xs text-gray-500">Statut dossier</p>
-                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1"><CheckCircle className="w-3 h-3" /> Inscription active</span>
+                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                        <CheckCircle className="w-3 h-3" /> Inscription active
+                      </span>
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg border">
                       <p className="text-xs text-gray-500">Paiement</p>
                       {selectedEnfant.details_frais.reste === 0 ? (
-                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1"><CheckCircle className="w-3 h-3" /> Payé</span>
+                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <CheckCircle className="w-3 h-3" /> Payé
+                        </span>
                       ) : selectedEnfant.details_frais.paye > 0 ? (
-                        <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1"><Clock className="w-3 h-3" /> Partiel</span>
+                        <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <Clock className="w-3 h-3" /> Partiel
+                        </span>
                       ) : (
-                        <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1"><XCircle className="w-3 h-3" /> Non payé</span>
+                        <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <XCircle className="w-3 h-3" /> Non payé
+                        </span>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Loader de chargement des détails */}
+              {/* Reste du modal... */}
               {loadingDetail ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -457,7 +513,9 @@ export default function MesEnfantsPage() {
                   {/* Informations des parents */}
                   {enfantDetail.eleve?.parent_email && (
                     <div>
-                      <h3 className="font-semibold text-black mb-3 flex items-center gap-2"><User className="w-5 h-5 text-blue-900" /> Informations des parents</h3>
+                      <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                        <User className="w-5 h-5 text-blue-900" /> Informations des parents
+                      </h3>
                       <div className="bg-gray-50 p-3 rounded-lg mb-4 border">
                         <p className="text-sm text-gray-500">Email de contact</p>
                         <p className="font-medium text-gray-900">{enfantDetail.eleve.parent_email}</p>
@@ -466,9 +524,18 @@ export default function MesEnfantsPage() {
                         <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                           <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">Père</h4>
                           <div className="space-y-2">
-                            <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-gray-900">{enfantDetail.eleve.parent_prenom} {enfantDetail.eleve.parent_nom}</p></div>
-                            <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-gray-900">{enfantDetail.eleve.parent_telephone || "Non renseigné"}</p></div>
-                            <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-gray-900">{enfantDetail.eleve.parent_profession || "Non renseigné"}</p></div>
+                            <div>
+                              <p className="text-xs text-gray-500">Nom complet</p>
+                              <p className="font-medium text-gray-900">{enfantDetail.eleve.parent_prenom} {enfantDetail.eleve.parent_nom}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Téléphone</p>
+                              <p className="font-medium text-gray-900">{enfantDetail.eleve.parent_telephone || "Non renseigné"}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Profession</p>
+                              <p className="font-medium text-gray-900">{enfantDetail.eleve.parent_profession || "Non renseigné"}</p>
+                            </div>
                           </div>
                         </div>
                         <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg">
@@ -477,14 +544,25 @@ export default function MesEnfantsPage() {
                             let mereData: any = null;
                             try {
                               if (enfantDetail.eleve.mere_info) {
-                                mereData = typeof enfantDetail.eleve.mere_info === 'string' ? JSON.parse(enfantDetail.eleve.mere_info) : enfantDetail.eleve.mere_info;
+                                mereData = typeof enfantDetail.eleve.mere_info === 'string' 
+                                  ? JSON.parse(enfantDetail.eleve.mere_info) 
+                                  : enfantDetail.eleve.mere_info;
                               }
-                            } catch (e) {}
+                            } catch (e) { }
                             return mereData && (mereData.mereNom || mereData.merePrenom) ? (
                               <div className="space-y-2">
-                                <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-gray-900">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p></div>
-                                <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-gray-900">{mereData.merePhone || "Non renseigné"}</p></div>
-                                <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-gray-900">{mereData.mereProfession || "Non renseigné"}</p></div>
+                                <div>
+                                  <p className="text-xs text-gray-500">Nom complet</p>
+                                  <p className="font-medium text-gray-900">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500">Téléphone</p>
+                                  <p className="font-medium text-gray-900">{mereData.merePhone || "Non renseigné"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500">Profession</p>
+                                  <p className="font-medium text-gray-900">{mereData.mereProfession || "Non renseigné"}</p>
+                                </div>
                               </div>
                             ) : (
                               <p className="text-sm text-gray-400 italic">Non renseigné</p>
@@ -497,45 +575,108 @@ export default function MesEnfantsPage() {
 
                   {/* Informations enfant */}
                   <div>
-                    <h3 className="font-semibold text-black mb-3 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-green-600" /> Informations de l'enfant</h3>
+                    <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                      <GraduationCap className="w-5 h-5 text-green-600" /> Informations de l'enfant
+                    </h3>
                     <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border">
-                      <div><p className="text-sm text-gray-500">Nom complet</p><p className="font-medium text-gray-900">{enfantDetail.eleve?.prenom} {enfantDetail.eleve?.nom}</p></div>
-                      <div><p className="text-sm text-gray-500">Date de naissance</p><p className="font-medium text-gray-900">{enfantDetail.eleve?.date_naissance ? new Date(enfantDetail.eleve.date_naissance).toLocaleDateString() : "Non renseigné"}</p></div>
-                      <div><p className="text-sm text-gray-500">Lieu de naissance</p><p className="font-medium text-gray-900">{enfantDetail.eleve?.lieu_naissance || "Non renseigné"}</p></div>
-                      <div><p className="text-sm text-gray-500">Sexe</p><p className="font-medium text-gray-900">{enfantDetail.eleve?.sexe === "M" ? "Masculin" : "Féminin"}</p></div>
-                      <div><p className="text-sm text-gray-500">Niveau</p><p className="font-medium text-gray-900">{enfantDetail.eleve?.niveau}</p></div>
-                      <div><p className="text-sm text-gray-500">Classe</p><p className="font-medium text-gray-900">{enfantDetail.eleve?.classe_nom}</p></div>
+                      <div>
+                        <p className="text-sm text-gray-500">Nom complet</p>
+                        <p className="font-medium text-gray-900">{enfantDetail.eleve?.prenom} {enfantDetail.eleve?.nom}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Date de naissance</p>
+                        <p className="font-medium text-gray-900">
+                          {enfantDetail.eleve?.date_naissance ? new Date(enfantDetail.eleve.date_naissance).toLocaleDateString() : "Non renseigné"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Lieu de naissance</p>
+                        <p className="font-medium text-gray-900">{enfantDetail.eleve?.lieu_naissance || "Non renseigné"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Sexe</p>
+                        <p className="font-medium text-gray-900">{enfantDetail.eleve?.sexe === "M" ? "Masculin" : "Féminin"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Niveau</p>
+                        <p className="font-medium text-gray-900">{enfantDetail.eleve?.niveau}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Classe</p>
+                        <p className="font-medium text-gray-900">{enfantDetail.eleve?.classe_nom}</p>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Documents joints */}
-                  {(enfantDetail.eleve?.acte_naissance_url || enfantDetail.eleve?.carte_scolaire_url || enfantDetail.eleve?.bulletin_url) && (
-                    <div>
-                      <h3 className="font-semibold text-black mb-3 flex items-center gap-2"><FileText className="w-5 h-5 text-purple-600" /> Documents joints</h3>
-                      <div className="grid md:grid-cols-3 gap-4">
-                        {enfantDetail.eleve.acte_naissance_url && (
-                          <div className="border rounded-lg p-4 bg-gray-50 border-gray-200">
-                            <div className="flex items-center gap-2 mb-2"><File className="w-5 h-5 text-blue-600" /><span className="font-medium text-gray-900">Acte de naissance</span></div>
-                            <a href={enfantDetail.eleve.acte_naissance_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1 font-semibold">Voir le document <ExternalLink className="w-3 h-3" /></a>
-                          </div>
+                  {/* ⭐ Documents téléchargés - UTILISER enfantDetail ⭐ */}
+                  <div>
+                    <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-purple-600" /> Documents joints
+                    </h3>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      {/* Acte de naissance */}
+                      <div className="border rounded-lg p-4 hover:shadow-md transition">
+                        <div className="flex items-center gap-2 mb-2">
+                          <File className="w-5 h-5 text-blue-600" />
+                          <span className="font-medium text-black">Acte de naissance</span>
+                        </div>
+                        {enfantDetail.eleve?.acte_naissance_url ? (
+                          <a 
+                            href={enfantDetail.eleve.acte_naissance_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                          >
+                            Voir le document <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <p className="text-gray-500 text-sm">Non téléchargé</p>
                         )}
-                        {enfantDetail.eleve.carte_scolaire_url && (
-                          <div className="border rounded-lg p-4 bg-gray-50 border-gray-200">
-                            <div className="flex items-center gap-2 mb-2"><Image className="w-5 h-5 text-green-600" /><span className="font-medium text-gray-900">Carte scolaire / Identité</span></div>
-                            <a href={enfantDetail.eleve.carte_scolaire_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1 font-semibold">Voir la photo <ExternalLink className="w-3 h-3" /></a>
-                          </div>
+                      </div>
+
+                      {/* Photo d'identité */}
+                      <div className="border rounded-lg p-4 hover:shadow-md transition">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Image className="w-5 h-5 text-green-600" />
+                          <span className="font-medium text-black">Photo d'identité</span>
+                        </div>
+                        {enfantDetail.eleve?.photo_url ? (
+                          <a 
+                            href={enfantDetail.eleve.photo_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                          >
+                            Voir la photo <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <p className="text-gray-500 text-sm">Non téléchargée</p>
                         )}
-                        {enfantDetail.eleve.bulletin_url && (
-                          <div className="border rounded-lg p-4 bg-gray-50 border-gray-200">
-                            <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-orange-600" /><span className="font-medium text-gray-900">Bulletin pré-inscription</span></div>
-                            <a href={enfantDetail.eleve.bulletin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1 font-semibold">Voir le document <ExternalLink className="w-3 h-3" /></a>
-                          </div>
+                      </div>
+
+                      {/* Bulletin scolaire */}
+                      <div className="border rounded-lg p-4 hover:shadow-md transition">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-5 h-5 text-orange-600" />
+                          <span className="font-medium text-black">Bulletin scolaire</span>
+                        </div>
+                        {enfantDetail.eleve?.bulletin_url ? (
+                          <a 
+                            href={enfantDetail.eleve.bulletin_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                          >
+                            Voir le bulletin <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <p className="text-gray-500 text-sm">Non téléchargé</p>
                         )}
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* === SECTION DÉTAIL DES FRAIS === */}
+                  {/* Détail des frais */}
                   <div>
                     <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                       <CreditCard className="w-5 h-5 text-purple-600" />
@@ -564,22 +705,36 @@ export default function MesEnfantsPage() {
                         <p className="font-bold text-orange-600">{enfantDetail.frais.scolarite.toLocaleString()} GNF</p>
                       </div>
                       <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
-                        <p className="text-xs text-gray-600 font-semibold"> Total à payer</p>
+                        <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
                         <p className="font-bold text-gray-800 text-lg">{enfantDetail.frais.total_a_payer.toLocaleString()} GNF</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <div><p className="text-xs text-gray-600">Déjà payé</p><p className="font-bold text-green-600">{enfantDetail.frais.total_paye.toLocaleString()} GNF</p></div>
-                      <div><p className="text-xs text-gray-600">Reste à payer</p><p className={`font-bold ${enfantDetail.frais.solde_restant > 0 ? 'text-red-600' : 'text-green-600'}`}>{enfantDetail.frais.solde_restant.toLocaleString()} GNF</p></div>
+                      <div>
+                        <p className="text-xs text-gray-600">Déjà payé</p>
+                        <p className="font-bold text-green-600">{enfantDetail.frais.total_paye.toLocaleString()} GNF</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Reste à payer</p>
+                        <p className={`font-bold ${enfantDetail.frais.solde_restant > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {enfantDetail.frais.solde_restant.toLocaleString()} GNF
+                        </p>
+                      </div>
                       <div>
                         <p className="text-xs text-gray-600">Statut</p>
                         {enfantDetail.frais.solde_restant === 0 ? (
-                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max"><CheckCircle className="w-3 h-3" /> Tout payé</span>
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                            <CheckCircle className="w-3 h-3" /> Tout payé
+                          </span>
                         ) : enfantDetail.frais.total_paye > 0 ? (
-                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max"><Clock className="w-3 h-3" /> Partiel</span>
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                            <Clock className="w-3 h-3" /> Partiel
+                          </span>
                         ) : (
-                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max"><XCircle className="w-3 h-3" /> Non payé</span>
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                            <XCircle className="w-3 h-3" /> Non payé
+                          </span>
                         )}
                       </div>
                     </div>
@@ -591,7 +746,10 @@ export default function MesEnfantsPage() {
                           <span>{Math.round((enfantDetail.frais.total_paye / enfantDetail.frais.total_a_payer) * 100)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div className="bg-green-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (enfantDetail.frais.total_paye / enfantDetail.frais.total_a_payer) * 100)}%` }} />
+                          <div 
+                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
+                            style={{ width: `${Math.min(100, (enfantDetail.frais.total_paye / enfantDetail.frais.total_a_payer) * 100)}%` }} 
+                          />
                         </div>
                       </div>
                     )}

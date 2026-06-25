@@ -21,6 +21,7 @@ interface PlanPaiement {
   deuxieme_versement: number;
   troisieme_versement: number;
   total: number;
+  type_inscription?: string;
 }
 
 interface ServiceOptionnel {
@@ -50,7 +51,14 @@ const formatMontant = (montant: number): string => {
   return Math.round(montant).toLocaleString();
 };
 
-export default function PaiementPlanModal({ isOpen, onClose, onSuccess, preinscriptionId, enfantNom, niveau }: Props) {
+export default function PaiementPlanModal({ 
+  isOpen, 
+  onClose, 
+  onSuccess, 
+  preinscriptionId, 
+  enfantNom, 
+  niveau 
+}: Props) {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [plan, setPlan] = useState<PlanPaiement | null>(null);
@@ -190,8 +198,8 @@ export default function PaiementPlanModal({ isOpen, onClose, onSuccess, preinscr
   const getEcheanceLabel = (echeance: string) => {
     const map: { [key: string]: string } = {
       '1er_versement': '1er Versement',
-      '2eme_versement': '2ème Versement (Décembre)',
-      '3eme_versement': '3ème Versement (Février)'
+      '2eme_versement': '2ème Versement',
+      '3eme_versement': '3ème Versement'
     };
     return map[echeance] || echeance;
   };
@@ -216,7 +224,6 @@ export default function PaiementPlanModal({ isOpen, onClose, onSuccess, preinscr
     return map[type] || '📝';
   };
 
-  // ⭐ Calculer les montants à partir des échéances (données exactes de la BD)
   const getMontantTotalRestant = () => {
     return echeances
       .filter(e => e.statut === 'en_attente')
@@ -242,7 +249,6 @@ export default function PaiementPlanModal({ isOpen, onClose, onSuccess, preinscr
 
   if (!isOpen) return null;
 
-  // ⭐ Utiliser les données EXACTES du plan
   const montant1er = plan?.premier_versement || 0;
   const montant2eme = plan?.deuxieme_versement || 0;
   const montant3eme = plan?.troisieme_versement || 0;
@@ -255,7 +261,12 @@ export default function PaiementPlanModal({ isOpen, onClose, onSuccess, preinscr
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-bold text-black">Plan de paiement</h2>
-              <p className="text-sm text-gray-600">{enfantNom}</p>
+              <p className="text-sm text-gray-600">{enfantNom} - {niveau}</p>
+              {plan?.type_inscription && (
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                  {plan.type_inscription === 'reinscription' ? 'Réinscription' : 'Inscription'}
+                </span>
+              )}
             </div>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
               <X className="w-5 h-5" />
@@ -569,12 +580,6 @@ export default function PaiementPlanModal({ isOpen, onClose, onSuccess, preinscr
                         </span>
                       )}
                     </p>
-                  )}
-                  {paiementType === 'frais_seuls' && (
-                    <p className="text-xs text-gray-500">Frais d'inscription uniquement</p>
-                  )}
-                  {paiementType === 'tout' && (
-                    <p className="text-xs text-gray-500">Frais d'inscription + services optionnels</p>
                   )}
                 </div>
 

@@ -22,20 +22,19 @@ export async function GET() {
         u.prenom,
         u.email,
         u.telephone,
-        u.adresse,
+        COALESCE(u.adresse, '') as adresse,
         p.type,
+        p.departement,
+        COALESCE(p.statut, CASE WHEN u.est_actif THEN 'actif' ELSE 'inactif' END) as statut,
         p.date_embauche as "dateEmbauche",
         p.salaire_base as salaire,
-        u.est_actif as statut
+        COALESCE(p.prime_mensuelle, 0) as prime_mensuelle
       FROM personnels p
       JOIN utilisateurs u ON p.utilisateur_id = u.id
-      ORDER BY p.id DESC
+      ORDER BY u.nom ASC, u.prenom ASC
     `);
 
-    const personnel = result.rows.map(p => ({
-      ...p,
-      statut: p.statut ? "actif" : "inactif"
-    }));
+    const personnel = result.rows;
 
     return NextResponse.json(personnel);
   } catch (error) {
@@ -53,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nom, prenom, email, telephone, adresse, poste, dateEmbauche, salaire, statut } = body;
+    const { nom, prenom, email, telephone, adresse, poste, departement, dateEmbauche, salaire, prime_mensuelle, statut } = body;
 
     if (!nom || !prenom || !email) {
       return NextResponse.json({ error: "Champs obligatoires manquants" }, { status: 400 });
@@ -69,12 +68,20 @@ export async function POST(request: NextRequest) {
     const defaultPassword = "personnel123";
     const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
+    // Mapper le rôle utilisateur
+    const roleMap: Record<string, string> = {
+      'ENSEIGNANT': 'ENSEIGNANT', 'COMPTABLE': 'COMPTABLE',
+      'SECRETARIAT': 'SECRETARIAT', 'DIRECTEUR_ETUDES': 'DIRECTEUR_ETUDES',
+      'DIRECTEUR_GENERAL': 'DIRECTEUR_GENERAL', 'SURVEILLANT': 'SURVEILLANT'
+    };
+    const role = roleMap[poste?.toUpperCase()] || 'ENSEIGNANT';
+
     // 1. Créer l'utilisateur
     const newUser = await query(`
       INSERT INTO utilisateurs (email, password, prenom, nom, telephone, adresse, role, est_actif)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING id
-    `, [email, hashedPassword, prenom, nom, telephone || null, adresse || null, poste, statut === "actif"]);
+    `, [email, hashedPassword, prenom, nom, telephone || null, adresse || null, role, statut === "actif"]);
 
     const userId = newUser.rows[0].id;
 
@@ -82,11 +89,11 @@ export async function POST(request: NextRequest) {
     const annee = new Date().getFullYear();
     const matricule = `PER-${annee}-${userId.toString().padStart(3, '0')}`;
 
-    // 2. Créer le personnel
+    // 2. Créer le personnel (avec statut, departement, prime)
     await query(`
-      INSERT INTO personnels (utilisateur_id, matricule_personnel, type, date_embauche, salaire_base)
-      VALUES ($1, $2, $3, $4, $5)
-    `, [userId, matricule, poste, dateEmbauche || new Date().toISOString().split('T')[0], salaire || null]);
+      INSERT INTO personnels (utilisateur_id, matricule_personnel, type, departement, date_embauche, salaire_base, prime_mensuelle, statut)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [userId, matricule, poste, departement || null, dateEmbauche || new Date().toISOString().split('T')[0], salaire || null, prime_mensuelle || 0, statut || 'actif']);
 
     return NextResponse.json({ success: true, message: "Agent créé avec succès", matricule });
   } catch (error) {
@@ -104,7 +111,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, nom, prenom, email, telephone, adresse, poste, dateEmbauche, salaire, statut } = body;
+    const { id, nom, prenom, email, telephone, adresse, poste, departement, dateEmbauche, salaire, prime_mensuelle, statut } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID requis" }, { status: 400 });
@@ -118,19 +125,27 @@ export async function PUT(request: NextRequest) {
 
     const utilisateurId = personnel.rows[0].utilisateur_id;
 
+    // Mapper le rôle
+    const roleMap: Record<string, string> = {
+      'ENSEIGNANT': 'ENSEIGNANT', 'COMPTABLE': 'COMPTABLE',
+      'SECRETARIAT': 'SECRETARIAT', 'DIRECTEUR_ETUDES': 'DIRECTEUR_ETUDES',
+      'DIRECTEUR_GENERAL': 'DIRECTEUR_GENERAL', 'SURVEILLANT': 'SURVEILLANT'
+    };
+    const role = roleMap[poste?.toUpperCase()] || 'ENSEIGNANT';
+
     // Mettre à jour l'utilisateur
     await query(`
       UPDATE utilisateurs 
       SET email = $1, prenom = $2, nom = $3, telephone = $4, adresse = $5, role = $6, est_actif = $7
       WHERE id = $8
-    `, [email, prenom, nom, telephone || null, adresse || null, poste, statut === "actif", utilisateurId]);
+    `, [email, prenom, nom, telephone || null, adresse || null, role, statut === "actif", utilisateurId]);
 
-    // Mettre à jour le personnel
+    // Mettre à jour le personnel (avec departement, prime, statut)
     await query(`
       UPDATE personnels 
-      SET type = $1, date_embauche = $2, salaire_base = $3
-      WHERE id = $4
-    `, [poste, dateEmbauche || null, salaire || null, id]);
+      SET type = $1, departement = $2, date_embauche = $3, salaire_base = $4, prime_mensuelle = $5, statut = $6
+      WHERE id = $7
+    `, [poste, departement || null, dateEmbauche || null, salaire || null, prime_mensuelle || 0, statut || 'actif', id]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

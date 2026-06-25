@@ -737,6 +737,8 @@ export default function GestionPreinscriptionsPage() {
                 </div>
               </div>
               {/* === SECTION DÉTAIL DES FRAIS === */}
+
+              {/* === SECTION DÉTAIL DES FRAIS AVEC PLAN DE PAIEMENT === */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-purple-600" />
@@ -749,6 +751,72 @@ export default function GestionPreinscriptionsPage() {
                   </div>
                 ) : preinscriptionDetail?.details_frais ? (
                   <>
+                    {/* ⭐ AFFICHAGE DU PLAN DE PAIEMENT */}
+                    {preinscriptionDetail?.plan_paiement && (
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+                        <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                          <Wallet className="w-4 h-4" />
+                          Plan de paiement échelonné ({preinscriptionDetail.plan_paiement.type_inscription || 'inscription'})
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {/* 1er versement */}
+                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? 'border-green-300' : 'border-gray-200'}`}>
+                            <p className="text-xs text-gray-500">1er versement</p>
+                            <p className="font-bold text-blue-600 text-lg">
+                              {preinscriptionDetail.plan_paiement.premier_versement.toLocaleString()} GNF
+                            </p>
+                            {preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? (
+                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-1 rounded">
+                                <CheckCircle className="w-3 h-3" /> Payé
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-1 rounded">
+                                <Clock className="w-3 h-3" /> En attente
+                              </span>
+                            )}
+                          </div>
+                          {/* 2ème versement */}
+                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? 'border-green-300' : 'border-gray-200'}`}>
+                            <p className="text-xs text-gray-500">2ème versement</p>
+                            <p className="font-bold text-blue-600 text-lg">
+                              {preinscriptionDetail.plan_paiement.deuxieme_versement.toLocaleString()} GNF
+                            </p>
+                            {preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? (
+                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-1 rounded">
+                                <CheckCircle className="w-3 h-3" /> Payé
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-1 rounded">
+                                <Clock className="w-3 h-3" /> En attente
+                              </span>
+                            )}
+                          </div>
+                          {/* 3ème versement */}
+                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? 'border-green-300' : 'border-gray-200'}`}>
+                            <p className="text-xs text-gray-500">3ème versement</p>
+                            <p className="font-bold text-blue-600 text-lg">
+                              {preinscriptionDetail.plan_paiement.troisieme_versement.toLocaleString()} GNF
+                            </p>
+                            {preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? (
+                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-1 rounded">
+                                <CheckCircle className="w-3 h-3" /> Payé
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-1 rounded">
+                                <Clock className="w-3 h-3" /> En attente
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-3 text-center">
+                          <p className="text-sm text-gray-600">
+                            Total du plan: <span className="font-bold text-gray-800">{preinscriptionDetail.plan_paiement.total.toLocaleString()} GNF</span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* RÉCAPITULATIF DES FRAIS */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                       <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                         <p className="text-xs text-gray-600">Inscription</p>
@@ -763,7 +831,7 @@ export default function GestionPreinscriptionsPage() {
                         <p className="font-bold text-green-600">{preinscriptionDetail.details_frais.transport.toLocaleString()} GNF</p>
                       </div>
                       <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                        <p className="text-xs text-gray-600">Frais de fourniture</p>
+                        <p className="text-xs text-gray-600">Fourniture</p>
                         <p className="font-bold text-purple-600">{preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF</p>
                       </div>
                       <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
@@ -771,26 +839,42 @@ export default function GestionPreinscriptionsPage() {
                         <p className="font-bold text-orange-600">{preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF</p>
                       </div>
                       <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
-                        <p className="text-xs text-gray-600 font-semibold"> Total à payer</p>
+                        <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
                         <p className="font-bold text-gray-800 text-lg">{preinscriptionDetail.details_frais.total.toLocaleString()} GNF</p>
                       </div>
                     </div>
 
+                    {/* SUIVI DES PAIEMENTS */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
-                      <div><p className="text-xs text-gray-600">Déjà payé</p><p className="font-bold text-green-600">{preinscriptionDetail.details_frais.paye.toLocaleString()} GNF</p></div>
-                      <div><p className="text-xs text-gray-600">Reste à payer</p><p className={`font-bold ${preinscriptionDetail.details_frais.reste > 0 ? 'text-red-600' : 'text-green-600'}`}>{preinscriptionDetail.details_frais.reste.toLocaleString()} GNF</p></div>
+                      <div>
+                        <p className="text-xs text-gray-600">Déjà payé</p>
+                        <p className="font-bold text-green-600">{preinscriptionDetail.details_frais.paye.toLocaleString()} GNF</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Reste à payer</p>
+                        <p className={`font-bold ${preinscriptionDetail.details_frais.reste > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {preinscriptionDetail.details_frais.reste.toLocaleString()} GNF
+                        </p>
+                      </div>
                       <div>
                         <p className="text-xs text-gray-600">Statut</p>
                         {preinscriptionDetail.details_frais.reste === 0 ? (
-                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Tout payé</span>
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" /> Tout payé
+                          </span>
                         ) : preinscriptionDetail.details_frais.paye > 0 ? (
-                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Partiel</span>
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> Partiel
+                          </span>
                         ) : (
-                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <XCircle className="w-3 h-3" /> Non payé
+                          </span>
                         )}
                       </div>
                     </div>
 
+                    {/* BARRE DE PROGRESSION */}
                     {preinscriptionDetail.details_frais.total > 0 && (
                       <div className="mt-3">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
@@ -798,13 +882,18 @@ export default function GestionPreinscriptionsPage() {
                           <span>{Math.round((preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div className="bg-green-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%` }} />
+                          <div 
+                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
+                            style={{ width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%` }} 
+                          />
                         </div>
                       </div>
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-4 text-gray-500"><p>Chargement des informations de frais...</p></div>
+                  <div className="text-center py-4 text-gray-500">
+                    <p>Chargement des informations de frais...</p>
+                  </div>
                 )}
               </div>
 
@@ -816,14 +905,28 @@ export default function GestionPreinscriptionsPage() {
             </div>
 
             <div className="p-6 border-t bg-gray-50 flex justify-between gap-3">
-              {selectedPreinscription.statut === "en_attente" && (
+             {selectedPreinscription.statut === "en_attente" && (
                 <div className="flex gap-3">
                   <button onClick={() => handleUpdateStatut(selectedPreinscription.id, "rejete")} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Rejeter</button>
-                  {selectedPreinscription.frais_statut === "paye" ? (
-                    <button onClick={() => handleUpdateStatut(selectedPreinscription.id, "valide")} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">Valider l'inscription</button>
-                  ) : (
-                    <button onClick={() => { setShowDetailModal(false); handleOpenPaiement(selectedPreinscription); }} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">Enregistrer le paiement</button>
-                  )}
+                  {(() => {
+                    const echeancesInscription = preinscriptionDetail?.echeances_paiement?.filter(
+                      (e: any) => e.type === 'inscription'
+                    ) || [];
+                    const auMoinsUnePayee = echeancesInscription.some((e: any) => e.statut === 'paye');
+                    const peutValider = selectedPreinscription.frais_statut === 'paye' || 
+                                        selectedPreinscription.frais_statut === 'partiel' ||
+                                        auMoinsUnePayee;
+                    
+                    return peutValider ? (
+                      <button onClick={() => handleUpdateStatut(selectedPreinscription.id, "valide")} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        Valider l'inscription
+                      </button>
+                    ) : (
+                      <button onClick={() => { setShowDetailModal(false); handleOpenPaiement(selectedPreinscription); }} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        Enregistrer le paiement
+                      </button>
+                    );
+                  })()}
                 </div>
               )}
               <div className="flex gap-3 ml-auto">

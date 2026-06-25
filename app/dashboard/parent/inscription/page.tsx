@@ -515,7 +515,7 @@ export default function InscriptionParentPage() {
                         <>
                           <button onClick={() => { setSelectedPreinscription(p); setShowPaiementModal(true); }}
                             className="flex-1 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
-                            <CreditCard className="w-4 h-4" /> Payer {(p.frais_montant || 500000).toLocaleString()} GNF
+                            <CreditCard className="w-4 h-4" /> Payer l'inscription 
                           </button>
                           <button onClick={() => { setPreinscriptionToCancel(p); setShowConfirmModal(true); }}
                             className="px-3 py-1.5 bg-red-100 text-red-600 text-sm rounded-lg hover:bg-red-200 transition flex items-center gap-1">

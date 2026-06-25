@@ -78,6 +78,7 @@ interface Stats {
   fournitures: number;
   scolarite: number;
   total_frais_general: number;
+  montant_a_payer: number;
   solde_restant: number;
 }
 
@@ -120,6 +121,7 @@ const DEFAULT_STATS: Stats = {
   fournitures: 0,
   scolarite: 0,
   total_frais_general: 0,
+  montant_a_payer: 0,
   solde_restant: 0
 };
 
@@ -216,6 +218,7 @@ export default function ParentDashboard() {
             fournitures: Number(statsData.fournitures) || 0,
             scolarite: Number(statsData.scolarite) || 0,
             total_frais_general: Number(statsData.total_frais_general) || 0,
+            montant_a_payer: Number(statsData.montant_a_payer) || 0,
             solde_restant: Number(statsData.solde_restant) || 0
           };
 
@@ -255,8 +258,6 @@ export default function ParentDashboard() {
       const data = await response.json();
       console.log("📋 Détails pré-inscription reçus:", data);
       
-      // ⭐ S'assurer que les URLs des documents sont bien présentes
-      // data.acte_naissance_url, data.bulletin_url, data.photo_url
       setPreinscriptionDetail(data);
     } catch (error) {
       console.error("Erreur:", error);
@@ -350,16 +351,20 @@ export default function ParentDashboard() {
     if (fraisStatut === "paye") {
       return <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
     }
+    if (fraisStatut === "partiel") {
+      return <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Partiel</span>;
+    }
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
-  // Calcul des statistiques globales avec les données réelles
+  // ⭐ Calcul des statistiques globales avec les données réelles
   const statsGlobales = {
     totalEnfants: enfants.length,
     totalPreinscriptions: preinscriptions.length,
     preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
     preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
-    totalAbsences: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.absents) || 0), 0),
+    // ⭐ Montant à payer = somme des montant_a_payer (reste à payer)
+    totalAPayer: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.montant_a_payer) || 0), 0),
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
 
     // Totaux par catégorie (valeurs réelles depuis l'API)
@@ -372,6 +377,7 @@ export default function ParentDashboard() {
     // Totaux globaux
     totalFraisGeneral: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.total_frais_general) || 0), 0),
     totalPaye: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0),
+    // ⭐ Solde restant = montant_a_payer total
     soldeRestant: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.solde_restant) || 0), 0),
   };
 
@@ -432,13 +438,16 @@ export default function ParentDashboard() {
           <p className="text-3xl font-bold">{statsGlobales.totalPreinscriptions}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900"><Calendar className="w-5 h-5" /><p className="text-sm">Absences totales</p></div>
-          <p className="text-2xl font-bold text-orange-600">{statsGlobales.totalAbsences}</p>
-          <p className="text-xs text-gray-900">Retards: {statsGlobales.totalRetards}</p>
+          <div className="flex items-center gap-2 mb-1 text-gray-900">
+            <CreditCard className="w-5 h-5 text-red-500" />
+            <p className="text-sm">Montant à payer</p>
+          </div>
+          <p className="text-2xl font-bold text-red-600">{statsGlobales.totalAPayer.toLocaleString()} GNF</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5" /><p className="text-sm">Solde restant</p></div>
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-green-600" /><p className="text-sm">Solde restant</p></div>
           <p className="text-lg font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
+          <p className="text-xs text-gray-900">Déjà payé: {statsGlobales.totalPaye.toLocaleString()} GNF</p>
         </div>
       </div>
 
@@ -698,7 +707,7 @@ export default function ParentDashboard() {
                 </div>
               </div>
 
-              {/* ⭐ Documents téléchargés - CORRIGÉ */}
+              {/* Documents téléchargés */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-purple-600" /> Documents joints
@@ -711,9 +720,7 @@ export default function ParentDashboard() {
                       <span className="font-medium text-black">Acte de naissance</span>
                     </div>
                     {(() => {
-                      // ⭐ Utiliser les données de preinscriptionDetail ou de selectedPreinscriptionDetail
                       const acteUrl = preinscriptionDetail?.acte_naissance_url || selectedPreinscriptionDetail?.acte_naissance_url;
-                      console.log("📄 Acte URL:", acteUrl);
                       return acteUrl ? (
                         <a 
                           href={acteUrl} 
