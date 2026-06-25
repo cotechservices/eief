@@ -30,12 +30,7 @@ export async function GET(request: Request) {
           p.montant_total_plan,
           p.montant_restant_plan,
           p.type_inscription,
-          p.plan_paiement_id,
-          COALESCE(
-            (SELECT c.frais_inscription FROM classes c WHERE LOWER(c.nom) = LOWER(p.classe)),
-            p.frais_montant,
-            0
-          ) as frais_classe
+          p.plan_paiement_id
         FROM preinscriptions p
         WHERE p.id = $1
       `, [preinscriptionId]);
@@ -46,75 +41,82 @@ export async function GET(request: Request) {
 
       const data = result.rows[0];
       const niveau = data.niveau;
+      const typeInscription = data.type_inscription || 'inscription';
+      const classeNom = data.classe;
 
-      // ⭐ 2. Récupérer le plan de paiement (par ID ou par niveau)
-      let planData = null;
+      // ⭐ 2. Récupérer les VERSEMENTS depuis la CLASSE (pas depuis plans_paiement_niveaux)
+      const classResult = await query(`
+        SELECT 
+          premier_versement,
+          deuxieme_versement,
+          troisieme_versement,
+          total_versement as total,
+          frais_inscription
+        FROM classes
+        WHERE LOWER(nom) = LOWER($1)
+        LIMIT 1
+      `, [classeNom]);
 
-      // Essayer d'abord avec plan_paiement_id
-      if (data.plan_paiement_id) {
-        const planResult = await query(`
-          SELECT 
-            id,
-            niveau,
-            premier_versement,
-            deuxieme_versement,
-            troisieme_versement,
-            total
-          FROM plans_paiement_niveaux
-          WHERE id = $1 AND type_inscription = 'inscription'
-        `, [data.plan_paiement_id]);
-
-        if (planResult.rows.length > 0) {
-          planData = planResult.rows[0];
-        }
-      }
-
-      // Si pas de plan trouvé, essayer par niveau
-      if (!planData) {
-        const planResult = await query(`
-          SELECT 
-            id,
-            niveau,
-            premier_versement,
-            deuxieme_versement,
-            troisieme_versement,
-            total
-          FROM plans_paiement_niveaux
-          WHERE LOWER(niveau) = LOWER($1) AND type_inscription = 'inscription'
-        `, [niveau]);
-
-        if (planResult.rows.length > 0) {
-          planData = planResult.rows[0];
-
-          // ⭐ Mettre à jour la pré-inscription avec l'ID du plan trouvé
-          await query(`
-            UPDATE preinscriptions 
-            SET plan_paiement_id = $1,
-                montant_total_plan = $2,
-                montant_restant_plan = $2
-            WHERE id = $3
-          `, [planData.id, planData.total, preinscriptionId]);
-        }
-      }
-
-      // ⭐ 3. Construire le plan
-      const plan = planData ? {
-        id: planData.id,
-        niveau: planData.niveau || niveau,
-        premier_versement: Number(planData.premier_versement) || 0,
-        deuxieme_versement: Number(planData.deuxieme_versement) || 0,
-        troisieme_versement: Number(planData.troisieme_versement) || 0,
-        total: Number(planData.total) || 0
-      } : {
-        id: null,
-        niveau: niveau,
-        premier_versement: 0,
-        deuxieme_versement: 0,
-        troisieme_versement: 0,
+      let montants = {
+        premier: 0,
+        deuxieme: 0,
+        troisieme: 0,
         total: 0
       };
 
-      // ⭐ 4. Récupérer les services optionnels
+      if (classResult.rows.length > 0) {
+        const classData = classResult.rows[0];
+        montants = {
+          premier: Number(classData.premier_versement) || 0,
+          deuxieme: Number(classData.deuxieme_versement) || 0,
+          troisieme: Number(classData.troisieme_versement) || 0,
+          total: Number(classData.total) || Number(classData.frais_inscription) || 0
+        };
+        
+        console.log(`✅ Versements trouvés pour la classe ${classeNom}: 1er=${montants.premier}, 2ème=${montants.deuxieme}, 3ème=${montants.troisieme}, Total=${montants.total}`);
+      } else {
+        // Fallback selon le niveau si la classe n'est pas trouvée
+        console.log(`⚠️ Classe ${classeNom} non trouvée, utilisation des valeurs par défaut pour ${niveau}`);
+        const niveauLower = niveau.toLowerCase();
+        if (niveauLower.includes('maternelle')) {
+          montants = typeInscription === 'reinscription' 
+            ? { premier: 2600000, deuxieme: 2100000, troisieme: 1000000, total: 5700000 }
+            : { premier: 2800000, deuxieme: 2100000, troisieme: 1000000, total: 5900000 };
+        } else if (niveauLower.includes('primaire')) {
+          montants = typeInscription === 'reinscription'
+            ? { premier: 2600000, deuxieme: 2100000, troisieme: 1500000, total: 6200000 }
+            : { premier: 2800000, deuxieme: 2100000, troisieme: 1500000, total: 6400000 };
+        } else if (niveauLower.includes('collège') || niveauLower.includes('college')) {
+          montants = typeInscription === 'reinscription'
+            ? { premier: 3600000, deuxieme: 2100000, troisieme: 2000000, total: 7700000 }
+            : { premier: 3800000, deuxieme: 2100000, troisieme: 2000000, total: 7900000 };
+        } else if (niveauLower.includes('lycée') || niveauLower.includes('lycee')) {
+          montants = typeInscription === 'reinscription'
+            ? { premier: 3600000, deuxieme: 2600000, troisieme: 2000000, total: 8200000 }
+            : { premier: 3800000, deuxieme: 2600000, troisieme: 2000000, total: 8400000 };
+        }
+      }
+
+      // ⭐ 3. Construire le plan avec les montants de la classe
+      const plan = {
+        id: null,
+        niveau: niveau,
+        premier_versement: montants.premier,
+        deuxieme_versement: montants.deuxieme,
+        troisieme_versement: montants.troisieme,
+        total: montants.total,
+        type_inscription: typeInscription
+      };
+
+      // ⭐ 4. Mettre à jour la pré-inscription avec le total
+      await query(`
+        UPDATE preinscriptions 
+        SET montant_total_plan = $1,
+            montant_restant_plan = $1
+        WHERE id = $2
+      `, [plan.total, preinscriptionId]);
+
+      // ⭐ 5. Récupérer les services optionnels
       const transport = await query(`
         SELECT 
           COALESCE(SUM(lt.prix_abonnement), 0) as total_transport,
@@ -177,33 +179,14 @@ export async function GET(request: Request) {
       const totalFournitures = Number(fournitures.rows[0]?.total_fournitures) || 0;
       const totalServices = totalTransport + totalCantine + totalFournitures;
 
-      // ⭐ 5. Récupérer les échéances
-      let echeancesResult = await query(`
-        SELECT 
-          id,
-          type,
-          echeance,
-          montant,
-          statut,
-          date_echeance,
-          date_paiement,
-          reference_transaction,
-          mode_paiement
-        FROM echeances_paiement
+      // ⭐ 6. SUPPRIMER toutes les échéances existantes (inscription + services)
+      await query(`
+        DELETE FROM echeances_paiement 
         WHERE preinscription_id = $1
-        ORDER BY 
-          CASE echeance
-            WHEN '1er_versement' THEN 1
-            WHEN '2eme_versement' THEN 2
-            WHEN '3eme_versement' THEN 3
-            WHEN 'transport' THEN 4
-            WHEN 'cantine' THEN 5
-            WHEN 'fournitures' THEN 6
-          END
       `, [preinscriptionId]);
 
-      // ⭐ 6. Si pas d'échéances mais un plan existe, créer les échéances
-      if (echeancesResult.rows.length === 0 && plan.total > 0) {
+      // ⭐ 7. Créer UNIQUEMENT les échéances d'inscription avec les montants de la classe
+      if (plan.total > 0) {
         await query(`
           INSERT INTO echeances_paiement (preinscription_id, type, echeance, montant, date_echeance, statut)
           VALUES 
@@ -211,113 +194,15 @@ export async function GET(request: Request) {
             ($1, 'inscription', '2eme_versement', $3, CURRENT_DATE + INTERVAL '2 months', 'en_attente'),
             ($1, 'inscription', '3eme_versement', $4, CURRENT_DATE + INTERVAL '4 months', 'en_attente')
         `, [preinscriptionId, plan.premier_versement, plan.deuxieme_versement, plan.troisieme_versement]);
+        
+        console.log(`✅ Échéances d'inscription créées: 1er=${plan.premier_versement}, 2ème=${plan.deuxieme_versement}, 3ème=${plan.troisieme_versement}`);
       }
 
-      // ⭐ 7. CRÉER LES ÉCHÉANCES POUR LES SERVICES OPTIONNELS SI ELLES N'EXISTENT PAS
-      if (totalServices > 0) {
-        // Vérifier si des échéances de services existent déjà
-        const servicesExist = await query(`
-          SELECT COUNT(*) as count 
-          FROM echeances_paiement 
-          WHERE preinscription_id = $1 
-            AND type IN ('transport', 'cantine', 'fournitures')
-        `, [preinscriptionId]);
+      // ⭐ 8. NE PAS créer d'échéances pour les services (ils seront gérés via la checkbox)
+      // Les services optionnels sont uniquement affichés dans le modal, pas dans echeances_paiement
 
-        const count = parseInt(servicesExist.rows[0].count);
-
-        // Si aucune échéance de service n'existe, les créer
-        if (count === 0) {
-          // Créer une échéance pour le transport
-          if (totalTransport > 0) {
-            await query(`
-              INSERT INTO echeances_paiement (
-                preinscription_id, 
-                type, 
-                echeance, 
-                montant, 
-                date_echeance, 
-                statut,
-                created_at,
-                updated_at
-              ) VALUES (
-                $1, 
-                'transport', 
-                'transport', 
-                $2, 
-                CURRENT_DATE + INTERVAL '1 month', 
-                'en_attente',
-                NOW(),
-                NOW()
-              )
-            `, [preinscriptionId, totalTransport]);
-            console.log(`✅ Échéance transport créée: ${totalTransport} GNF`);
-          }
-
-          // Créer une échéance pour la cantine
-          if (totalCantine > 0) {
-            await query(`
-              INSERT INTO echeances_paiement (
-                preinscription_id, 
-                type, 
-                echeance, 
-                montant, 
-                date_echeance, 
-                statut,
-                created_at,
-                updated_at
-              ) VALUES (
-                $1, 
-                'cantine', 
-                'cantine', 
-                $2, 
-                CURRENT_DATE + INTERVAL '1 month', 
-                'en_attente',
-                NOW(),
-                NOW()
-              )
-            `, [preinscriptionId, totalCantine]);
-            console.log(`✅ Échéance cantine créée: ${totalCantine} GNF`);
-          }
-
-          // Créer une échéance pour les fournitures
-          if (totalFournitures > 0) {
-            await query(`
-              INSERT INTO echeances_paiement (
-                preinscription_id, 
-                type, 
-                echeance, 
-                montant, 
-                date_echeance, 
-                statut,
-                created_at,
-                updated_at
-              ) VALUES (
-                $1, 
-                'fournitures', 
-                'fournitures', 
-                $2, 
-                CURRENT_DATE + INTERVAL '1 month', 
-                'en_attente',
-                NOW(),
-                NOW()
-              )
-            `, [preinscriptionId, totalFournitures]);
-            console.log(`✅ Échéance fournitures créée: ${totalFournitures} GNF`);
-          }
-
-          // Mettre à jour le montant restant de la pré-inscription
-          await query(`
-            UPDATE preinscriptions 
-            SET montant_restant_plan = montant_restant_plan + $1
-            WHERE id = $2
-          `, [totalServices, preinscriptionId]);
-
-          console.log(`✅ Total des services ajouté au montant restant: ${totalServices} GNF`);
-        }
-      }
-
-      // ⭐ 8. Recharger les échéances après création des services
-      echeancesResult = await query(`
+      // ⭐ 9. Recharger les échéances (uniquement les inscriptions)
+      const echeancesResult = await query(`
         SELECT 
           id,
           type,
@@ -335,23 +220,15 @@ export async function GET(request: Request) {
             WHEN '1er_versement' THEN 1
             WHEN '2eme_versement' THEN 2
             WHEN '3eme_versement' THEN 3
-            WHEN 'transport' THEN 4
-            WHEN 'cantine' THEN 5
-            WHEN 'fournitures' THEN 6
           END
       `, [preinscriptionId]);
-
-      // ⭐ 9. Filtrer les échéances d'inscription
-      const echeancesInscription = echeancesResult.rows.filter(
-        (e: any) => e.type === 'inscription'
-      );
 
       // ⭐ 10. Construire la réponse
       const response = {
         ...data,
         plan: plan,
         echeances: echeancesResult.rows,
-        echeances_inscription: echeancesInscription,
+        echeances_inscription: echeancesResult.rows.filter((e: any) => e.type === 'inscription'),
         services_optionnels: {
           transport: {
             total: totalTransport,
@@ -369,7 +246,7 @@ export async function GET(request: Request) {
         },
         est_reinscription: data.type_inscription === 'reinscription',
         est_paye: data.frais_statut === 'paye',
-        frais_classe: Number(data.frais_classe) || 0
+        frais_classe: montants.total
       };
 
       return NextResponse.json(response);
@@ -377,11 +254,13 @@ export async function GET(request: Request) {
 
     // Si on a un niveau
     const niveau = url.searchParams.get("niveau");
+    const type = url.searchParams.get("type") || "inscription";
+    
     if (niveau) {
       const result = await query(`
         SELECT * FROM plans_paiement_niveaux 
-        WHERE LOWER(niveau) = LOWER($1) AND type_inscription = 'inscription'
-      `, [niveau]);
+        WHERE LOWER(niveau) = LOWER($1) AND type_inscription = $2
+      `, [niveau, type]);
 
       if (result.rows.length === 0) {
         return NextResponse.json({ error: "Plan non trouvé pour ce niveau" }, { status: 404 });
@@ -392,7 +271,7 @@ export async function GET(request: Request) {
 
     // Retourner tous les plans
     const result = await query(`
-      SELECT * FROM plans_paiement_niveaux WHERE type_inscription = 'inscription' ORDER BY total ASC
+      SELECT * FROM plans_paiement_niveaux ORDER BY type_inscription, total ASC
     `);
 
     return NextResponse.json(result.rows);
