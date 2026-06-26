@@ -97,9 +97,9 @@ export default function GestionClassesPage() {
 
   // Mise à jour automatique du total
   useEffect(() => {
-    const total = (formData.premier_versement || 0) + 
-                  (formData.deuxieme_versement || 0) + 
-                  (formData.troisieme_versement || 0);
+    const total = (formData.premier_versement || 0) +
+      (formData.deuxieme_versement || 0) +
+      (formData.troisieme_versement || 0);
     setFormData(prev => ({ ...prev, total_versement: total }));
   }, [formData.premier_versement, formData.deuxieme_versement, formData.troisieme_versement]);
 
@@ -183,8 +183,8 @@ export default function GestionClassesPage() {
 
     // Validation des échéances
     if (!formData.premier_versement || formData.premier_versement <= 0 ||
-        !formData.deuxieme_versement || formData.deuxieme_versement <= 0 ||
-        !formData.troisieme_versement || formData.troisieme_versement <= 0) {
+      !formData.deuxieme_versement || formData.deuxieme_versement <= 0 ||
+      !formData.troisieme_versement || formData.troisieme_versement <= 0) {
       addNotification("warning", "Veuillez saisir les montants des 3 versements");
       return;
     }
@@ -207,10 +207,10 @@ export default function GestionClassesPage() {
         await fetchClasses();
         setShowForm(false);
         setEditingClasse(null);
-        setFormData({ 
-          nom: "", 
-          niveau: "", 
-          capacite_max: 30, 
+        setFormData({
+          nom: "",
+          niveau: "",
+          capacite_max: 30,
           frais_inscription: 0,
           premier_versement: 0,
           deuxieme_versement: 0,
@@ -254,7 +254,7 @@ export default function GestionClassesPage() {
 
       const ws = XLSX.utils.json_to_sheet(exportData);
       const colWidths = [
-        { wch: 20 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, 
+        { wch: 20 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 15 },
         { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 10 }
       ];
       ws['!cols'] = colWidths;
@@ -364,8 +364,8 @@ export default function GestionClassesPage() {
           >
             <Download className="w-4 h-4" /> Exporter Excel
           </button>
-          <button onClick={() => { 
-            setEditingClasse(null); 
+          <button onClick={() => {
+            setEditingClasse(null);
             setFormData({
               nom: "",
               niveau: "",
@@ -376,7 +376,7 @@ export default function GestionClassesPage() {
               troisieme_versement: 0,
               total_versement: 0
             });
-            setShowForm(true); 
+            setShowForm(true);
           }} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
             <Plus className="w-4 h-4" /> Nouvelle classe
           </button>
@@ -792,7 +792,7 @@ export default function GestionClassesPage() {
                   <h3 className="font-semibold text-gray-900">Plan de paiement</h3>
                   <span className="text-xs text-gray-500">(3 versements)</span>
                 </div>
-                
+
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -867,16 +867,16 @@ export default function GestionClassesPage() {
                   </div>
 
                   {/* Message d'alerte si le total ne correspond pas */}
-                  {formData.total_versement > 0 && formData.frais_inscription > 0 && 
-                   formData.total_versement !== formData.frais_inscription && (
-                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2 text-sm text-yellow-800">
-                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                      <span>
-                        Le total des versements ({formData.total_versement.toLocaleString()} GNF) 
-                        ne correspond pas aux frais de scolarité ({formData.frais_inscription.toLocaleString()} GNF)
-                      </span>
-                    </div>
-                  )}
+                  {formData.total_versement > 0 && formData.frais_inscription > 0 &&
+                    formData.total_versement !== formData.frais_inscription && (
+                      <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2 text-sm text-yellow-800">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                        <span>
+                          Le total des versements ({formData.total_versement.toLocaleString()} GNF)
+                          ne correspond pas aux frais de scolarité ({formData.frais_inscription.toLocaleString()} GNF)
+                        </span>
+                      </div>
+                    )}
 
                   <p className="text-xs text-gray-500 mt-2">
                     💡 Ces montants seront appliqués à toutes les pré-inscriptions de cette classe
@@ -886,8 +886,8 @@ export default function GestionClassesPage() {
 
               {/* Boutons d'action */}
               <div className="flex gap-3 pt-4 border-t">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
                 >
                   {editingClasse ? (
@@ -902,12 +902,12 @@ export default function GestionClassesPage() {
                     </>
                   )}
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => {
                     setShowForm(false);
                     setEditingClasse(null);
-                  }} 
+                  }}
                   className="flex-1 border rounded-lg py-2 hover:bg-gray-50 text-black transition"
                 >
                   Annuler

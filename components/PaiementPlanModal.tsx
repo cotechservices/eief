@@ -143,10 +143,32 @@ export default function PaiementPlanModal({
         echeancesIds = [selectedEcheance.id];
         
         if (inclureServicesOptionnels && servicesOptionnels && servicesOptionnels.total_services > 0) {
-          const servicesEcheances = allEcheances.filter(
-            e => e.type !== 'inscription' && e.statut === 'en_attente'
-          );
-          echeancesIds = [...echeancesIds, ...servicesEcheances.map(e => e.id)];
+          // Récupérer les services depuis les données (pas depuis les échéances)
+          const servicesToPay = [];
+          if (servicesOptionnels.transport.total > 0) {
+            servicesToPay.push({ type: 'transport', montant: servicesOptionnels.transport.total });
+          }
+          if (servicesOptionnels.cantine.total > 0) {
+            servicesToPay.push({ type: 'cantine', montant: servicesOptionnels.cantine.total });
+          }
+          if (servicesOptionnels.fournitures.total > 0) {
+            servicesToPay.push({ type: 'fournitures', montant: servicesOptionnels.fournitures.total });
+          }
+          
+          // Pour les services, on va les payer en une seule fois via l'API paiement-multiple
+          // Mais comme il n'y a pas d'échéances, on doit les ajouter différemment
+          // On va créer temporairement des échéances pour les services dans la base de données
+          for (const service of servicesToPay) {
+            const result = await query(`
+              INSERT INTO echeances_paiement (preinscription_id, type, echeance, montant, date_echeance, statut)
+              VALUES ($1, $2, $3, $4, CURRENT_DATE + INTERVAL '1 month', 'en_attente')
+              RETURNING id
+            `, [preinscriptionId, service.type, service.type, service.montant]);
+            
+            if (result.rows.length > 0) {
+              echeancesIds.push(result.rows[0].id);
+            }
+          }
         }
       } else if (paiementType === 'frais_seuls') {
         echeancesIds = echeances
@@ -242,9 +264,10 @@ export default function PaiementPlanModal({
     return echeances.some(e => e.statut === 'en_attente');
   };
 
+  // MODIFIÉ : Vérifie si des services optionnels sont disponibles (même sans échéances)
   const hasServicesOptionnelsDisponibles = () => {
-    if (!servicesOptionnels || servicesOptionnels.total_services === 0) return false;
-    return allEcheances.some(e => e.type !== 'inscription' && e.statut === 'en_attente');
+    if (!servicesOptionnels) return false;
+    return servicesOptionnels.total_services > 0;
   };
 
   if (!isOpen) return null;
@@ -292,7 +315,7 @@ export default function PaiementPlanModal({
             </div>
           ) : plan ? (
             <>
-              {/* ⭐ Tableau récapitulatif avec les montants EXACTS du plan */}
+              {/* Tableau récapitulatif avec les montants EXACTS du plan */}
               <div className="mb-6 overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
@@ -473,29 +496,55 @@ export default function PaiementPlanModal({
                     Sélectionnez une échéance à payer. Cochez la case ci-dessous pour inclure les services optionnels.
                   </p>
                   
+                  {/* MODIFIÉ : Afficher la checkbox si des services sont disponibles */}
                   {hasServicesOptionnelsDisponibles() && (
-                    <div className="bg-blue-50 p-3 rounded-lg mb-4">
-                      <label className="flex items-center gap-3 cursor-pointer">
+                    <div className="bg-blue-50 p-3 rounded-lg mb-4 border border-blue-200">
+                      <label className="flex items-start gap-3 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={inclureServicesOptionnels}
                           onChange={(e) => setInclureServicesOptionnels(e.target.checked)}
-                          className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                          className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mt-1"
                         />
-                        <div>
-                          <span className="font-medium text-gray-800">
+                        <div className="flex-1">
+                          <span className="font-medium text-gray-800 block">
                             Inclure les services optionnels
                           </span>
                           <p className="text-xs text-gray-600">
                             Transport, cantine et fournitures (paiement en une fois)
                           </p>
+                          {inclureServicesOptionnels && servicesOptionnels && (
+                            <div className="mt-2 text-sm">
+                              <span className="font-medium text-green-600">
+                                + {servicesOptionnels.total_services.toLocaleString()} GNF
+                              </span>
+                              <span className="text-xs text-gray-500 ml-2">
+                                (payé en une seule fois)
+                              </span>
+                              <div className="mt-1 text-xs text-gray-700">
+                                {servicesOptionnels.transport.total > 0 && (
+                                  <div className="flex justify-between py-0.5">
+                                    <span>Transport</span>
+                                    <span>{servicesOptionnels.transport.total.toLocaleString()} GNF</span>
+                                  </div>
+                                )}
+                                {servicesOptionnels.cantine.total > 0 && (
+                                  <div className="flex justify-between py-0.5">
+                                    <span>Cantine</span>
+                                    <span>{servicesOptionnels.cantine.total.toLocaleString()} GNF</span>
+                                  </div>
+                                )}
+                                {servicesOptionnels.fournitures.total > 0 && (
+                                  <div className="flex justify-between py-0.5">
+                                    <span>Fournitures</span>
+                                    <span>{servicesOptionnels.fournitures.total.toLocaleString()} GNF</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </label>
-                      {inclureServicesOptionnels && servicesOptionnels && (
-                        <div className="mt-2 text-sm text-gray-700 border-t pt-2">
-                          <p className="font-medium">Montant supplémentaire : {formatMontant(servicesOptionnels.total_services)} GNF</p>
-                        </div>
-                      )}
                     </div>
                   )}
                   
