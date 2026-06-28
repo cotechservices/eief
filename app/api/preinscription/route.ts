@@ -3,6 +3,105 @@ import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
+// ⭐ Fonction utilitaire pour calculer la date d'échéance
+function getEcheanceDate(echeance: string): Date {
+  const date = new Date();
+  if (echeance === '1er_versement') {
+    return date;
+  } else if (echeance === '2eme_versement') {
+    date.setMonth(date.getMonth() + 2);
+    return date;
+  } else if (echeance === '3eme_versement') {
+    date.setMonth(date.getMonth() + 4);
+    return date;
+  }
+  return date;
+}
+
+// ⭐ Fonction pour créer le plan de paiement et les échéances
+async function createPlanPaiement(preinscriptionId: number, niveau: string, body: any) {
+  console.log(`📊 Création du plan de paiement pour la pré-inscription ${preinscriptionId}`);
+
+  // ⭐ Récupérer les montants depuis la table classes
+  const planResult = await query(`
+    SELECT 
+      niveau,
+      SUM(premier_versement) as premier_versement,
+      SUM(deuxieme_versement) as deuxieme_versement,
+      SUM(troisieme_versement) as troisieme_versement,
+      SUM(total_versement) as total
+    FROM classes
+    WHERE LOWER(niveau) = LOWER($1)
+    GROUP BY niveau
+  `, [niveau]);
+
+  if (planResult.rows.length === 0) {
+    console.log(`⚠️ Aucune classe trouvée pour le niveau: ${niveau}`);
+    return;
+  }
+
+  const plan = planResult.rows[0];
+  console.log(`📋 Plan trouvé: ${plan.niveau} - Total: ${plan.total}`);
+
+  // Mettre à jour la pré-inscription avec le plan
+  await query(`
+    UPDATE preinscriptions 
+    SET montant_total_plan = $1,
+        montant_restant_plan = $1
+    WHERE id = $2
+  `, [plan.total, preinscriptionId]);
+
+  // ⭐ Créer les échéances d'inscription avec les bons montants
+  const echeances = [
+    { echeance: '1er_versement', montant: Number(plan.premier_versement) || 0 },
+    { echeance: '2eme_versement', montant: Number(plan.deuxieme_versement) || 0 },
+    { echeance: '3eme_versement', montant: Number(plan.troisieme_versement) || 0 }
+  ];
+
+  for (const e of echeances) {
+    if (e.montant > 0) {
+      const dateEcheance = getEcheanceDate(e.echeance);
+      await query(`
+        INSERT INTO echeances_paiement (
+          preinscription_id,
+          type,
+          echeance,
+          montant,
+          date_echeance,
+          statut
+        ) VALUES ($1, $2, $3, $4, $5, 'en_attente')
+      `, [preinscriptionId, 'inscription', e.echeance, e.montant, dateEcheance]);
+      console.log(`✅ Échéance ${e.echeance} créée: ${e.montant} GNF`);
+    }
+  }
+
+  // ⭐ Créer les échéances pour les services optionnels
+  const services = [
+    { type: 'transport', montant: Number(body.montant_transport) || 0 },
+    { type: 'cantine', montant: Number(body.montant_cantine) || 0 },
+    { type: 'fournitures', montant: Number(body.montant_fournitures) || 0 }
+  ];
+
+  for (const service of services) {
+    if (service.montant > 0) {
+      const dateEcheance = getEcheanceDate('1er_versement');
+      await query(`
+        INSERT INTO echeances_paiement (
+          preinscription_id,
+          type,
+          echeance,
+          montant,
+          date_echeance,
+          statut
+        ) VALUES ($1, $2, $3, $4, $5, 'en_attente')
+      `, [preinscriptionId, service.type, service.type, service.montant, dateEcheance]);
+      console.log(`✅ Échéance ${service.type} créée: ${service.montant} GNF`);
+    }
+  }
+
+  console.log(`✅ Plan de paiement complété pour la pré-inscription ${preinscriptionId}`);
+}
+
 export async function POST(request: NextRequest) {
   console.log("=== API PREINSCRIPTION POST CALLED ===");
 
@@ -263,92 +362,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// ⭐ Fonction utilitaire pour calculer la date d'échéance
-function getEcheanceDate(echeance: string): Date {
-  const date = new Date();
-  if (echeance === '1er_versement') {
-    return date;
-  } else if (echeance === '2eme_versement') {
-    date.setMonth(date.getMonth() + 2);
-    return date;
-  } else if (echeance === '3eme_versement') {
-    date.setMonth(date.getMonth() + 4);
-    return date;
-  }
-  return date;
-}
-
-// ⭐ Fonction utilitaire pour créer les échéances
-async function createEcheances(
-  preinscriptionId: number,
-  type: string,
-  montantTotal: number,
-  echeancesList: string[]
-) {
-  if (montantTotal <= 0) return;
-  
-  const montantParEcheance = Math.round(montantTotal / echeancesList.length);
-  console.log(`📦 ${type}: ${montantTotal} GNF - ${montantParEcheance} GNF par échéance`);
-  
-  for (const echeance of echeancesList) {
-    const dateEcheance = getEcheanceDate(echeance);
-    
-    await query(`
-      INSERT INTO echeances_paiement (
-        preinscription_id, 
-        type, 
-        echeance, 
-        montant,
-        date_echeance,
-        statut
-      ) VALUES ($1, $2, $3, $4, $5, 'en_attente')
-    `, [preinscriptionId, type, echeance, montantParEcheance, dateEcheance]);
-  }
-  console.log(`✅ ${echeancesList.length} échéances de ${type} créées`);
-}
-
-// ⭐ Fonction pour créer le plan de paiement et les échéances
-async function createPlanPaiement(preinscriptionId: number, niveau: string, body: any) {
-  console.log(`📊 Création du plan de paiement pour la pré-inscription ${preinscriptionId}`);
-
-  // Récupérer le plan de paiement selon le niveau
-  const planResult = await query(`
-    SELECT * FROM plans_paiement_niveaux 
-    WHERE LOWER(niveau) = LOWER($1)
-  `, [niveau]);
-
-  if (planResult.rows.length === 0) {
-    console.log(`⚠️ Aucun plan trouvé pour le niveau: ${niveau}`);
-    return;
-  }
-
-  const plan = planResult.rows[0];
-  console.log(`📋 Plan trouvé: ${plan.niveau} - Total: ${plan.total}`);
-
-  // Mettre à jour la pré-inscription avec le plan
-  await query(`
-    UPDATE preinscriptions 
-    SET plan_paiement_id = $1, 
-        montant_total_plan = $2,
-        montant_restant_plan = $2
-    WHERE id = $3
-  `, [plan.id, plan.total, preinscriptionId]);
-
-  const echeancesList = ['1er_versement', '2eme_versement', '3eme_versement'];
-
-  // 7.1 Créer les échéances pour l'inscription
-  await createEcheances(preinscriptionId, 'inscription', plan.total, echeancesList);
-
-  // 7.2 Créer les échéances pour le transport si sélectionné
-  await createEcheances(preinscriptionId, 'transport', body.montant_transport || 0, echeancesList);
-
-  // 7.3 Créer les échéances pour la cantine si sélectionnée
-  await createEcheances(preinscriptionId, 'cantine', body.montant_cantine || 0, echeancesList);
-
-  // 7.4 Créer les échéances pour les fournitures si sélectionnées
-  await createEcheances(preinscriptionId, 'fournitures', body.montant_fournitures || 0, echeancesList);
-
-  console.log(`✅ Plan de paiement complété pour la pré-inscription ${preinscriptionId}`);
 }

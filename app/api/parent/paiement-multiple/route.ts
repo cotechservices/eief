@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
-    // ⭐ Accepter PARENT, SUPER_ADMIN et COMPTABLE
     const userRole = (session.user as any).role;
     if (userRole !== "PARENT" && userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE") {
       return NextResponse.json({ 
@@ -89,7 +88,6 @@ export async function POST(request: NextRequest) {
         `, [preinscriptionId]);
         console.log(`✅ Pré-inscription ${preinscriptionId} entièrement payée`);
       } else {
-        // ⭐ Si des échéances restent, mettre le statut à 'partiel'
         await query(`
           UPDATE preinscriptions 
           SET frais_statut = 'partiel'
@@ -98,34 +96,31 @@ export async function POST(request: NextRequest) {
         console.log(`⚠️ Pré-inscription ${preinscriptionId} partiellement payée (reste: ${restant} GNF)`);
       }
 
-      // ⭐ Déterminer le type de frais pour le paiement
+      // Déterminer le type de frais pour l'insertion dans paiements
+      // ⭐ SI c'est un paiement groupé (frais_seuls ou tout) ET qu'il y a une échéance d'inscription
+      // ALORS le type doit être 'inscription'
+      // SINON on prend le type de la première échéance
       let typeFrais = 'inscription';
       const typesInclus = [...new Set(echeances.map((e: any) => e.type))];
-      console.log("📋 Types inclus dans le paiement:", typesInclus);
-      
-      const typeMapping: { [key: string]: string } = {
-        'inscription': 'inscription',
-        'transport': 'transport',
-        'cantine': 'cantine',
-        'fournitures': 'librairie',
-        'mensualite': 'mensualite'
-      };
-      
-      if (typesInclus.length === 1) {
-        const typeUnique = typesInclus[0];
-        typeFrais = typeMapping[typeUnique] || 'autre';
-      } else {
-        const hasInscription = typesInclus.includes('inscription');
-        if (hasInscription) {
+      console.log(`📋 Types d'échéances inclus: ${typesInclus.join(', ')}`);
+
+      if (typesInclus.length > 0) {
+        if (typesInclus.includes('inscription')) {
+          // Si l'inscription est dans la liste, on utilise 'inscription' comme type principal
           typeFrais = 'inscription';
         } else {
+          // Sinon, on prend le premier type de la liste
+          const typeMapping: { [key: string]: string } = {
+            'transport': 'transport',
+            'cantine': 'cantine',
+            'fournitures': 'librairie'
+          };
           typeFrais = typeMapping[typesInclus[0]] || 'autre';
         }
       }
+      console.log(`🏷️ Type de frais pour le paiement: ${typeFrais}`);
 
-      console.log(`💰 Type de frais sélectionné: ${typeFrais} pour ${montantTotal} GNF`);
-
-      // ⭐ Enregistrer le paiement
+      // Enregistrer le paiement
       await query(`
         INSERT INTO paiements (
           eleve_id,
@@ -161,16 +156,43 @@ export async function POST(request: NextRequest) {
         session.user.email
       ]);
 
-      console.log(`✅ Paiement enregistré: ${montantTotal} GNF (${typeFrais}) pour pré-inscription ${preinscriptionId}`);
-
       await query('COMMIT');
+
+      // ⭐ RÉCUPÉRER LES DONNÉES MISES À JOUR
+      const updatedEcheances = await query(`
+        SELECT 
+          id,
+          type,
+          echeance,
+          montant,
+          statut,
+          date_echeance,
+          date_paiement,
+          reference_transaction,
+          mode_paiement
+        FROM echeances_paiement
+        WHERE preinscription_id = $1
+        ORDER BY 
+          CASE echeance
+            WHEN '1er_versement' THEN 1
+            WHEN '2eme_versement' THEN 2
+            WHEN '3eme_versement' THEN 3
+            WHEN 'transport' THEN 4
+            WHEN 'cantine' THEN 5
+            WHEN 'fournitures' THEN 6
+          END
+      `, [preinscriptionId]);
+
+      console.log(`✅ Paiement enregistré: ${montantTotal} GNF (${typeFrais}) pour pré-inscription ${preinscriptionId}`);
+      console.log(`📊 Échéances mises à jour: ${updatedEcheances.rows.length} échéances`);
 
       return NextResponse.json({ 
         success: true, 
         message: "Paiement effectué avec succès",
         montant: montantTotal,
         restant: restant,
-        echeances: echeances.map((e: any) => ({ id: e.id, type: e.type, echeance: e.echeance })),
+        echeances: updatedEcheances.rows,
+        echeances_originales: echeances.map((e: any) => ({ id: e.id, type: e.type, echeance: e.echeance })),
         type_frais: typeFrais
       });
     } catch (error) {

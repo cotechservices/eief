@@ -220,12 +220,14 @@ export default function GestionElevesPage() {
   };
 
   const getFraisBadge = (fraisStatut: string) => {
-    if (fraisStatut === "paye") {
+    if (fraisStatut === "paye" || fraisStatut === "valide") {
       return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
+    }
+    if (fraisStatut === "partiel") {
+      return <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Partiel</span>;
     }
     return <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
-
   const classes = ["all", ...new Set(eleves.map(e => e.classe_nom).filter(Boolean))];
 
   const filteredEleves = eleves.filter(e => {
@@ -347,7 +349,7 @@ export default function GestionElevesPage() {
       </div>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div><p className="text-gray-900 text-sm">Total inscrits</p><p className="text-2xl font-bold text-blue-600">{eleves.length}</p></div>
@@ -370,12 +372,6 @@ export default function GestionElevesPage() {
           <div className="flex items-center justify-between">
             <div><p className="text-gray-900 text-sm">Classes</p><p className="text-2xl font-bold text-purple-600">{classes.length - 1}</p></div>
             <GraduationCap className="w-8 h-8 text-purple-700" />
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center justify-between">
-            <div><p className="text-gray-900 text-sm">Frais payés</p><p className="text-2xl font-bold text-green-600">{eleves.filter(e => e.frais_statut === "paye").length}</p></div>
-            <Wallet className="w-8 h-8 text-green-700" />
           </div>
         </div>
       </div>

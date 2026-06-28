@@ -31,9 +31,47 @@ import {
   Mail,
   Smartphone,
   Utensils,
-  Bus
+  Bus,
+  ShoppingBag,
+  ShoppingBasket,
+  ShoppingCart,
 } from "lucide-react";
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  PointElement,
+  LineElement,
+  Filler,
+  ArcElement,
+} from 'chart.js';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  PointElement,
+  LineElement,
+  Filler,
+  ArcElement
+);
+interface GraphData {
+  niveaux: Array<{ niveau: string; total: number }>;
+  evolutionPaiements: Array<{ mois: string; montant: number }>;
+  tauxPresence: {
+    present: number;
+    absent: number;
+    retard: number;
+  };
+}
 interface DashboardStats {
   general: {
     totalEleves: number;
@@ -100,8 +138,6 @@ export default function AdminDashboard() {
     }
   });
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchDashboardData();
@@ -113,22 +149,11 @@ export default function AdminDashboard() {
       const response = await fetch("/api/dashboard/stats");
       const data = await response.json();
       
-      // ⭐ Calculer le total à payer à partir des données
-      const totalScolarite = data.financieres?.totalScolarite || 0;
-      const totalTransport = data.financieres?.totalTransport || 0;
-      const totalCantine = data.financieres?.totalCantine || 0;
-      const totalFournitures = data.financieres?.totalFournitures || 0;
-      const totalAPayer = totalScolarite + totalTransport + totalCantine + totalFournitures;
-      
       setStats({
         general: data.general || stats.general,
         financieres: {
           ...data.financieres,
-          totalScolarite,
-          totalTransport,
-          totalCantine,
-          totalFournitures,
-          totalAPayer,
+          totalAPayer: data.financieres?.totalAPayer || 0,
           totalPaye: data.financieres?.totalPaye || 0,
           soldeRestant: data.financieres?.soldeRestant || 0
         }
@@ -144,12 +169,6 @@ export default function AdminDashboard() {
   const financieres = stats.financieres || {};
   const derniersPaiements = financieres.derniersPaiements || [];
   const categoriesRecettes = financieres.categoriesRecettes || [];
-
-  const totalPages = Math.ceil(derniersPaiements.length / itemsPerPage);
-  const paginatedPaiements = derniersPaiements.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   const iconMap: Record<string, any> = {
     Inscription: Users,
@@ -186,44 +205,48 @@ export default function AdminDashboard() {
       {/* Statistiques générales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6">
+          <Link href="/dashboard/admin/eleves" className="">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-900 text-sm">Total élèves</p>
               <p className="text-2xl font-bold text-gray-900">{general.totalEleves || 0}</p>
-              <p className="text-green-600 text-sm mt-1 flex items-center gap-1"><ArrowUpRight className="w-4 h-4" /> +12% vs année dernière</p>
             </div>
             <div className="bg-blue-500 p-3 rounded-lg"><Users className="w-6 h-6 text-white" /></div>
           </div>
+          </Link>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
+          <Link href="/dashboard/admin/personnel" className="">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-900 text-sm">Enseignants</p>
               <p className="text-2xl font-bold text-gray-900">{general.totalEnseignants || 0}</p>
-              <p className="text-green-600 text-sm mt-1 flex items-center gap-1"><ArrowUpRight className="w-4 h-4" /> +5% vs année dernière</p>
             </div>
             <div className="bg-green-500 p-3 rounded-lg"><GraduationCap className="w-6 h-6 text-white" /></div>
           </div>
+          </Link>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
+          <Link href="/dashboard/admin/classes" className="">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-900 text-sm">Classes</p>
               <p className="text-2xl font-bold text-gray-900">{general.totalClasses || 0}</p>
-              <p className="text-green-600 text-sm mt-1 flex items-center gap-1"><ArrowUpRight className="w-4 h-4" /> +2 vs année dernière</p>
             </div>
             <div className="bg-purple-500 p-3 rounded-lg"><BookOpen className="w-6 h-6 text-white" /></div>
           </div>
+          </Link>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
+          <Link href="/dashboard/admin/classes" className="">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-900 text-sm">Parents</p>
               <p className="text-2xl font-bold text-gray-900">{general.totalParents || 0}</p>
-              <p className="text-green-600 text-sm mt-1 flex items-center gap-1"><ArrowUpRight className="w-4 h-4" /> +8% vs année dernière</p>
             </div>
             <div className="bg-indigo-500 p-3 rounded-lg"><UserPlus className="w-6 h-6 text-white" /></div>
           </div>
+          </Link>
         </div>
       </div>
 
@@ -252,49 +275,57 @@ export default function AdminDashboard() {
       <div className="mt-8">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
           <DollarSign className="w-6 h-6 text-green-600" />
-          Gestion financière
+          Statistiquesy financière
         </h2>
       </div>
 
-      {/* ⭐ Cartes financières avec le Total à payer */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* ⭐ Cartes financières */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-900 text-sm">Total recettes</p>
-              <p className="text-2xl font-bold text-green-600">{(financieres.totalRecettes || 0).toLocaleString()} GNF</p>
+              <p className="text-lg font-bold text-green-600">{(financieres.totalRecettes || 0).toLocaleString()} GNF</p>
             </div>
-            <div className="bg-green-100 p-3 rounded-lg"><TrendingUp className="w-6 h-6 text-green-600" /></div>
+            <div className="bg-green-100 p-3 rounded-lg"><TrendingUp className="w-4 h-4 text-green-600" /></div>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-900 text-sm">Total dépenses</p>
-              <p className="text-2xl font-bold text-red-600">{(financieres.totalDepenses || 0).toLocaleString()} GNF</p>
+              <p className="text-lg font-bold text-red-600">{(financieres.totalDepenses || 0).toLocaleString()} GNF</p>
             </div>
-            <div className="bg-red-100 p-3 rounded-lg"><TrendingDown className="w-6 h-6 text-red-600" /></div>
+            <div className="bg-red-100 p-3 rounded-lg"><TrendingDown className="w-4 h-4 text-red-600" /></div>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-gray-900 text-sm">Total à payer</p>
-              <p className="text-2xl font-bold text-orange-600">{(financieres.totalAPayer || 0).toLocaleString()} GNF</p>
+              <p className="text-lg font-bold text-blue-600">{(financieres.totalAPayer || 0).toLocaleString()} GNF</p>
             </div>
-            <div className="bg-orange-100 p-3 rounded-lg"><Wallet className="w-6 h-6 text-orange-600" /></div>
+            <div className="bg-blue-100 p-3 rounded-lg"><DollarSign className="w-4 h-4 text-blue-600" /></div>
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-900 text-sm">Solde restant</p>
-              <p className={`text-2xl font-bold ${(financieres.soldeRestant || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              <p className="text-gray-900 text-sm">Montant payé</p>
+              <p className="text-lg font-bold text-orange-600">{(financieres.totalPaye || 0).toLocaleString()} GNF</p>
+            </div>
+            <div className="bg-orange-100 p-3 rounded-lg"><Wallet className="w-4 h-4 text-orange-600" /></div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-gray-900 text-sm">Reste à payer</p>
+              <p className={`text-lg font-bold ${(financieres.soldeRestant || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
                 {(financieres.soldeRestant || 0).toLocaleString()} GNF
               </p>
-              <p className="text-xs text-gray-500">Déjà payé: {(financieres.totalPaye || 0).toLocaleString()} GNF</p>
             </div>
-            <div className="bg-red-100 p-3 rounded-lg"><CreditCard className="w-6 h-6 text-red-600" /></div>
+            <div className="bg-red-100 p-3 rounded-lg"><CreditCard className="w-4 h-4 text-red-600" /></div>
           </div>
         </div>
       </div>
@@ -358,34 +389,240 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+      {/* Statistiques graphiques */}
+      <div className="grid lg:grid-cols-2 gap-6 mt-6">
+        {/* Graphique - Répartition des élèves (Filles/Garçons) */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 text-blue-600" />
+            Répartition des élèves (Filles/Garçons)
+          </h3>
+          <div className="h-64">
+            <Doughnut
+              data={{
+                labels: ['Garçons', 'Filles'],
+                datasets: [
+                  {
+                    data: [general.hommes || 0, general.femmes || 0],
+                    backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(236, 72, 153, 0.8)'],
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      boxWidth: 12,
+                      padding: 10,
+                      font: { size: 11 },
+                    },
+                  },
+                },
+                cutout: '60%',
+              }}
+            />
+          </div>
+        </div>
 
-      {/* Actions rapides */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Link href="/dashboard/admin/paiements" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-green-600 transition">
-            <CreditCard className="w-6 h-6 text-green-600 group-hover:text-white" />
+        {/* Graphique - Total des classes par niveau */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-purple-600" />
+            Total des classes par niveau
+          </h3>
+          <div className="h-64">
+            <Bar
+              data={{
+                labels: ['Maternelle', 'Primaire', 'Collège', 'Lycée'],
+                datasets: [
+                  {
+                    label: 'Nombre de classes',
+                    data: [1, 6, 4, 3],
+                    backgroundColor: [
+                      'rgba(59, 130, 246, 0.7)',
+                      'rgba(16, 185, 129, 0.7)',
+                      'rgba(139, 92, 246, 0.7)',
+                      'rgba(245, 158, 11, 0.7)',
+                    ],
+                    borderColor: [
+                      'rgb(59, 130, 246)',
+                      'rgb(16, 185, 129)',
+                      'rgb(139, 92, 246)',
+                      'rgb(245, 158, 11)',
+                    ],
+                    borderWidth: 2,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      stepSize: 1,
+                    },
+                  },
+                },
+              }}
+            />
           </div>
-          <p className="text-sm font-medium">Paiements</p>
-        </Link>
-        <Link href="/dashboard/admin/rapports" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition">
-            <FileText className="w-6 h-6 text-blue-600 group-hover:text-white" />
+        </div>
+
+        {/* Graphique - Évolution des entrées/sorties de caisse */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-green-600" />
+            Évolution des entrées/sorties de caisse
+          </h3>
+          <div className="h-64">
+            <Line
+              data={{
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                datasets: [
+                  {
+                    label: 'Entrées',
+                    data: [12000000, 15000000, 18000000, 22000000, 19000000, 25000000],
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                  },
+                  {
+                    label: 'Sorties',
+                    data: [8000000, 9000000, 11000000, 10000000, 12000000, 14000000],
+                    borderColor: 'rgb(239, 68, 68)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      boxWidth: 12,
+                      padding: 10,
+                      font: { size: 11 },
+                    },
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: (value) => `${(value / 1000000).toFixed(0)}M`,
+                    },
+                  },
+                },
+              }}
+            />
           </div>
-          <p className="text-sm font-medium">Rapports</p>
-        </Link>
-        <Link href="/dashboard/admin/frais-scolaires" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
-          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-purple-600 transition">
-            <DollarSign className="w-6 h-6 text-purple-600 group-hover:text-white" />
+        </div>
+
+        {/* Indicateurs rapides */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-indigo-600" />
+            Indicateurs de l'établissement
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-blue-50 rounded-lg p-4 text-center">
+              <Bus className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-blue-600">1</p>
+              <p className="text-xs text-gray-600">Bus</p>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4 text-center">
+              <BookOpen className="w-6 h-6 text-green-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-green-600">0</p>
+              <p className="text-xs text-gray-600">Livres</p>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-4 text-center">
+              <Utensils className="w-6 h-6 text-orange-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-orange-600">1</p>
+              <p className="text-xs text-gray-600">Menus cantine</p>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4 text-center">
+              <ShoppingCart className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-purple-600">1</p>
+              <p className="text-xs text-gray-600">Fournitures/Librairie</p>
+            </div>
           </div>
-          <p className="text-sm font-medium">Frais scolaires</p>
-        </Link>
-        <Link href="/dashboard/admin/preinscriptions" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
-          <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-yellow-600 transition">
-            <Clock className="w-6 h-6 text-yellow-600 group-hover:text-white" />
+        </div>
+
+        {/* Graphique - Présence par classe */}
+        <div className="bg-white rounded-xl shadow-sm p-6 lg:col-span-2">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <UserCheck className="w-5 h-5 text-blue-600" />
+            Présence par classe
+          </h3>
+          <div className="h-64">
+            <Bar
+              data={{
+                labels: ['1ère', '2ème', '3ème', '4ème', '5ème', '6ème', '7ème', '8ème', '9ème', '10ème', '11ème', '12ème', 'Term.', 'Mat.'],
+                datasets: [
+                  {
+                    label: 'Présents',
+                    data: [22, 20, 18, 23, 19, 21, 17, 22, 20, 18, 19, 16, 15, 22],
+                    backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                    borderColor: 'rgb(34, 197, 94)',
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'Absents',
+                    data: [3, 5, 7, 2, 6, 4, 8, 3, 5, 7, 6, 9, 10, 3],
+                    backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                    borderColor: 'rgb(239, 68, 68)',
+                    borderWidth: 1,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: {
+                      boxWidth: 12,
+                      padding: 10,
+                      font: { size: 11 },
+                    },
+                  },
+                },
+                scales: {
+                  x: {
+                    ticks: {
+                      font: { size: 10 },
+                    },
+                  },
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      stepSize: 5,
+                    },
+                  },
+                },
+              }}
+            />
           </div>
-          <p className="text-sm font-medium">Inscriptions</p>
-        </Link>
+        </div>
       </div>
-    </div>
-  );
+  </div>
+);
 }

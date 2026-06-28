@@ -36,25 +36,32 @@ export async function GET(request: NextRequest) {
           u.telephone as parent_telephone,
           pa.profession as parent_profession,
           pa.situation_matrimoniale as mere_info,
-          -- ⭐ FRAIS D'INSCRIPTION : Utiliser le plan de paiement
+          -- ⭐ FRAIS D'INSCRIPTION depuis la table classes
           COALESCE(
-            (SELECT total FROM plans_paiement_niveaux 
-             WHERE niveau = p.niveau AND type_inscription = COALESCE(p.type_inscription, 'inscription')
+            (SELECT c.total_versement 
+             FROM classes c
+             WHERE LOWER(c.nom) = LOWER(p.classe)
+             LIMIT 1),
+            (SELECT c.frais_inscription 
+             FROM classes c
+             WHERE LOWER(c.nom) = LOWER(p.classe)
              LIMIT 1),
             0
           ) as frais_montant,
-          -- ⭐ PLAN DE PAIEMENT COMPLET
+          -- ⭐ PLAN DE PAIEMENT depuis la table classes
           COALESCE(
             (SELECT JSON_BUILD_OBJECT(
-              'id', id,
-              'premier_versement', premier_versement,
-              'deuxieme_versement', deuxieme_versement,
-              'troisieme_versement', troisieme_versement,
-              'total', total,
-              'type_inscription', type_inscription
+              'id', c.id,
+              'premier_versement', c.premier_versement,
+              'deuxieme_versement', c.deuxieme_versement,
+              'troisieme_versement', c.troisieme_versement,
+              'total', c.total_versement,
+              'type_inscription', COALESCE(p.type_inscription, 'inscription'),
+              'niveau', c.niveau,
+              'nom_classe', c.nom
             )
-            FROM plans_paiement_niveaux 
-            WHERE niveau = p.niveau AND type_inscription = COALESCE(p.type_inscription, 'inscription')
+            FROM classes c
+            WHERE LOWER(c.nom) = LOWER(p.classe)
             LIMIT 1),
             NULL
           ) as plan_paiement,
@@ -89,7 +96,7 @@ export async function GET(request: NextRequest) {
                )),
             0
           ) as frais_scolarite,
-          -- ⭐ FRAIS DÉJÀ PAYÉS : UNIQUEMENT LES ÉCHÉANCES PAYÉES
+          -- ⭐ FRAIS DÉJÀ PAYÉS depuis les échéances
           COALESCE(
             (SELECT SUM(e.montant) 
              FROM echeances_paiement e
@@ -260,6 +267,8 @@ export async function GET(request: NextRequest) {
         p.photo_url,
         p.bulletin_url,
         p.type_inscription,
+        p.montant_total_plan,
+        p.montant_restant_plan,
         u.nom as parent_nom,
         u.prenom as parent_prenom,
         u.email as parent_email,
@@ -299,14 +308,7 @@ export async function GET(request: NextRequest) {
            FROM echeances_paiement e
            WHERE e.preinscription_id = p.id AND e.statut = 'paye'),
           0
-        ) as frais_paye_calcule,
-        -- ⭐ Récupérer le total du plan
-        COALESCE(
-          (SELECT total FROM plans_paiement_niveaux 
-           WHERE niveau = p.niveau AND type_inscription = COALESCE(p.type_inscription, 'inscription')
-           LIMIT 1),
-          0
-        ) as montant_total_plan
+        ) as frais_paye_calcule
       FROM preinscriptions p
       JOIN parents pa ON p.parent_id = pa.id
       JOIN utilisateurs u ON pa.utilisateur_id = u.id
@@ -365,7 +367,7 @@ export async function PUT(request: NextRequest) {
 
     // Vérifier le paiement si on essaie de valider
     if (statut === "valide") {
-      // ⭐ NOUVELLE CONDITION : Valider si au moins une échéance d'inscription est payée
+      // ⭐ Vérifier si au moins une échéance d'inscription est payée
       const echeancesResult = await query(`
         SELECT COUNT(*) as total, 
                SUM(CASE WHEN statut = 'paye' THEN 1 ELSE 0 END) as payees
@@ -376,7 +378,7 @@ export async function PUT(request: NextRequest) {
       const totalEcheances = Number(echeancesResult.rows[0]?.total) || 0;
       const payeesEcheances = Number(echeancesResult.rows[0]?.payees) || 0;
       
-      // ⭐ MODIFICATION : Au moins une échéance payée pour valider
+      // ⭐ Au moins une échéance payée pour valider
       if (totalEcheances > 0 && payeesEcheances === 0) {
         return NextResponse.json(
           { error: "❌ Au moins un versement doit être effectué avant la validation" },
@@ -429,12 +431,14 @@ export async function PUT(request: NextRequest) {
         
         if (data.classe) {
           const classeResult = await query(
-            "SELECT id, frais_inscription FROM classes WHERE LOWER(nom) = LOWER($1)",
+            "SELECT id, frais_inscription, total_versement FROM classes WHERE LOWER(nom) = LOWER($1)",
             [data.classe]
           );
           if (classeResult.rows.length > 0) {
             classeId = classeResult.rows[0].id;
-            if (classeResult.rows[0].frais_inscription) {
+            if (classeResult.rows[0].total_versement) {
+              montantFrais = classeResult.rows[0].total_versement;
+            } else if (classeResult.rows[0].frais_inscription) {
               montantFrais = classeResult.rows[0].frais_inscription;
             }
           }
@@ -478,7 +482,6 @@ export async function PUT(request: NextRequest) {
         `, [id, newEleve.rows[0].id, data.parent_id, matricule, anneeScolaire.rows[0]?.id || null]);
 
         // 7. ⭐ GÉRER LES PAIEMENTS UNIQUEMENT SI PAS DÉJÀ PAYÉS VIA ÉCHÉANCES
-        // Si des échéances existent, les paiements sont déjà enregistrés via les échéances
         const echeancesPayees = await query(`
           SELECT SUM(montant) as total_paye
           FROM echeances_paiement 
@@ -487,7 +490,7 @@ export async function PUT(request: NextRequest) {
         
         const totalPayeEcheances = Number(echeancesPayees.rows[0]?.total_paye) || 0;
         
-        // ⭐ MODIFICATION : On ne crée un paiement que s'il n'y a pas d'échéances
+        // ⭐ On ne crée un paiement que s'il n'y a pas d'échéances
         if (totalEcheances === 0) {
           let modePaiementValide = 'especes';
           if (data.frais_mode_paiement === 'orange_money') {
@@ -590,15 +593,50 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID requis" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "ID requis" }, { status: 400 });
     }
 
-    await query("DELETE FROM preinscriptions WHERE id = $1", [id]);
+    // ⭐ Vérifier si la pré-inscription existe et son statut
+    const checkResult = await query(`
+      SELECT id, statut FROM preinscriptions WHERE id = $1
+    `, [id]);
 
-    return NextResponse.json({ success: true });
+    if (checkResult.rows.length === 0) {
+      return NextResponse.json({ error: "Pré-inscription non trouvée" }, { status: 404 });
+    }
+
+    const preinscription = checkResult.rows[0];
+
+    // ⭐ Empêcher la suppression des pré-inscriptions validées
+    if (preinscription.statut === 'valide') {
+      return NextResponse.json({ 
+        error: "Impossible de supprimer une pré-inscription déjà validée" 
+      }, { status: 400 });
+    }
+
+    // Démarrer une transaction
+    await query('BEGIN');
+
+    try {
+      // Supprimer les données associées
+      await query(`DELETE FROM paiements WHERE preinscription_id = $1`, [id]);
+      await query(`DELETE FROM echeances_paiement WHERE preinscription_id = $1`, [id]);
+      await query(`DELETE FROM inscriptions WHERE preinscription_id = $1`, [id]);
+      await query(`DELETE FROM commandes_fournitures WHERE preinscription_id = $1`, [id]);
+      await query(`DELETE FROM preinscription_transport WHERE preinscription_id = $1`, [id]);
+      await query(`DELETE FROM preinscription_cantine WHERE preinscription_id = $1`, [id]);
+      await query(`DELETE FROM preinscriptions WHERE id = $1`, [id]);
+
+      await query('COMMIT');
+
+      return NextResponse.json({ 
+        success: true, 
+        message: "Pré-inscription supprimée avec succès" 
+      });
+    } catch (error) {
+      await query('ROLLBACK');
+      throw error;
+    }
   } catch (error) {
     console.error("Erreur DELETE:", error);
     return NextResponse.json(

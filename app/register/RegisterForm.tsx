@@ -854,19 +854,24 @@ export default function RegisterForm() {
                 <button
                   type="button"
                   onClick={() => {
+                    setSkipSupplies(!skipSupplies); // ⭐ Toggle l'état
                     if (skipSupplies) {
-                      setSkipSupplies(false);
+                      // Réactiver - recharger les fournitures si nécessaire
                       if (supplies.length === 0 && !loadingSupplies) {
                         fetchSupplies();
                       }
                     } else {
+                      // Désactiver - vider la sélection
                       setSupplies(supplies.map(s => ({ ...s, selectedQty: 0 })));
-                      setSkipSupplies(true);
                     }
                   }}
-                  className={`text-sm font-medium transition ${skipSupplies ? "text-blue-600 hover:text-blue-800" : "text-red-600 hover:text-red-800"}`}
+                  className={`text-sm font-medium transition ${
+                    skipSupplies 
+                      ? "text-blue-600 hover:text-blue-800" 
+                      : "text-red-600 hover:text-red-800"
+                  }`}
                 >
-                  {skipSupplies ? "Ajouter des fournitures" : "Ignorer les fournitures"}
+                  {skipSupplies ? "📦 Ajouter des fournitures" : "❌ Ignorer les fournitures"}
                 </button>
               </div>
 
@@ -897,42 +902,43 @@ export default function RegisterForm() {
                     <>
                       <p className="text-sm text-gray-600 mb-4">Choisissez les fournitures pour vos enfants</p>
                       <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                      {supplies.map((item, idx) => (
-                        <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
-                          <div className="flex-1">
-                            <p className="font-medium text-gray-800">{item.nom}</p>
-                            <p className="text-sm text-gray-800">{item.prix_unitaire.toLocaleString()} GNF</p>
+                        {supplies.map((item, idx) => (
+                          <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-800">{item.nom}</p>
+                              <p className="text-sm text-gray-800">{item.prix_unitaire.toLocaleString()} GNF</p>
+                              <p className="text-xs text-gray-500">Stock: {item.quantite_stock}</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleSupplyChange(idx, -1);
+                                }}
+                                className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-700"
+                                disabled={item.selectedQty === 0}
+                              >
+                                <Minus className="w-4 h-4" />
+                              </button>
+                              <span className="w-8 text-center font-medium text-lg">{item.selectedQty}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleSupplyChange(idx, 1);
+                                }}
+                                className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-700"
+                                disabled={item.selectedQty >= item.quantite_stock}
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleSupplyChange(idx, -1);
-                              }}
-                              className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-700"
-                              disabled={item.selectedQty === 0}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="w-8 text-center font-medium text-lg">{item.selectedQty}</span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleSupplyChange(idx, 1);
-                              }}
-                              className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-gray-700"
-                              disabled={item.selectedQty >= item.quantite_stock}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
                       {supplies.filter(s => s.selectedQty > 0).length > 0 && (
                         <div className="mt-4 text-right font-semibold text-blue-700">
                           Total fournitures : {totalFournitures.toLocaleString()} GNF
@@ -943,197 +949,218 @@ export default function RegisterForm() {
                 </>
               ) : (
                 <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-                  <p>Vous avez choisi de ne pas commander de fournitures scolaires.</p>
-                  <p className="text-sm mt-1">Vous pourrez en acheter ultérieurement.</p>
+                  <p className="text-sm">✅ Vous avez choisi de ne pas commander de fournitures scolaires.</p>
+                  <p className="text-xs mt-1">Vous pourrez en acheter ultérieurement.</p>
                 </div>
               )}
             </div>
 
-            {/* Transport scolaire */}
+            {/* Transport scolaire - même correction */}
             <div className="border border-green-200 rounded-xl p-5 bg-green-50/30">
-  <div className="flex justify-between items-center mb-4">
-    <div className="flex items-center gap-2">
-      <Bus className="w-5 h-5 text-green-600" />
-      <h3 className="text-lg font-semibold text-green-900">Transport scolaire</h3>
-      {!skipTransport && totalTransport > 0 && (
-        <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-semibold">
-          {totalTransport.toLocaleString()} GNF
-        </span>
-      )}
-    </div>
-    <button
-      type="button"
-      onClick={() => {
-        if (skipTransport) {
-          setSkipTransport(false);
-          if (transportOptions.length === 0) fetchTransportOptions();
-        } else {
-          setTransportOptions(transportOptions.map(t => ({ ...t, selected: false })));
-          setTotalTransport(0);
-          setSkipTransport(true);
-        }
-      }}
-      className={`text-sm font-medium transition ${skipTransport ? "text-green-600 hover:text-green-800" : "text-red-600 hover:text-red-800"}`}
-    >
-      {skipTransport ? "Ajouter le transport" : "Ignorer le transport"}
-    </button>
-  </div>
-
-  {!skipTransport ? (
-    <>
-      {loadingTransport ? (
-        <div className="flex justify-center items-center py-4">
-          <Loader2 className="w-6 h-6 animate-spin text-green-600" />
-          <span className="ml-2 text-gray-600">Chargement des options de transport...</span>
-        </div>
-      ) : transportOptions.length === 0 ? (
-        <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-          <p>Aucune option de transport disponible pour le moment.</p>
-          <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
-        </div>
-      ) : (
-        <>
-          <p className="text-sm text-gray-600 mb-4">Sélectionnez le transport pour vos enfants</p>
-          <div className="space-y-3 max-h-60 overflow-y-auto">
-            {transportOptions.map((item, idx) => (
-              <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
-                <div>
-                  <p className="font-medium text-gray-800">{item.nom}</p>
-                  {item.prix > 0 ? (
-                    <p className="text-sm text-gray-500">{item.prix.toLocaleString()} GNF</p>
-                  ) : (
-                    <p className="text-sm text-gray-400">Prix non défini</p>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                  <Bus className="w-5 h-5 text-green-600" />
+                  <h3 className="text-lg font-semibold text-green-900">Transport scolaire</h3>
+                  {!skipTransport && totalTransport > 0 && (
+                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-semibold">
+                      {totalTransport.toLocaleString()} GNF
+                    </span>
                   )}
                 </div>
                 <button
                   type="button"
-                  onClick={() => toggleTransport(idx)}
-                  disabled={item.prix <= 0}
-                  className={`px-4 py-2 rounded-lg transition ${
-                    item.selected 
-                      ? "bg-green-600 text-white hover:bg-green-700" 
-                      : item.prix > 0 
-                        ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  onClick={() => {
+                    setSkipTransport(!skipTransport); // ⭐ Toggle l'état
+                    if (skipTransport) {
+                      // Réactiver
+                      if (transportOptions.length === 0) fetchTransportOptions();
+                    } else {
+                      // Désactiver
+                      setTransportOptions(transportOptions.map(t => ({ ...t, selected: false })));
+                      setTotalTransport(0);
+                    }
+                  }}
+                  className={`text-sm font-medium transition ${
+                    skipTransport 
+                      ? "text-green-600 hover:text-green-800" 
+                      : "text-red-600 hover:text-red-800"
                   }`}
                 >
-                  {item.selected ? "✓ Sélectionné" : item.prix > 0 ? "Ajouter" : "Indisponible"}
+                  {skipTransport ? "🚌 Ajouter le transport" : "❌ Ignorer le transport"}
                 </button>
               </div>
-            ))}
-          </div>
-          {transportOptions.filter(t => t.selected).length > 0 && (
-            <div className="mt-4 text-right font-semibold text-green-700">
-              Total transport : {totalTransport.toLocaleString()} GNF
-            </div>
-          )}
-        </>
-      )}
-    </>
-  ) : (
-    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-      <p>Vous avez choisi de ne pas utiliser le transport scolaire.</p>
-      <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
-    </div>
-  )}
-</div>
 
-            {/* Cantine scolaire */}
-          <div className="border border-orange-200 rounded-xl p-5 bg-orange-50/30">
-  <div className="flex justify-between items-center mb-4">
-    <div className="flex items-center gap-2">
-      <Utensils className="w-5 h-5 text-orange-600" />
-      <h3 className="text-lg font-semibold text-orange-900">Cantine scolaire</h3>
-      {!skipCantine && totalCantine > 0 && (
-        <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs font-semibold">
-          {totalCantine.toLocaleString()} GNF
-        </span>
-      )}
-    </div>
-    <button
-      type="button"
-      onClick={() => {
-        if (skipCantine) {
-          setSkipCantine(false);
-          if (cantineOptions.length === 0) fetchCantineOptions();
-        } else {
-          setCantineOptions(cantineOptions.map(c => ({ ...c, selected: false })));
-          setTotalCantine(0);
-          setSkipCantine(true);
-        }
-      }}
-      className={`text-sm font-medium transition ${skipCantine ? "text-orange-600 hover:text-orange-800" : "text-red-600 hover:text-red-800"}`}
-    >
-      {skipCantine ? "Ajouter la cantine" : "Ignorer la cantine"}
-    </button>
-  </div>
-
-  {!skipCantine ? (
-    <>
-      {loadingCantine ? (
-        <div className="flex justify-center items-center py-4">
-          <Loader2 className="w-6 h-6 animate-spin text-orange-600" />
-          <span className="ml-2 text-gray-600">Chargement des menus...</span>
-        </div>
-      ) : cantineOptions.length === 0 ? (
-        <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-          <p>Aucun menu disponible pour le moment.</p>
-          <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
-        </div>
-      ) : (
-        <>
-          <p className="text-sm text-gray-600 mb-4">Sélectionnez la cantine pour vos enfants</p>
-          <div className="space-y-3 max-h-60 overflow-y-auto">
-            {cantineOptions.map((item, idx) => (
-              <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
-                <div className="flex-1">
-                  <p className="font-medium text-gray-800">{item.nom}</p>
-                  {/* Afficher le prix annuel */}
-                  {item.prix_annuel > 0 ? (
-                    <p className="text-sm text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
+              {!skipTransport ? (
+                <>
+                  {loadingTransport ? (
+                    <div className="flex justify-center items-center py-4">
+                      <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+                      <span className="ml-2 text-gray-600">Chargement des options de transport...</span>
+                    </div>
+                  ) : transportOptions.length === 0 ? (
+                    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                      <p>Aucune option de transport disponible pour le moment.</p>
+                      <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
+                    </div>
                   ) : (
-                    <p className="text-sm text-gray-400">Prix non défini</p>
+                    <>
+                      <p className="text-sm text-gray-600 mb-4">Sélectionnez le transport pour vos enfants</p>
+                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                        {transportOptions.map((item, idx) => (
+                          <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
+                            <div>
+                              <p className="font-medium text-gray-800">{item.nom}</p>
+                              {item.prix > 0 ? (
+                                <p className="text-sm text-gray-500">{item.prix.toLocaleString()} GNF</p>
+                              ) : (
+                                <p className="text-sm text-gray-400">Prix non défini</p>
+                              )}
+                              {item.horaireMatin && item.horaireSoir && (
+                                <p className="text-xs text-gray-500">
+                                  🕐 {item.horaireMatin} - {item.horaireSoir}
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => toggleTransport(idx)}
+                              disabled={item.prix <= 0}
+                              className={`px-4 py-2 rounded-lg transition ${
+                                item.selected 
+                                  ? "bg-green-600 text-white hover:bg-green-700" 
+                                  : item.prix > 0 
+                                    ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              }`}
+                            >
+                              {item.selected ? "✓ Sélectionné" : item.prix > 0 ? "Ajouter" : "Indisponible"}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      {transportOptions.filter(t => t.selected).length > 0 && (
+                        <div className="mt-4 text-right font-semibold text-green-700">
+                          Total transport : {totalTransport.toLocaleString()} GNF
+                        </div>
+                      )}
+                    </>
                   )}
-                  {item.plat && (
-                    <p className="text-xs text-gray-500">🍽️ {item.plat}</p>
-                  )}
-                  {item.accompagnement && (
-                    <p className="text-xs text-gray-400">+ {item.accompagnement}</p>
+                </>
+              ) : (
+                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                  <p className="text-sm">✅ Vous avez choisi de ne pas utiliser le transport scolaire.</p>
+                  <p className="text-xs mt-1">Vous pourrez vous inscrire plus tard.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Cantine scolaire - même correction */}
+            <div className="border border-orange-200 rounded-xl p-5 bg-orange-50/30">
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                  <Utensils className="w-5 h-5 text-orange-600" />
+                  <h3 className="text-lg font-semibold text-orange-900">Cantine scolaire</h3>
+                  {!skipCantine && totalCantine > 0 && (
+                    <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs font-semibold">
+                      {totalCantine.toLocaleString()} GNF
+                    </span>
                   )}
                 </div>
                 <button
                   type="button"
-                  onClick={() => toggleCantine(idx)}
-                  disabled={item.prix_annuel <= 0}
-                  className={`px-4 py-2 rounded-lg transition ${
-                    item.selected 
-                      ? "bg-orange-600 text-white hover:bg-orange-700" 
-                      : item.prix_annuel > 0
-                        ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  onClick={() => {
+                    setSkipCantine(!skipCantine); // ⭐ Toggle l'état
+                    if (skipCantine) {
+                      // Réactiver
+                      if (cantineOptions.length === 0) fetchCantineOptions();
+                    } else {
+                      // Désactiver
+                      setCantineOptions(cantineOptions.map(c => ({ ...c, selected: false })));
+                      setTotalCantine(0);
+                    }
+                  }}
+                  className={`text-sm font-medium transition ${
+                    skipCantine 
+                      ? "text-orange-600 hover:text-orange-800" 
+                      : "text-red-600 hover:text-red-800"
                   }`}
                 >
-                  {item.selected ? "✓ Sélectionné" : item.prix_annuel > 0 ? "Ajouter" : "Indisponible"}
+                  {skipCantine ? "🍽️ Ajouter la cantine" : "❌ Ignorer la cantine"}
                 </button>
               </div>
-            ))}
-          </div>
-          {cantineOptions.filter(c => c.selected).length > 0 && (
-            <div className="mt-4 text-right font-semibold text-orange-700">
-              Total cantine (annuel) : {totalCantine.toLocaleString()} GNF
+
+              {!skipCantine ? (
+                <>
+                  {loadingCantine ? (
+                    <div className="flex justify-center items-center py-4">
+                      <Loader2 className="w-6 h-6 animate-spin text-orange-600" />
+                      <span className="ml-2 text-gray-600">Chargement des menus...</span>
+                    </div>
+                  ) : cantineOptions.length === 0 ? (
+                    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                      <p>Aucun menu disponible pour le moment.</p>
+                      <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm text-gray-600 mb-4">Sélectionnez la cantine pour vos enfants</p>
+                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                        {cantineOptions.map((item, idx) => (
+                          <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-800">{item.nom}</p>
+                              {item.prix_annuel > 0 ? (
+                                <p className="text-sm text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
+                              ) : (
+                                <p className="text-sm text-gray-400">Prix non défini</p>
+                              )}
+                              {item.plat && (
+                                <p className="text-xs text-gray-500">🍽️ {item.plat}</p>
+                              )}
+                              {item.accompagnement && (
+                                <p className="text-xs text-gray-400">+ {item.accompagnement}</p>
+                              )}
+                              {item.dessert && (
+                                <p className="text-xs text-gray-400">🍰 {item.dessert}</p>
+                              )}
+                              {item.regime_special && (
+                                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Régime spécial</span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => toggleCantine(idx)}
+                              disabled={item.prix_annuel <= 0}
+                              className={`px-4 py-2 rounded-lg transition ${
+                                item.selected 
+                                  ? "bg-orange-600 text-white hover:bg-orange-700" 
+                                  : item.prix_annuel > 0
+                                    ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              }`}
+                            >
+                              {item.selected ? "✓ Sélectionné" : item.prix_annuel > 0 ? "Ajouter" : "Indisponible"}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      {cantineOptions.filter(c => c.selected).length > 0 && (
+                        <div className="mt-4 text-right font-semibold text-orange-700">
+                          Total cantine (annuel) : {totalCantine.toLocaleString()} GNF
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                  <p className="text-sm">✅ Vous avez choisi de ne pas utiliser la cantine scolaire.</p>
+                  <p className="text-xs mt-1">Vous pourrez vous inscrire plus tard.</p>
+                </div>
+              )}
             </div>
-          )}
-        </>
-      )}
-    </>
-  ) : (
-    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-      <p>Vous avez choisi de ne pas utiliser la cantine scolaire.</p>
-      <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
-    </div>
-  )}
-</div>
-            {/* Récapitulatif des services */}
+
+            {/* Récapitulatif des services - inchangé mais corrigé */}
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <h4 className="font-semibold text-blue-800 mb-3">📊 Récapitulatif des coûts</h4>
               <div className="space-y-2 text-sm">

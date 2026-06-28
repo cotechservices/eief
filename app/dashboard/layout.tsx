@@ -37,6 +37,7 @@ const menuItems = {
     { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
     { name: "Inscriptions", href: "/dashboard/admin/preinscriptions", icon: Users },
     { name: "Réinscriptions", href: "/dashboard/admin/reinscriptions", icon: Users },
+    { name: "Parents", href: "/dashboard/admin/parents", icon: Users },
     { name: "Élèves", href: "/dashboard/admin/eleves", icon: Users },
     { name: "Classes", href: "/dashboard/admin/classes", icon: GraduationCap },
     { name: "Personnel", href: "/dashboard/admin/personnel", icon: Users },

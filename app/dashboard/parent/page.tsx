@@ -1,4 +1,3 @@
-// app/dashboard/parent/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -357,28 +356,53 @@ export default function ParentDashboard() {
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
-  // ⭐ Calcul des statistiques globales avec les données réelles
+  // ⭐⭐⭐ CALCUL DES STATISTIQUES GLOBALES ⭐⭐⭐
+  // 
+  // Les données proviennent de deux sources:
+  // 1. Preinscription → total_frais_general (montant total de la pré-inscription)
+  // 2. Stats Enfant → paiements.total_paye (montant payé pour l'enfant)
+  // 3. Stats Enfant → transport, cantine, fournitures (services optionnels)
+  
+  // ⭐ Calcul du total des frais de pré-inscription (Montant à payer)
+  // = Somme des frais_montant de chaque pré-inscription
+  const totalPreinscriptionFrais = preinscriptions.reduce((acc, p) => acc + (Number(p.frais_montant) || 0), 0);
+
+  // ⭐ Calcul du total payé pour tous les enfants
+  const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
+
+  // ⭐ Calcul des services optionnels par enfant
+  const totalCantine = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.cantine) || 0), 0);
+  const totalTransport = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.transport) || 0), 0);
+  const totalFournitures = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.fournitures) || 0), 0);
+
+  // ⭐ Solde restant = Montant à payer - Montant payé
+  const soldeRestant = Math.max(0, totalPreinscriptionFrais - totalPaye);
+
   const statsGlobales = {
     totalEnfants: enfants.length,
     totalPreinscriptions: preinscriptions.length,
     preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
     preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
-    // ⭐ Montant à payer = somme des montant_a_payer (reste à payer)
-    totalAPayer: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.montant_a_payer) || 0), 0),
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
 
-    // Totaux par catégorie (valeurs réelles depuis l'API)
+    // ⭐ Montant à payer = total des frais de pré-inscription
+    totalAPayer: totalPreinscriptionFrais,
+
+    // ⭐ Montant payé = total payé pour tous les enfants
+    totalPaye: totalPaye,
+
+    // ⭐ Totaux par catégorie (services optionnels)
     totalFraisInscription: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.frais_inscription) || 0), 0),
-    totalTransport: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.transport) || 0), 0),
-    totalCantine: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.cantine) || 0), 0),
-    totalFournitures: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.fournitures) || 0), 0),
+    totalTransport: totalTransport,
+    totalCantine: totalCantine,
+    totalFournitures: totalFournitures,
     totalScolarite: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.scolarite) || 0), 0),
 
-    // Totaux globaux
+    // ⭐ Total général des frais
     totalFraisGeneral: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.total_frais_general) || 0), 0),
-    totalPaye: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0),
-    // ⭐ Solde restant = montant_a_payer total
-    soldeRestant: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.solde_restant) || 0), 0),
+
+    // ⭐ Solde restant = Montant à payer - Montant payé
+    soldeRestant: soldeRestant,
   };
 
   if (loading) {
@@ -427,7 +451,7 @@ export default function ParentDashboard() {
         <p className="text-gray-900">Bienvenue dans votre espace de suivi scolaire</p>
       </div>
 
-      {/* Statistiques globales avec données réelles */}
+      {/* ⭐ STATISTIQUES GLOBALES AVEC LES BONS CALCULS ⭐ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
           <div className="flex items-center gap-2 mb-1"><Users className="w-5 h-5" /><p className="text-sm opacity-90">Enfants inscrits</p></div>
@@ -437,21 +461,41 @@ export default function ParentDashboard() {
           <div className="flex items-center gap-2 mb-1"><FileText className="w-5 h-5" /><p className="text-sm opacity-90">Pré-inscriptions</p></div>
           <p className="text-3xl font-bold">{statsGlobales.totalPreinscriptions}</p>
         </div>
+        {/* ⭐ MONTANT À PAYER = Total des frais de pré-inscription */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900">
-            <CreditCard className="w-5 h-5 text-red-500" />
+            <CreditCard className="w-5 h-5 text-blue-600" />
             <p className="text-sm">Montant à payer</p>
           </div>
-          <p className="text-2xl font-bold text-red-600">{statsGlobales.totalAPayer.toLocaleString()} GNF</p>
+          <p className="text-lg font-bold text-blue-600">{statsGlobales.totalAPayer.toLocaleString()} GNF</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-green-600" /><p className="text-sm">Solde restant</p></div>
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-green-600" /><p className="text-sm">Montant payé</p></div>
+          <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
+        </div>
+        {/* ⭐ CANTINE - Total des frais de cantine pour tous les enfants */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><Utensils className="w-5 h-5 text-orange-600" /><p className="text-sm">Cantine</p></div>
+          <p className="text-lg font-bold text-orange-600">{statsGlobales.totalCantine.toLocaleString()} GNF</p>
+        </div>
+        {/* ⭐ TRANSPORT - Total des frais de transport pour tous les enfants */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><Bus className="w-5 h-5 text-blue-600" /><p className="text-sm">Transport</p></div>
+          <p className="text-lg font-bold text-blue-600">{statsGlobales.totalTransport.toLocaleString()} GNF</p>
+        </div>
+        {/* ⭐ FOURNITURES - Total des frais de fournitures pour tous les enfants */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><ShoppingCart className="w-5 h-5 text-purple-600" /><p className="text-sm">Fournitures</p></div>
+          <p className="text-lg font-bold text-purple-600">{statsGlobales.totalFournitures.toLocaleString()} GNF</p>
+        </div>
+        {/* ⭐ SOLDE RESTANT = Montant à payer - Montant payé */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-red-600" /><p className="text-sm">Solde restant</p></div>
           <p className="text-lg font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
-          <p className="text-xs text-gray-900">Déjà payé: {statsGlobales.totalPaye.toLocaleString()} GNF</p>
         </div>
       </div>
 
-      {/* Section Pré-inscriptions - avec montants réels */}
+      {/* Section Pré-inscriptions */}
       {preinscriptions.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -559,34 +603,6 @@ export default function ParentDashboard() {
           </div>
         </div>
       )}
-
-      {/* Actions rapides */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-        <Link href="/dashboard/parent/messages" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition">
-            <MessageSquare className="w-6 h-6 text-blue-600 group-hover:text-white" />
-          </div>
-          <p className="text-sm font-medium">Messagerie</p>
-        </Link>
-        <Link href="/dashboard/parent/transport" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-green-600 transition">
-            <Bus className="w-6 h-6 text-green-600 group-hover:text-white" />
-          </div>
-          <p className="text-sm font-medium">Transport</p>
-        </Link>
-        <Link href="/dashboard/parent/finances" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
-          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-purple-600 transition">
-            <CreditCard className="w-6 h-6 text-purple-600 group-hover:text-white" />
-          </div>
-          <p className="text-sm font-medium">Finances</p>
-        </Link>
-        <Link href="/dashboard/parent/emploi-temps" className="bg-white rounded-xl shadow-sm p-4 text-center hover:shadow-md transition group">
-          <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-yellow-600 transition">
-            <Calendar className="w-6 h-6 text-yellow-600 group-hover:text-white" />
-          </div>
-          <p className="text-sm font-medium">Emploi du temps</p>
-        </Link>
-      </div>
 
       {/* Modal Détail Pré-inscription */}
       {showDetailModal && selectedPreinscriptionDetail && (
@@ -816,7 +832,7 @@ export default function ParentDashboard() {
                       </div>
                       <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
                         <p className="text-xs text-gray-600">Scolarité</p>
-                        <p className="font-bold text-orange-600">{preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF</p>
+                        <p className="font-bold text-orange-600">{preinscriptionDetail.details_frais.scolarite.toLocaleString()} GNF</p>
                       </div>
                       <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
                         <p className="text-xs text-gray-600 font-semibold">Total à payer</p>

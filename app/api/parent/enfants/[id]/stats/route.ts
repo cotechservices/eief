@@ -59,104 +59,99 @@ export async function GET(
       WHERE eleve_id = $1
     `, [eleveId]);
 
-    // ⭐⭐⭐ 3. RÉCUPÉRER LE PLAN DE PAIEMENT DE L'ÉLÈVE ⭐⭐⭐
-    const preinscriptionInfo = await query(`
+    // ⭐⭐⭐ 3. RÉCUPÉRER LE PLAN DE PAIEMENT DEPUIS LA TABLE CLASSES ⭐⭐⭐
+    // Récupérer d'abord la classe de l'élève
+    const classeInfo = await query(`
       SELECT 
-        p.id as preinscription_id,
-        p.niveau,
-        p.type_inscription,
-        p.plan_paiement_id,
-        p.montant_total_plan,
-        i.id as inscription_id
-      FROM inscriptions i
-      JOIN preinscriptions p ON i.preinscription_id = p.id
-      WHERE i.eleve_id = $1
-      ORDER BY i.date_inscription DESC
-      LIMIT 1
+        c.id as classe_id,
+        c.nom as classe_nom,
+        c.niveau,
+        c.frais_inscription,
+        c.premier_versement,
+        c.deuxieme_versement,
+        c.troisieme_versement,
+        c.total_versement
+      FROM eleves e
+      JOIN classes c ON e.classe_id = c.id
+      WHERE e.id = $1
     `, [eleveId]);
 
     let planTotal = 0;
     let planDetails = null;
 
-    if (preinscriptionInfo.rows.length > 0) {
-      const data = preinscriptionInfo.rows[0];
-      
-      if (data.montant_total_plan && data.montant_total_plan > 0) {
-        planTotal = Number(data.montant_total_plan);
-        console.log(`📊 Plan total depuis preinscriptions: ${planTotal}`);
-      }
-      
-      if (data.plan_paiement_id) {
-        const planResult = await query(`
-          SELECT 
-            id,
-            niveau,
-            premier_versement,
-            deuxieme_versement,
-            troisieme_versement,
-            total,
-            type_inscription
-          FROM plans_paiement_niveaux
-          WHERE id = $1
-        `, [data.plan_paiement_id]);
-
-        if (planResult.rows.length > 0) {
-          const plan = planResult.rows[0];
-          planTotal = Number(plan.total) || planTotal;
-          planDetails = {
-            id: plan.id,
-            niveau: plan.niveau,
-            premier_versement: Number(plan.premier_versement) || 0,
-            deuxieme_versement: Number(plan.deuxieme_versement) || 0,
-            troisieme_versement: Number(plan.troisieme_versement) || 0,
-            total: Number(plan.total) || 0,
-            type_inscription: plan.type_inscription || 'inscription'
-          };
-          console.log(`📊 Plan depuis plans_paiement_niveaux:`, planDetails);
-        }
-      }
+    if (classeInfo.rows.length > 0) {
+      const data = classeInfo.rows[0];
+      planTotal = Number(data.total_versement) || 0;
+      planDetails = {
+        niveau: data.niveau,
+        classe: data.classe_nom,
+        frais_inscription: Number(data.frais_inscription) || 0,
+        premier_versement: Number(data.premier_versement) || 0,
+        deuxieme_versement: Number(data.deuxieme_versement) || 0,
+        troisieme_versement: Number(data.troisieme_versement) || 0,
+        total: Number(data.total_versement) || 0
+      };
+      console.log(`📊 Plan depuis table classes:`, planDetails);
     }
 
-    // Si pas de plan trouvé, chercher par niveau
+    // Si pas de classe trouvée, chercher via la pré-inscription
     if (planTotal === 0) {
-      const niveau = preinscriptionInfo.rows[0]?.niveau || 'Primaire';
-      const planResult = await query(`
+      const preinscriptionInfo = await query(`
         SELECT 
-          id,
-          niveau,
-          premier_versement,
-          deuxieme_versement,
-          troisieme_versement,
-          total,
-          type_inscription
-        FROM plans_paiement_niveaux
-        WHERE LOWER(niveau) = LOWER($1) AND type_inscription = 'inscription'
+          p.niveau,
+          p.classe,
+          p.montant_total_plan
+        FROM inscriptions i
+        JOIN preinscriptions p ON i.preinscription_id = p.id
+        WHERE i.eleve_id = $1
+        ORDER BY i.date_inscription DESC
         LIMIT 1
-      `, [niveau]);
+      `, [eleveId]);
 
-      if (planResult.rows.length > 0) {
-        const plan = planResult.rows[0];
-        planTotal = Number(plan.total) || 0;
-        planDetails = {
-          id: plan.id,
-          niveau: plan.niveau,
-          premier_versement: Number(plan.premier_versement) || 0,
-          deuxieme_versement: Number(plan.deuxieme_versement) || 0,
-          troisieme_versement: Number(plan.troisieme_versement) || 0,
-          total: Number(plan.total) || 0,
-          type_inscription: plan.type_inscription || 'inscription'
-        };
-        console.log(`📊 Plan trouvé par niveau ${niveau}:`, planDetails);
+      if (preinscriptionInfo.rows.length > 0) {
+        const data = preinscriptionInfo.rows[0];
+        if (data.montant_total_plan && data.montant_total_plan > 0) {
+          planTotal = Number(data.montant_total_plan);
+          console.log(`📊 Plan depuis preinscriptions: ${planTotal}`);
+        } else {
+          // Chercher les montants dans la table classes par le nom de la classe
+          const classeFromPreins = await query(`
+            SELECT 
+              frais_inscription,
+              premier_versement,
+              deuxieme_versement,
+              troisieme_versement,
+              total_versement
+            FROM classes
+            WHERE LOWER(nom) = LOWER($1)
+            LIMIT 1
+          `, [data.classe]);
+
+          if (classeFromPreins.rows.length > 0) {
+            const cData = classeFromPreins.rows[0];
+            planTotal = Number(cData.total_versement) || 0;
+            planDetails = {
+              niveau: data.niveau,
+              classe: data.classe,
+              frais_inscription: Number(cData.frais_inscription) || 0,
+              premier_versement: Number(cData.premier_versement) || 0,
+              deuxieme_versement: Number(cData.deuxieme_versement) || 0,
+              troisieme_versement: Number(cData.troisieme_versement) || 0,
+              total: Number(cData.total_versement) || 0
+            };
+          }
+        }
       }
     }
 
     // ⭐⭐⭐ 4. TRANSPORT - depuis les pré-inscriptions de l'élève ⭐⭐⭐
     let transportTotal = 0;
     const transportQuery = await query(`
-      SELECT COALESCE(SUM(pt.prix), 0) as total_transport
-      FROM preinscriptions p
-      JOIN preinscription_transport pt ON pt.preinscription_id = p.id
-      JOIN inscriptions i ON i.preinscription_id = p.id
+      SELECT COALESCE(SUM(lt.prix_abonnement), 0) as total_transport
+      FROM inscriptions i
+      JOIN preinscriptions p ON i.preinscription_id = p.id
+      LEFT JOIN preinscription_transport pt ON pt.preinscription_id = p.id
+      LEFT JOIN lignes_transport lt ON pt.ligne_id = lt.id
       WHERE i.eleve_id = $1
     `, [eleveId]);
     if (transportQuery.rows.length > 0) {
@@ -167,10 +162,11 @@ export async function GET(
     // ⭐⭐⭐ 5. CANTINE - depuis les pré-inscriptions de l'élève ⭐⭐⭐
     let cantineTotal = 0;
     const cantineQuery = await query(`
-      SELECT COALESCE(SUM(pc.prix), 0) as total_cantine
-      FROM preinscriptions p
-      JOIN preinscription_cantine pc ON pc.preinscription_id = p.id
-      JOIN inscriptions i ON i.preinscription_id = p.id
+      SELECT COALESCE(SUM(cm.prix_annuel), 0) as total_cantine
+      FROM inscriptions i
+      JOIN preinscriptions p ON i.preinscription_id = p.id
+      LEFT JOIN preinscription_cantine pc ON pc.preinscription_id = p.id
+      LEFT JOIN cantine_menus cm ON pc.menu_id = cm.id
       WHERE i.eleve_id = $1
     `, [eleveId]);
     if (cantineQuery.rows.length > 0) {
@@ -192,16 +188,13 @@ export async function GET(
     }
     console.log(`📚 Fournitures: ${fournituresTotal}`);
 
-    // ⭐⭐⭐ 7. SCOLARITÉ (mensualités) ⭐⭐⭐
+    // ⭐⭐⭐ 7. SCOLARITÉ (mensualités) - via paiements ⭐⭐⭐
     let scolariteTotal = 0;
     const scolariteQuery = await query(`
-      SELECT COALESCE(SUM(f.montant), 0) as total_scolarite
-      FROM frais_scolaires f
-      WHERE f.type_frais = 'mensualite' 
-        AND f.annee_scolaire_id = (
-          SELECT id FROM annees_scolaires WHERE est_active = true LIMIT 1
-        )
-    `, []);
+      SELECT COALESCE(SUM(montant), 0) as total_scolarite
+      FROM paiements
+      WHERE eleve_id = $1 AND type_frais = 'mensualite' AND statut IN ('valide', 'paye')
+    `, [eleveId]);
     if (scolariteQuery.rows.length > 0) {
       scolariteTotal = Number(scolariteQuery.rows[0].total_scolarite) || 0;
     }
@@ -312,14 +305,14 @@ export async function GET(
       montant_a_payer: montantAPayer,
       // ⭐ Solde restant = montant à payer
       solde_restant: soldeRestant,
-      // ⭐ Détail du plan (optionnel)
+      // ⭐ Détail du plan
       plan_paiement: planDetails,
       // ⭐ Pourcentage payé
       pourcentage_paye: totalFraisGeneral > 0 ? Math.round((totalPaye / totalFraisGeneral) * 100) : 0
     });
 
   } catch (error) {
-    console.error("Erreur stats:", error);
+    console.error("❌ Erreur stats:", error);
     return NextResponse.json({
       error: "Erreur serveur",
       notes: [],

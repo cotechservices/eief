@@ -49,21 +49,23 @@ export async function GET(
         pa.situation_matrimoniale as mere_info,
         -- Frais de la classe
         COALESCE(c.frais_inscription, 0) as frais_montant,
-        -- Frais de cantine ANNUEL
+        -- ⭐ Frais de cantine - UNIQUEMENT pour cette pré-inscription
         COALESCE(
-          (SELECT cm.prix_annuel
-           FROM cantine_menus cm
-           ORDER BY cm.date DESC
-           LIMIT 1),
+          (SELECT SUM(cm.prix_annuel)
+           FROM preinscription_cantine pc
+           JOIN cantine_menus cm ON pc.menu_id = cm.id
+           WHERE pc.preinscription_id = p.id),
           0
         ) as frais_cantine,
-        -- Frais de transport
+        -- ⭐ Frais de transport - UNIQUEMENT pour cette pré-inscription
         COALESCE(
           (SELECT SUM(lt.prix_abonnement) 
-           FROM lignes_transport lt),
+           FROM preinscription_transport pt
+           JOIN lignes_transport lt ON pt.ligne_id = lt.id
+           WHERE pt.preinscription_id = p.id),
           0
         ) as frais_transport,
-        -- Frais de fourniture
+        -- ⭐ Frais de fourniture - UNIQUEMENT pour cette pré-inscription
         COALESCE(
           (SELECT SUM(cf.quantite * cf.prix_unitaire)
            FROM commandes_fournitures cf
@@ -210,7 +212,7 @@ export async function DELETE(
       return NextResponse.json({ error: "ID invalide" }, { status: 400 });
     }
 
-    // Vérifier que la pré-inscription appartient au parent
+    // ⭐ Vérifier que la pré-inscription appartient au parent
     const checkResult = await query(`
       SELECT p.id, p.statut, p.frais_statut
       FROM preinscriptions p
@@ -225,22 +227,67 @@ export async function DELETE(
 
     const preinscription = checkResult.rows[0];
 
-    // Empêcher l'annulation si déjà validée
+    // ⭐ Vérifier si la pré-inscription peut être annulée
     if (preinscription.statut === "valide") {
       return NextResponse.json({ error: "Impossible d'annuler une pré-inscription déjà validée" }, { status: 400 });
     }
 
-    // Empêcher l'annulation si déjà rejetée
     if (preinscription.statut === "rejete") {
       return NextResponse.json({ error: "Cette pré-inscription a déjà été rejetée" }, { status: 400 });
     }
 
-    // Supprimer la pré-inscription
-    await query("DELETE FROM preinscriptions WHERE id = $1", [preinscriptionId]);
+    if (preinscription.frais_statut === "paye") {
+      return NextResponse.json({ error: "Impossible d'annuler une pré-inscription déjà payée" }, { status: 400 });
+    }
 
-    return NextResponse.json({ success: true, message: "Pré-inscription annulée avec succès" });
+    // ⭐ Vérifier le nombre de paiements
+    const paiementsCheck = await query(`
+      SELECT COUNT(*) as count FROM paiements WHERE preinscription_id = $1
+    `, [preinscriptionId]);
+    
+    const hasPaiements = parseInt(paiementsCheck.rows[0].count) > 0;
+
+    // ⭐ Démarrer une transaction
+    await query('BEGIN');
+
+    try {
+      // ⭐ Supprimer les paiements s'ils existent
+      if (hasPaiements) {
+        await query(`
+          DELETE FROM paiements WHERE preinscription_id = $1
+        `, [preinscriptionId]);
+        console.log(`✅ ${paiementsCheck.rows[0].count} paiement(s) supprimés pour la pré-inscription ${preinscriptionId}`);
+      }
+
+      // Supprimer les autres données associées
+      await query(`DELETE FROM echeances_paiement WHERE preinscription_id = $1`, [preinscriptionId]);
+      await query(`DELETE FROM inscriptions WHERE preinscription_id = $1`, [preinscriptionId]);
+      await query(`DELETE FROM commandes_fournitures WHERE preinscription_id = $1`, [preinscriptionId]);
+      await query(`DELETE FROM preinscription_transport WHERE preinscription_id = $1`, [preinscriptionId]);
+      await query(`DELETE FROM preinscription_cantine WHERE preinscription_id = $1`, [preinscriptionId]);
+      
+      // Enfin, supprimer la pré-inscription
+      await query(`DELETE FROM preinscriptions WHERE id = $1`, [preinscriptionId]);
+
+      await query('COMMIT');
+
+      return NextResponse.json({
+        success: true,
+        message: "Pré-inscription annulée avec succès"
+      });
+    } catch (error) {
+      await query('ROLLBACK');
+      console.error("Erreur dans la transaction:", error);
+      return NextResponse.json(
+        { error: "Erreur lors de la suppression: " + (error as Error).message },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("Erreur DELETE:", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erreur serveur: " + (error as Error).message },
+      { status: 500 }
+    );
   }
 }
