@@ -26,7 +26,6 @@ interface PlanPaiement {
 
 interface ServiceOptionnel {
   total: number;
-  has: boolean; // ⭐ AJOUTÉ
   details: any[];
 }
 
@@ -72,7 +71,6 @@ export default function PaiementPlanModal({
   const [reference, setReference] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [inclureServicesOptionnels, setInclureServicesOptionnels] = useState(false);
-  const [hasServicesOptionnels, setHasServicesOptionnels] = useState(false); // ⭐ NOUVEAU
 
   useEffect(() => {
     if (isOpen && preinscriptionId) {
@@ -102,13 +100,11 @@ export default function PaiementPlanModal({
         const echeancesInscription = data.echeances_inscription || allEcheancesData.filter(
           (e: Echeance) => e.type === 'inscription'
         );
+        
         setEcheances(echeancesInscription);
-        
-        // ⭐ Récupérer les services et le flag
         setServicesOptionnels(data.services_optionnels || null);
-        setHasServicesOptionnels(data.has_services_optionnels || false);
         
-        // ⭐ Sélectionner la première échéance non payée
+        // Sélectionner la première échéance non payée
         const echeanceNonPayee = echeancesInscription.find(
           (e: Echeance) => e.statut === 'en_attente'
         );
@@ -130,6 +126,36 @@ export default function PaiementPlanModal({
     }
   };
 
+  const getMontantTotalRestant = () => {
+    return echeances
+      .filter(e => e.statut === 'en_attente')
+      .reduce((sum, e) => sum + e.montant, 0);
+  };
+
+  const getMontantTotalAvecServices = () => {
+    let total = getMontantTotalRestant();
+    if (inclureServicesOptionnels && servicesOptionnels) {
+      total += servicesOptionnels.total_services;
+    }
+    return total;
+  };
+
+  const hasEcheancesInscription = () => {
+    return echeances.some(e => e.statut === 'en_attente');
+  };
+
+  const hasServicesOptionnelsDisponibles = () => {
+    if (!servicesOptionnels || servicesOptionnels.total_services === 0) return false;
+    return allEcheances.some(e => e.type !== 'inscription' && e.statut === 'en_attente');
+  };
+
+  const hasServicesDisponibles = () => {
+    if (!servicesOptionnels) return false;
+    return servicesOptionnels.transport.total > 0 || 
+           servicesOptionnels.cantine.total > 0 || 
+           servicesOptionnels.fournitures.total > 0;
+  };
+
   const handlePaiement = async () => {
     if (!modePaiement) return;
 
@@ -146,22 +172,11 @@ export default function PaiementPlanModal({
         }
         echeancesIds = [selectedEcheance.id];
         
-        // ⭐ Inclure les services si la case est cochée
         if (inclureServicesOptionnels && servicesOptionnels && servicesOptionnels.total_services > 0) {
-          // Récupérer les échéances de services existantes
           const servicesEcheances = allEcheances.filter(
             e => e.type !== 'inscription' && e.statut === 'en_attente'
           );
-          
-          if (servicesEcheances.length > 0) {
-            echeancesIds = [...echeancesIds, ...servicesEcheances.map(e => e.id)];
-          } else {
-            // ⭐ Si aucune échéance de service n'existe, on crée une échéance temporaire
-            // pour le paiement groupé (le back-end gérera la création)
-            setError("Les services optionnels n'ont pas encore d'échéance. Veuillez contacter l'administration.");
-            setPaying(false);
-            return;
-          }
+          echeancesIds = [...echeancesIds, ...servicesEcheances.map(e => e.id)];
         }
       } else if (paiementType === 'frais_seuls') {
         echeancesIds = echeances
@@ -186,8 +201,7 @@ export default function PaiementPlanModal({
           echeancesIds,
           modePaiement,
           reference: reference || null,
-          type: paiementType,
-          inclureServices: inclureServicesOptionnels // ⭐ AJOUTÉ
+          type: paiementType
         }),
       });
 
@@ -196,12 +210,10 @@ export default function PaiementPlanModal({
       if (data.success) {
         await fetchPlan();
         onSuccess();
-        
         setPaiementType('echeance');
         setModePaiement("");
         setReference("");
         setInclureServicesOptionnels(false);
-        
       } else {
         setError(data.error || "Erreur lors du paiement");
       }
@@ -211,83 +223,6 @@ export default function PaiementPlanModal({
     } finally {
       setPaying(false);
     }
-  };
-
-  const getEcheanceLabel = (echeance: string) => {
-    const map: { [key: string]: string } = {
-      '1er_versement': '1er Versement',
-      '2eme_versement': '2ème Versement',
-      '3eme_versement': '3ème Versement'
-    };
-    return map[echeance] || echeance;
-  };
-
-  const getTypeLabel = (type: string) => {
-    const map: { [key: string]: string } = {
-      'inscription': 'Inscription',
-      'transport': 'Transport',
-      'cantine': 'Cantine',
-      'fournitures': 'Fournitures'
-    };
-    return map[type] || type;
-  };
-
-  const getTypeIcon = (type: string) => {
-    const map: { [key: string]: React.ReactNode } = {
-      'inscription': <GraduationCap className="w-4 h-4 inline" />,
-      'transport': <Bus className="w-4 h-4 inline" />,
-      'cantine': <Utensils className="w-4 h-4 inline" />,
-      'fournitures': <ShoppingCart className="w-4 h-4 inline" />
-    };
-    return map[type] || '📝';
-  };
-
-  const getMontantTotalRestant = () => {
-    return echeances
-      .filter(e => e.statut === 'en_attente')
-      .reduce((sum, e) => sum + e.montant, 0);
-  };
-
-  const getMontantTotalAvecServices = () => {
-    let total = getMontantTotalRestant();
-    if (inclureServicesOptionnels && servicesOptionnels) {
-      total += servicesOptionnels.total_services;
-    }
-    return total;
-  };
-
-  const hasEcheancesInscription = () => {
-    return echeances.some(e => e.statut === 'en_attente');
-  };
-
-  // ⭐ MODIFIÉ : Vérifier si des services optionnels sont disponibles
-  const hasServicesOptionnelsDisponibles = () => {
-    // 1. Vérifier le flag de l'API
-    if (!hasServicesOptionnels) return false;
-    
-    // 2. Vérifier qu'il y a des services avec des montants > 0
-    if (!servicesOptionnels || servicesOptionnels.total_services === 0) return false;
-    
-    // 3. Vérifier que les services n'ont pas déjà été payés
-    const hasPendingServices = allEcheances.some(
-      e => e.type !== 'inscription' && e.statut === 'en_attente'
-    );
-    
-    // Si des échéances de services existent et sont en attente, OK
-    if (hasPendingServices) return true;
-    
-    // Si aucune échéance de service n'existe mais que des services sont sélectionnés,
-    // on les considère comme disponibles (ils doivent être payés)
-    // ⭐ C'est le cas pour vos données actuelles
-    return true;
-  };
-
-  // ⭐ MODIFIÉ : Vérifier si des services existent (même sans échéances)
-  const hasServicesDisponibles = () => {
-    if (!servicesOptionnels) return false;
-    return servicesOptionnels.transport.total > 0 || 
-           servicesOptionnels.cantine.total > 0 || 
-           servicesOptionnels.fournitures.total > 0;
   };
 
   if (!isOpen) return null;
@@ -335,7 +270,7 @@ export default function PaiementPlanModal({
             </div>
           ) : plan ? (
             <>
-              {/* Tableau récapitulatif */}
+              {/* ⭐ TABLEAU RÉCAPITULATIF */}
               <div className="mb-6 overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
@@ -367,36 +302,36 @@ export default function PaiementPlanModal({
                 </table>
               </div>
 
-              {/* Services optionnels */}
+              {/* ⭐ SERVICES OPTIONNELS */}
               {hasServicesDisponibles() && (
                 <div className="p-4 bg-gray-50 rounded-lg mb-6">
                   <h4 className="font-semibold text-gray-700 mb-2">Services optionnels (paiement en une fois)</h4>
                   {servicesOptionnels.transport.total > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-900">🚌 Transport</span>
-                      <span className="font-medium text-green-600">{servicesOptionnels.transport.total.toLocaleString()} GNF</span>
+                      <span className="font-medium text-green-600">{formatMontant(servicesOptionnels.transport.total)} GNF</span>
                     </div>
                   )}
                   {servicesOptionnels.cantine.total > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-900">🍽️ Cantine</span>
-                      <span className="font-medium text-orange-600">{servicesOptionnels.cantine.total.toLocaleString()} GNF</span>
+                      <span className="font-medium text-orange-600">{formatMontant(servicesOptionnels.cantine.total)} GNF</span>
                     </div>
                   )}
                   {servicesOptionnels.fournitures.total > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-900">📚 Fournitures</span>
-                      <span className="font-medium text-purple-600">{servicesOptionnels.fournitures.total.toLocaleString()} GNF</span>
+                      <span className="font-medium text-purple-600">{formatMontant(servicesOptionnels.fournitures.total)} GNF</span>
                     </div>
                   )}
                   <div className="border-t pt-2 flex justify-between font-bold text-black">
                     <span>Total services</span>
-                    <span className="text-blue-600">{servicesOptionnels.total_services.toLocaleString()} GNF</span>
+                    <span className="text-blue-600">{formatMontant(servicesOptionnels.total_services)} GNF</span>
                   </div>
                 </div>
               )}
 
-              {/* Sélection du type de paiement */}
+              {/* ⭐ SÉLECTION DU TYPE DE PAIEMENT */}
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">Choisissez votre option de paiement</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -453,7 +388,7 @@ export default function PaiementPlanModal({
                 </div>
               </div>
 
-              {/* Détail des frais restants */}
+              {/* ⭐ DÉTAIL DES FRAIS RESTANTS */}
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
                 <h4 className="font-semibold text-gray-900 mb-2">Détail des frais restants</h4>
                 <div className="space-y-1 text-sm">
@@ -462,7 +397,7 @@ export default function PaiementPlanModal({
                       .filter(e => e.statut === 'en_attente')
                       .map(e => (
                         <div key={e.id} className="flex justify-between">
-                          <span className="text-gray-700">{getEcheanceLabel(e.echeance)}</span>
+                          <span className="text-gray-700">{e.echeance}</span>
                           <span className="font-medium text-blue-600">{formatMontant(e.montant)} GNF</span>
                         </div>
                       ))
@@ -475,19 +410,19 @@ export default function PaiementPlanModal({
                       {servicesOptionnels.transport.total > 0 && (
                         <div className="flex justify-between text-sm text-green-600">
                           <span>+ Transport</span>
-                          <span>{servicesOptionnels.transport.total.toLocaleString()} GNF</span>
+                          <span>{formatMontant(servicesOptionnels.transport.total)} GNF</span>
                         </div>
                       )}
                       {servicesOptionnels.cantine.total > 0 && (
                         <div className="flex justify-between text-sm text-orange-600">
                           <span>+ Cantine</span>
-                          <span>{servicesOptionnels.cantine.total.toLocaleString()} GNF</span>
+                          <span>{formatMontant(servicesOptionnels.cantine.total)} GNF</span>
                         </div>
                       )}
                       {servicesOptionnels.fournitures.total > 0 && (
                         <div className="flex justify-between text-sm text-purple-600">
                           <span>+ Fournitures</span>
-                          <span>{servicesOptionnels.fournitures.total.toLocaleString()} GNF</span>
+                          <span>{formatMontant(servicesOptionnels.fournitures.total)} GNF</span>
                         </div>
                       )}
                     </>
@@ -508,7 +443,7 @@ export default function PaiementPlanModal({
                 </div>
               </div>
 
-              {/* ⭐ Échéances d'inscription - SECTION MODIFIÉE */}
+              {/* ⭐ ÉCHÉANCES D'INSCRIPTION */}
               {paiementType === 'echeance' && (
                 <div className="space-y-3 mb-6">
                   <h3 className="font-semibold text-gray-900">Échéances d'inscription</h3>
@@ -516,15 +451,14 @@ export default function PaiementPlanModal({
                     Sélectionnez une échéance à payer. Cochez la case ci-dessous pour inclure les services optionnels.
                   </p>
                   
-                  {/* ⭐ CASE À COCHER - MODIFIÉE POUR UTILISER hasServicesOptionnels */}
-                  {hasServicesOptionnels && hasServicesDisponibles() && (
-                    <div className="bg-blue-50 p-3 rounded-lg mb-4 border border-blue-200">
-                      <label className="flex items-start gap-3 cursor-pointer">
+                  {hasServicesOptionnelsDisponibles() && hasServicesDisponibles() && (
+                    <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                      <label className="flex items-center gap-3 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={inclureServicesOptionnels}
                           onChange={(e) => setInclureServicesOptionnels(e.target.checked)}
-                          className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mt-0.5"
+                          className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
                         />
                         <div>
                           <span className="font-medium text-gray-800">
@@ -537,20 +471,13 @@ export default function PaiementPlanModal({
                               servicesOptionnels.fournitures.total > 0 ? '📚 Fournitures' : ''
                             ].filter(Boolean).join(', ')} (paiement en une fois)
                           </p>
-                          {servicesOptionnels && (
-                            <p className="text-xs text-blue-600 font-medium mt-1">
-                              Montant total : {servicesOptionnels.total_services.toLocaleString()} GNF
+                          {inclureServicesOptionnels && servicesOptionnels && (
+                            <p className="text-xs font-medium text-green-600 mt-1">
+                              + {formatMontant(servicesOptionnels.total_services)} GNF
                             </p>
                           )}
                         </div>
                       </label>
-                      {inclureServicesOptionnels && servicesOptionnels && (
-                        <div className="mt-2 text-sm text-gray-700 border-t pt-2">
-                          <p className="font-medium">
-                            Montant supplémentaire : {formatMontant(servicesOptionnels.total_services)} GNF
-                          </p>
-                        </div>
-                      )}
                     </div>
                   )}
                   
@@ -559,56 +486,71 @@ export default function PaiementPlanModal({
                       <p>Aucune échéance d'inscription disponible</p>
                     </div>
                   ) : (
-                    echeances.map((echeance) => (
-                      <div
-                        key={echeance.id}
-                        onClick={() => {
-                          if (echeance.statut === 'en_attente') {
-                            setSelectedEcheance(echeance);
-                          }
-                        }}
-                        className={`p-3 rounded-lg border flex justify-between items-center transition ${
-                          echeance.statut === 'paye' 
-                            ? 'bg-green-50 border-green-200 cursor-default' 
-                            : selectedEcheance?.id === echeance.id 
-                              ? 'bg-blue-50 border-blue-400' 
-                              : 'hover:bg-gray-50 border-gray-200 cursor-pointer'
-                        }`}
-                      >
-                        <div>
-                          <p className="font-medium text-black">
-                            {getEcheanceLabel(echeance.echeance)}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {getTypeIcon(echeance.type)} {getTypeLabel(echeance.type)} - {echeance.date_echeance ? new Date(echeance.date_echeance).toLocaleDateString('fr-FR') : 'Date non définie'}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-black">{formatMontant(echeance.montant)} GNF</p>
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    echeances.map((echeance) => {
+                      const isSelected = selectedEcheance?.id === echeance.id;
+                      const showServices = inclureServicesOptionnels && isSelected && hasServicesDisponibles();
+                      
+                      return (
+                        <div
+                          key={echeance.id}
+                          onClick={() => {
+                            if (echeance.statut === 'en_attente') {
+                              setSelectedEcheance(echeance);
+                            }
+                          }}
+                          className={`p-3 rounded-lg border flex justify-between items-center transition ${
                             echeance.statut === 'paye' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-yellow-100 text-yellow-700'
-                          }`}>
-                            {echeance.statut === 'paye' ? '✓ Payé' : 'En attente'}
-                          </span>
-                          {echeance.statut === 'paye' && echeance.date_paiement && (
-                            <p className="text-xs text-green-600 mt-1">
-                              Payé le {new Date(echeance.date_paiement).toLocaleDateString('fr-FR')}
+                              ? 'bg-green-50 border-green-200 cursor-default' 
+                              : isSelected 
+                                ? 'bg-blue-50 border-blue-400' 
+                                : 'hover:bg-gray-50 border-gray-200 cursor-pointer'
+                          }`}
+                        >
+                          <div>
+                            <p className="font-medium text-black">
+                              {echeance.echeance}
                             </p>
-                          )}
+                            <p className="text-xs text-gray-600">
+                              Inscription - {echeance.date_echeance ? new Date(echeance.date_echeance).toLocaleDateString('fr-FR') : 'Date non définie'}
+                            </p>
+                            {showServices && (
+                              <p className="text-xs text-green-600 font-medium">+ Services optionnels</p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-black">
+                              {formatMontant(echeance.montant)} GNF
+                            </p>
+                            {showServices && (
+                              <p className="text-xs text-green-600">
+                                + {formatMontant(servicesOptionnels.total_services)} GNF
+                              </p>
+                            )}
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              echeance.statut === 'paye' 
+                                ? 'bg-green-100 text-green-700' 
+                                : 'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {echeance.statut === 'paye' ? '✓ Payé' : 'En attente'}
+                            </span>
+                            {echeance.statut === 'paye' && echeance.date_paiement && (
+                              <p className="text-xs text-green-600 mt-1">
+                                Payé le {new Date(echeance.date_paiement).toLocaleDateString('fr-FR')}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               )}
 
-              {/* Formulaire de paiement */}
+              {/* ⭐ FORMULAIRE DE PAIEMENT */}
               <div className="border-t pt-4">
                 <h3 className="font-semibold text-gray-900 mb-3">
                   {paiementType === 'echeance' && selectedEcheance 
-                    ? `Payer ${getEcheanceLabel(selectedEcheance.echeance)}${inclureServicesOptionnels && hasServicesDisponibles() ? ' + Services' : ''}`
+                    ? `Payer ${selectedEcheance.echeance}${inclureServicesOptionnels && hasServicesDisponibles() ? ' + Services' : ''}`
                     : paiementType === 'frais_seuls'
                       ? 'Payer les frais scolaires'
                       : 'Payer la totalité'
@@ -628,7 +570,7 @@ export default function PaiementPlanModal({
                   </p>
                   {paiementType === 'echeance' && selectedEcheance && (
                     <p className="text-xs text-gray-500">
-                      {getTypeLabel(selectedEcheance.type)}
+                      {selectedEcheance.echeance}
                       {inclureServicesOptionnels && hasServicesDisponibles() && (
                         <span className="block text-green-600 font-medium">
                           + Services optionnels : {formatMontant(servicesOptionnels.total_services)} GNF
@@ -710,7 +652,6 @@ export default function PaiementPlanModal({
                 </button>
               </div>
 
-              {/* Message si toutes les échéances sont payées */}
               {echeances.length > 0 && echeances.every((e) => e.statut === 'paye') && (
                 <div className="mt-6 bg-green-50 p-4 rounded-lg text-center">
                   <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />

@@ -49,23 +49,21 @@ export async function GET(
         pa.situation_matrimoniale as mere_info,
         -- Frais de la classe
         COALESCE(c.frais_inscription, 0) as frais_montant,
-        -- ⭐ Frais de cantine - UNIQUEMENT pour cette pré-inscription
+        -- Frais de cantine ANNUEL
         COALESCE(
-          (SELECT SUM(cm.prix_annuel)
-           FROM preinscription_cantine pc
-           JOIN cantine_menus cm ON pc.menu_id = cm.id
-           WHERE pc.preinscription_id = p.id),
+          (SELECT cm.prix_annuel
+           FROM cantine_menus cm
+           ORDER BY cm.date DESC
+           LIMIT 1),
           0
         ) as frais_cantine,
-        -- ⭐ Frais de transport - UNIQUEMENT pour cette pré-inscription
+        -- Frais de transport
         COALESCE(
           (SELECT SUM(lt.prix_abonnement) 
-           FROM preinscription_transport pt
-           JOIN lignes_transport lt ON pt.ligne_id = lt.id
-           WHERE pt.preinscription_id = p.id),
+           FROM lignes_transport lt),
           0
         ) as frais_transport,
-        -- ⭐ Frais de fourniture - UNIQUEMENT pour cette pré-inscription
+        -- Frais de fourniture
         COALESCE(
           (SELECT SUM(cf.quantite * cf.prix_unitaire)
            FROM commandes_fournitures cf
@@ -194,6 +192,7 @@ export async function GET(
 }
 
 // DELETE - Annuler une pré-inscription
+// DELETE - Annuler une pré-inscription (version avec vérification)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

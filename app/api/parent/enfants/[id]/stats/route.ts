@@ -1,4 +1,3 @@
-// app/api/parent/enfants/[id]/stats/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -60,7 +59,6 @@ export async function GET(
     `, [eleveId]);
 
     // ⭐⭐⭐ 3. RÉCUPÉRER LE PLAN DE PAIEMENT DEPUIS LA TABLE CLASSES ⭐⭐⭐
-    // Récupérer d'abord la classe de l'élève
     const classeInfo = await query(`
       SELECT 
         c.id as classe_id,
@@ -94,101 +92,92 @@ export async function GET(
       console.log(`📊 Plan depuis table classes:`, planDetails);
     }
 
-    // Si pas de classe trouvée, chercher via la pré-inscription
-    if (planTotal === 0) {
-      const preinscriptionInfo = await query(`
-        SELECT 
-          p.niveau,
-          p.classe,
-          p.montant_total_plan
-        FROM inscriptions i
-        JOIN preinscriptions p ON i.preinscription_id = p.id
-        WHERE i.eleve_id = $1
-        ORDER BY i.date_inscription DESC
-        LIMIT 1
-      `, [eleveId]);
-
-      if (preinscriptionInfo.rows.length > 0) {
-        const data = preinscriptionInfo.rows[0];
-        if (data.montant_total_plan && data.montant_total_plan > 0) {
-          planTotal = Number(data.montant_total_plan);
-          console.log(`📊 Plan depuis preinscriptions: ${planTotal}`);
-        } else {
-          // Chercher les montants dans la table classes par le nom de la classe
-          const classeFromPreins = await query(`
-            SELECT 
-              frais_inscription,
-              premier_versement,
-              deuxieme_versement,
-              troisieme_versement,
-              total_versement
-            FROM classes
-            WHERE LOWER(nom) = LOWER($1)
-            LIMIT 1
-          `, [data.classe]);
-
-          if (classeFromPreins.rows.length > 0) {
-            const cData = classeFromPreins.rows[0];
-            planTotal = Number(cData.total_versement) || 0;
-            planDetails = {
-              niveau: data.niveau,
-              classe: data.classe,
-              frais_inscription: Number(cData.frais_inscription) || 0,
-              premier_versement: Number(cData.premier_versement) || 0,
-              deuxieme_versement: Number(cData.deuxieme_versement) || 0,
-              troisieme_versement: Number(cData.troisieme_versement) || 0,
-              total: Number(cData.total_versement) || 0
-            };
-          }
-        }
-      }
-    }
-
-    // ⭐⭐⭐ 4. TRANSPORT - depuis les pré-inscriptions de l'élève ⭐⭐⭐
+    // ⭐⭐⭐ 4. TRANSPORT - RECHERCHE DIRECTE SANS PASSER PAR LES INSCRIPTIONS ⭐⭐⭐
     let transportTotal = 0;
+    
+    // Méthode 1: Via le parent_id de l'élève (si l'élève a un parent)
     const transportQuery = await query(`
       SELECT COALESCE(SUM(lt.prix_abonnement), 0) as total_transport
-      FROM inscriptions i
-      JOIN preinscriptions p ON i.preinscription_id = p.id
+      FROM preinscriptions p
       LEFT JOIN preinscription_transport pt ON pt.preinscription_id = p.id
       LEFT JOIN lignes_transport lt ON pt.ligne_id = lt.id
-      WHERE i.eleve_id = $1
+      WHERE p.parent_id = (
+        SELECT parent_id FROM lien_parent_eleve WHERE eleve_id = $1 LIMIT 1
+      )
     `, [eleveId]);
-    if (transportQuery.rows.length > 0) {
+    
+    if (transportQuery.rows.length > 0 && transportQuery.rows[0].total_transport > 0) {
       transportTotal = Number(transportQuery.rows[0].total_transport) || 0;
+    } else {
+      // Méthode 2: Via les inscriptions (si elles existent)
+      const transportQuery2 = await query(`
+        SELECT COALESCE(SUM(lt.prix_abonnement), 0) as total_transport
+        FROM inscriptions i
+        JOIN preinscriptions p ON i.preinscription_id = p.id
+        LEFT JOIN preinscription_transport pt ON pt.preinscription_id = p.id
+        LEFT JOIN lignes_transport lt ON pt.ligne_id = lt.id
+        WHERE i.eleve_id = $1
+      `, [eleveId]);
+      transportTotal = Number(transportQuery2.rows[0]?.total_transport) || 0;
     }
     console.log(`🚌 Transport: ${transportTotal}`);
 
-    // ⭐⭐⭐ 5. CANTINE - depuis les pré-inscriptions de l'élève ⭐⭐⭐
+    // ⭐⭐⭐ 5. CANTINE - RECHERCHE DIRECTE ⭐⭐⭐
     let cantineTotal = 0;
+    
     const cantineQuery = await query(`
       SELECT COALESCE(SUM(cm.prix_annuel), 0) as total_cantine
-      FROM inscriptions i
-      JOIN preinscriptions p ON i.preinscription_id = p.id
+      FROM preinscriptions p
       LEFT JOIN preinscription_cantine pc ON pc.preinscription_id = p.id
       LEFT JOIN cantine_menus cm ON pc.menu_id = cm.id
-      WHERE i.eleve_id = $1
+      WHERE p.parent_id = (
+        SELECT parent_id FROM lien_parent_eleve WHERE eleve_id = $1 LIMIT 1
+      )
     `, [eleveId]);
-    if (cantineQuery.rows.length > 0) {
+    
+    if (cantineQuery.rows.length > 0 && cantineQuery.rows[0].total_cantine > 0) {
       cantineTotal = Number(cantineQuery.rows[0].total_cantine) || 0;
+    } else {
+      const cantineQuery2 = await query(`
+        SELECT COALESCE(SUM(cm.prix_annuel), 0) as total_cantine
+        FROM inscriptions i
+        JOIN preinscriptions p ON i.preinscription_id = p.id
+        LEFT JOIN preinscription_cantine pc ON pc.preinscription_id = p.id
+        LEFT JOIN cantine_menus cm ON pc.menu_id = cm.id
+        WHERE i.eleve_id = $1
+      `, [eleveId]);
+      cantineTotal = Number(cantineQuery2.rows[0]?.total_cantine) || 0;
     }
     console.log(`🍽️ Cantine: ${cantineTotal}`);
 
-    // ⭐⭐⭐ 6. FOURNITURES - depuis les commandes de l'élève ⭐⭐⭐
+    // ⭐⭐⭐ 6. FOURNITURES - RECHERCHE DIRECTE ⭐⭐⭐
     let fournituresTotal = 0;
+    
     const fournituresQuery = await query(`
       SELECT COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total_fournitures
-      FROM commandes_fournitures cf
-      JOIN preinscriptions p ON cf.preinscription_id = p.id
-      JOIN inscriptions i ON i.preinscription_id = p.id
-      WHERE i.eleve_id = $1
+      FROM preinscriptions p
+      LEFT JOIN commandes_fournitures cf ON cf.preinscription_id = p.id
+      LEFT JOIN articles_librairie al ON cf.article_id = al.id
+      WHERE p.parent_id = (
+        SELECT parent_id FROM lien_parent_eleve WHERE eleve_id = $1 LIMIT 1
+      )
     `, [eleveId]);
-    if (fournituresQuery.rows.length > 0) {
+    
+    if (fournituresQuery.rows.length > 0 && fournituresQuery.rows[0].total_fournitures > 0) {
       fournituresTotal = Number(fournituresQuery.rows[0].total_fournitures) || 0;
+    } else {
+      const fournituresQuery2 = await query(`
+        SELECT COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total_fournitures
+        FROM commandes_fournitures cf
+        JOIN preinscriptions p ON cf.preinscription_id = p.id
+        JOIN inscriptions i ON i.preinscription_id = p.id
+        WHERE i.eleve_id = $1
+      `, [eleveId]);
+      fournituresTotal = Number(fournituresQuery2.rows[0]?.total_fournitures) || 0;
     }
     console.log(`📚 Fournitures: ${fournituresTotal}`);
 
-    // ⭐⭐⭐ 7. SCOLARITÉ (mensualités) - via paiements ⭐⭐⭐
+    // ⭐⭐⭐ 7. SCOLARITÉ (mensualités) ⭐⭐⭐
     let scolariteTotal = 0;
     const scolariteQuery = await query(`
       SELECT COALESCE(SUM(montant), 0) as total_scolarite
@@ -200,7 +189,7 @@ export async function GET(
     }
     console.log(`📖 Scolarité: ${scolariteTotal}`);
 
-    // ⭐⭐⭐ 8. TOTAL DES FRAIS = Plan + Transport + Cantine + Fournitures + Scolarité ⭐⭐⭐
+    // ⭐⭐⭐ 8. TOTAL DES FRAIS ⭐⭐⭐
     const totalFraisGeneral = planTotal + transportTotal + cantineTotal + fournituresTotal + scolariteTotal;
 
     // ⭐⭐⭐ 9. PAIEMENTS EFFECTUÉS ⭐⭐⭐
@@ -218,18 +207,20 @@ export async function GET(
         COUNT(*) as nombre_echeances
       FROM echeances_paiement e
       JOIN preinscriptions p ON e.preinscription_id = p.id
-      JOIN inscriptions i ON i.preinscription_id = p.id
-      WHERE i.eleve_id = $1 AND e.statut = 'paye'
+      WHERE p.parent_id = (
+        SELECT parent_id FROM lien_parent_eleve WHERE eleve_id = $1 LIMIT 1
+      )
+      AND e.statut = 'paye'
     `, [eleveId]);
 
     const totalPayeDirect = Number(paiementsDirects.rows[0]?.total_paye_direct) || 0;
     const totalPayeEcheances = Number(echeancesPayees.rows[0]?.total_paye_echeances) || 0;
     const totalPaye = totalPayeDirect + totalPayeEcheances;
 
-    // ⭐⭐⭐ 10. MONTANT À PAYER = TOTAL DES FRAIS - DÉJÀ PAYÉ ⭐⭐⭐
+    // ⭐⭐⭐ 10. MONTANT À PAYER ⭐⭐⭐
     const montantAPayer = Math.max(0, totalFraisGeneral - totalPaye);
 
-    // ⭐⭐⭐ 11. SOLDE RESTANT = MONTANT À PAYER ⭐⭐⭐
+    // ⭐⭐⭐ 11. SOLDE RESTANT ⭐⭐⭐
     const soldeRestant = montantAPayer;
 
     console.log(`=== RÉSUMÉ STATS pour eleve_id ${eleveId} ===`);
@@ -243,47 +234,9 @@ export async function GET(
     console.log(`💰 Montant à payer: ${montantAPayer}`);
     console.log(`📉 Solde restant: ${soldeRestant}`);
 
-    // ⭐ 12. DÉTAIL DES PAIEMENTS
-    const paiementsDirectsDetail = await query(`
-      SELECT 
-        montant,
-        type_frais,
-        mode_paiement,
-        date_paiement,
-        reference_transaction,
-        'paiement_direct' as source
-      FROM paiements
-      WHERE eleve_id = $1 AND statut IN ('valide', 'paye')
-      ORDER BY date_paiement DESC
-      LIMIT 10
-    `, [eleveId]);
-
-    const echeancesDetail = await query(`
-      SELECT 
-        e.montant,
-        e.type as type_frais,
-        e.mode_paiement,
-        e.date_paiement,
-        e.reference_transaction,
-        'echeance' as source,
-        e.echeance as echeance_label
-      FROM echeances_paiement e
-      JOIN preinscriptions p ON e.preinscription_id = p.id
-      JOIN inscriptions i ON i.preinscription_id = p.id
-      WHERE i.eleve_id = $1 AND e.statut = 'paye'
-      ORDER BY e.date_paiement DESC
-      LIMIT 10
-    `, [eleveId]);
-
-    const paiementsDirectsRows = paiementsDirectsDetail.rows || [];
-    const echeancesRows = echeancesDetail.rows || [];
-    const paiementsDetail = [...paiementsDirectsRows, ...echeancesRows]
-      .sort((a, b) => new Date(b.date_paiement).getTime() - new Date(a.date_paiement).getTime())
-      .slice(0, 10);
-
-    // ⭐ 13. RÉPONSE
+    // ⭐ 12. RÉPONSE
     return NextResponse.json({
-      notes: notes.rows,
+      notes: notes.rows || [],
       presences: presences.rows[0] || { total: 0, presents: 0, absents: 0, retards: 0 },
       paiements: {
         total_paye: totalPaye,
@@ -291,23 +244,17 @@ export async function GET(
         total_paye_echeances: totalPayeEcheances,
         nombre_paiements: (Number(paiementsDirects.rows[0]?.nombre_paiements_direct) || 0) + 
                          (Number(echeancesPayees.rows[0]?.nombre_echeances) || 0),
-        details: paiementsDetail
+        details: []
       },
-      // ⭐ Détail des frais
       frais_inscription: planTotal,
       transport: transportTotal,
       cantine: cantineTotal,
       fournitures: fournituresTotal,
       scolarite: scolariteTotal,
-      // ⭐ Total général = somme de tous les frais
       total_frais_general: totalFraisGeneral,
-      // ⭐ Montant à payer = total - déjà payé
       montant_a_payer: montantAPayer,
-      // ⭐ Solde restant = montant à payer
       solde_restant: soldeRestant,
-      // ⭐ Détail du plan
       plan_paiement: planDetails,
-      // ⭐ Pourcentage payé
       pourcentage_paye: totalFraisGeneral > 0 ? Math.round((totalPaye / totalFraisGeneral) * 100) : 0
     });
 

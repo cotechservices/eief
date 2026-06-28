@@ -581,7 +581,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Supprimer une pré-inscription
+// ⭐ DELETE - Supprimer une pré-inscription (même si validée) - NE SUPPRIME PAS LE PARENT
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -596,9 +596,19 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requis" }, { status: 400 });
     }
 
-    // ⭐ Vérifier si la pré-inscription existe et son statut
+    // ⭐ Vérifier si la pré-inscription existe
     const checkResult = await query(`
-      SELECT id, statut FROM preinscriptions WHERE id = $1
+      SELECT 
+        p.id, 
+        p.statut,
+        p.parent_id,
+        -- Récupérer l'ID de l'élève si la pré-inscription a été validée
+        (SELECT e.id FROM eleves e 
+         JOIN inscriptions i ON i.eleve_id = e.id 
+         WHERE i.preinscription_id = p.id 
+         LIMIT 1) as eleve_id
+      FROM preinscriptions p
+      WHERE p.id = $1
     `, [id]);
 
     if (checkResult.rows.length === 0) {
@@ -606,36 +616,78 @@ export async function DELETE(request: NextRequest) {
     }
 
     const preinscription = checkResult.rows[0];
-
-    // ⭐ Empêcher la suppression des pré-inscriptions validées
-    if (preinscription.statut === 'valide') {
-      return NextResponse.json({ 
-        error: "Impossible de supprimer une pré-inscription déjà validée" 
-      }, { status: 400 });
-    }
+    const eleveId = preinscription.eleve_id;
 
     // Démarrer une transaction
     await query('BEGIN');
 
     try {
-      // Supprimer les données associées
+      // ⭐ 1. Si la pré-inscription est validée et a un élève associé, supprimer l'élève et ses données
+      if (preinscription.statut === 'valide' && eleveId) {
+        console.log(`🗑️ Suppression de l'élève ${eleveId} associé à la pré-inscription ${id}`);
+        
+        // Supprimer l'utilisateur élève
+        const eleveInfo = await query(`
+          SELECT utilisateur_id FROM eleves WHERE id = $1
+        `, [eleveId]);
+        
+        if (eleveInfo.rows.length > 0 && eleveInfo.rows[0].utilisateur_id) {
+          // Supprimer les sessions de l'utilisateur
+          await query(`DELETE FROM sessions WHERE utilisateur_id = $1`, [eleveInfo.rows[0].utilisateur_id]);
+          // Supprimer l'utilisateur
+          await query(`DELETE FROM utilisateurs WHERE id = $1`, [eleveInfo.rows[0].utilisateur_id]);
+        }
+
+        // Supprimer les données liées à l'élève
+        await query(`DELETE FROM lien_parent_eleve WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM paiements WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM presences WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM notes WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM inscriptions WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM soumissions_devoirs WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM emprunts_bibliotheque WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM reservations_cantine WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM transactions_cantine WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM inscriptions_transport WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM inscriptions_cantine WHERE eleve_id = $1`, [eleveId]);
+        await query(`DELETE FROM ventes_librairie WHERE eleve_id = $1`, [eleveId]);
+        
+        // Supprimer l'élève
+        await query(`DELETE FROM eleves WHERE id = $1`, [eleveId]);
+        
+        console.log(`✅ Élève ${eleveId} supprimé`);
+      }
+
+      // ⭐ 2. Supprimer toutes les données associées à la pré-inscription
       await query(`DELETE FROM paiements WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM echeances_paiement WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM inscriptions WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM commandes_fournitures WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM preinscription_transport WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM preinscription_cantine WHERE preinscription_id = $1`, [id]);
+      
+      // ⭐ 3. Supprimer la pré-inscription
       await query(`DELETE FROM preinscriptions WHERE id = $1`, [id]);
+
+      // ⭐ 4. NE PAS SUPPRIMER LE PARENT - On garde le parent même s'il n'a plus d'enfants
+      // Le parent peut avoir d'autres pré-inscriptions ou inscriptions
+      // On ne supprime donc pas la ligne dans la table parents ni l'utilisateur associé
 
       await query('COMMIT');
 
       return NextResponse.json({ 
         success: true, 
-        message: "Pré-inscription supprimée avec succès" 
+        message: preinscription.statut === 'valide' 
+          ? "Pré-inscription et élève associé supprimés avec succès (parent conservé)" 
+          : "Pré-inscription supprimée avec succès (parent conservé)" 
       });
     } catch (error) {
       await query('ROLLBACK');
-      throw error;
+      console.error("Erreur dans la transaction:", error);
+      return NextResponse.json(
+        { error: "Erreur lors de la suppression: " + (error as Error).message },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error("Erreur DELETE:", error);

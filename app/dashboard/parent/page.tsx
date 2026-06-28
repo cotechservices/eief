@@ -61,6 +61,11 @@ interface Preinscription {
   photo_url: string | null;
   acte_naissance_url?: string | null;
   bulletin_url?: string | null;
+  transport_montant: number;
+  cantine_montant: number;
+  fournitures_montant: number;
+  scolarite_montant: number;
+  montant_total: number;
 }
 
 interface Stats {
@@ -356,27 +361,27 @@ export default function ParentDashboard() {
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
+  // Dans le dashboard parent, remplacer la section de calcul des statistiques globales
+
   // ⭐⭐⭐ CALCUL DES STATISTIQUES GLOBALES ⭐⭐⭐
-  // 
-  // Les données proviennent de deux sources:
-  // 1. Preinscription → total_frais_general (montant total de la pré-inscription)
-  // 2. Stats Enfant → paiements.total_paye (montant payé pour l'enfant)
-  // 3. Stats Enfant → transport, cantine, fournitures (services optionnels)
   
-  // ⭐ Calcul du total des frais de pré-inscription (Montant à payer)
-  // = Somme des frais_montant de chaque pré-inscription
+  // 1. Calcul du total des frais de pré-inscription (inscription + scolarité)
   const totalPreinscriptionFrais = preinscriptions.reduce((acc, p) => acc + (Number(p.frais_montant) || 0), 0);
 
-  // ⭐ Calcul du total payé pour tous les enfants
-  const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
-
-  // ⭐ Calcul des services optionnels par enfant
+  // 2. Calcul des services optionnels par enfant (depuis les stats)
   const totalCantine = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.cantine) || 0), 0);
   const totalTransport = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.transport) || 0), 0);
   const totalFournitures = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.fournitures) || 0), 0);
+  const totalScolarite = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.scolarite) || 0), 0);
+
+  // 3. Calcul du total payé pour tous les enfants
+  const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
+
+  // ⭐ MONTANT À PAYER = Total préinscriptions + Cantine + Transport + Fournitures + Scolarité
+  const totalAPayer = totalPreinscriptionFrais + totalCantine + totalTransport + totalFournitures + totalScolarite;
 
   // ⭐ Solde restant = Montant à payer - Montant payé
-  const soldeRestant = Math.max(0, totalPreinscriptionFrais - totalPaye);
+  const soldeRestant = Math.max(0, totalAPayer - totalPaye);
 
   const statsGlobales = {
     totalEnfants: enfants.length,
@@ -385,21 +390,21 @@ export default function ParentDashboard() {
     preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
 
-    // ⭐ Montant à payer = total des frais de pré-inscription
-    totalAPayer: totalPreinscriptionFrais,
+    // ⭐ Montant à payer = Total préinscription + Cantine + Transport + Fournitures + Scolarité
+    totalAPayer: totalAPayer,
 
     // ⭐ Montant payé = total payé pour tous les enfants
     totalPaye: totalPaye,
 
-    // ⭐ Totaux par catégorie (services optionnels)
-    totalFraisInscription: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.frais_inscription) || 0), 0),
+    // ⭐ Totaux par catégorie
+    totalFraisInscription: totalPreinscriptionFrais,
     totalTransport: totalTransport,
     totalCantine: totalCantine,
     totalFournitures: totalFournitures,
-    totalScolarite: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.scolarite) || 0), 0),
+    totalScolarite: totalScolarite,
 
-    // ⭐ Total général des frais
-    totalFraisGeneral: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.total_frais_general) || 0), 0),
+    // ⭐ Total général des frais (toutes catégories)
+    totalFraisGeneral: totalPreinscriptionFrais + totalCantine + totalTransport + totalFournitures + totalScolarite,
 
     // ⭐ Solde restant = Montant à payer - Montant payé
     soldeRestant: soldeRestant,

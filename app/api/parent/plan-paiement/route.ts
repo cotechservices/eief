@@ -1,3 +1,4 @@
+// app/api/parent/plan-paiement/route.ts
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -61,38 +62,7 @@ export async function GET(request: Request) {
 
       console.log(`📊 Plan pour la pré-inscription ${preinscriptionId}:`, plan);
 
-      // ⭐ VÉRIFIER SI DES SERVICES OPTIONNELS EXISTENT (même sans échéances)
-      const hasTransportResult = await query(`
-        SELECT COUNT(*) as count
-        FROM preinscription_transport pt
-        WHERE pt.preinscription_id = $1
-      `, [preinscriptionId]);
-
-      const hasCantineResult = await query(`
-        SELECT COUNT(*) as count
-        FROM preinscription_cantine pc
-        WHERE pc.preinscription_id = $1
-      `, [preinscriptionId]);
-
-      const hasFournituresResult = await query(`
-        SELECT COUNT(*) as count
-        FROM commandes_fournitures cf
-        WHERE cf.preinscription_id = $1
-      `, [preinscriptionId]);
-
-      const hasTransport = parseInt(hasTransportResult.rows[0]?.count || '0') > 0;
-      const hasCantine = parseInt(hasCantineResult.rows[0]?.count || '0') > 0;
-      const hasFournitures = parseInt(hasFournituresResult.rows[0]?.count || '0') > 0;
-      const hasServicesOptionnels = hasTransport || hasCantine || hasFournitures;
-
-      console.log(`🔍 Services optionnels pour ${preinscriptionId}:`, {
-        hasTransport,
-        hasCantine,
-        hasFournitures,
-        hasServicesOptionnels
-      });
-
-      // ⭐ Récupérer les services optionnels (avec leurs montants)
+      // ⭐ Récupérer les services optionnels
       const transport = await query(`
         SELECT 
           COALESCE(SUM(lt.prix_abonnement), 0) as total_transport,
@@ -155,7 +125,7 @@ export async function GET(request: Request) {
       const totalFournitures = Number(fournitures.rows[0]?.total_fournitures) || 0;
       const totalServices = totalTransport + totalCantine + totalFournitures;
 
-      // ⭐ Récupérer les échéances existantes
+      // ⭐ Récupérer les échéances existantes (qui ont maintenant les bons montants)
       const echeancesResult = await query(`
         SELECT 
           id,
@@ -205,22 +175,17 @@ export async function GET(request: Request) {
         plan: plan,
         echeances: echeancesResult.rows,
         echeances_inscription: echeancesInscription,
-        // ⭐ NOUVEAU FLAG pour indiquer que des services existent
-        has_services_optionnels: hasServicesOptionnels,
         services_optionnels: {
           transport: {
             total: totalTransport,
-            has: hasTransport,
             details: transport.rows[0]?.details || []
           },
           cantine: {
             total: totalCantine,
-            has: hasCantine,
             details: cantine.rows[0]?.details || []
           },
           fournitures: {
             total: totalFournitures,
-            has: hasFournitures,
             details: fournitures.rows[0]?.details || []
           },
           total_services: totalServices

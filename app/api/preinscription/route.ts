@@ -19,31 +19,52 @@ function getEcheanceDate(echeance: string): Date {
 }
 
 // ⭐ Fonction pour créer le plan de paiement et les échéances
-async function createPlanPaiement(preinscriptionId: number, niveau: string, body: any) {
+// ⭐ Utilise la table classes pour les montants individuels
+async function createPlanPaiement(preinscriptionId: number, niveau: string, classeNom: string, body: any) {
   console.log(`📊 Création du plan de paiement pour la pré-inscription ${preinscriptionId}`);
 
-  // ⭐ Récupérer les montants depuis la table classes
-  const planResult = await query(`
+  // ⭐ Récupérer les montants DEPUIS LA TABLE CLASSES (montants individuels)
+  // ⭐ Priorité: chercher par nom de classe d'abord, puis par niveau
+  let planResult = await query(`
     SELECT 
+      nom,
       niveau,
-      SUM(premier_versement) as premier_versement,
-      SUM(deuxieme_versement) as deuxieme_versement,
-      SUM(troisieme_versement) as troisieme_versement,
-      SUM(total_versement) as total
+      COALESCE(premier_versement, 0) as premier_versement,
+      COALESCE(deuxieme_versement, 0) as deuxieme_versement,
+      COALESCE(troisieme_versement, 0) as troisieme_versement,
+      COALESCE(total_versement, 0) as total
     FROM classes
-    WHERE LOWER(niveau) = LOWER($1)
-    GROUP BY niveau
-  `, [niveau]);
+    WHERE LOWER(nom) = LOWER($1)
+    LIMIT 1
+  `, [classeNom]);
+
+  // ⭐ Si pas trouvé par le nom de la classe, essayer par le niveau
+  if (planResult.rows.length === 0) {
+    console.log(`⚠️ Classe "${classeNom}" non trouvée, recherche par niveau: ${niveau}`);
+    
+    planResult = await query(`
+      SELECT 
+        NULL as nom,
+        niveau,
+        COALESCE(SUM(premier_versement), 0) as premier_versement,
+        COALESCE(SUM(deuxieme_versement), 0) as deuxieme_versement,
+        COALESCE(SUM(troisieme_versement), 0) as troisieme_versement,
+        COALESCE(SUM(total_versement), 0) as total
+      FROM classes
+      WHERE LOWER(niveau) = LOWER($1)
+      GROUP BY niveau
+    `, [niveau]);
+  }
 
   if (planResult.rows.length === 0) {
-    console.log(`⚠️ Aucune classe trouvée pour le niveau: ${niveau}`);
+    console.log(`⚠️ Aucune classe trouvée pour: ${classeNom} ou ${niveau}`);
     return;
   }
 
   const plan = planResult.rows[0];
-  console.log(`📋 Plan trouvé: ${plan.niveau} - Total: ${plan.total}`);
+  console.log(`📋 Plan trouvé: ${plan.nom || plan.niveau} - 1er: ${plan.premier_versement}, 2ème: ${plan.deuxieme_versement}, 3ème: ${plan.troisieme_versement}, Total: ${plan.total}`);
 
-  // Mettre à jour la pré-inscription avec le plan
+  // Mettre à jour la pré-inscription avec le plan (montants individuels)
   await query(`
     UPDATE preinscriptions 
     SET montant_total_plan = $1,
@@ -51,7 +72,7 @@ async function createPlanPaiement(preinscriptionId: number, niveau: string, body
     WHERE id = $2
   `, [plan.total, preinscriptionId]);
 
-  // ⭐ Créer les échéances d'inscription avec les bons montants
+  // ⭐ CRÉER LES ÉCHÉANCES AVEC LES MONTANTS INDIVIDUELS (NON MULTIPLIÉS)
   const echeances = [
     { echeance: '1er_versement', montant: Number(plan.premier_versement) || 0 },
     { echeance: '2eme_versement', montant: Number(plan.deuxieme_versement) || 0 },
@@ -75,7 +96,7 @@ async function createPlanPaiement(preinscriptionId: number, niveau: string, body
     }
   }
 
-  // ⭐ Créer les échéances pour les services optionnels
+  // ⭐ CRÉER LES ÉCHÉANCES POUR LES SERVICES OPTIONNELS (montants individuels)
   const services = [
     { type: 'transport', montant: Number(body.montant_transport) || 0 },
     { type: 'cantine', montant: Number(body.montant_cantine) || 0 },
@@ -334,7 +355,8 @@ export async function POST(request: NextRequest) {
       }
 
       // ⭐ 7. Créer le plan de paiement et les échéances
-      await createPlanPaiement(preinscriptionId, enfant.niveau, body);
+      // ⭐ Passer classeNom ET niveau pour la recherche
+      await createPlanPaiement(preinscriptionId, enfant.niveau, enfant.classe, body);
 
       preinscriptions.push({
         id: preinscriptionId,
