@@ -17,7 +17,7 @@ export async function GET(
     const eleveId = parseInt(id);
     const userEmail = session.user?.email;
 
-    console.log(`📊 Récupération des stats pour l'élève ${eleveId}`);
+    console.log(` Récupération des stats pour l'élève ${eleveId}`);
 
     // Vérifier que l'enfant appartient au parent
     const checkParent = await query(`
@@ -58,7 +58,7 @@ export async function GET(
       WHERE eleve_id = $1
     `, [eleveId]);
 
-    // ⭐⭐⭐ 3. RÉCUPÉRER LE PLAN DE PAIEMENT DEPUIS LA TABLE CLASSES ⭐⭐⭐
+    // 3. RÉCUPÉRER LE PLAN DE PAIEMENT DEPUIS LA TABLE CLASSES
     const classeInfo = await query(`
       SELECT 
         c.id as classe_id,
@@ -89,12 +89,12 @@ export async function GET(
         troisieme_versement: Number(data.troisieme_versement) || 0,
         total: Number(data.total_versement) || 0
       };
-      console.log(`📊 Plan depuis table classes:`, planDetails);
+      console.log(` Plan depuis table classes:`, planDetails);
     }
 
-    // ⭐⭐⭐ 4. TRANSPORT - RECHERCHE DIRECTE SANS PASSER PAR LES INSCRIPTIONS ⭐⭐⭐
+    // 4. TRANSPORT - RECHERCHE DIRECTE SANS PASSER PAR LES INSCRIPTIONS 
     let transportTotal = 0;
-    
+
     // Méthode 1: Via le parent_id de l'élève (si l'élève a un parent)
     const transportQuery = await query(`
       SELECT COALESCE(SUM(lt.prix_abonnement), 0) as total_transport
@@ -105,7 +105,7 @@ export async function GET(
         SELECT parent_id FROM lien_parent_eleve WHERE eleve_id = $1 LIMIT 1
       )
     `, [eleveId]);
-    
+
     if (transportQuery.rows.length > 0 && transportQuery.rows[0].total_transport > 0) {
       transportTotal = Number(transportQuery.rows[0].total_transport) || 0;
     } else {
@@ -120,11 +120,11 @@ export async function GET(
       `, [eleveId]);
       transportTotal = Number(transportQuery2.rows[0]?.total_transport) || 0;
     }
-    console.log(`🚌 Transport: ${transportTotal}`);
+    console.log(`Transport: ${transportTotal}`);
 
-    // ⭐⭐⭐ 5. CANTINE - RECHERCHE DIRECTE ⭐⭐⭐
+    // 5. CANTINE - RECHERCHE DIRECTE
     let cantineTotal = 0;
-    
+
     const cantineQuery = await query(`
       SELECT COALESCE(SUM(cm.prix_annuel), 0) as total_cantine
       FROM preinscriptions p
@@ -134,7 +134,7 @@ export async function GET(
         SELECT parent_id FROM lien_parent_eleve WHERE eleve_id = $1 LIMIT 1
       )
     `, [eleveId]);
-    
+
     if (cantineQuery.rows.length > 0 && cantineQuery.rows[0].total_cantine > 0) {
       cantineTotal = Number(cantineQuery.rows[0].total_cantine) || 0;
     } else {
@@ -148,11 +148,11 @@ export async function GET(
       `, [eleveId]);
       cantineTotal = Number(cantineQuery2.rows[0]?.total_cantine) || 0;
     }
-    console.log(`🍽️ Cantine: ${cantineTotal}`);
+    console.log(` Cantine: ${cantineTotal}`);
 
-    // ⭐⭐⭐ 6. FOURNITURES - RECHERCHE DIRECTE ⭐⭐⭐
+    // 6. FOURNITURES - RECHERCHE DIRECTE
     let fournituresTotal = 0;
-    
+
     const fournituresQuery = await query(`
       SELECT COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total_fournitures
       FROM preinscriptions p
@@ -162,7 +162,7 @@ export async function GET(
         SELECT parent_id FROM lien_parent_eleve WHERE eleve_id = $1 LIMIT 1
       )
     `, [eleveId]);
-    
+
     if (fournituresQuery.rows.length > 0 && fournituresQuery.rows[0].total_fournitures > 0) {
       fournituresTotal = Number(fournituresQuery.rows[0].total_fournitures) || 0;
     } else {
@@ -177,7 +177,7 @@ export async function GET(
     }
     console.log(`📚 Fournitures: ${fournituresTotal}`);
 
-    // ⭐⭐⭐ 7. SCOLARITÉ (mensualités) ⭐⭐⭐
+    // 7. SCOLARITÉ (mensualités)
     let scolariteTotal = 0;
     const scolariteQuery = await query(`
       SELECT COALESCE(SUM(montant), 0) as total_scolarite
@@ -187,12 +187,12 @@ export async function GET(
     if (scolariteQuery.rows.length > 0) {
       scolariteTotal = Number(scolariteQuery.rows[0].total_scolarite) || 0;
     }
-    console.log(`📖 Scolarité: ${scolariteTotal}`);
+    console.log(` Scolarité: ${scolariteTotal}`);
 
-    // ⭐⭐⭐ 8. TOTAL DES FRAIS ⭐⭐⭐
+    // 8. TOTAL DES FRAIS
     const totalFraisGeneral = planTotal + transportTotal + cantineTotal + fournituresTotal + scolariteTotal;
 
-    // ⭐⭐⭐ 9. PAIEMENTS EFFECTUÉS ⭐⭐⭐
+    // 9. PAIEMENTS EFFECTUÉS
     const paiementsDirects = await query(`
       SELECT 
         COALESCE(SUM(montant), 0) as total_paye_direct,
@@ -217,24 +217,24 @@ export async function GET(
     const totalPayeEcheances = Number(echeancesPayees.rows[0]?.total_paye_echeances) || 0;
     const totalPaye = totalPayeDirect + totalPayeEcheances;
 
-    // ⭐⭐⭐ 10. MONTANT À PAYER ⭐⭐⭐
+    // 10. MONTANT À PAYER
     const montantAPayer = Math.max(0, totalFraisGeneral - totalPaye);
 
-    // ⭐⭐⭐ 11. SOLDE RESTANT ⭐⭐⭐
+    // 11. SOLDE RESTANT
     const soldeRestant = montantAPayer;
 
     console.log(`=== RÉSUMÉ STATS pour eleve_id ${eleveId} ===`);
-    console.log(`📊 Plan inscription: ${planTotal}`);
-    console.log(`🚌 Transport: ${transportTotal}`);
-    console.log(`🍽️ Cantine: ${cantineTotal}`);
-    console.log(`📚 Fournitures: ${fournituresTotal}`);
-    console.log(`📖 Scolarité: ${scolariteTotal}`);
-    console.log(`💰 Total des frais: ${totalFraisGeneral}`);
-    console.log(`💰 Total payé: ${totalPaye}`);
-    console.log(`💰 Montant à payer: ${montantAPayer}`);
-    console.log(`📉 Solde restant: ${soldeRestant}`);
+    console.log(`Plan inscription: ${planTotal}`);
+    console.log(`Transport: ${transportTotal}`);
+    console.log(`Cantine: ${cantineTotal}`);
+    console.log(`Fournitures: ${fournituresTotal}`);
+    console.log(`Scolarité: ${scolariteTotal}`);
+    console.log(`Total des frais: ${totalFraisGeneral}`);
+    console.log(`Total payé: ${totalPaye}`);
+    console.log(`Montant à payer: ${montantAPayer}`);
+    console.log(`Solde restant: ${soldeRestant}`);
 
-    // ⭐ 12. RÉPONSE
+    //  12. RÉPONSE
     return NextResponse.json({
       notes: notes.rows || [],
       presences: presences.rows[0] || { total: 0, presents: 0, absents: 0, retards: 0 },
@@ -242,8 +242,8 @@ export async function GET(
         total_paye: totalPaye,
         total_paye_direct: totalPayeDirect,
         total_paye_echeances: totalPayeEcheances,
-        nombre_paiements: (Number(paiementsDirects.rows[0]?.nombre_paiements_direct) || 0) + 
-                         (Number(echeancesPayees.rows[0]?.nombre_echeances) || 0),
+        nombre_paiements: (Number(paiementsDirects.rows[0]?.nombre_paiements_direct) || 0) +
+          (Number(echeancesPayees.rows[0]?.nombre_echeances) || 0),
         details: []
       },
       frais_inscription: planTotal,

@@ -30,16 +30,16 @@ export async function GET() {
         p.photo_url,
         p.acte_naissance_url,
         p.bulletin_url,
-        -- ⭐ INSCRIPTION - Montant depuis la table classes
+        --  INSCRIPTION - Montant depuis la table classes
         COALESCE(c.total_versement, c.frais_inscription, 0) as frais_montant,
-        -- ⭐ TRANSPORT - Montant total du transport pour cette préinscription
+        -- TRANSPORT - Montant total du transport pour cette préinscription
         COALESCE(
           (SELECT SUM(pt.prix)
            FROM preinscription_transport pt
            WHERE pt.preinscription_id = p.id),
           0
         ) as transport_montant,
-        -- ⭐ CANTINE - Montant total de la cantine pour cette préinscription (prix annuel)
+        -- CANTINE - Montant total de la cantine pour cette préinscription (prix annuel)
         COALESCE(
           (SELECT SUM(cm.prix_annuel)
            FROM preinscription_cantine pc
@@ -47,17 +47,17 @@ export async function GET() {
            WHERE pc.preinscription_id = p.id),
           0
         ) as cantine_montant,
-        -- ⭐ FOURNITURES - Montant total des fournitures pour cette préinscription
+        --  FOURNITURES - Montant total des fournitures pour cette préinscription
         COALESCE(
           (SELECT SUM(cf.quantite * cf.prix_unitaire)
            FROM commandes_fournitures cf
            WHERE cf.preinscription_id = p.id),
           0
         ) as fournitures_montant,
-        -- ⭐ SCOLARITE - Déjà incluse dans le montant de l'inscription (total_versement)
+        -- SCOLARITE - Déjà incluse dans le montant de l'inscription (total_versement)
         -- On ne l'ajoute pas séparément pour éviter le double comptage
         0 as scolarite_montant,
-        -- ⭐ TOTAL DES FRAIS POUR CETTE PRÉINSCRIPTION
+        -- TOTAL DES FRAIS POUR CETTE PRÉINSCRIPTION
         COALESCE(c.total_versement, c.frais_inscription, 0) + 
         COALESCE(
           (SELECT SUM(pt.prix)
@@ -86,7 +86,7 @@ export async function GET() {
       ORDER BY p.date_preinscription DESC
     `, [userEmail]);
 
-    // ⭐ Ajouter les montants des services pour chaque pré-inscription dans la réponse
+    //  Ajouter les montants des services pour chaque pré-inscription dans la réponse
     const rows = result.rows.map(row => ({
       ...row,
       frais_montant: Number(row.frais_montant) || 0,

@@ -227,10 +227,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           <div className="flex justify-between items-center px-6 py-3">
             <h1 className="text-xl font-semibold text-gray-900">Tableau de bord</h1>
             <div className="flex items-center gap-4">
-              <button className="relative">
-                <Bell className="w-5 h-5 text-gray-900" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
-              </button>
               <div className="flex items-center gap-3">
                 <UserCircle className="w-8 h-8 text-gray-900" />
                 <div className="hidden md:block">

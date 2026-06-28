@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import ReinscriptionPaiementModal from "@/components/ReinscriptionPaiementModal";
 import {
   RefreshCw,
   Users,
@@ -17,7 +18,13 @@ import {
   CreditCard,
   Wallet,
   Smartphone,
-  User
+  User,
+  Bus,
+  Utensils,
+  ShoppingCart,
+  Plus,
+  Minus,
+  UserPlus
 } from "lucide-react";
 
 interface Enfant {
@@ -38,6 +45,34 @@ interface Classe {
   niveau: string;
 }
 
+interface Fourniture {
+  id: number;
+  nom: string;
+  prix_unitaire: number;
+  selectedQty: number;
+}
+
+interface TransportOption {
+  id: number;
+  nom: string;
+  prix: number;
+  selected: boolean;
+  horaireMatin?: string;
+  horaireSoir?: string;
+}
+
+interface CantineOption {
+  id: number;
+  nom: string;
+  prix: number;
+  prix_annuel: number;
+  selected: boolean;
+  date?: string;
+  plat?: string;
+  accompagnement?: string;
+  dessert?: string;
+}
+
 interface Reinscription {
   id: number;
   statut: "en_attente" | "valide" | "rejete";
@@ -54,6 +89,11 @@ interface Reinscription {
   classe_niveau: string;
   classe_actuelle_nom: string;
   annee_scolaire: string;
+  // Services optionnels
+  transport_montant?: number;
+  cantine_montant?: number;
+  fournitures_montant?: number;
+  montant_total?: number;
 }
 
 interface Notification {
@@ -76,6 +116,25 @@ export default function ReinscriptionParentPage() {
   const [selectedClasseId, setSelectedClasseId] = useState<number | null>(null);
   const [selectedNiveau, setSelectedNiveau] = useState("");
 
+  // Services optionnels
+  const [transportOptions, setTransportOptions] = useState<TransportOption[]>([]);
+  const [cantineOptions, setCantineOptions] = useState<CantineOption[]>([]);
+  const [supplies, setSupplies] = useState<Fourniture[]>([]);
+  const [totalTransport, setTotalTransport] = useState(0);
+  const [totalCantine, setTotalCantine] = useState(0);
+  const [totalFournitures, setTotalFournitures] = useState(0);
+  const [loadingServices, setLoadingServices] = useState(false);
+
+   // ⭐ États pour le modal de paiement
+    const [showPaiementModal, setShowPaiementModal] = useState(false);
+    const [selectedReinscription, setSelectedReinscription] = useState<Reinscription | null>(null);
+
+   // ⭐ Fonction pour ouvrir le modal de paiement
+  const handleOpenPaiement = (reinscription: Reinscription) => {
+  setSelectedReinscription(reinscription);
+  setShowPaiementModal(true);
+};
+
   const addNotification = (type: Notification["type"], message: string) => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, type, message }]);
@@ -91,6 +150,13 @@ export default function ReinscriptionParentPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Charger les services optionnels quand un enfant est sélectionné
+  useEffect(() => {
+    if (selectedEnfant) {
+      fetchServices();
+    }
+  }, [selectedEnfant]);
 
   const fetchData = async () => {
     try {
@@ -115,6 +181,60 @@ export default function ReinscriptionParentPage() {
     }
   };
 
+  // Charger les services optionnels
+  const fetchServices = async () => {
+    setLoadingServices(true);
+    try {
+      const [transportRes, cantineRes, fournituresRes] = await Promise.all([
+        fetch("/api/public/transport"),
+        fetch("/api/public/cantine"),
+        fetch("/api/public/librairie")
+      ]);
+
+      const transportData = await transportRes.json();
+      const cantineData = await cantineRes.json();
+      const fournituresData = await fournituresRes.json();
+
+      if (Array.isArray(transportData) && transportData.length > 0) {
+        setTransportOptions(transportData.map((item: any) => ({
+          id: item.id,
+          nom: item.nom || "Transport scolaire",
+          prix: Number(item.prix) || 0,
+          selected: false,
+          horaireMatin: item.horaire_matin || "07:30",
+          horaireSoir: item.horaire_soir || "16:30"
+        })));
+      }
+
+      if (Array.isArray(cantineData) && cantineData.length > 0) {
+        setCantineOptions(cantineData.map((item: any) => ({
+          id: item.id,
+          nom: item.plat || "Menu du jour",
+          prix: Number(item.prix) || 0,
+          prix_annuel: Number(item.prix_annuel) || 0,
+          selected: false,
+          date: item.date,
+          plat: item.plat,
+          accompagnement: item.accompagnement,
+          dessert: item.dessert
+        })));
+      }
+
+      if (Array.isArray(fournituresData) && fournituresData.length > 0) {
+        setSupplies(fournituresData.map((item: any) => ({
+          id: item.id,
+          nom: item.nom || "Fourniture",
+          prix_unitaire: item.prix || 0,
+          selectedQty: 0
+        })));
+      }
+    } catch (error) {
+      console.error("Erreur chargement services:", error);
+    } finally {
+      setLoadingServices(false);
+    }
+  };
+
   const getNiveauxOptions = () => {
     return [...new Set(classes.map(c => c.niveau))];
   };
@@ -123,10 +243,8 @@ export default function ReinscriptionParentPage() {
     return classes.filter(c => c.niveau === niveauNom);
   };
 
-  // Vérifier si un enfant a déjà une réinscription en attente
   const hasActiveReinscription = (eleveId: number) => {
     return reinscriptions.some(r => {
-      // On compare par nom/prenom car l'API renvoie enfant_nom/enfant_prenom
       const enfant = enfants.find(e => e.eleve_id === eleveId);
       if (!enfant) return false;
       return r.enfant_nom === enfant.nom && r.enfant_prenom === enfant.prenom && r.statut === "en_attente";
@@ -137,6 +255,60 @@ export default function ReinscriptionParentPage() {
     setSelectedEnfant(enfant);
     setSelectedNiveau("");
     setSelectedClasseId(null);
+    // Réinitialiser les services
+    setTransportOptions(prev => prev.map(t => ({ ...t, selected: false })));
+    setCantineOptions(prev => prev.map(c => ({ ...c, selected: false })));
+    setSupplies(prev => prev.map(s => ({ ...s, selectedQty: 0 })));
+    setTotalTransport(0);
+    setTotalCantine(0);
+    setTotalFournitures(0);
+  };
+
+  // Gestion des services
+  const toggleTransport = (index: number) => {
+    const newOptions = [...transportOptions];
+    newOptions[index].selected = !newOptions[index].selected;
+    setTransportOptions(newOptions);
+    const total = newOptions.filter(o => o.selected).reduce((sum, o) => sum + o.prix, 0);
+    setTotalTransport(total);
+  };
+
+  const toggleCantine = (index: number) => {
+    const newOptions = [...cantineOptions];
+    newOptions[index].selected = !newOptions[index].selected;
+    setCantineOptions(newOptions);
+    const total = newOptions.filter(o => o.selected).reduce((sum, o) => sum + (o.prix_annuel || 0), 0);
+    setTotalCantine(total);
+  };
+
+  const handleSupplyChange = (index: number, delta: number) => {
+  // ⭐ Utiliser la forme fonctionnelle de setState avec calcul immédiat
+  setSupplies(prev => {
+    // Créer le nouveau tableau
+    const newSupplies = prev.map((item, i) => {
+      if (i !== index) return item;
+      return {
+        ...item,
+        selectedQty: Math.max(0, Math.min(item.selectedQty + delta, item.quantite_stock || 999))
+      };
+    });
+    
+    // ⭐ Calculer le total à partir du nouveau tableau
+    const total = newSupplies.reduce((sum, item) => sum + (item.prix_unitaire * item.selectedQty), 0);
+    setTotalFournitures(total);
+    
+    return newSupplies;
+  });
+};
+
+  // Calcul du total général
+  const getTotalServices = () => {
+    return totalTransport + totalCantine + totalFournitures;
+  };
+
+  const getMontantTotal = () => {
+    const fraisInscription = selectedEnfant?.frais_inscription_classe || 500000;
+    return fraisInscription + getTotalServices();
   };
 
   const handleSubmitReinscription = async () => {
@@ -151,6 +323,14 @@ export default function ReinscriptionParentPage() {
           eleveId: selectedEnfant.eleve_id,
           classeId: selectedClasseId,
           montantFrais: selectedEnfant.frais_inscription_classe || 500000,
+          // ⭐ Services optionnels
+          transport: transportOptions.filter(t => t.selected).map(t => ({ id: t.id, prix: t.prix })),
+          cantine: cantineOptions.filter(c => c.selected).map(c => ({ id: c.id, prix: c.prix_annuel })),
+          fournitures: supplies.filter(s => s.selectedQty > 0).map(s => ({ id: s.id, quantite: s.selectedQty, prix_unitaire: s.prix_unitaire })),
+          montantTransport: totalTransport,
+          montantCantine: totalCantine,
+          montantFournitures: totalFournitures,
+          montantTotal: getMontantTotal()
         }),
       });
 
@@ -209,7 +389,7 @@ export default function ReinscriptionParentPage() {
 
   return (
     <div className="relative space-y-6">
-      {/* Notifications Toast */}
+      {/* Notifications */}
       <div className="fixed top-20 right-4 z-50 space-y-2">
         {notifications.map((notification) => (
           <div
@@ -244,9 +424,9 @@ export default function ReinscriptionParentPage() {
         {!showForm && enfants.length > 0 && (
           <button
             onClick={() => setShowForm(true)}
-            className="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition flex items-center gap-2 shadow-sm"
+            className="bg-green-700 text-white px-5 py-2.5 rounded-lg hover:bg-green-800 transition flex items-center gap-2 shadow-sm"
           >
-            <RefreshCw className="w-5 h-5" />
+            <UserPlus className="w-5 h-5" />
             Nouvelle réinscription
           </button>
         )}
@@ -315,7 +495,6 @@ export default function ReinscriptionParentPage() {
                 <div className="text-center py-8">
                   <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500">Aucun enfant inscrit</p>
-                  <p className="text-sm text-gray-400 mt-1">Vous devez d'abord inscrire un enfant depuis la page Inscription.</p>
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-4">
@@ -361,7 +540,7 @@ export default function ReinscriptionParentPage() {
               )}
             </div>
           ) : (
-            /* Étape 2 : Sélection de la nouvelle classe */
+            /* Étape 2 : Sélection de la nouvelle classe + Services */
             <div className="space-y-6">
               {/* Enfant sélectionné */}
               <div className="bg-blue-50 p-4 rounded-lg">
@@ -424,15 +603,180 @@ export default function ReinscriptionParentPage() {
                 </div>
               )}
 
+              {/* SERVICES OPTIONNELS */}
+              {selectedClasseId && (
+                <div className="space-y-4 border-t pt-4">
+                  <h3 className="font-semibold text-black flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5 text-blue-600" />
+                    Services optionnels
+                  </h3>
+
+                  {/* Transport */}
+                  {transportOptions.length > 0 && (
+                    <div className="border border-green-200 rounded-lg p-4 bg-green-50/30">
+                      <h4 className="font-medium text-green-800 mb-2 flex items-center gap-2">
+                        <Bus className="w-5 h-5" />
+                        Transport scolaire
+                      </h4>
+                      <div className="space-y-2">
+                        {transportOptions.map((item, idx) => (
+                          <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded-lg border">
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{item.nom}</p>
+                              <p className="text-xs text-gray-500">{item.prix.toLocaleString()} GNF</p>
+                              {item.horaireMatin && item.horaireSoir && (
+                                <p className="text-xs text-gray-400">Horaire: {item.horaireMatin} - {item.horaireSoir}</p>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => toggleTransport(idx)}
+                              className={`px-4 py-1.5 rounded-lg text-sm transition ${item.selected
+                                ? "bg-green-600 text-white hover:bg-green-700"
+                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                }`}
+                            >
+                              {item.selected ? "✓ Sélectionné" : "Ajouter"}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cantine */}
+                  {cantineOptions.length > 0 && (
+                    <div className="border border-orange-200 rounded-lg p-4 bg-orange-50/30">
+                      <h4 className="font-medium text-orange-800 mb-2 flex items-center gap-2">
+                        <Utensils className="w-5 h-5" />
+                        Cantine scolaire
+                      </h4>
+                      <div className="space-y-2">
+                        {cantineOptions.map((item, idx) => (
+                          <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded-lg border">
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{item.nom}</p>
+                              <p className="text-xs text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
+                              {item.plat && <p className="text-xs text-gray-400">{item.plat}</p>}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => toggleCantine(idx)}
+                              className={`px-4 py-1.5 rounded-lg text-sm transition ${item.selected
+                                ? "bg-orange-600 text-white hover:bg-orange-700"
+                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                }`}
+                            >
+                              {item.selected ? "✓ Sélectionné" : "Ajouter"}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Fournitures */}
+                  {supplies.length > 0 && (
+                    <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/30">
+                      <h4 className="font-medium text-purple-800 mb-2 flex items-center gap-2">
+                        <ShoppingCart className="w-5 h-5" />
+                        Fournitures scolaires
+                      </h4>
+                      <div className="space-y-2">
+                        {supplies.map((item, idx) => (
+                          <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded-lg border">
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">{item.nom}</p>
+                              <p className="text-xs text-gray-500">{item.prix_unitaire.toLocaleString()} GNF</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleSupplyChange(idx, -1)}
+                                className="w-7 h-7 rounded-full text-gray-400 border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                                disabled={item.selectedQty === 0}
+                              >
+                                <Minus className="w-3 h-3 text-black" />
+                              </button>
+                              <span className="w-6 text-center font-medium">{item.selectedQty}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleSupplyChange(idx, 1)}
+                                className="w-7 h-7 rounded-full text-gray-400 border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                                disabled={item.selectedQty >= item.quantite_stock}
+                              >
+                                <Plus className="w-3 h-3 text-black" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Total services */}
+                  {(totalTransport > 0 || totalCantine > 0 || totalFournitures > 0) && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="space-y-1 text-sm">
+                        {totalTransport > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-green-600">Transport</span>
+                            <span className="font-medium text-green-600">{totalTransport.toLocaleString()} GNF</span>
+                          </div>
+                        )}
+                        {totalCantine > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-orange-600">Cantine</span>
+                            <span className="font-medium text-orange-600">{totalCantine.toLocaleString()} GNF</span>
+                          </div>
+                        )}
+                        {totalFournitures > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-purple-600">Fournitures</span>
+                            <span className="font-medium text-purple-600">{totalFournitures.toLocaleString()} GNF</span>
+                          </div>
+                        )}
+                        <div className="border-t text-blue-700 pt-1 flex justify-between font-bold">
+                          <span>Total services</span>
+                          <span className="text-blue-600">{getTotalServices().toLocaleString()} GNF</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Récapitulatif */}
               {selectedClasseId && (
                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <h4 className="font-semibold text-green-800 mb-2">📌 Récapitulatif</h4>
-                  <div className="grid md:grid-cols-2 gap-2 text-sm">
-                    <div><span className="text-gray-600">Enfant :</span> <span className="text-black font-medium">{selectedEnfant.prenom} {selectedEnfant.nom}</span></div>
-                    <div><span className="text-gray-600">Classe actuelle :</span> <span className="text-black font-medium">{selectedEnfant.classe_nom || "N/A"}</span></div>
-                    <div><span className="text-gray-600">Nouvelle classe :</span> <span className="text-green-700 font-medium">{classes.find(c => c.id === selectedClasseId)?.nom}</span></div>
-                    <div><span className="text-gray-600">Frais :</span> <span className="text-black font-medium">{(selectedEnfant.frais_inscription_classe || 500000).toLocaleString()} GNF</span></div>
+                  <h4 className="font-semibold text-black mb-2">Récapitulatif</h4>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-900">Inscription</span>
+                      <span className="font-medium text-black">{(selectedEnfant.frais_inscription_classe || 500000).toLocaleString()} GNF</span>
+                    </div>
+                    {totalTransport > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-green-600">Transport</span>
+                        <span className="font-medium text-green-600">{totalTransport.toLocaleString()} GNF</span>
+                      </div>
+                    )}
+                    {totalCantine > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-orange-600">Cantine</span>
+                        <span className="font-medium text-orange-600">{totalCantine.toLocaleString()} GNF</span>
+                      </div>
+                    )}
+                    {totalFournitures > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-purple-600">Fournitures</span>
+                        <span className="font-medium text-purple-600">{totalFournitures.toLocaleString()} GNF</span>
+                      </div>
+                    )}
+                    <div className="border-t pt-1 text-blue-700 flex justify-between font-bold text-lg">
+                      <span>Total</span>
+                      <span className="text-blue-700">{getMontantTotal().toLocaleString()} GNF</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -465,7 +809,7 @@ export default function ReinscriptionParentPage() {
         </div>
       )}
 
-      {/* Liste des réinscriptions soumises */}
+      {/* Liste des réinscriptions */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-4 border-b">
           <h2 className="text-lg font-semibold text-black flex items-center gap-2">
@@ -478,7 +822,6 @@ export default function ReinscriptionParentPage() {
           <div className="p-12 text-center">
             <RefreshCw className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-900">Aucune demande de réinscription</p>
-            <p className="text-sm text-gray-500 mt-1">Cliquez sur "Nouvelle réinscription" pour commencer.</p>
           </div>
         ) : (
           <div className="divide-y">
@@ -504,33 +847,51 @@ export default function ReinscriptionParentPage() {
                           Matricule: {r.matricule} • Soumis le {new Date(r.date_reinscription).toLocaleDateString("fr-FR")}
                           {r.annee_scolaire && <span> • {r.annee_scolaire}</span>}
                         </p>
+                        {/* Afficher les services optionnels */}
+                        {(r.transport_montant || r.cantine_montant || r.fournitures_montant) && (
+                          <div className="mt-1 text-xs text-gray-500 flex gap-3">
+                            {r.transport_montant && <span>{r.transport_montant.toLocaleString()} GNF</span>}
+                            {r.cantine_montant && <span>{r.cantine_montant.toLocaleString()} GNF</span>}
+                            {r.fournitures_montant && <span>{r.fournitures_montant.toLocaleString()} GNF</span>}
+                          </div>
+                        )}
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         {getStatutBadge(r.statut)}
                         {getFraisBadge(r.frais_statut)}
+                        {r.montant_total && (
+                          <span className="text-xs font-semibold text-blue-600">
+                            Total: {r.montant_total.toLocaleString()} GNF
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* Actions selon statut */}
-                    <div className="mt-3">
+                     <div className="mt-3">
                       {r.statut === "en_attente" && r.frais_statut !== "paye" && (
-                        <div className="bg-yellow-50 text-yellow-700 text-sm py-2 px-3 rounded-lg flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          En attente de traitement — Frais: {(r.montant_frais || 500000).toLocaleString()} GNF
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="bg-yellow-50 text-yellow-700 text-sm py-2 px-3 rounded-lg flex items-center gap-2 flex-1">
+                            <Clock className="w-4 h-4" />
+                            En attente de traitement...
+                          </div>
+                          {/* Bouton Payer */}
+                          <button
+                            onClick={() => handleOpenPaiement(r)}
+                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2 text-sm whitespace-nowrap"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                            Payer
+                          </button>
                         </div>
                       )}
-                      {r.statut === "en_attente" && r.frais_statut === "paye" && (
-                        <div className="bg-blue-50 text-blue-700 text-sm py-2 px-3 rounded-lg flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          Paiement effectué — En attente de validation
-                        </div>
-                      )}
+                      
                       {r.statut === "valide" && (
                         <div className="bg-green-50 text-green-700 text-sm py-2 px-3 rounded-lg flex items-center gap-2">
                           <CheckCircle className="w-4 h-4" />
                           ✅ Réinscription validée
                         </div>
                       )}
+                      
                       {r.statut === "rejete" && (
                         <div className="bg-red-50 text-red-700 text-sm py-2 px-3 rounded-lg">
                           <div className="flex items-center gap-2">
@@ -543,6 +904,23 @@ export default function ReinscriptionParentPage() {
                         </div>
                       )}
                     </div>
+
+                    {showPaiementModal && selectedReinscription && (
+                    <ReinscriptionPaiementModal
+                      isOpen={showPaiementModal}
+                      onClose={() => {
+                        setShowPaiementModal(false);
+                        setSelectedReinscription(null);
+                      }}
+                      onSuccess={() => {
+                        fetchData();
+                        addNotification("success", "Paiement effectué avec succès !");
+                      }}
+                      reinscriptionId={selectedReinscription.id}
+                      enfantNom={`${selectedReinscription.enfant_prenom} ${selectedReinscription.enfant_nom}`}
+                      montant={selectedReinscription.montant_total || selectedReinscription.montant_frais || 500000}
+                    />
+                  )}
                   </div>
                 </div>
               </div>
@@ -550,16 +928,6 @@ export default function ReinscriptionParentPage() {
           </div>
         )}
       </div>
-
-      {/* Message si aucun enfant inscrit */}
-      {enfants.length === 0 && reinscriptions.length === 0 && (
-        <div className="bg-blue-50 p-6 rounded-xl text-center">
-          <Users className="w-16 h-16 text-blue-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-blue-900">Aucun enfant inscrit</h3>
-          <p className="text-blue-700 mt-2">Vous devez d'abord avoir des enfants inscrits pour pouvoir les réinscrire.</p>
-          <p className="text-sm text-blue-600 mt-1">Allez dans la section "Inscription" pour inscrire un enfant.</p>
-        </div>
-      )}
     </div>
   );
 }

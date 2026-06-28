@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import PaiementPlanModal from "@/components/PaiementPlanModal";
+import ParentStatsCharts from "@/components/ParentStatsCharts";
+
 import {
   Users,
   CreditCard,
@@ -184,18 +186,18 @@ export default function ParentDashboard() {
       const enfantsData = await enfantsRes.json();
       const preinscriptionsData = await preinscriptionsRes.json();
 
-      console.log("👨‍👧‍👦 Enfants reçus:", enfantsData);
-      console.log("📋 Pré-inscriptions reçues:", preinscriptionsData);
+      console.log("Enfants reçus:", enfantsData);
+      console.log("Pré-inscriptions reçues:", preinscriptionsData);
 
       setEnfants(enfantsData);
 
-      // ⭐ GARDER TOUTES LES PRÉ-INSCRIPTIONS (même en attente)
+      // GARDER TOUTES LES PRÉ-INSCRIPTIONS (même en attente)
       setPreinscriptions(preinscriptionsData);
 
       // 2. Charger les statistiques pour chaque enfant
       const statsPromises = enfantsData.map(async (enfant: Enfant) => {
         try {
-          console.log(`📊 Chargement des stats pour l'enfant ${enfant.eleve_id} (${enfant.prenom} ${enfant.nom})`);
+          console.log(` Chargement des stats pour l'enfant ${enfant.eleve_id} (${enfant.prenom} ${enfant.nom})`);
           const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
 
           if (!statsResponse.ok) {
@@ -259,7 +261,7 @@ export default function ParentDashboard() {
         throw new Error("Erreur chargement détails");
       }
       const data = await response.json();
-      console.log("📋 Détails pré-inscription reçus:", data);
+      console.log(" Détails pré-inscription reçus:", data);
 
       setPreinscriptionDetail(data);
     } catch (error) {
@@ -362,7 +364,7 @@ export default function ParentDashboard() {
 
   // Dans ParentDashboard, remplacer la section de calcul des statistiques globales
 
-// ⭐⭐⭐ CALCUL DES STATISTIQUES GLOBALES ⭐⭐⭐
+// CALCUL DES STATISTIQUES GLOBALES 
 
 // 1. Calcul du total des frais de pré-inscription (inscription + services optionnels)
 //    Chaque pré-inscription a un montant_total qui inclut déjà tous les services
@@ -377,10 +379,10 @@ const totalFournitures = 0;
 // 3. Calcul du total payé pour tous les enfants (paiements direct + échéances)
 const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
 
-// ⭐ MONTANT À PAYER = Total des pré-inscriptions (inclut tous les services)
+//  MONTANT À PAYER = Total des pré-inscriptions (inclut tous les services)
 const totalAPayer = totalPreinscriptionFrais;
 
-// ⭐ Solde restant = Montant à payer - Montant payé
+//  Solde restant = Montant à payer - Montant payé
 const soldeRestant = Math.max(0, totalAPayer - totalPaye);
 
 const statsGlobales = {
@@ -390,22 +392,22 @@ const statsGlobales = {
   preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
   totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
 
-  // ⭐ Montant à payer = Total des pré-inscriptions (inclut tous les services)
+  //  Montant à payer = Total des pré-inscriptions (inclut tous les services)
   totalAPayer: totalAPayer,
 
-  // ⭐ Montant payé = total payé pour tous les enfants
+  //  Montant payé = total payé pour tous les enfants
   totalPaye: totalPaye,
 
-  // ⭐ Totaux par catégorie (pour affichage)
+  //  Totaux par catégorie (pour affichage)
   totalFraisInscription: totalPreinscriptionFrais,
   totalTransport: 0, // Déjà inclus dans montant_total
   totalCantine: 0,   // Déjà inclus dans montant_total
   totalFournitures: 0, // Déjà inclus dans montant_total
 
-  // ⭐ Total général des frais
+  // Total général des frais
   totalFraisGeneral: totalPreinscriptionFrais,
 
-  // ⭐ Solde restant = Montant à payer - Montant payé
+  //  Solde restant = Montant à payer - Montant payé
   soldeRestant: soldeRestant,
 };
 
@@ -455,7 +457,7 @@ const statsGlobales = {
         <p className="text-gray-900">Bienvenue dans votre espace de suivi scolaire</p>
       </div>
 
-      {/* ⭐ STATISTIQUES GLOBALES AVEC LES BONS CALCULS ⭐ */}
+      {/* STATISTIQUES GLOBALES AVEC LES BONS CALCULS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
           <div className="flex items-center gap-2 mb-1"><Users className="w-5 h-5" /><p className="text-sm opacity-90">Enfants inscrits</p></div>
@@ -465,7 +467,7 @@ const statsGlobales = {
           <div className="flex items-center gap-2 mb-1"><FileText className="w-5 h-5" /><p className="text-sm opacity-90">Pré-inscriptions</p></div>
           <p className="text-3xl font-bold">{statsGlobales.totalPreinscriptions}</p>
         </div>
-        {/* ⭐ MONTANT À PAYER = Total des frais de pré-inscription */}
+        {/* MONTANT À PAYER = Total des frais de pré-inscription */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900">
             <CreditCard className="w-5 h-5 text-blue-600" />
@@ -477,28 +479,27 @@ const statsGlobales = {
           <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-green-600" /><p className="text-sm">Montant payé</p></div>
           <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
         </div>
-        {/* ⭐ CANTINE - Total des frais de cantine pour tous les enfants */}
+        {/* CANTINE - Total des frais de cantine pour tous les enfants */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900"><Utensils className="w-5 h-5 text-orange-600" /><p className="text-sm">Cantine</p></div>
           <p className="text-lg font-bold text-orange-600">{statsGlobales.totalCantine.toLocaleString()} GNF</p>
         </div>
-        {/* ⭐ TRANSPORT - Total des frais de transport pour tous les enfants */}
+        {/* TRANSPORT - Total des frais de transport pour tous les enfants */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900"><Bus className="w-5 h-5 text-blue-600" /><p className="text-sm">Transport</p></div>
           <p className="text-lg font-bold text-blue-600">{statsGlobales.totalTransport.toLocaleString()} GNF</p>
         </div>
-        {/* ⭐ FOURNITURES - Total des frais de fournitures pour tous les enfants */}
+        {/* FOURNITURES - Total des frais de fournitures pour tous les enfants */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900"><ShoppingCart className="w-5 h-5 text-purple-600" /><p className="text-sm">Fournitures</p></div>
           <p className="text-lg font-bold text-purple-600">{statsGlobales.totalFournitures.toLocaleString()} GNF</p>
         </div>
-        {/* ⭐ SOLDE RESTANT = Montant à payer - Montant payé */}
+        {/* SOLDE RESTANT = Montant à payer - Montant payé */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-red-600" /><p className="text-sm">Solde restant</p></div>
           <p className="text-lg font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
         </div>
       </div>
-
       {/* Section Pré-inscriptions */}
       {preinscriptions.length > 0 && (
         <div className="mb-8">
@@ -836,7 +837,7 @@ const statsGlobales = {
                         </div>
                       )}
 
-                      {/* ⭐ Transport - UNIQUEMENT si sélectionné (montant > 0) */}
+                      {/* Transport - UNIQUEMENT si sélectionné (montant > 0) */}
                       {preinscriptionDetail.details_frais.transport > 0 && (
                         <div className="bg-green-50 p-3 rounded-lg border border-green-200">
                           <p className="text-xs text-gray-600">Transport</p>
@@ -846,7 +847,7 @@ const statsGlobales = {
                         </div>
                       )}
 
-                      {/* ⭐ Fournitures - UNIQUEMENT si sélectionnées (montant > 0) */}
+                      {/* Fournitures - UNIQUEMENT si sélectionnées (montant > 0) */}
                       {preinscriptionDetail.details_frais.librairie > 0 && (
                         <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
                           <p className="text-xs text-gray-600">Fournitures</p>
@@ -856,7 +857,7 @@ const statsGlobales = {
                         </div>
                       )}
 
-                      {/* ⭐ Scolarité - UNIQUEMENT si > 0 (normalement 0 car déjà incluse) */}
+                      {/* Scolarité - UNIQUEMENT si > 0 (normalement 0 car déjà incluse) */}
                       {preinscriptionDetail.details_frais.scolarite > 0 && (
                         <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
                           <p className="text-xs text-gray-600">Scolarité</p>
@@ -880,7 +881,7 @@ const statsGlobales = {
                       </div>
                     </div>
 
-                    {/* ⭐ Message récapitulatif des services sélectionnés */}
+                    {/* Message récapitulatif des services sélectionnés */}
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                       <p className="text-sm font-medium text-gray-900 mb-1">Services sélectionnés :</p>
                       <div className="flex flex-wrap gap-3 text-sm">
@@ -912,7 +913,7 @@ const statsGlobales = {
                             Scolarité
                           </span>
                         )}
-                        {/* ⭐ Si aucun service optionnel n'est sélectionné */}
+                        {/* Si aucun service optionnel n'est sélectionné */}
                         {preinscriptionDetail.details_frais.cantine === 0 &&
                           preinscriptionDetail.details_frais.transport === 0 &&
                           preinscriptionDetail.details_frais.librairie === 0 &&
@@ -1070,7 +1071,16 @@ const statsGlobales = {
           enfantNom={`${selectedPreinscription.enfant_prenom} ${selectedPreinscription.enfant_nom}`}
           niveau={selectedPreinscription.niveau}
         />
-      )}
+      )}      
+      {/* GRAPHIQUES DES STATISTIQUES */}
+        <div className="mb-8">
+        <ParentStatsCharts 
+          enfants={enfants}
+          preinscriptions={preinscriptions}
+          statsEnfant={statsEnfant}
+          statsGlobales={statsGlobales}
+        />
+      </div>
     </div>
   );
 }

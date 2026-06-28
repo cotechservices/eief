@@ -279,7 +279,7 @@ export default function AdminDashboard() {
         </h2>
       </div>
 
-      {/* ⭐ Cartes financières */}
+      {/* Cartes financières */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start">

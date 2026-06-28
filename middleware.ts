@@ -1,22 +1,32 @@
+// middleware.ts
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+
+// Configuration des rôles par route
+const routeRoles: Record<string, string[]> = {
+  "/admin": ["SUPER_ADMIN", "COMPTABLE"],
+  "/dashboard/admin": ["SUPER_ADMIN", "COMPTABLE"],
+  "/parent": ["PARENT"],
+  "/dashboard/parent": ["PARENT"],
+  "/eleve": ["ELEVE"],
+  "/dashboard/eleve": ["ELEVE"],
+  "/enseignant": ["ENSEIGNANT"],
+  "/dashboard/enseignant": ["ENSEIGNANT"],
+};
 
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    if (path.startsWith("/admin") && token?.role !== "SUPER_ADMIN" && token?.role !== "COMPTABLE") {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
-    if (path.startsWith("/parent") && token?.role !== "PARENT") {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
-    if (path.startsWith("/eleve") && token?.role !== "ELEVE") {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
-    if (path.startsWith("/enseignant") && token?.role !== "ENSEIGNANT") {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    // Vérifier chaque route configurée
+    for (const [route, allowedRoles] of Object.entries(routeRoles)) {
+      if (path.startsWith(route)) {
+        if (!token || !allowedRoles.includes(token.role as string)) {
+          return NextResponse.redirect(new URL("/unauthorized", req.url));
+        }
+        break;
+      }
     }
 
     return NextResponse.next();

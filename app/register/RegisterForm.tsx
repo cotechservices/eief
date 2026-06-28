@@ -186,16 +186,16 @@ export default function RegisterForm() {
     try {
       setLoadingSupplies(true);
       setSuppliesError(null);
-      
+
       // Utiliser la même route que la page librairie
       const response = await fetch('/api/public/librairie');
-      
+
       if (!response.ok) {
         throw new Error(`Erreur HTTP: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       // La route retourne directement un tableau avec les champs: id, nom, description, prix, stock, categorie, image_url
       if (Array.isArray(data) && data.length > 0) {
         const items = data.map((item: any) => ({
@@ -219,12 +219,12 @@ export default function RegisterForm() {
     }
   };
 
-    const fetchTransportOptions = async () => {
+  const fetchTransportOptions = async () => {
     try {
       setLoadingTransport(true);
       const res = await fetch("/api/public/transport");
       const data = await res.json();
-      
+
       if (Array.isArray(data) && data.length > 0) {
         const items = data.map((item: any) => ({
           id: item.id,
@@ -250,36 +250,36 @@ export default function RegisterForm() {
     }
   };
 
-    const fetchCantineOptions = async () => {
-  try {
-    setLoadingCantine(true);
-    const res = await fetch("/api/public/cantine");
-    const data = await res.json();
-    
-    if (Array.isArray(data) && data.length > 0) {
-      const items = data.map((item: any) => ({
-        id: item.id,
-        nom: item.plat || "Menu du jour",
-        prix: Number(item.prix) || 0,        // Prix journalier
-        prix_annuel: Number(item.prix_annuel) || 0, // ⭐ Prix annuel
-        selected: false,
-        date: item.date,
-        plat: item.plat,
-        accompagnement: item.accompagnement,
-        dessert: item.dessert,
-        regime_special: item.regime_special || false
-      }));
-      setCantineOptions(items);
-    } else {
+  const fetchCantineOptions = async () => {
+    try {
+      setLoadingCantine(true);
+      const res = await fetch("/api/public/cantine");
+      const data = await res.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        const items = data.map((item: any) => ({
+          id: item.id,
+          nom: item.plat || "Menu du jour",
+          prix: Number(item.prix) || 0,        // Prix journalier
+          prix_annuel: Number(item.prix_annuel) || 0, // Prix annuel
+          selected: false,
+          date: item.date,
+          plat: item.plat,
+          accompagnement: item.accompagnement,
+          dessert: item.dessert,
+          regime_special: item.regime_special || false
+        }));
+        setCantineOptions(items);
+      } else {
+        setCantineOptions([]);
+      }
+    } catch (e) {
+      console.error("Erreur chargement cantine", e);
       setCantineOptions([]);
+    } finally {
+      setLoadingCantine(false);
     }
-  } catch (e) {
-    console.error("Erreur chargement cantine", e);
-    setCantineOptions([]);
-  } finally {
-    setLoadingCantine(false);
-  }
-};
+  };
 
   // Pré-remplir les informations du parent si connecté
   useEffect(() => {
@@ -379,14 +379,14 @@ export default function RegisterForm() {
     setTotalTransport(total);
   };
 
- const toggleCantine = (index: number) => {
-  const newOptions = [...cantineOptions];
-  newOptions[index].selected = !newOptions[index].selected;
-  setCantineOptions(newOptions);
-  // ⭐ Utiliser prix_annuel au lieu de prix
-  const total = newOptions.filter(o => o.selected).reduce((sum, o) => sum + (o.prix_annuel || 0), 0);
-  setTotalCantine(total);
-};
+  const toggleCantine = (index: number) => {
+    const newOptions = [...cantineOptions];
+    newOptions[index].selected = !newOptions[index].selected;
+    setCantineOptions(newOptions);
+    // Utiliser prix_annuel au lieu de prix
+    const total = newOptions.filter(o => o.selected).reduce((sum, o) => sum + (o.prix_annuel || 0), 0);
+    setTotalCantine(total);
+  };
 
   const uploadFile = async (file: File, enfantId: string, type: string): Promise<string | null> => {
     const formData = new FormData();
@@ -818,7 +818,7 @@ export default function RegisterForm() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3"><p className="text-xs font-semibold text-blue-700 mb-1">Père</p><p className="text-sm text-gray-800 font-medium">{pereInfo.prenom} {pereInfo.nom}</p><p className="text-xs text-gray-500">{pereInfo.phone}</p>{pereInfo.profession && <p className="text-xs text-gray-500">{pereInfo.profession}</p>}</div>
                   {(mereInfo.nom || mereInfo.prenom) && (<div className="bg-pink-50 border border-pink-200 rounded-lg p-3"><p className="text-xs font-semibold text-pink-700 mb-1">Mère</p><p className="text-sm text-gray-800 font-medium">{mereInfo.prenom} {mereInfo.nom}</p><p className="text-xs text-gray-500">{mereInfo.phone}</p>{mereInfo.profession && <p className="text-xs text-gray-500">{mereInfo.profession}</p>}</div>)}
                 </div>
-                <p className="text-sm text-gray-500">📧 Email commun : <strong>{compteInfo.email}</strong></p>
+                <p className="text-sm text-gray-500"> Email commun : <strong>{compteInfo.email}</strong></p>
                 <div><label className="block text-gray-900 mb-2">Mot de passe *</label><input type={showPassword ? "text" : "password"} name="password" value={compteInfo.password} onChange={handleCompteChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Minimum 6 caractères" required /></div>
                 <div><label className="block text-gray-900 mb-2">Confirmer le mot de passe *</label><input type={showPassword ? "text" : "password"} name="confirmPassword" value={compteInfo.confirmPassword} onChange={handleCompteChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Retapez votre mot de passe" required /></div>
                 {compteInfo.password !== compteInfo.confirmPassword && compteInfo.confirmPassword && <p className="text-red-500 text-sm">Les mots de passe ne correspondent pas</p>}
@@ -854,7 +854,7 @@ export default function RegisterForm() {
                 <button
                   type="button"
                   onClick={() => {
-                    setSkipSupplies(!skipSupplies); // ⭐ Toggle l'état
+                    setSkipSupplies(!skipSupplies); //  Toggle l'état
                     if (skipSupplies) {
                       // Réactiver - recharger les fournitures si nécessaire
                       if (supplies.length === 0 && !loadingSupplies) {
@@ -865,13 +865,12 @@ export default function RegisterForm() {
                       setSupplies(supplies.map(s => ({ ...s, selectedQty: 0 })));
                     }
                   }}
-                  className={`text-sm font-medium transition ${
-                    skipSupplies 
-                      ? "text-blue-600 hover:text-blue-800" 
+                  className={`text-sm font-medium transition ${skipSupplies
+                      ? "text-blue-600 hover:text-blue-800"
                       : "text-red-600 hover:text-red-800"
-                  }`}
+                    }`}
                 >
-                  {skipSupplies ? "📦 Ajouter des fournitures" : "❌ Ignorer les fournitures"}
+                  {skipSupplies ? " Ajouter des fournitures" : "❌ Ignorer les fournitures"}
                 </button>
               </div>
 
@@ -970,7 +969,7 @@ export default function RegisterForm() {
                 <button
                   type="button"
                   onClick={() => {
-                    setSkipTransport(!skipTransport); // ⭐ Toggle l'état
+                    setSkipTransport(!skipTransport); // Toggle l'état
                     if (skipTransport) {
                       // Réactiver
                       if (transportOptions.length === 0) fetchTransportOptions();
@@ -980,13 +979,12 @@ export default function RegisterForm() {
                       setTotalTransport(0);
                     }
                   }}
-                  className={`text-sm font-medium transition ${
-                    skipTransport 
-                      ? "text-green-600 hover:text-green-800" 
+                  className={`text-sm font-medium transition ${skipTransport
+                      ? "text-green-600 hover:text-green-800"
                       : "text-red-600 hover:text-red-800"
-                  }`}
+                    }`}
                 >
-                  {skipTransport ? "🚌 Ajouter le transport" : "❌ Ignorer le transport"}
+                  {skipTransport ? "Ajouter le transport" : "❌ Ignorer le transport"}
                 </button>
               </div>
 
@@ -1017,7 +1015,7 @@ export default function RegisterForm() {
                               )}
                               {item.horaireMatin && item.horaireSoir && (
                                 <p className="text-xs text-gray-500">
-                                  🕐 {item.horaireMatin} - {item.horaireSoir}
+                                  Horaire : {item.horaireMatin} - {item.horaireSoir}
                                 </p>
                               )}
                             </div>
@@ -1025,13 +1023,12 @@ export default function RegisterForm() {
                               type="button"
                               onClick={() => toggleTransport(idx)}
                               disabled={item.prix <= 0}
-                              className={`px-4 py-2 rounded-lg transition ${
-                                item.selected 
-                                  ? "bg-green-600 text-white hover:bg-green-700" 
-                                  : item.prix > 0 
+                              className={`px-4 py-2 rounded-lg transition ${item.selected
+                                  ? "bg-green-600 text-white hover:bg-green-700"
+                                  : item.prix > 0
                                     ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
                                     : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              }`}
+                                }`}
                             >
                               {item.selected ? "✓ Sélectionné" : item.prix > 0 ? "Ajouter" : "Indisponible"}
                             </button>
@@ -1069,7 +1066,7 @@ export default function RegisterForm() {
                 <button
                   type="button"
                   onClick={() => {
-                    setSkipCantine(!skipCantine); // ⭐ Toggle l'état
+                    setSkipCantine(!skipCantine); // Toggle l'état
                     if (skipCantine) {
                       // Réactiver
                       if (cantineOptions.length === 0) fetchCantineOptions();
@@ -1079,13 +1076,12 @@ export default function RegisterForm() {
                       setTotalCantine(0);
                     }
                   }}
-                  className={`text-sm font-medium transition ${
-                    skipCantine 
-                      ? "text-orange-600 hover:text-orange-800" 
+                  className={`text-sm font-medium transition ${skipCantine
+                      ? "text-orange-600 hover:text-orange-800"
                       : "text-red-600 hover:text-red-800"
-                  }`}
+                    }`}
                 >
-                  {skipCantine ? "🍽️ Ajouter la cantine" : "❌ Ignorer la cantine"}
+                  {skipCantine ? " Ajouter la cantine" : "❌ Ignorer la cantine"}
                 </button>
               </div>
 
@@ -1115,13 +1111,13 @@ export default function RegisterForm() {
                                 <p className="text-sm text-gray-400">Prix non défini</p>
                               )}
                               {item.plat && (
-                                <p className="text-xs text-gray-500">🍽️ {item.plat}</p>
+                                <p className="text-xs text-gray-500">{item.plat}</p>
                               )}
                               {item.accompagnement && (
                                 <p className="text-xs text-gray-400">+ {item.accompagnement}</p>
                               )}
                               {item.dessert && (
-                                <p className="text-xs text-gray-400">🍰 {item.dessert}</p>
+                                <p className="text-xs text-gray-400">{item.dessert}</p>
                               )}
                               {item.regime_special && (
                                 <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Régime spécial</span>
@@ -1131,13 +1127,12 @@ export default function RegisterForm() {
                               type="button"
                               onClick={() => toggleCantine(idx)}
                               disabled={item.prix_annuel <= 0}
-                              className={`px-4 py-2 rounded-lg transition ${
-                                item.selected 
-                                  ? "bg-orange-600 text-white hover:bg-orange-700" 
+                              className={`px-4 py-2 rounded-lg transition ${item.selected
+                                  ? "bg-orange-600 text-white hover:bg-orange-700"
                                   : item.prix_annuel > 0
                                     ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
                                     : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              }`}
+                                }`}
                             >
                               {item.selected ? "✓ Sélectionné" : item.prix_annuel > 0 ? "Ajouter" : "Indisponible"}
                             </button>
