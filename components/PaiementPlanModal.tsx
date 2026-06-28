@@ -270,7 +270,7 @@ export default function PaiementPlanModal({
             </div>
           ) : plan ? (
             <>
-              {/* ⭐ TABLEAU RÉCAPITULATIF */}
+              {/* TABLEAU RÉCAPITULATIF */}
               <div className="mb-6 overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
@@ -302,25 +302,25 @@ export default function PaiementPlanModal({
                 </table>
               </div>
 
-              {/* ⭐ SERVICES OPTIONNELS */}
+              {/* SERVICES OPTIONNELS */}
               {hasServicesDisponibles() && (
                 <div className="p-4 bg-gray-50 rounded-lg mb-6">
                   <h4 className="font-semibold text-gray-700 mb-2">Services optionnels (paiement en une fois)</h4>
                   {servicesOptionnels.transport.total > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-900">🚌 Transport</span>
+                      <span className="text-gray-900">Transport</span>
                       <span className="font-medium text-green-600">{formatMontant(servicesOptionnels.transport.total)} GNF</span>
                     </div>
                   )}
                   {servicesOptionnels.cantine.total > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-900">🍽️ Cantine</span>
+                      <span className="text-gray-900">Cantine</span>
                       <span className="font-medium text-orange-600">{formatMontant(servicesOptionnels.cantine.total)} GNF</span>
                     </div>
                   )}
                   {servicesOptionnels.fournitures.total > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-900">📚 Fournitures</span>
+                      <span className="text-gray-900">Fournitures</span>
                       <span className="font-medium text-purple-600">{formatMontant(servicesOptionnels.fournitures.total)} GNF</span>
                     </div>
                   )}
@@ -331,7 +331,7 @@ export default function PaiementPlanModal({
                 </div>
               )}
 
-              {/* ⭐ SÉLECTION DU TYPE DE PAIEMENT */}
+              {/* SÉLECTION DU TYPE DE PAIEMENT */}
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">Choisissez votre option de paiement</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -388,7 +388,7 @@ export default function PaiementPlanModal({
                 </div>
               </div>
 
-              {/* ⭐ DÉTAIL DES FRAIS RESTANTS */}
+              {/*  DÉTAIL DES FRAIS RESTANTS */}
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
                 <h4 className="font-semibold text-gray-900 mb-2">Détail des frais restants</h4>
                 <div className="space-y-1 text-sm">
@@ -443,7 +443,7 @@ export default function PaiementPlanModal({
                 </div>
               </div>
 
-              {/* ⭐ ÉCHÉANCES D'INSCRIPTION */}
+              {/*  ÉCHÉANCES D'INSCRIPTION */}
               {paiementType === 'echeance' && (
                 <div className="space-y-3 mb-6">
                   <h3 className="font-semibold text-gray-900">Échéances d'inscription</h3>
@@ -466,9 +466,9 @@ export default function PaiementPlanModal({
                           </span>
                           <p className="text-xs text-gray-600">
                             {[
-                              servicesOptionnels.transport.total > 0 ? '🚌 Transport' : '',
-                              servicesOptionnels.cantine.total > 0 ? '🍽️ Cantine' : '',
-                              servicesOptionnels.fournitures.total > 0 ? '📚 Fournitures' : ''
+                              servicesOptionnels.transport.total > 0 ? 'Transport' : '',
+                              servicesOptionnels.cantine.total > 0 ? 'Cantine' : '',
+                              servicesOptionnels.fournitures.total > 0 ? 'Fournitures' : ''
                             ].filter(Boolean).join(', ')} (paiement en une fois)
                           </p>
                           {inclureServicesOptionnels && servicesOptionnels && (
@@ -546,7 +546,7 @@ export default function PaiementPlanModal({
                 </div>
               )}
 
-              {/* ⭐ FORMULAIRE DE PAIEMENT */}
+              {/* FORMULAIRE DE PAIEMENT */}
               <div className="border-t pt-4">
                 <h3 className="font-semibold text-gray-900 mb-3">
                   {paiementType === 'echeance' && selectedEcheance 
