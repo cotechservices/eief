@@ -360,59 +360,54 @@ export default function ParentDashboard() {
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
-  // Dans le dashboard parent, remplacer la section de calcul des statistiques globales
+  // Dans ParentDashboard, remplacer la section de calcul des statistiques globales
 
-  // ⭐⭐⭐ CALCUL DES STATISTIQUES GLOBALES ⭐⭐⭐
+// ⭐⭐⭐ CALCUL DES STATISTIQUES GLOBALES ⭐⭐⭐
 
-  // 1. Calcul du total des frais de pré-inscription (inscription + scolarité)
-  //    Chaque pré-inscription a un montant total (frais_montant) qui inclut déjà
-  //    l'inscription et la scolarité (pas besoin d'ajouter totalScolarite)
-  const totalPreinscriptionFrais = preinscriptions.reduce((acc, p) => acc + (Number(p.frais_montant) || 0), 0);
+// 1. Calcul du total des frais de pré-inscription (inscription + services optionnels)
+//    Chaque pré-inscription a un montant_total qui inclut déjà tous les services
+const totalPreinscriptionFrais = preinscriptions.reduce((acc, p) => acc + (Number(p.montant_total) || 0), 0);
 
-  // 2. Calcul des services optionnels par enfant (depuis les stats)
-  const totalCantine = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.cantine) || 0), 0);
-  const totalTransport = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.transport) || 0), 0);
-  const totalFournitures = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.fournitures) || 0), 0);
-  // ⚠️ IMPORTANT: La scolarité est déjà incluse dans le frais_montant de la pré-inscription
-  // donc on ne l'ajoute PAS ici pour éviter le double comptage
+// 2. Les services optionnels sont DÉJÀ inclus dans montant_total
+//    On ne les additionne pas séparément pour éviter le double comptage
+const totalCantine = 0;
+const totalTransport = 0;
+const totalFournitures = 0;
 
-  // 3. Calcul du total payé pour tous les enfants (paiements direct + échéances)
-  //    Les paiements sont répartis entre paiements directs et échéances
-  const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
+// 3. Calcul du total payé pour tous les enfants (paiements direct + échéances)
+const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
 
-  // ⭐ MONTANT À PAYER = Total préinscriptions (inscription + scolarité) + Cantine + Transport + Fournitures
-  //    ⚠️ La scolarité est DÉJÀ incluse dans le frais_montant des pré-inscriptions
-  //    ⚠️ Les échéances créées (1er, 2eme, 3eme versement) répartissent ce montant
-  const totalAPayer = totalPreinscriptionFrais + totalCantine + totalTransport + totalFournitures;
+// ⭐ MONTANT À PAYER = Total des pré-inscriptions (inclut tous les services)
+const totalAPayer = totalPreinscriptionFrais;
+
+// ⭐ Solde restant = Montant à payer - Montant payé
+const soldeRestant = Math.max(0, totalAPayer - totalPaye);
+
+const statsGlobales = {
+  totalEnfants: enfants.length,
+  totalPreinscriptions: preinscriptions.length,
+  preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
+  preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
+  totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
+
+  // ⭐ Montant à payer = Total des pré-inscriptions (inclut tous les services)
+  totalAPayer: totalAPayer,
+
+  // ⭐ Montant payé = total payé pour tous les enfants
+  totalPaye: totalPaye,
+
+  // ⭐ Totaux par catégorie (pour affichage)
+  totalFraisInscription: totalPreinscriptionFrais,
+  totalTransport: 0, // Déjà inclus dans montant_total
+  totalCantine: 0,   // Déjà inclus dans montant_total
+  totalFournitures: 0, // Déjà inclus dans montant_total
+
+  // ⭐ Total général des frais
+  totalFraisGeneral: totalPreinscriptionFrais,
 
   // ⭐ Solde restant = Montant à payer - Montant payé
-  const soldeRestant = Math.max(0, totalAPayer - totalPaye);
-
-  const statsGlobales = {
-    totalEnfants: enfants.length,
-    totalPreinscriptions: preinscriptions.length,
-    preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
-    preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
-    totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
-
-    // ⭐ Montant à payer = Total préinscription + Cantine + Transport + Fournitures
-    totalAPayer: totalAPayer,
-
-    // ⭐ Montant payé = total payé pour tous les enfants
-    totalPaye: totalPaye,
-
-    // ⭐ Totaux par catégorie
-    totalFraisInscription: totalPreinscriptionFrais,
-    totalTransport: totalTransport,
-    totalCantine: totalCantine,
-    totalFournitures: totalFournitures,
-
-    // ⭐ Total général des frais (toutes catégories)
-    totalFraisGeneral: totalPreinscriptionFrais + totalCantine + totalTransport + totalFournitures,
-
-    // ⭐ Solde restant = Montant à payer - Montant payé
-    soldeRestant: soldeRestant,
-  };
+  soldeRestant: soldeRestant,
+};
 
   if (loading) {
     return (
@@ -873,10 +868,10 @@ export default function ParentDashboard() {
 
                       {/* Total - TOUJOURS affiché */}
                       <div className={`bg-gray-100 p-3 rounded-lg border border-gray-300 ${preinscriptionDetail.details_frais.cantine === 0 &&
-                          preinscriptionDetail.details_frais.transport === 0 &&
-                          preinscriptionDetail.details_frais.librairie === 0 &&
-                          preinscriptionDetail.details_frais.scolarite === 0
-                          ? 'col-span-2 md:col-span-1' : ''
+                        preinscriptionDetail.details_frais.transport === 0 &&
+                        preinscriptionDetail.details_frais.librairie === 0 &&
+                        preinscriptionDetail.details_frais.scolarite === 0
+                        ? 'col-span-2 md:col-span-1' : ''
                         }`}>
                         <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
                         <p className="font-bold text-gray-800 text-lg">

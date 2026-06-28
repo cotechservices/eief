@@ -30,16 +30,16 @@ export async function GET() {
         p.photo_url,
         p.acte_naissance_url,
         p.bulletin_url,
-        COALESCE(c.frais_inscription, 500000) as frais_montant,
+        -- ⭐ INSCRIPTION - Montant depuis la table classes
+        COALESCE(c.total_versement, c.frais_inscription, 0) as frais_montant,
         -- ⭐ TRANSPORT - Montant total du transport pour cette préinscription
         COALESCE(
-          (SELECT SUM(lt.prix_abonnement)
+          (SELECT SUM(pt.prix)
            FROM preinscription_transport pt
-           JOIN lignes_transport lt ON pt.ligne_id = lt.id
            WHERE pt.preinscription_id = p.id),
           0
         ) as transport_montant,
-        -- ⭐ CANTINE - Montant total de la cantine pour cette préinscription
+        -- ⭐ CANTINE - Montant total de la cantine pour cette préinscription (prix annuel)
         COALESCE(
           (SELECT SUM(cm.prix_annuel)
            FROM preinscription_cantine pc
@@ -54,22 +54,14 @@ export async function GET() {
            WHERE cf.preinscription_id = p.id),
           0
         ) as fournitures_montant,
-        -- ⭐ SCOLARITE - Montant total de la scolarité pour cette préinscription
-        COALESCE(
-          (SELECT SUM(f.montant) 
-           FROM frais_scolaires f
-           WHERE f.type_frais = 'mensualite' 
-             AND f.annee_scolaire_id = (
-               SELECT id FROM annees_scolaires WHERE est_active = true LIMIT 1
-             )),
-          0
-        ) as scolarite_montant,
+        -- ⭐ SCOLARITE - Déjà incluse dans le montant de l'inscription (total_versement)
+        -- On ne l'ajoute pas séparément pour éviter le double comptage
+        0 as scolarite_montant,
         -- ⭐ TOTAL DES FRAIS POUR CETTE PRÉINSCRIPTION
-        COALESCE(c.frais_inscription, 500000) + 
+        COALESCE(c.total_versement, c.frais_inscription, 0) + 
         COALESCE(
-          (SELECT SUM(lt.prix_abonnement)
+          (SELECT SUM(pt.prix)
            FROM preinscription_transport pt
-           JOIN lignes_transport lt ON pt.ligne_id = lt.id
            WHERE pt.preinscription_id = p.id),
           0
         ) +
@@ -85,15 +77,6 @@ export async function GET() {
            FROM commandes_fournitures cf
            WHERE cf.preinscription_id = p.id),
           0
-        ) +
-        COALESCE(
-          (SELECT SUM(f.montant) 
-           FROM frais_scolaires f
-           WHERE f.type_frais = 'mensualite' 
-             AND f.annee_scolaire_id = (
-               SELECT id FROM annees_scolaires WHERE est_active = true LIMIT 1
-             )),
-          0
         ) as montant_total
       FROM preinscriptions p
       JOIN parents pa ON p.parent_id = pa.id
@@ -103,7 +86,17 @@ export async function GET() {
       ORDER BY p.date_preinscription DESC
     `, [userEmail]);
 
-    return NextResponse.json(result.rows);
+    // ⭐ Ajouter les montants des services pour chaque pré-inscription dans la réponse
+    const rows = result.rows.map(row => ({
+      ...row,
+      frais_montant: Number(row.frais_montant) || 0,
+      transport_montant: Number(row.transport_montant) || 0,
+      cantine_montant: Number(row.cantine_montant) || 0,
+      fournitures_montant: Number(row.fournitures_montant) || 0,
+      montant_total: Number(row.montant_total) || 0
+    }));
+
+    return NextResponse.json(rows);
   } catch (error) {
     console.error("Erreur:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
