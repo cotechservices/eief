@@ -78,8 +78,6 @@ export async function GET(
     }
 
     const eleveData = eleveInfo.rows[0];
-
-    // ⭐ Fusionner les URLs des photos (priorité: eleve.photo_url, puis preinscription.photo_url)
     const photoUrl = eleveData.eleve_photo_url || eleveData.preinscription_photo_url || null;
 
     // ===================== 2. NOTES =====================
@@ -126,10 +124,15 @@ export async function GET(
       WHERE e.id = $1
     `, [eleveId]);
 
-    // ===================== 5. TRANSPORT =====================
-    const transport = await query(`
+    // ===================== 5. TRANSPORT - UNIQUEMENT SI SÉLECTIONNÉ =====================
+    let totalTransport = 0;
+    let transportDetails = null;
+    let transportSelected = false;
+
+    // Vérifier si l'élève a une inscription transport active
+    const transportQuery = await query(`
       SELECT 
-        COALESCE(lt.prix_abonnement, 0) as prix_abonnement,
+        lt.prix_abonnement,
         lt.nom as ligne_nom,
         lt.horaire_matin,
         lt.horaire_soir,
@@ -139,65 +142,102 @@ export async function GET(
       FROM inscriptions_transport it
       LEFT JOIN lignes_transport lt ON it.ligne_id = lt.id
       WHERE it.eleve_id = $1 AND it.est_actif = true
+      LIMIT 1
     `, [eleveId]);
 
-    let totalTransport = 0;
-    let transportDetails = null;
+    if (transportQuery.rows.length > 0 && transportQuery.rows[0].prix_abonnement) {
+      totalTransport = Number(transportQuery.rows[0].prix_abonnement);
+      transportDetails = transportQuery.rows[0];
+      transportSelected = true;
+    }
 
-    if (transport.rows.length > 0 && transport.rows[0].prix_abonnement) {
-      totalTransport = Number(transport.rows[0].prix_abonnement);
-      transportDetails = transport.rows[0];
-    } else {
-      const defaultTransport = await query(`
-        SELECT 
-          prix_abonnement,
-          nom,
-          horaire_matin,
-          horaire_soir
-        FROM lignes_transport
+    // Si pas d'inscription transport active, vérifier dans la pré-inscription
+    if (!transportSelected) {
+      const preTransport = await query(`
+        SELECT pt.prix
+        FROM preinscription_transport pt
+        JOIN inscriptions i ON i.preinscription_id = pt.preinscription_id
+        WHERE i.eleve_id = $1
         LIMIT 1
-      `, []);
+      `, [eleveId]);
 
-      if (defaultTransport.rows.length > 0) {
-        totalTransport = Number(defaultTransport.rows[0].prix_abonnement) || 0;
+      if (preTransport.rows.length > 0 && preTransport.rows[0].prix) {
+        totalTransport = Number(preTransport.rows[0].prix);
+        transportSelected = true;
         transportDetails = {
           prix_abonnement: totalTransport,
-          ligne_nom: defaultTransport.rows[0].nom,
-          horaire_matin: defaultTransport.rows[0].horaire_matin,
-          horaire_soir: defaultTransport.rows[0].horaire_soir,
+          ligne_nom: "Transport scolaire",
+          horaire_matin: null,
+          horaire_soir: null,
           date_debut: null,
           date_fin: null,
-          est_actif: false
+          est_actif: true
         };
       }
     }
 
-    // ===================== 6. CANTINE =====================
-    const cantine = await query(`
-      SELECT 
-        prix_annuel,
-        plat,
-        accompagnement
-      FROM cantine_menus
-      ORDER BY date DESC
-      LIMIT 1
-    `, []);
+    // ===================== 6. CANTINE - UNIQUEMENT SI SÉLECTIONNÉE =====================
+    let totalCantine = 0;
+    let cantineDetails = null;
+    let cantineSelected = false;
 
-    const totalCantine = Number(cantine.rows[0]?.prix_annuel) || 0;
-
-    const inscriptionCantine = await query(`
+    // Vérifier si l'élève a une inscription cantine active
+    const cantineQuery = await query(`
       SELECT 
+        cm.prix_annuel,
+        cm.plat,
+        cm.accompagnement,
         ic.est_actif,
         ic.solde,
         ic.date_inscription,
         ic.preferences_alimentaires,
         ic.allergies
       FROM inscriptions_cantine ic
+      LEFT JOIN cantine_menus cm ON cm.id = (
+        SELECT id FROM cantine_menus ORDER BY date DESC LIMIT 1
+      )
       WHERE ic.eleve_id = $1 AND ic.est_actif = true
+      LIMIT 1
     `, [eleveId]);
 
-    // ===================== 7. FOURNITURES =====================
-    const fournitures = await query(`
+    if (cantineQuery.rows.length > 0 && cantineQuery.rows[0].prix_annuel) {
+      totalCantine = Number(cantineQuery.rows[0].prix_annuel);
+      cantineDetails = cantineQuery.rows[0];
+      cantineSelected = true;
+    }
+
+    // Si pas d'inscription cantine active, vérifier dans la pré-inscription
+    if (!cantineSelected) {
+      const preCantine = await query(`
+        SELECT pc.prix
+        FROM preinscription_cantine pc
+        JOIN inscriptions i ON i.preinscription_id = pc.preinscription_id
+        WHERE i.eleve_id = $1
+        LIMIT 1
+      `, [eleveId]);
+
+      if (preCantine.rows.length > 0 && preCantine.rows[0].prix) {
+        totalCantine = Number(preCantine.rows[0].prix);
+        cantineSelected = true;
+        cantineDetails = {
+          prix_annuel: totalCantine,
+          plat: null,
+          accompagnement: null,
+          est_actif: true,
+          solde: 0,
+          date_inscription: null,
+          preferences_alimentaires: null,
+          allergies: null
+        };
+      }
+    }
+
+    // ===================== 7. FOURNITURES - UNIQUEMENT SI SÉLECTIONNÉES =====================
+    let totalFournitures = 0;
+    let fournituresDetails = [];
+    let fournituresSelected = false;
+
+    const fournituresQuery = await query(`
       SELECT 
         COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total_fournitures,
         json_agg(
@@ -210,21 +250,19 @@ export async function GET(
         ) as details_fournitures
       FROM commandes_fournitures cf
       JOIN articles_librairie al ON cf.article_id = al.id
-      LEFT JOIN preinscriptions p ON cf.preinscription_id = p.id
-      LEFT JOIN inscriptions i ON i.preinscription_id = p.id
+      JOIN preinscriptions p ON cf.preinscription_id = p.id
+      JOIN inscriptions i ON i.preinscription_id = p.id
       WHERE i.eleve_id = $1
     `, [eleveId]);
 
-    const totalFournitures = Number(fournitures.rows[0]?.total_fournitures) || 0;
+    if (fournituresQuery.rows.length > 0) {
+      totalFournitures = Number(fournituresQuery.rows[0]?.total_fournitures) || 0;
+      fournituresDetails = fournituresQuery.rows[0]?.details_fournitures || [];
+      fournituresSelected = totalFournitures > 0;
+    }
 
-    // ===================== 8. SCOLARITÉ =====================
-    const scolarite = await query(`
-      SELECT COALESCE(SUM(montant), 0) as total_scolarite
-      FROM paiements
-      WHERE eleve_id = $1 
-        AND type_frais = 'mensualite' 
-        AND statut = 'valide'
-    `, [eleveId]);
+    // ===================== 8. SCOLARITÉ (DÉJÀ INCLUSE DANS FRAIS_INSCRIPTION) =====================
+    // On ne l'ajoute pas séparément car elle est déjà dans frais_inscription
 
     // ===================== 9. PAIEMENTS =====================
     const paiementsDirects = await query(`
@@ -371,9 +409,11 @@ export async function GET(
     }
 
     // ===================== CALCUL DES TOTAUX =====================
+    // ⭐ UNIQUEMENT les services sélectionnés !
     const fraisInscriptionTotal = Number(fraisInscription.rows[0]?.frais_inscription) || 0;
-    const totalScolarite = Number(scolarite.rows[0]?.total_scolarite) || 0;
 
+    // ⭐ Le total = inscription + services sélectionnés UNIQUEMENT
+    // La scolarité est déjà incluse dans frais_inscription
     const totalFraisGeneral = fraisInscriptionTotal + totalTransport + totalCantine + totalFournitures;
     const soldeRestant = Math.max(0, totalFraisGeneral - totalPaye);
 
@@ -401,14 +441,14 @@ export async function GET(
       : "0";
 
     console.log(`=== DÉTAILS COMPLETS pour eleve_id ${eleveId} ===`);
+    console.log(`📊 Services sélectionnés: Transport=${transportSelected}, Cantine=${cantineSelected}, Fournitures=${fournituresSelected}`);
+    console.log(`📊 Total frais: ${totalFraisGeneral} (inscription: ${fraisInscriptionTotal} + transport: ${totalTransport} + cantine: ${totalCantine} + fournitures: ${totalFournitures})`);
 
     // ===================== RÉPONSE JSON =====================
     return NextResponse.json({
       eleve: {
         ...eleveData,
-        // ⭐ Utiliser la photo fusionnée
         photo_url: photoUrl,
-        // ⭐ Utiliser les URLs des documents depuis preinscriptions ou eleve
         acte_naissance_url: eleveData.acte_naissance_url || null,
         bulletin_url: eleveData.bulletin_url || null,
         moyenne_generale: parseFloat(moyenneGenerale.toFixed(2)),
@@ -430,14 +470,17 @@ export async function GET(
         inscription: fraisInscriptionTotal,
         transport: totalTransport,
         transport_details: transportDetails,
+        transport_selected: transportSelected,
         cantine: totalCantine,
         cantine_details: {
-          menu: cantine.rows[0] || null,
-          inscription: inscriptionCantine.rows[0] || null
+          menu: cantineDetails,
+          inscription: cantineDetails
         },
+        cantine_selected: cantineSelected,
         fournitures: totalFournitures,
-        fournitures_details: fournitures.rows[0]?.details_fournitures || [],
-        scolarite: totalScolarite,
+        fournitures_details: fournituresDetails,
+        fournitures_selected: fournituresSelected,
+        scolarite: 0, // Déjà inclus dans inscription
         total_a_payer: totalFraisGeneral,
         total_paye: totalPaye,
         total_paye_direct: totalPayeDirect,
@@ -468,10 +511,13 @@ export async function GET(
         inscription: 0,
         transport: 0,
         transport_details: null,
+        transport_selected: false,
         cantine: 0,
         cantine_details: null,
+        cantine_selected: false,
         fournitures: 0,
         fournitures_details: [],
+        fournitures_selected: false,
         scolarite: 0,
         total_a_payer: 0,
         total_paye: 0,

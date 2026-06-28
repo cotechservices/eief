@@ -37,104 +37,34 @@ export async function GET(
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
-    // Récupérer les détails complets de la pré-inscription
+    // ===================== RÉCUPÉRER LA PRÉ-INSCRIPTION =====================
     const detailResult = await query(`
       SELECT 
-        p.*,
+        p.id,
+        p.numero_dossier,
+        p.enfant_nom,
+        p.enfant_prenom,
+        p.date_naissance,
+        p.lieu_naissance,
+        p.sexe,
+        p.niveau,
+        p.classe,
+        p.statut,
+        p.date_preinscription,
+        p.frais_statut,
+        p.frais_montant,
+        p.photo_url,
+        p.acte_naissance_url,
+        p.bulletin_url,
         u.nom as parent_nom,
         u.prenom as parent_prenom,
         u.email as parent_email,
         u.telephone as parent_telephone,
         pa.profession as parent_profession,
-        pa.situation_matrimoniale as mere_info,
-        -- Frais de la classe
-        COALESCE(c.frais_inscription, 0) as frais_montant,
-        -- Frais de cantine ANNUEL
-        COALESCE(
-          (SELECT cm.prix_annuel
-           FROM cantine_menus cm
-           ORDER BY cm.date DESC
-           LIMIT 1),
-          0
-        ) as frais_cantine,
-        -- Frais de transport
-        COALESCE(
-          (SELECT SUM(lt.prix_abonnement) 
-           FROM lignes_transport lt),
-          0
-        ) as frais_transport,
-        -- Frais de fourniture
-        COALESCE(
-          (SELECT SUM(cf.quantite * cf.prix_unitaire)
-           FROM commandes_fournitures cf
-           WHERE cf.preinscription_id = p.id),
-          0
-        ) as frais_librairie,
-        -- Frais de scolarité (mensualités)
-        COALESCE(
-          (SELECT SUM(f.montant) 
-           FROM frais_scolaires f
-           WHERE f.type_frais = 'mensualite' 
-             AND f.annee_scolaire_id = (
-               SELECT id FROM annees_scolaires WHERE est_active = true LIMIT 1
-             )),
-          0
-        ) as frais_scolarite,
-        -- Frais déjà payés
-        COALESCE(
-          (SELECT SUM(pai.montant) 
-           FROM paiements pai
-           WHERE pai.preinscription_id = p.id AND pai.statut = 'valide'),
-          0
-        ) as frais_paye,
-        -- Récupérer les fournitures commandées
-        COALESCE(
-          (SELECT JSON_AGG(
-            JSON_BUILD_OBJECT(
-              'nom', al.nom,
-              'quantite', cf.quantite,
-              'prix_unitaire', cf.prix_unitaire,
-              'total', cf.quantite * cf.prix_unitaire
-            )
-          )
-          FROM commandes_fournitures cf
-          JOIN articles_librairie al ON cf.article_id = al.id
-          WHERE cf.preinscription_id = p.id),
-          '[]'::json
-        ) as fournitures_commandees,
-        -- Récupérer le transport sélectionné
-        COALESCE(
-          (SELECT JSON_AGG(
-            JSON_BUILD_OBJECT(
-              'nom', lt.nom,
-              'prix', pt.prix,
-              'horaire_matin', lt.horaire_matin,
-              'horaire_soir', lt.horaire_soir
-            )
-          )
-          FROM preinscription_transport pt
-          JOIN lignes_transport lt ON pt.ligne_id = lt.id
-          WHERE pt.preinscription_id = p.id),
-          '[]'::json
-        ) as transport_selectionne,
-        -- Récupérer la cantine sélectionnée
-        COALESCE(
-          (SELECT JSON_AGG(
-            JSON_BUILD_OBJECT(
-              'nom', cm.plat || ' - ' || cm.accompagnement,
-              'prix', pc.prix,
-              'date', cm.date
-            )
-          )
-          FROM preinscription_cantine pc
-          JOIN cantine_menus cm ON pc.menu_id = cm.id
-          WHERE pc.preinscription_id = p.id),
-          '[]'::json
-        ) as cantine_selectionnee
+        pa.situation_matrimoniale as mere_info
       FROM preinscriptions p
       JOIN parents pa ON p.parent_id = pa.id
       JOIN utilisateurs u ON pa.utilisateur_id = u.id
-      LEFT JOIN classes c ON LOWER(c.nom) = LOWER(p.classe)
       WHERE p.id = $1
     `, [preinscriptionId]);
 
@@ -143,39 +73,152 @@ export async function GET(
     }
 
     const data = detailResult.rows[0];
-    
-    // Calculer les totaux
-    const fraisInscription = Number(data.frais_montant) || 0;
-    const fraisCantine = Number(data.frais_cantine) || 0;
-    const fraisTransport = Number(data.frais_transport) || 0;
-    const fraisLibrairie = Number(data.frais_librairie) || 0;
-    const fraisScolarite = Number(data.frais_scolarite) || 0;
-    
-    const totalFrais = fraisInscription + fraisCantine + fraisTransport + fraisLibrairie + fraisScolarite;
-    const fraisPaye = Number(data.frais_paye) || 0;
 
-    console.log("📊 Détails des frais calculés:", {
+    // ===================== VÉRIFIER LES SERVICES SÉLECTIONNÉS =====================
+
+    // ⭐ TRANSPORT - Vérifier si sélectionné
+    const transportResult = await query(`
+      SELECT COALESCE(SUM(pt.prix), 0) as total
+      FROM preinscription_transport pt
+      WHERE pt.preinscription_id = $1
+    `, [preinscriptionId]);
+    const transportSelected = Number(transportResult.rows[0]?.total) || 0;
+
+    // ⭐ CANTINE - Vérifier si sélectionnée et récupérer le prix correct
+    let cantineSelected = 0;
+    
+    // Vérifier si la cantine est sélectionnée
+    const cantineExists = await query(`
+      SELECT COUNT(*) as count FROM preinscription_cantine WHERE preinscription_id = $1
+    `, [preinscriptionId]);
+
+    if (Number(cantineExists.rows[0]?.count) > 0) {
+      // Récupérer le prix annuel depuis cantine_menus
+      const cantinePrixResult = await query(`
+        SELECT COALESCE(cm.prix_annuel, 0) as prix_annuel
+        FROM preinscription_cantine pc
+        JOIN cantine_menus cm ON pc.menu_id = cm.id
+        WHERE pc.preinscription_id = $1
+      `, [preinscriptionId]);
+      
+      if (cantinePrixResult.rows.length > 0) {
+        cantineSelected = Number(cantinePrixResult.rows[0]?.prix_annuel) || 0;
+      }
+      
+      // Si pas de prix annuel, utiliser la somme des prix
+      if (cantineSelected === 0) {
+        const sumResult = await query(`
+          SELECT COALESCE(SUM(pc.prix), 0) as total
+          FROM preinscription_cantine pc
+          WHERE pc.preinscription_id = $1
+        `, [preinscriptionId]);
+        cantineSelected = Number(sumResult.rows[0]?.total) || 0;
+      }
+      
+      // Si toujours 0, utiliser le prix annuel par défaut
+      if (cantineSelected === 0) {
+        const defaultPrix = await query(`
+          SELECT COALESCE(prix_annuel, 0) as prix_annuel
+          FROM cantine_menus
+          ORDER BY date DESC
+          LIMIT 1
+        `, []);
+        cantineSelected = Number(defaultPrix.rows[0]?.prix_annuel) || 0;
+        console.log(`⚠️ Cantine sélectionnée, utilisation du prix annuel par défaut: ${cantineSelected}`);
+      }
+    }
+
+    // ⭐ FOURNITURES - Vérifier si sélectionnées
+    const fournituresResult = await query(`
+      SELECT COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total
+      FROM commandes_fournitures cf
+      WHERE cf.preinscription_id = $1
+    `, [preinscriptionId]);
+    const fournituresSelected = Number(fournituresResult.rows[0]?.total) || 0;
+
+    // ⭐ Récupérer les détails des services pour l'affichage
+    const fournituresDetails = await query(`
+      SELECT 
+        al.nom,
+        cf.quantite,
+        cf.prix_unitaire,
+        cf.quantite * cf.prix_unitaire as total
+      FROM commandes_fournitures cf
+      JOIN articles_librairie al ON cf.article_id = al.id
+      WHERE cf.preinscription_id = $1
+    `, [preinscriptionId]);
+
+    const transportDetails = await query(`
+      SELECT 
+        lt.nom,
+        pt.prix,
+        lt.horaire_matin,
+        lt.horaire_soir
+      FROM preinscription_transport pt
+      JOIN lignes_transport lt ON pt.ligne_id = lt.id
+      WHERE pt.preinscription_id = $1
+    `, [preinscriptionId]);
+
+    const cantineDetails = await query(`
+      SELECT 
+        cm.plat,
+        cm.accompagnement,
+        cm.dessert,
+        cm.prix_annuel as prix,
+        cm.date
+      FROM preinscription_cantine pc
+      JOIN cantine_menus cm ON pc.menu_id = cm.id
+      WHERE pc.preinscription_id = $1
+    `, [preinscriptionId]);
+
+    // ===================== CALCUL DES TOTAUX =====================
+    // ⭐ UNIQUEMENT les services sélectionnés !
+    const fraisInscription = Number(data.frais_montant) || 0;
+
+    // ⭐ TOTAL = Inscription + services sélectionnés UNIQUEMENT
+    const totalFrais = fraisInscription + transportSelected + cantineSelected + fournituresSelected;
+
+    // ⭐ Récupérer les paiements effectués
+    const paiementsResult = await query(`
+      SELECT 
+        COALESCE(SUM(montant), 0) as total_paye
+      FROM paiements
+      WHERE preinscription_id = $1 AND statut = 'valide'
+    `, [preinscriptionId]);
+
+    const fraisPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
+
+    console.log("📊 Détails des frais calculés (UNIQUEMENT services sélectionnés):", {
       inscription: fraisInscription,
-      cantine: fraisCantine,
-      transport: fraisTransport,
-      librairie: fraisLibrairie,
-      scolarite: fraisScolarite,
+      transport: transportSelected,
+      cantine: cantineSelected,
+      fournitures: fournituresSelected,
       total: totalFrais,
       paye: fraisPaye,
-      reste: Math.max(0, totalFrais - fraisPaye)
+      reste: Math.max(0, totalFrais - fraisPaye),
+      transport_selectionne: transportDetails.rows || [],
+      cantine_selectionnee: cantineDetails.rows || [],
+      fournitures_commandees: fournituresDetails.rows || []
     });
 
+    // ===================== RÉPONSE =====================
     return NextResponse.json({
       ...data,
-      fournitures_commandees: data.fournitures_commandees || [],
-      transport_selectionne: data.transport_selectionne || [],
-      cantine_selectionnee: data.cantine_selectionnee || [],
+      // ⭐ Surcharger les montants avec les valeurs réelles sélectionnées
+      transport_montant: transportSelected,
+      cantine_montant: cantineSelected,
+      fournitures_montant: fournituresSelected,
+      scolarite_montant: 0, // Déjà inclus dans frais_montant
+      montant_total: totalFrais,
+      fournitures_commandees: fournituresDetails.rows || [],
+      transport_selectionne: transportDetails.rows || [],
+      cantine_selectionnee: cantineDetails.rows || [],
       details_frais: {
         inscription: fraisInscription,
-        cantine: fraisCantine,
-        transport: fraisTransport,
-        librairie: fraisLibrairie,
-        scolarite: fraisScolarite,
+        cantine: cantineSelected,      // ⭐ 0 si non sélectionné
+        transport: transportSelected,   // ⭐ 0 si non sélectionné
+        librairie: fournituresSelected, // ⭐ 0 si non sélectionné
+        scolarite: 0, // ⭐ 0 car déjà inclus
         total: totalFrais,
         paye: fraisPaye,
         reste: Math.max(0, totalFrais - fraisPaye)
@@ -192,7 +235,6 @@ export async function GET(
 }
 
 // DELETE - Annuler une pré-inscription
-// DELETE - Annuler une pré-inscription (version avec vérification)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

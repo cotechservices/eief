@@ -737,13 +737,13 @@ export default function GestionPreinscriptionsPage() {
                   </div>
                 </div>
               </div>
-              {/* === SECTION DÉTAIL DES FRAIS === */}
 
               {/* === SECTION DÉTAIL DES FRAIS AVEC PLAN DE PAIEMENT === */}
+              {/* === SECTION DÉTAIL DES FRAIS === */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-purple-600" />
-                  Détail des paiements
+                  Détail des frais
                 </h3>
 
                 {loadingDetail ? (
@@ -760,7 +760,6 @@ export default function GestionPreinscriptionsPage() {
                           Plan de paiement échelonné ({preinscriptionDetail.plan_paiement.type_inscription || 'inscription'})
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          {/* 1er versement */}
                           <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? 'border-green-300' : 'border-gray-200'}`}>
                             <p className="text-xs text-gray-500">1er versement</p>
                             <p className="font-bold text-blue-600 text-lg">
@@ -776,7 +775,6 @@ export default function GestionPreinscriptionsPage() {
                               </span>
                             )}
                           </div>
-                          {/* 2ème versement */}
                           <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? 'border-green-300' : 'border-gray-200'}`}>
                             <p className="text-xs text-gray-500">2ème versement</p>
                             <p className="font-bold text-blue-600 text-lg">
@@ -792,7 +790,6 @@ export default function GestionPreinscriptionsPage() {
                               </span>
                             )}
                           </div>
-                          {/* 3ème versement */}
                           <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? 'border-green-300' : 'border-gray-200'}`}>
                             <p className="text-xs text-gray-500">3ème versement</p>
                             <p className="font-bold text-blue-600 text-lg">
@@ -817,31 +814,104 @@ export default function GestionPreinscriptionsPage() {
                       </div>
                     )}
 
-                    {/* RÉCAPITULATIF DES FRAIS */}
+                    {/* ⭐ RÉCAPITULATIF DES FRAIS - UNIQUEMENT LES SERVICES SÉLECTIONNÉS */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                      {/* Inscription - TOUJOURS affiché */}
                       <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                         <p className="text-xs text-gray-600">Inscription</p>
-                        <p className="font-bold text-blue-600">{preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF</p>
+                        <p className="font-bold text-blue-600">
+                          {preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF
+                        </p>
                       </div>
-                      <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
-                        <p className="text-xs text-gray-600">Cantine</p>
-                        <p className="font-bold text-pink-600">{preinscriptionDetail.details_frais.cantine.toLocaleString()} GNF</p>
-                      </div>
-                      <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                        <p className="text-xs text-gray-600">Transport</p>
-                        <p className="font-bold text-green-600">{preinscriptionDetail.details_frais.transport.toLocaleString()} GNF</p>
-                      </div>
-                      <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                        <p className="text-xs text-gray-600">Fourniture</p>
-                        <p className="font-bold text-purple-600">{preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF</p>
-                      </div>
-                      <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                        <p className="text-xs text-gray-600">Scolarité</p>
-                        <p className="font-bold text-orange-600">{preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF</p>
-                      </div>
+
+                      {/* ⭐ Cantine - UNIQUEMENT si sélectionnée */}
+                      {preinscriptionDetail.details_frais.cantine > 0 && (
+                        <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
+                          <p className="text-xs text-gray-600">Cantine</p>
+                          <p className="font-bold text-pink-600">
+                            {preinscriptionDetail.details_frais.cantine.toLocaleString()} GNF
+                          </p>
+                        </div>
+                      )}
+
+                      {/* ⭐ Transport - UNIQUEMENT si sélectionné */}
+                      {preinscriptionDetail.details_frais.transport > 0 && (
+                        <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                          <p className="text-xs text-gray-600">Transport</p>
+                          <p className="font-bold text-green-600">
+                            {preinscriptionDetail.details_frais.transport.toLocaleString()} GNF
+                          </p>
+                        </div>
+                      )}
+
+                      {/* ⭐ Fournitures - UNIQUEMENT si sélectionnées */}
+                      {preinscriptionDetail.details_frais.librairie > 0 && (
+                        <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                          <p className="text-xs text-gray-600">Fournitures</p>
+                          <p className="font-bold text-purple-600">
+                            {preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF
+                          </p>
+                        </div>
+                      )}
+
+                      {/* ⭐ Scolarité - UNIQUEMENT si > 0 (normalement 0 car déjà incluse) */}
+                      {preinscriptionDetail.details_frais.scolarite > 0 && (
+                        <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                          <p className="text-xs text-gray-600">Scolarité</p>
+                          <p className="font-bold text-orange-600">
+                            {preinscriptionDetail.details_frais.scolarite.toLocaleString()} GNF
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Total - TOUJOURS affiché */}
                       <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
                         <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
-                        <p className="font-bold text-gray-800 text-lg">{preinscriptionDetail.details_frais.total.toLocaleString()} GNF</p>
+                        <p className="font-bold text-gray-800 text-lg">
+                          {preinscriptionDetail.details_frais.total.toLocaleString()} GNF
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ⭐ MESSAGE RÉCAPITULATIF DES SERVICES SÉLECTIONNÉS */}
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <p className="text-sm font-medium text-gray-700 mb-1">Services sélectionnés :</p>
+                      <div className="flex flex-wrap gap-3 text-sm">
+                        <span className="flex items-center gap-1">
+                          <CheckCircle className="w-4 h-4 text-blue-600" />
+                          Inscription
+                        </span>
+                        {preinscriptionDetail.details_frais.cantine > 0 && (
+                          <span className="flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4 text-pink-600" />
+                            Cantine
+                          </span>
+                        )}
+                        {preinscriptionDetail.details_frais.transport > 0 && (
+                          <span className="flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            Transport
+                          </span>
+                        )}
+                        {preinscriptionDetail.details_frais.librairie > 0 && (
+                          <span className="flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4 text-purple-600" />
+                            Fournitures
+                          </span>
+                        )}
+                        {preinscriptionDetail.details_frais.scolarite > 0 && (
+                          <span className="flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4 text-orange-600" />
+                            Scolarité
+                          </span>
+                        )}
+                        {/* ⭐ Si aucun service optionnel n'est sélectionné */}
+                        {preinscriptionDetail.details_frais.cantine === 0 && 
+                        preinscriptionDetail.details_frais.transport === 0 && 
+                        preinscriptionDetail.details_frais.librairie === 0 && 
+                        preinscriptionDetail.details_frais.scolarite === 0 && (
+                          <span className="text-gray-500 text-xs italic">Aucun service optionnel</span>
+                        )}
                       </div>
                     </div>
 
@@ -849,7 +919,9 @@ export default function GestionPreinscriptionsPage() {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
                       <div>
                         <p className="text-xs text-gray-600">Déjà payé</p>
-                        <p className="font-bold text-green-600">{preinscriptionDetail.details_frais.paye.toLocaleString()} GNF</p>
+                        <p className="font-bold text-green-600">
+                          {preinscriptionDetail.details_frais.paye.toLocaleString()} GNF
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-600">Reste à payer</p>
@@ -880,12 +952,16 @@ export default function GestionPreinscriptionsPage() {
                       <div className="mt-3">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
                           <span>Progression des paiements</span>
-                          <span>{Math.round((preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%</span>
+                          <span>
+                            {Math.round((preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
                             className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
-                            style={{ width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%` }} 
+                            style={{ 
+                              width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%` 
+                            }} 
                           />
                         </div>
                       </div>

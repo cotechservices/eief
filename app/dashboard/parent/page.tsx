@@ -189,9 +189,8 @@ export default function ParentDashboard() {
 
       setEnfants(enfantsData);
 
-      // Ne garder que les pré-inscriptions en attente
-      const preinscriptionsEnAttente = preinscriptionsData.filter((p: Preinscription) => p.statut === "en_attente");
-      setPreinscriptions(preinscriptionsEnAttente);
+      // ⭐ GARDER TOUTES LES PRÉ-INSCRIPTIONS (même en attente)
+      setPreinscriptions(preinscriptionsData);
 
       // 2. Charger les statistiques pour chaque enfant
       const statsPromises = enfantsData.map(async (enfant: Enfant) => {
@@ -261,7 +260,7 @@ export default function ParentDashboard() {
       }
       const data = await response.json();
       console.log("📋 Détails pré-inscription reçus:", data);
-      
+
       setPreinscriptionDetail(data);
     } catch (error) {
       console.error("Erreur:", error);
@@ -364,21 +363,27 @@ export default function ParentDashboard() {
   // Dans le dashboard parent, remplacer la section de calcul des statistiques globales
 
   // ⭐⭐⭐ CALCUL DES STATISTIQUES GLOBALES ⭐⭐⭐
-  
+
   // 1. Calcul du total des frais de pré-inscription (inscription + scolarité)
+  //    Chaque pré-inscription a un montant total (frais_montant) qui inclut déjà
+  //    l'inscription et la scolarité (pas besoin d'ajouter totalScolarite)
   const totalPreinscriptionFrais = preinscriptions.reduce((acc, p) => acc + (Number(p.frais_montant) || 0), 0);
 
   // 2. Calcul des services optionnels par enfant (depuis les stats)
   const totalCantine = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.cantine) || 0), 0);
   const totalTransport = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.transport) || 0), 0);
   const totalFournitures = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.fournitures) || 0), 0);
-  const totalScolarite = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.scolarite) || 0), 0);
+  // ⚠️ IMPORTANT: La scolarité est déjà incluse dans le frais_montant de la pré-inscription
+  // donc on ne l'ajoute PAS ici pour éviter le double comptage
 
-  // 3. Calcul du total payé pour tous les enfants
+  // 3. Calcul du total payé pour tous les enfants (paiements direct + échéances)
+  //    Les paiements sont répartis entre paiements directs et échéances
   const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
 
-  // ⭐ MONTANT À PAYER = Total préinscriptions + Cantine + Transport + Fournitures + Scolarité
-  const totalAPayer = totalPreinscriptionFrais + totalCantine + totalTransport + totalFournitures + totalScolarite;
+  // ⭐ MONTANT À PAYER = Total préinscriptions (inscription + scolarité) + Cantine + Transport + Fournitures
+  //    ⚠️ La scolarité est DÉJÀ incluse dans le frais_montant des pré-inscriptions
+  //    ⚠️ Les échéances créées (1er, 2eme, 3eme versement) répartissent ce montant
+  const totalAPayer = totalPreinscriptionFrais + totalCantine + totalTransport + totalFournitures;
 
   // ⭐ Solde restant = Montant à payer - Montant payé
   const soldeRestant = Math.max(0, totalAPayer - totalPaye);
@@ -390,7 +395,7 @@ export default function ParentDashboard() {
     preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
 
-    // ⭐ Montant à payer = Total préinscription + Cantine + Transport + Fournitures + Scolarité
+    // ⭐ Montant à payer = Total préinscription + Cantine + Transport + Fournitures
     totalAPayer: totalAPayer,
 
     // ⭐ Montant payé = total payé pour tous les enfants
@@ -401,10 +406,9 @@ export default function ParentDashboard() {
     totalTransport: totalTransport,
     totalCantine: totalCantine,
     totalFournitures: totalFournitures,
-    totalScolarite: totalScolarite,
 
     // ⭐ Total général des frais (toutes catégories)
-    totalFraisGeneral: totalPreinscriptionFrais + totalCantine + totalTransport + totalFournitures + totalScolarite,
+    totalFraisGeneral: totalPreinscriptionFrais + totalCantine + totalTransport + totalFournitures,
 
     // ⭐ Solde restant = Montant à payer - Montant payé
     soldeRestant: soldeRestant,
@@ -675,11 +679,11 @@ export default function ParentDashboard() {
                         let mereData: any = null;
                         try {
                           if (preinscriptionDetail.mere_info) {
-                            mereData = typeof preinscriptionDetail.mere_info === 'string' 
-                              ? JSON.parse(preinscriptionDetail.mere_info) 
+                            mereData = typeof preinscriptionDetail.mere_info === 'string'
+                              ? JSON.parse(preinscriptionDetail.mere_info)
                               : preinscriptionDetail.mere_info;
                           }
-                        } catch (e) {}
+                        } catch (e) { }
                         return mereData && (mereData.mereNom || mereData.merePrenom) ? (
                           <div className="space-y-2">
                             <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-black">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p></div>
@@ -743,10 +747,10 @@ export default function ParentDashboard() {
                     {(() => {
                       const acteUrl = preinscriptionDetail?.acte_naissance_url || selectedPreinscriptionDetail?.acte_naissance_url;
                       return acteUrl ? (
-                        <a 
-                          href={acteUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
+                        <a
+                          href={acteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                         >
                           Voir le document <ExternalLink className="w-3 h-3" />
@@ -766,10 +770,10 @@ export default function ParentDashboard() {
                     {(() => {
                       const photoUrl = preinscriptionDetail?.photo_url || selectedPreinscriptionDetail?.photo_url;
                       return photoUrl ? (
-                        <a 
-                          href={photoUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
+                        <a
+                          href={photoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                         >
                           Voir la photo <ExternalLink className="w-3 h-3" />
@@ -789,10 +793,10 @@ export default function ParentDashboard() {
                     {(() => {
                       const bulletinUrl = preinscriptionDetail?.bulletin_url || selectedPreinscriptionDetail?.bulletin_url;
                       return bulletinUrl ? (
-                        <a 
-                          href={bulletinUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
+                        <a
+                          href={bulletinUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                         >
                           Voir le bulletin <ExternalLink className="w-3 h-3" />
@@ -809,7 +813,7 @@ export default function ParentDashboard() {
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-purple-600" />
-                  Détail des paiements
+                  Détail des frais
                 </h3>
 
                 {loadingDetail ? (
@@ -819,36 +823,117 @@ export default function ParentDashboard() {
                 ) : preinscriptionDetail?.details_frais ? (
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                      {/* Inscription - TOUJOURS affiché */}
                       <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                         <p className="text-xs text-gray-600">Inscription</p>
-                        <p className="font-bold text-blue-600">{preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF</p>
+                        <p className="font-bold text-blue-600">
+                          {preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF
+                        </p>
                       </div>
-                      <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
-                        <p className="text-xs text-gray-600">Cantine</p>
-                        <p className="font-bold text-pink-600">{preinscriptionDetail.details_frais.cantine.toLocaleString()} GNF</p>
-                      </div>
-                      <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                        <p className="text-xs text-gray-600">Transport</p>
-                        <p className="font-bold text-green-600">{preinscriptionDetail.details_frais.transport.toLocaleString()} GNF</p>
-                      </div>
-                      <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                        <p className="text-xs text-gray-600">Frais de fourniture</p>
-                        <p className="font-bold text-purple-600">{preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF</p>
-                      </div>
-                      <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                        <p className="text-xs text-gray-600">Scolarité</p>
-                        <p className="font-bold text-orange-600">{preinscriptionDetail.details_frais.scolarite.toLocaleString()} GNF</p>
-                      </div>
-                      <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
+
+                      {/* ⭐ Cantine - UNIQUEMENT si sélectionnée (montant > 0) */}
+                      {preinscriptionDetail.details_frais.cantine > 0 && (
+                        <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
+                          <p className="text-xs text-gray-600">Cantine</p>
+                          <p className="font-bold text-pink-600">
+                            {preinscriptionDetail.details_frais.cantine.toLocaleString()} GNF
+                          </p>
+                        </div>
+                      )}
+
+                      {/* ⭐ Transport - UNIQUEMENT si sélectionné (montant > 0) */}
+                      {preinscriptionDetail.details_frais.transport > 0 && (
+                        <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                          <p className="text-xs text-gray-600">Transport</p>
+                          <p className="font-bold text-green-600">
+                            {preinscriptionDetail.details_frais.transport.toLocaleString()} GNF
+                          </p>
+                        </div>
+                      )}
+
+                      {/* ⭐ Fournitures - UNIQUEMENT si sélectionnées (montant > 0) */}
+                      {preinscriptionDetail.details_frais.librairie > 0 && (
+                        <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                          <p className="text-xs text-gray-600">Fournitures</p>
+                          <p className="font-bold text-purple-600">
+                            {preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF
+                          </p>
+                        </div>
+                      )}
+
+                      {/* ⭐ Scolarité - UNIQUEMENT si > 0 (normalement 0 car déjà incluse) */}
+                      {preinscriptionDetail.details_frais.scolarite > 0 && (
+                        <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                          <p className="text-xs text-gray-600">Scolarité</p>
+                          <p className="font-bold text-orange-600">
+                            {preinscriptionDetail.details_frais.scolarite.toLocaleString()} GNF
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Total - TOUJOURS affiché */}
+                      <div className={`bg-gray-100 p-3 rounded-lg border border-gray-300 ${preinscriptionDetail.details_frais.cantine === 0 &&
+                          preinscriptionDetail.details_frais.transport === 0 &&
+                          preinscriptionDetail.details_frais.librairie === 0 &&
+                          preinscriptionDetail.details_frais.scolarite === 0
+                          ? 'col-span-2 md:col-span-1' : ''
+                        }`}>
                         <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
-                        <p className="font-bold text-gray-800 text-lg">{preinscriptionDetail.details_frais.total.toLocaleString()} GNF</p>
+                        <p className="font-bold text-gray-800 text-lg">
+                          {preinscriptionDetail.details_frais.total.toLocaleString()} GNF
+                        </p>
                       </div>
                     </div>
 
+                    {/* ⭐ Message récapitulatif des services sélectionnés */}
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <p className="text-sm font-medium text-gray-900 mb-1">Services sélectionnés :</p>
+                      <div className="flex flex-wrap gap-3 text-sm">
+                        <span className="flex items-center gap-1 text-gray-900">
+                          <CheckCircle className="w-4 h-4 text-blue-600" />
+                          Inscription
+                        </span>
+                        {preinscriptionDetail.details_frais.cantine > 0 && (
+                          <span className="flex items-center gap-1 text-gray-900">
+                            <CheckCircle className="w-4 h-4 text-pink-600" />
+                            Cantine
+                          </span>
+                        )}
+                        {preinscriptionDetail.details_frais.transport > 0 && (
+                          <span className="flex items-center gap-1 text-gray-900">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            Transport
+                          </span>
+                        )}
+                        {preinscriptionDetail.details_frais.librairie > 0 && (
+                          <span className="flex items-center gap-1 text-gray-900">
+                            <CheckCircle className="w-4 h-4 text-purple-600" />
+                            Fournitures
+                          </span>
+                        )}
+                        {preinscriptionDetail.details_frais.scolarite > 0 && (
+                          <span className="flex items-center gap-1 text-gray-900">
+                            <CheckCircle className="w-4 h-4 text-orange-600" />
+                            Scolarité
+                          </span>
+                        )}
+                        {/* ⭐ Si aucun service optionnel n'est sélectionné */}
+                        {preinscriptionDetail.details_frais.cantine === 0 &&
+                          preinscriptionDetail.details_frais.transport === 0 &&
+                          preinscriptionDetail.details_frais.librairie === 0 &&
+                          preinscriptionDetail.details_frais.scolarite === 0 && (
+                            <span className="text-gray-500 text-xs italic">Aucun service optionnel</span>
+                          )}
+                      </div>
+                    </div>
+
+                    {/* Résumé des paiements */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
                       <div>
                         <p className="text-xs text-gray-600">Déjà payé</p>
-                        <p className="font-bold text-green-600">{preinscriptionDetail.details_frais.paye.toLocaleString()} GNF</p>
+                        <p className="font-bold text-green-600">
+                          {preinscriptionDetail.details_frais.paye.toLocaleString()} GNF
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-600">Reste à payer</p>
@@ -874,16 +959,21 @@ export default function ParentDashboard() {
                       </div>
                     </div>
 
+                    {/* Barre de progression */}
                     {preinscriptionDetail.details_frais.total > 0 && (
                       <div className="mt-3">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
                           <span>Progression des paiements</span>
-                          <span>{Math.round((preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%</span>
+                          <span>
+                            {Math.round((preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div 
-                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
-                            style={{ width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%` }} 
+                          <div
+                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%`
+                            }}
                           />
                         </div>
                       </div>
@@ -898,8 +988,8 @@ export default function ParentDashboard() {
 
               {/* Fermer */}
               <div className="flex justify-end">
-                <button 
-                  onClick={() => setShowDetailModal(false)} 
+                <button
+                  onClick={() => setShowDetailModal(false)}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
                 >
                   Fermer
