@@ -667,79 +667,7 @@ export default function GestionPreinscriptionsPage() {
                 </div>
               </div>
 
-              {/* Informations des parents */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2"><User className="w-5 h-5 text-blue-900" /> Informations des parents</h3>
-                <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                  <p className="text-sm text-gray-500">Email (commun)</p>
-                  <p className="font-medium text-black">{selectedPreinscription.parent_email}</p>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                    <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">Père</h4>
-                    <div className="space-y-2">
-                      <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-black">{selectedPreinscription.parent_prenom} {selectedPreinscription.parent_nom}</p></div>
-                      <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-black">{selectedPreinscription.parent_telephone || "Non renseigné"}</p></div>
-                      <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-black">{selectedPreinscription.parent_profession || "Non renseigné"}</p></div>
-                    </div>
-                  </div>
-                  <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg">
-                    <h4 className="font-semibold text-pink-800 mb-3 text-sm uppercase tracking-wide">Mère</h4>
-                    {(() => {
-                      let mereData: any = null;
-                      try {
-                        if (selectedPreinscription.mere_info) {
-                          mereData = typeof selectedPreinscription.mere_info === 'string' ? JSON.parse(selectedPreinscription.mere_info) : selectedPreinscription.mere_info;
-                        }
-                      } catch (e) {}
-                      return mereData && (mereData.mereNom || mereData.merePrenom) ? (
-                        <div className="space-y-2">
-                          <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-black">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p></div>
-                          <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-black">{mereData.merePhone || "Non renseigné"}</p></div>
-                          <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-black">{mereData.mereProfession || "Non renseigné"}</p></div>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-400 italic">Non renseigné</p>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
-
-              {/* Informations enfant */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-green-600" /> Informations de l'enfant</h3>
-                <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div><p className="text-sm text-gray-900">Nom complet</p><p className="font-medium text-black">{selectedPreinscription.enfant_prenom} {selectedPreinscription.enfant_nom}</p></div>
-                  <div><p className="text-sm text-gray-900">Date de naissance</p><p className="font-medium text-black">{new Date(selectedPreinscription.date_naissance).toLocaleDateString()}</p></div>
-                  <div><p className="text-sm text-gray-900">Lieu de naissance</p><p className="font-medium text-black">{selectedPreinscription.lieu_naissance || "Non renseigné"}</p></div>
-                  <div><p className="text-sm text-gray-900">Sexe</p><p className="font-medium text-black">{selectedPreinscription.sexe === "M" ? "Masculin" : "Féminin"}</p></div>
-                  <div><p className="text-sm text-gray-900">Niveau</p><p className="font-medium text-black">{selectedPreinscription.niveau}</p></div>
-                  <div><p className="text-sm text-gray-900">Classe souhaitée</p><p className="font-medium text-black">{selectedPreinscription.classe}</p></div>
-                </div>
-              </div>
-
-              {/* Documents téléchargés */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2"><FileText className="w-5 h-5 text-purple-600" /> Documents joints</h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2"><File className="w-5 h-5 text-blue-600" /><span className="font-medium text-black">Acte de naissance</span></div>
-                    {selectedPreinscription.acte_naissance_url ? <a href={selectedPreinscription.acte_naissance_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">Voir le document <ExternalLink className="w-3 h-3" /></a> : <p className="text-gray-900 text-sm">Non téléchargé</p>}
-                  </div>
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2"><Image className="w-5 h-5 text-green-600" /><span className="font-medium text-black">Photo d'identité</span></div>
-                    {selectedPreinscription.photo_url ? <a href={selectedPreinscription.photo_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">Voir la photo <ExternalLink className="w-3 h-3" /></a> : <p className="text-gray-900 text-sm">Non téléchargée</p>}
-                  </div>
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-orange-600" /><span className="font-medium text-black">Bulletin scolaire</span></div>
-                    {selectedPreinscription.bulletin_url ? <a href={selectedPreinscription.bulletin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">Voir le bulletin <ExternalLink className="w-3 h-3" /></a> : <p className="text-gray-900 text-sm">Non téléchargé</p>}
-                  </div>
-                </div>
-              </div>
-
               {/* === SECTION DÉTAIL DES FRAIS AVEC PLAN DE PAIEMENT === */}
-              {/* === SECTION DÉTAIL DES FRAIS === */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-purple-600" />
@@ -760,47 +688,47 @@ export default function GestionPreinscriptionsPage() {
                           Plan de paiement échelonné ({preinscriptionDetail.plan_paiement.type_inscription || 'inscription'})
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? 'border-green-300' : 'border-gray-200'}`}>
+                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
                             <p className="text-xs text-gray-500">1er versement</p>
                             <p className="font-bold text-blue-600 text-lg">
                               {preinscriptionDetail.plan_paiement.premier_versement.toLocaleString()} GNF
                             </p>
                             {preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-1 rounded">
+                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
                                 <CheckCircle className="w-3 h-3" /> Payé
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-1 rounded">
+                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
                                 <Clock className="w-3 h-3" /> En attente
                               </span>
                             )}
                           </div>
-                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? 'border-green-300' : 'border-gray-200'}`}>
+                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
                             <p className="text-xs text-gray-500">2ème versement</p>
                             <p className="font-bold text-blue-600 text-lg">
                               {preinscriptionDetail.plan_paiement.deuxieme_versement.toLocaleString()} GNF
                             </p>
                             {preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-1 rounded">
+                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
                                 <CheckCircle className="w-3 h-3" /> Payé
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-1 rounded">
+                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
                                 <Clock className="w-3 h-3" /> En attente
                               </span>
                             )}
                           </div>
-                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? 'border-green-300' : 'border-gray-200'}`}>
+                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
                             <p className="text-xs text-gray-500">3ème versement</p>
                             <p className="font-bold text-blue-600 text-lg">
                               {preinscriptionDetail.plan_paiement.troisieme_versement.toLocaleString()} GNF
                             </p>
                             {preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-1 rounded">
+                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
                                 <CheckCircle className="w-3 h-3" /> Payé
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-1 rounded">
+                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
                                 <Clock className="w-3 h-3" /> En attente
                               </span>
                             )}
@@ -814,57 +742,102 @@ export default function GestionPreinscriptionsPage() {
                       </div>
                     )}
 
-                    {/* ⭐ RÉCAPITULATIF DES FRAIS - UNIQUEMENT LES SERVICES SÉLECTIONNÉS */}
+                    {/* ⭐ RÉCAPITULATIF DES FRAIS - AVEC STATUT POUR CHAQUE SERVICE */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-                      {/* Inscription - TOUJOURS affiché */}
-                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                      {/* Inscription */}
+                      <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'inscription' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-blue-50'}`}>
                         <p className="text-xs text-gray-600">Inscription</p>
                         <p className="font-bold text-blue-600">
                           {preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF
                         </p>
+                        {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'inscription' && e.statut === 'paye') ? (
+                          <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                            <CheckCircle className="w-3 h-3" /> Payé
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                            <Clock className="w-3 h-3" /> En attente
+                          </span>
+                        )}
                       </div>
 
-                      {/* ⭐ Cantine - UNIQUEMENT si sélectionnée */}
+                      {/* Cantine */}
                       {preinscriptionDetail.details_frais.cantine > 0 && (
-                        <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
+                        <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-pink-50'}`}>
                           <p className="text-xs text-gray-600">Cantine</p>
                           <p className="font-bold text-pink-600">
                             {preinscriptionDetail.details_frais.cantine.toLocaleString()} GNF
                           </p>
+                          {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? (
+                            <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                              <CheckCircle className="w-3 h-3" /> Payé
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                              <Clock className="w-3 h-3" /> En attente
+                            </span>
+                          )}
                         </div>
                       )}
 
-                      {/* ⭐ Transport - UNIQUEMENT si sélectionné */}
+                      {/* Transport */}
                       {preinscriptionDetail.details_frais.transport > 0 && (
-                        <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                        <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-green-50'}`}>
                           <p className="text-xs text-gray-600">Transport</p>
                           <p className="font-bold text-green-600">
                             {preinscriptionDetail.details_frais.transport.toLocaleString()} GNF
                           </p>
+                          {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? (
+                            <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                              <CheckCircle className="w-3 h-3" /> Payé
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                              <Clock className="w-3 h-3" /> En attente
+                            </span>
+                          )}
                         </div>
                       )}
 
-                      {/* ⭐ Fournitures - UNIQUEMENT si sélectionnées */}
+                      {/* Fournitures */}
                       {preinscriptionDetail.details_frais.librairie > 0 && (
-                        <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                        <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-purple-50'}`}>
                           <p className="text-xs text-gray-600">Fournitures</p>
                           <p className="font-bold text-purple-600">
                             {preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF
                           </p>
+                          {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? (
+                            <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                              <CheckCircle className="w-3 h-3" /> Payé
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                              <Clock className="w-3 h-3" /> En attente
+                            </span>
+                          )}
                         </div>
                       )}
 
-                      {/* ⭐ Scolarité - UNIQUEMENT si > 0 (normalement 0 car déjà incluse) */}
+                      {/* Scolarité */}
                       {preinscriptionDetail.details_frais.scolarite > 0 && (
-                        <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                        <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'scolarite' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-orange-50'}`}>
                           <p className="text-xs text-gray-600">Scolarité</p>
                           <p className="font-bold text-orange-600">
                             {preinscriptionDetail.details_frais.scolarite.toLocaleString()} GNF
                           </p>
+                          {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'scolarite' && e.statut === 'paye') ? (
+                            <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                              <CheckCircle className="w-3 h-3" /> Payé
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                              <Clock className="w-3 h-3" /> En attente
+                            </span>
+                          )}
                         </div>
                       )}
 
-                      {/* Total - TOUJOURS affiché */}
+                      {/* Total */}
                       <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
                         <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
                         <p className="font-bold text-gray-800 text-lg">
@@ -873,39 +846,58 @@ export default function GestionPreinscriptionsPage() {
                       </div>
                     </div>
 
-                    {/* ⭐ MESSAGE RÉCAPITULATIF DES SERVICES SÉLECTIONNÉS */}
+                    {/* ⭐ MESSAGE RÉCAPITULATIF DES SERVICES SÉLECTIONNÉS AVEC STATUT */}
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                       <p className="text-sm font-medium text-gray-700 mb-1">Services sélectionnés :</p>
                       <div className="flex flex-wrap gap-3 text-sm">
                         <span className="flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4 text-blue-600" />
+                          {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'inscription' && e.statut === 'paye') ? (
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <Clock className="w-4 h-4 text-yellow-600" />
+                          )}
                           Inscription
                         </span>
                         {preinscriptionDetail.details_frais.cantine > 0 && (
                           <span className="flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4 text-pink-600" />
+                            {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Clock className="w-4 h-4 text-yellow-600" />
+                            )}
                             Cantine
                           </span>
                         )}
                         {preinscriptionDetail.details_frais.transport > 0 && (
                           <span className="flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Clock className="w-4 h-4 text-yellow-600" />
+                            )}
                             Transport
                           </span>
                         )}
                         {preinscriptionDetail.details_frais.librairie > 0 && (
                           <span className="flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4 text-purple-600" />
+                            {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Clock className="w-4 h-4 text-yellow-600" />
+                            )}
                             Fournitures
                           </span>
                         )}
                         {preinscriptionDetail.details_frais.scolarite > 0 && (
                           <span className="flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4 text-orange-600" />
+                            {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'scolarite' && e.statut === 'paye') ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Clock className="w-4 h-4 text-yellow-600" />
+                            )}
                             Scolarité
                           </span>
                         )}
-                        {/* ⭐ Si aucun service optionnel n'est sélectionné */}
                         {preinscriptionDetail.details_frais.cantine === 0 && 
                         preinscriptionDetail.details_frais.transport === 0 && 
                         preinscriptionDetail.details_frais.librairie === 0 && 
@@ -915,7 +907,7 @@ export default function GestionPreinscriptionsPage() {
                       </div>
                     </div>
 
-                    {/* SUIVI DES PAIEMENTS */}
+                    {/* SUIVI DES PAIEMENTS - inchangé */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
                       <div>
                         <p className="text-xs text-gray-600">Déjà payé</p>
@@ -947,7 +939,7 @@ export default function GestionPreinscriptionsPage() {
                       </div>
                     </div>
 
-                    {/* BARRE DE PROGRESSION */}
+                    {/* BARRE DE PROGRESSION - inchangé */}
                     {preinscriptionDetail.details_frais.total > 0 && (
                       <div className="mt-3">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">

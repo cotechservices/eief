@@ -24,7 +24,8 @@ import {
   ShoppingCart,
   Plus,
   Minus,
-  UserPlus
+  UserPlus,
+  Trash2
 } from "lucide-react";
 
 interface Enfant {
@@ -75,25 +76,41 @@ interface CantineOption {
 
 interface Reinscription {
   id: number;
-  statut: "en_attente" | "valide" | "rejete";
+  numero_dossier: string;
   date_reinscription: string;
-  observations: string;
+  statut: "en_attente" | "valide" | "rejete";
+  observations: string | null;
   montant_frais: number;
   frais_statut: string;
-  frais_mode_paiement: string;
+  frais_mode_paiement: string | null;
   enfant_nom: string;
   enfant_prenom: string;
-  matricule: string;
+  classe_nom: string | null;
   photo_url: string | null;
-  classe_nom: string;
-  classe_niveau: string;
-  classe_actuelle_nom: string;
-  annee_scolaire: string;
-  // Services optionnels
-  transport_montant?: number;
-  cantine_montant?: number;
-  fournitures_montant?: number;
-  montant_total?: number;
+  acte_naissance_url: string | null;
+  bulletin_url: string | null;
+  matricule: string;
+  classe_actuelle_nom: string | null;
+  annee_scolaire: string | null;
+  montant_total_plan: number;
+  montant_restant_plan: number;
+  echeances: {
+    id: number;
+    type: string;
+    echeance: string;
+    montant: number;
+    statut: string;
+    date_echeance: string;
+    date_paiement: string | null;
+    reference_transaction: string | null;
+    mode_paiement: string | null;
+  }[];
+  montant_total: number;
+  montant_paye: number;
+  montant_restant: number;
+  transport_montant: number;
+  cantine_montant: number;
+  fournitures_montant: number;
 }
 
 interface Notification {
@@ -125,15 +142,57 @@ export default function ReinscriptionParentPage() {
   const [totalFournitures, setTotalFournitures] = useState(0);
   const [loadingServices, setLoadingServices] = useState(false);
 
-   // ⭐ États pour le modal de paiement
-    const [showPaiementModal, setShowPaiementModal] = useState(false);
-    const [selectedReinscription, setSelectedReinscription] = useState<Reinscription | null>(null);
+  // ⭐ États pour le modal de paiement
+  const [showPaiementModal, setShowPaiementModal] = useState(false);
+  const [selectedReinscription, setSelectedReinscription] = useState<Reinscription | null>(null);
 
-   // ⭐ Fonction pour ouvrir le modal de paiement
+  // ⭐ États pour le modal de confirmation d'annulation
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReinscriptionId, setCancelReinscriptionId] = useState<number | null>(null);
+  const [cancelEnfantNom, setCancelEnfantNom] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  // ⭐ Fonction pour ouvrir le modal de paiement
   const handleOpenPaiement = (reinscription: Reinscription) => {
-  setSelectedReinscription(reinscription);
-  setShowPaiementModal(true);
-};
+    setSelectedReinscription(reinscription);
+    setShowPaiementModal(true);
+  };
+
+  // ⭐ Fonction pour ouvrir le modal de confirmation d'annulation
+  const handleCancelClick = (reinscriptionId: number, enfantNom: string) => {
+    setCancelReinscriptionId(reinscriptionId);
+    setCancelEnfantNom(enfantNom);
+    setShowCancelModal(true);
+  };
+
+  // ⭐ Fonction pour confirmer l'annulation
+  const confirmCancelReinscription = async () => {
+    if (!cancelReinscriptionId) return;
+
+    setIsCancelling(true);
+    try {
+      const response = await fetch(`/api/parent/reinscriptions/${cancelReinscriptionId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        addNotification("success", `Réinscription de ${cancelEnfantNom} annulée avec succès`);
+        fetchData();
+        setShowCancelModal(false);
+        setCancelReinscriptionId(null);
+        setCancelEnfantNom("");
+      } else {
+        addNotification("error", data.error || "Erreur lors de l'annulation");
+      }
+    } catch (error) {
+      console.error("Erreur annulation:", error);
+      addNotification("error", "Une erreur est survenue lors de l'annulation");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   const addNotification = (type: Notification["type"], message: string) => {
     const id = Date.now();
@@ -147,6 +206,29 @@ export default function ReinscriptionParentPage() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  const handleCancelReinscription = async (reinscriptionId: number, enfantNom: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir annuler la réinscription de ${enfantNom} ?\n\nCette action est irréversible.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/parent/reinscriptions/${reinscriptionId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        addNotification("success", `Réinscription de ${enfantNom} annulée avec succès`);
+        fetchData(); // Rafraîchir la liste
+      } else {
+        addNotification("error", data.error || "Erreur lors de l'annulation");
+      }
+    } catch (error) {
+      console.error("Erreur annulation:", error);
+      addNotification("error", "Une erreur est survenue lors de l'annulation");
+    }
+  };
   useEffect(() => {
     fetchData();
   }, []);
@@ -282,24 +364,24 @@ export default function ReinscriptionParentPage() {
   };
 
   const handleSupplyChange = (index: number, delta: number) => {
-  // ⭐ Utiliser la forme fonctionnelle de setState avec calcul immédiat
-  setSupplies(prev => {
-    // Créer le nouveau tableau
-    const newSupplies = prev.map((item, i) => {
-      if (i !== index) return item;
-      return {
-        ...item,
-        selectedQty: Math.max(0, Math.min(item.selectedQty + delta, item.quantite_stock || 999))
-      };
+    // ⭐ Utiliser la forme fonctionnelle de setState avec calcul immédiat
+    setSupplies(prev => {
+      // Créer le nouveau tableau
+      const newSupplies = prev.map((item, i) => {
+        if (i !== index) return item;
+        return {
+          ...item,
+          selectedQty: Math.max(0, Math.min(item.selectedQty + delta, item.quantite_stock || 999))
+        };
+      });
+
+      // ⭐ Calculer le total à partir du nouveau tableau
+      const total = newSupplies.reduce((sum, item) => sum + (item.prix_unitaire * item.selectedQty), 0);
+      setTotalFournitures(total);
+
+      return newSupplies;
     });
-    
-    // ⭐ Calculer le total à partir du nouveau tableau
-    const total = newSupplies.reduce((sum, item) => sum + (item.prix_unitaire * item.selectedQty), 0);
-    setTotalFournitures(total);
-    
-    return newSupplies;
-  });
-};
+  };
 
   // Calcul du total général
   const getTotalServices = () => {
@@ -809,7 +891,7 @@ export default function ReinscriptionParentPage() {
         </div>
       )}
 
-      {/* Liste des réinscriptions */}
+      {/* Liste des réinscriptions - AVEC BOUTON ANNULER */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-4 border-b">
           <h2 className="text-lg font-semibold text-black flex items-center gap-2">
@@ -847,7 +929,6 @@ export default function ReinscriptionParentPage() {
                           Matricule: {r.matricule} • Soumis le {new Date(r.date_reinscription).toLocaleDateString("fr-FR")}
                           {r.annee_scolaire && <span> • {r.annee_scolaire}</span>}
                         </p>
-                        {/* Afficher les services optionnels */}
                         {(r.transport_montant || r.cantine_montant || r.fournitures_montant) && (
                           <div className="mt-1 text-xs text-gray-500 flex gap-3">
                             {r.transport_montant && <span>{r.transport_montant.toLocaleString()} GNF</span>}
@@ -867,7 +948,7 @@ export default function ReinscriptionParentPage() {
                       </div>
                     </div>
 
-                     <div className="mt-3">
+                    <div className="mt-3">
                       {r.statut === "en_attente" && r.frais_statut !== "paye" && (
                         <div className="flex flex-wrap items-center gap-2">
                           <div className="bg-yellow-50 text-yellow-700 text-sm py-2 px-3 rounded-lg flex items-center gap-2 flex-1">
@@ -882,16 +963,24 @@ export default function ReinscriptionParentPage() {
                             <CreditCard className="w-4 h-4" />
                             Payer
                           </button>
+                          {/* ⭐ Bouton Annuler */}
+                          <button
+                            onClick={() => handleCancelClick(r.id, `${r.enfant_prenom} ${r.enfant_nom}`)}
+                            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition flex items-center gap-2 text-sm whitespace-nowrap"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Annuler
+                          </button>
                         </div>
                       )}
-                      
+
                       {r.statut === "valide" && (
                         <div className="bg-green-50 text-green-700 text-sm py-2 px-3 rounded-lg flex items-center gap-2">
                           <CheckCircle className="w-4 h-4" />
                           ✅ Réinscription validée
                         </div>
                       )}
-                      
+
                       {r.statut === "rejete" && (
                         <div className="bg-red-50 text-red-700 text-sm py-2 px-3 rounded-lg">
                           <div className="flex items-center gap-2">
@@ -906,21 +995,22 @@ export default function ReinscriptionParentPage() {
                     </div>
 
                     {showPaiementModal && selectedReinscription && (
-                    <ReinscriptionPaiementModal
-                      isOpen={showPaiementModal}
-                      onClose={() => {
-                        setShowPaiementModal(false);
-                        setSelectedReinscription(null);
-                      }}
-                      onSuccess={() => {
-                        fetchData();
-                        addNotification("success", "Paiement effectué avec succès !");
-                      }}
-                      reinscriptionId={selectedReinscription.id}
-                      enfantNom={`${selectedReinscription.enfant_prenom} ${selectedReinscription.enfant_nom}`}
-                      montant={selectedReinscription.montant_total || selectedReinscription.montant_frais || 500000}
-                    />
-                  )}
+                      <ReinscriptionPaiementModal
+                        isOpen={showPaiementModal}
+                        onClose={() => {
+                          setShowPaiementModal(false);
+                          setSelectedReinscription(null);
+                        }}
+                        onSuccess={() => {
+                          fetchData();
+                          addNotification("success", "Paiement effectué avec succès !");
+                        }}
+                        reinscriptionId={selectedReinscription.id}
+                        enfantNom={`${selectedReinscription.enfant_prenom} ${selectedReinscription.enfant_nom}`}
+                        niveau={selectedReinscription.niveau || "N/A"}
+                        montantTotal={selectedReinscription.montant_total || selectedReinscription.montant_frais || 0}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -928,6 +1018,80 @@ export default function ReinscriptionParentPage() {
           </div>
         )}
       </div>
+
+      {/* ⭐ MODAL DE CONFIRMATION D'ANNULATION */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-black flex items-center gap-2">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                  Confirmer l'annulation
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setCancelReinscriptionId(null);
+                    setCancelEnfantNom("");
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p className="text-red-800 font-medium">
+                  Êtes-vous sûr de vouloir annuler la réinscription de <strong>{cancelEnfantNom}</strong> ?
+                </p>
+                <p className="text-red-600 text-sm mt-2">
+                  ⚠️ Cette action est <strong>irréversible</strong> et supprimera :
+                </p>
+                <ul className="text-red-600 text-sm list-disc list-inside mt-1 space-y-1">
+                  <li>La demande de réinscription</li>
+                  <li>Toutes les échéances de paiement associées</li>
+                </ul>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setCancelReinscriptionId(null);
+                    setCancelEnfantNom("");
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-black"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmCancelReinscription}
+                  disabled={isCancelling}
+                  className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${isCancelling
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-red-600 text-white hover:bg-red-700"
+                    }`}
+                >
+                  {isCancelling ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Annulation...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Oui, annuler
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

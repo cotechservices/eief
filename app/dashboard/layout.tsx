@@ -28,7 +28,9 @@ import {
   Euro,
   FileText,
   UserPlus,
-  RefreshCw
+  RefreshCw,
+  ShoppingBasket,
+  ShoppingBag
 } from "lucide-react";
 import { Providers } from "./providers";
 
@@ -95,8 +97,7 @@ const menuItems = {
     { name: "Mes enfants", href: "/dashboard/parent/enfants", icon: Users },
     { name: "Finances", href: "/dashboard/parent/finances", icon: CreditCard },
     { name: "Messages", href: "/dashboard/parent/messages", icon: MessageSquare },
-    { name: "Transport", href: "/dashboard/parent/transport", icon: Bus },
-    { name: "Cantine", href: "/dashboard/parent/cantine", icon: Utensils },
+    { name: "Librairie", href: "/dashboard/parent/librairie", icon: BookMarked},
   ],
   ELEVE: [
     { name: "Dashboard", href: "/dashboard/eleve", icon: LayoutDashboard },

@@ -53,6 +53,54 @@ interface Reinscription {
   bulletin_url: string | null;
 }
 
+// ⭐ Interface pour les détails des frais
+interface DetailsFrais {
+  inscription: number;
+  cantine: number;
+  transport: number;
+  librairie: number;
+  scolarite: number;
+  total: number;
+  paye: number;
+  reste: number;
+}
+
+// ⭐ Interface pour les détails complets de la réinscription
+interface ReinscriptionDetail extends Reinscription {
+  details_frais: DetailsFrais;
+  echeances_paiement: {
+    id: number;
+    type: string;
+    echeance: string;
+    montant: number;
+    statut: string;
+    date_echeance: string;
+    date_paiement: string | null;
+    reference_transaction: string | null;
+    mode_paiement: string | null;
+  }[];
+  plan_paiement: {
+    id: number;
+    premier_versement: number;
+    deuxieme_versement: number;
+    troisieme_versement: number;
+    total: number;
+    type_inscription: string;
+    niveau: string;
+    nom_classe: string;
+  } | null;
+  services_optionnels: {
+    type: string;
+    echeance: string;
+    montant: number;
+    statut: string;
+  }[];
+  transport_montant: number;
+  cantine_montant: number;
+  fournitures_montant: number;
+  montant_total: number;
+}
+
 interface Notification {
   id: number;
   type: "success" | "error" | "warning" | "info";
@@ -72,6 +120,10 @@ export default function GestionReinscriptionsPage() {
   const [showPaiementModal, setShowPaiementModal] = useState(false);
   const [paiementReinscription, setPaiementReinscription] = useState<Reinscription | null>(null);
 
+  // ⭐ États pour les détails enrichis
+  const [reinscriptionDetail, setReinscriptionDetail] = useState<ReinscriptionDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
   // États pour le modal de confirmation
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [reinscriptionToDelete, setReinscriptionToDelete] = useState<{ id: number; nom: string; prenom: string } | null>(null);
@@ -86,7 +138,6 @@ export default function GestionReinscriptionsPage() {
   const addNotification = (type: Notification["type"], message: string) => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, type, message }]);
-    // Auto-supprimer après 5 secondes
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }, 5000);
@@ -127,6 +178,24 @@ export default function GestionReinscriptionsPage() {
     }
   };
 
+  // ⭐ Fonction pour charger les détails complets d'une réinscription
+  const loadReinscriptionDetail = async (id: number) => {
+    setLoadingDetail(true);
+    try {
+      const response = await fetch(`/api/admin/reinscriptions?id=${id}`);
+      if (!response.ok) {
+        throw new Error("Erreur chargement détails");
+      }
+      const data = await response.json();
+      setReinscriptionDetail(data);
+    } catch (error) {
+      console.error("Erreur:", error);
+      addNotification("error", "Erreur lors du chargement des détails");
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
+
   const handleSearch = () => {
     setCurrentPage(1);
     fetchReinscriptions();
@@ -151,6 +220,7 @@ export default function GestionReinscriptionsPage() {
         if (selectedReinscription?.id === reinscriptionToDelete.id) {
           setShowDetailModal(false);
           setSelectedReinscription(null);
+          setReinscriptionDetail(null);
         }
         setShowConfirmModal(false);
         setReinscriptionToDelete(null);
@@ -233,7 +303,6 @@ export default function GestionReinscriptionsPage() {
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
-
       const colWidths = [
         { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 25 },
         { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 20 },
@@ -269,6 +338,9 @@ export default function GestionReinscriptionsPage() {
   const getFraisBadge = (fraisStatut: string) => {
     if (fraisStatut === "paye") {
       return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
+    }
+    if (fraisStatut === "partiel") {
+      return <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Partiel</span>;
     }
     return <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
@@ -344,7 +416,7 @@ export default function GestionReinscriptionsPage() {
 
   return (
     <div className="space-y-6 relative">
-      {/* Notifications Toast */}
+      {/* Notifications Toast - inchangé */}
       <div className="fixed top-20 right-4 z-50 space-y-2">
         {notifications.map((notification) => (
           <div
@@ -375,6 +447,7 @@ export default function GestionReinscriptionsPage() {
         ))}
       </div>
 
+      {/* Header - inchangé */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-black">Gestion des réinscriptions</h1>
@@ -389,9 +462,8 @@ export default function GestionReinscriptionsPage() {
         </button>
       </div>
 
-      {/* Statistiques */}
+      {/* Statistiques - inchangé */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {/* Carte 1 - Total */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -401,8 +473,6 @@ export default function GestionReinscriptionsPage() {
             <FileText className="w-8 h-8 text-blue-700" />
           </div>
         </div>
-
-        {/* Carte 2 - En attente */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -414,8 +484,6 @@ export default function GestionReinscriptionsPage() {
             <Clock className="w-8 h-8 text-yellow-700" />
           </div>
         </div>
-
-        {/* Carte 3 - Validées */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -427,8 +495,6 @@ export default function GestionReinscriptionsPage() {
             <CheckCircle className="w-8 h-8 text-green-700" />
           </div>
         </div>
-
-        {/* Carte 4 - Rejetées */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -440,8 +506,6 @@ export default function GestionReinscriptionsPage() {
             <XCircle className="w-8 h-8 text-red-700" />
           </div>
         </div>
-
-        {/* Carte 5 - Paiements */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -454,7 +518,8 @@ export default function GestionReinscriptionsPage() {
           </div>
         </div>
       </div>
-      {/* Filtres */}
+
+      {/* Filtres - inchangé */}
       <div className="bg-white rounded-xl shadow-sm p-4 text-black">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[250px]">
@@ -486,7 +551,7 @@ export default function GestionReinscriptionsPage() {
         </div>
       </div>
 
-      {/* Tableau */}
+      {/* Tableau - inchangé sauf l'appel à loadReinscriptionDetail */}
       {filteredReinscriptions.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
@@ -534,7 +599,16 @@ export default function GestionReinscriptionsPage() {
                               <CreditCard className="w-4 h-4" />
                             </button>
                           )}
-                          <button onClick={() => { setSelectedReinscription(p); setObservations(p.observations || ""); setShowDetailModal(true); }} className="text-blue-600 hover:text-blue-700 transition" title="Voir détails">
+                          <button 
+                            onClick={() => { 
+                              setSelectedReinscription(p); 
+                              setObservations(p.observations || ""); 
+                              loadReinscriptionDetail(p.id); 
+                              setShowDetailModal(true); 
+                            }} 
+                            className="text-blue-600 hover:text-blue-700 transition" 
+                            title="Voir détails"
+                          >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button onClick={() => openConfirmModal(p.id, p.enfant_nom, p.enfant_prenom)} className="text-red-600 hover:text-red-700 transition" title="Supprimer">
@@ -549,7 +623,7 @@ export default function GestionReinscriptionsPage() {
             </div>
           </div>
 
-          {/* Pagination */}
+          {/* Pagination - inchangé */}
           {totalPages > 1 && (
             <div className="bg-white rounded-xl shadow-sm p-4">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -558,7 +632,6 @@ export default function GestionReinscriptionsPage() {
                   <span className="font-medium">{Math.min(endIndex, filteredReinscriptions.length)}</span>{' '}
                   sur <span className="font-medium">{filteredReinscriptions.length}</span> résultats
                 </p>
-
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -567,7 +640,6 @@ export default function GestionReinscriptionsPage() {
                   >
                     <ChevronLeft className="w-4 h-4 text-black" />
                   </button>
-
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
@@ -586,7 +658,6 @@ export default function GestionReinscriptionsPage() {
                       )
                     ))}
                   </div>
-
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
@@ -601,7 +672,7 @@ export default function GestionReinscriptionsPage() {
         </>
       )}
 
-      {/* Modal de confirmation de suppression */}
+      {/* Modal de confirmation de suppression - inchangé */}
       {showConfirmModal && reinscriptionToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
@@ -613,11 +684,8 @@ export default function GestionReinscriptionsPage() {
                 <h2 className="text-xl font-bold text-gray-900">Confirmer la suppression</h2>
               </div>
             </div>
-
             <div className="p-6">
-              <p className="text-gray-900 mb-2">
-                Êtes-vous sûr de vouloir supprimer cette réinscription ?
-              </p>
+              <p className="text-gray-900 mb-2">Êtes-vous sûr de vouloir supprimer cette réinscription ?</p>
               <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mb-4">
                 {reinscriptionToDelete.prenom} {reinscriptionToDelete.nom}
               </p>
@@ -626,7 +694,6 @@ export default function GestionReinscriptionsPage() {
                 Cette action est irréversible. Toutes les données associées seront supprimées.
               </p>
             </div>
-
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => {
@@ -660,10 +727,10 @@ export default function GestionReinscriptionsPage() {
         </div>
       )}
 
-      {/* Modal Détail */}
+      {/* ⭐ Modal Détail - AVEC SECTION FRAIS ENRICHIE */}
       {showDetailModal && selectedReinscription && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 ">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto ">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-black">Détail de la réinscription</h2>
@@ -672,7 +739,7 @@ export default function GestionReinscriptionsPage() {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* En-tête avec photo */}
+              {/* En-tête avec photo - inchangé */}
               <div className="flex items-start gap-6 pb-6 border-b">
                 <div className="flex-shrink-0">
                   {selectedReinscription.photo_url ? (
@@ -700,147 +767,276 @@ export default function GestionReinscriptionsPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Informations parent */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <User className="w-5 h-5 text-blue-900" />
-                  Informations du parent
-                </h3>
-                <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-900">Nom complet</p>
-                    <p className="font-medium text-black">{selectedReinscription.parent_prenom} {selectedReinscription.parent_nom}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Email</p>
-                    <p className="font-medium text-black">{selectedReinscription.parent_email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Téléphone</p>
-                    <p className="font-medium text-black">{selectedReinscription.parent_telephone}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Informations enfant */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-green-600" />
-                  Informations de l'enfant
-                </h3>
-                <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-900">Nom complet</p>
-                    <p className="font-medium text-black">{selectedReinscription.enfant_prenom} {selectedReinscription.enfant_nom}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Date de naissance</p>
-                    <p className="font-medium text-black" >{new Date(selectedReinscription.date_naissance).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Lieu de naissance</p>
-                    <p className="font-medium text-black">{selectedReinscription.lieu_naissance || "Non renseigné"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Sexe</p>
-                    <p className="font-medium text-black">{selectedReinscription.sexe === "M" ? "Masculin" : "Féminin"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Niveau</p>
-                    <p className="font-medium text-black">{selectedReinscription.niveau}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Classe souhaitée</p>
-                    <p className="font-medium text-black">{selectedReinscription.classe}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Documents téléchargés */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-purple-600" />
-                  Documents joints
-                </h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {/* Acte de naissance */}
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <File className="w-5 h-5 text-blue-600" />
-                      <span className="font-medium text-black">Acte de naissance</span>
-                    </div>
-                    {selectedReinscription.acte_naissance_url ? (
-                      <a href={selectedReinscription.acte_naissance_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                        Voir le document <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ) : (
-                      <p className="text-gray-900 text-sm">Non téléchargé</p>
-                    )}
-                  </div>
-
-                  {/* Photo d'identité */}
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Image className="w-5 h-5 text-green-600" />
-                      <span className="font-medium text-black">Photo d'identité</span>
-                    </div>
-                    {selectedReinscription.photo_url ? (
-                      <a href={selectedReinscription.photo_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                        Voir la photo <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ) : (
-                      <p className="text-gray-900 text-sm">Non téléchargée</p>
-                    )}
-                  </div>
-
-                  {/* Bulletin */}
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="w-5 h-5 text-orange-600" />
-                      <span className="font-medium text-black">Bulletin scolaire</span>
-                    </div>
-                    {selectedReinscription.bulletin_url ? (
-                      <a href={selectedReinscription.bulletin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                        Voir le bulletin <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ) : (
-                      <p className="text-gray-900 text-sm">Non téléchargé</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {/* Paiement */}
+              {/* ⭐ SECTION DÉTAIL DES FRAIS AVEC PLAN DE PAIEMENT */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-purple-600" />
-                  Informations de paiement
+                  Détail des frais - Réinscription
                 </h3>
-                <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-900">Montant des frais</p>
-                    <p className="font-bold text-lg text-green-600">
-                      {selectedReinscription.frais_montant?.toLocaleString()} GNF
-                    </p>
-                    {selectedReinscription.classe && (
-                      <p className="text-xs text-gray-900 mt-1">
-                        (Frais pour la classe {selectedReinscription.classe})
-                      </p>
+
+                {loadingDetail ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                  </div>
+                ) : reinscriptionDetail?.details_frais ? (
+                  <>
+                    {/* ⭐ AFFICHAGE DU PLAN DE PAIEMENT */}
+                    {reinscriptionDetail?.plan_paiement && (
+                      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mb-4">
+                        <h4 className="font-semibold text-indigo-800 mb-3 flex items-center gap-2">
+                          <Wallet className="w-4 h-4" />
+                          Plan de paiement échelonné (Réinscription)
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div className={`bg-white p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
+                            <p className="text-xs text-gray-500">1er versement</p>
+                            <p className="font-bold text-indigo-600 text-lg">
+                              {reinscriptionDetail.plan_paiement.premier_versement.toLocaleString()} GNF
+                            </p>
+                            {reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? (
+                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                                <CheckCircle className="w-3 h-3" /> Payé
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                                <Clock className="w-3 h-3" /> En attente
+                              </span>
+                            )}
+                          </div>
+                          <div className={`bg-white p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
+                            <p className="text-xs text-gray-500">2ème versement</p>
+                            <p className="font-bold text-indigo-600 text-lg">
+                              {reinscriptionDetail.plan_paiement.deuxieme_versement.toLocaleString()} GNF
+                            </p>
+                            {reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? (
+                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                                <CheckCircle className="w-3 h-3" /> Payé
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                                <Clock className="w-3 h-3" /> En attente
+                              </span>
+                            )}
+                          </div>
+                          <div className={`bg-white p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
+                            <p className="text-xs text-gray-500">3ème versement</p>
+                            <p className="font-bold text-indigo-600 text-lg">
+                              {reinscriptionDetail.plan_paiement.troisieme_versement.toLocaleString()} GNF
+                            </p>
+                            {reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? (
+                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                                <CheckCircle className="w-3 h-3" /> Payé
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                                <Clock className="w-3 h-3" /> En attente
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-3 text-center">
+                          <p className="text-sm text-gray-600">
+                            Total du plan: <span className="font-bold text-gray-800">{reinscriptionDetail.plan_paiement.total.toLocaleString()} GNF</span>
+                          </p>
+                        </div>
+                      </div>
                     )}
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Statut paiement</p>
-                    {getFraisBadge(selectedReinscription.frais_statut)}
-                  </div>
-                  {selectedReinscription.frais_mode_paiement && (
-                    <div>
-                      <p className="text-sm text-gray-900">Mode de paiement</p>
-                      <p className="capitalize text-black">{selectedReinscription.frais_mode_paiement.replace("_", " ")}</p>
+
+                    {/* ⭐ RÉCAPITULATIF DES FRAIS - AVEC STATUT POUR CHAQUE SERVICE */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                      {/* Frais réinscription */}
+                      <div className={`p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'reinscription' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-blue-50'}`}>
+                        <p className="text-xs text-gray-600">Frais réinscription</p>
+                        <p className="font-bold text-blue-600">
+                          {reinscriptionDetail.details_frais.inscription.toLocaleString()} GNF
+                        </p>
+                        {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'reinscription' && e.statut === 'paye') ? (
+                          <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                            <CheckCircle className="w-3 h-3" /> Payé
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                            <Clock className="w-3 h-3" /> En attente
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Cantine */}
+                      {reinscriptionDetail.details_frais.cantine > 0 && (
+                        <div className={`p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-pink-50'}`}>
+                          <p className="text-xs text-gray-600">Cantine</p>
+                          <p className="font-bold text-pink-600">
+                            {reinscriptionDetail.details_frais.cantine.toLocaleString()} GNF
+                          </p>
+                          {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? (
+                            <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                              <CheckCircle className="w-3 h-3" /> Payé
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                              <Clock className="w-3 h-3" /> En attente
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Transport */}
+                      {reinscriptionDetail.details_frais.transport > 0 && (
+                        <div className={`p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-green-50'}`}>
+                          <p className="text-xs text-gray-600">Transport</p>
+                          <p className="font-bold text-green-600">
+                            {reinscriptionDetail.details_frais.transport.toLocaleString()} GNF
+                          </p>
+                          {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? (
+                            <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                              <CheckCircle className="w-3 h-3" /> Payé
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                              <Clock className="w-3 h-3" /> En attente
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Fournitures */}
+                      {reinscriptionDetail.details_frais.librairie > 0 && (
+                        <div className={`p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-purple-50'}`}>
+                          <p className="text-xs text-gray-600">Fournitures</p>
+                          <p className="font-bold text-purple-600">
+                            {reinscriptionDetail.details_frais.librairie.toLocaleString()} GNF
+                          </p>
+                          {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? (
+                            <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
+                              <CheckCircle className="w-3 h-3" /> Payé
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
+                              <Clock className="w-3 h-3" /> En attente
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Total */}
+                      <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
+                        <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
+                        <p className="font-bold text-gray-800 text-lg">
+                          {reinscriptionDetail.details_frais.total.toLocaleString()} GNF
+                        </p>
+                      </div>
                     </div>
-                  )}
-                </div>
+
+                    {/* ⭐ MESSAGE RÉCAPITULATIF DES SERVICES SÉLECTIONNÉS */}
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <p className="text-sm font-medium text-gray-700 mb-1">Services sélectionnés :</p>
+                      <div className="flex flex-wrap gap-3 text-sm">
+                        <span className="flex items-center gap-1">
+                          {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'reinscription' && e.statut === 'paye') ? (
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <Clock className="w-4 h-4 text-yellow-600" />
+                          )}
+                          Réinscription
+                        </span>
+                        {reinscriptionDetail.details_frais.cantine > 0 && (
+                          <span className="flex items-center gap-1">
+                            {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Clock className="w-4 h-4 text-yellow-600" />
+                            )}
+                            Cantine
+                          </span>
+                        )}
+                        {reinscriptionDetail.details_frais.transport > 0 && (
+                          <span className="flex items-center gap-1">
+                            {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Clock className="w-4 h-4 text-yellow-600" />
+                            )}
+                            Transport
+                          </span>
+                        )}
+                        {reinscriptionDetail.details_frais.librairie > 0 && (
+                          <span className="flex items-center gap-1">
+                            {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <Clock className="w-4 h-4 text-yellow-600" />
+                            )}
+                            Fournitures
+                          </span>
+                        )}
+                        {reinscriptionDetail.details_frais.cantine === 0 && 
+                        reinscriptionDetail.details_frais.transport === 0 && 
+                        reinscriptionDetail.details_frais.librairie === 0 && (
+                          <span className="text-gray-500 text-xs italic">Aucun service optionnel</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* SUIVI DES PAIEMENTS - inchangé */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
+                      <div>
+                        <p className="text-xs text-gray-600">Déjà payé</p>
+                        <p className="font-bold text-green-600">
+                          {reinscriptionDetail.details_frais.paye.toLocaleString()} GNF
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Reste à payer</p>
+                        <p className={`font-bold ${reinscriptionDetail.details_frais.reste > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {reinscriptionDetail.details_frais.reste.toLocaleString()} GNF
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Statut</p>
+                        {reinscriptionDetail.details_frais.reste === 0 ? (
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" /> Tout payé
+                          </span>
+                        ) : reinscriptionDetail.details_frais.paye > 0 ? (
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> Partiel
+                          </span>
+                        ) : (
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                            <XCircle className="w-3 h-3" /> Non payé
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* BARRE DE PROGRESSION - inchangé */}
+                    {reinscriptionDetail.details_frais.total > 0 && (
+                      <div className="mt-3">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>Progression des paiements</span>
+                          <span>
+                            {Math.round((reinscriptionDetail.details_frais.paye / reinscriptionDetail.details_frais.total) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
+                            style={{ 
+                              width: `${Math.min(100, (reinscriptionDetail.details_frais.paye / reinscriptionDetail.details_frais.total) * 100)}%` 
+                            }} 
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    <p>Chargement des informations de frais...</p>
+                  </div>
+                )}
               </div>
-              {/* Observations */}
+
+              {/* Observations - inchangé */}
               <div>
                 <label className="block text-black mb-2">Observations</label>
                 <textarea
@@ -853,6 +1049,7 @@ export default function GestionReinscriptionsPage() {
               </div>
             </div>
 
+            {/* Boutons d'action - inchangés */}
             <div className="p-6 border-t bg-gray-50 flex justify-between gap-3">
               {selectedReinscription.statut === "en_attente" && (
                 <div className="flex gap-3">
@@ -899,6 +1096,7 @@ export default function GestionReinscriptionsPage() {
         </div>
       )}
 
+      {/* Modal Paiement - inchangé */}
       {showPaiementModal && paiementReinscription && (
         <PaiementModal
           isOpen={showPaiementModal}

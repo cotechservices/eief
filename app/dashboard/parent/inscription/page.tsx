@@ -418,7 +418,7 @@ export default function InscriptionParentPage() {
             <UserPlus className="w-7 h-7 text-blue-600" />
             Inscription
           </h1>
-          <p className="text-gray-900">Pré-inscrire un nouvel enfant à l'école</p>
+          <p className="text-gray-900">Inscrire un enfant à l'école</p>
         </div>
         {!showForm && (
           <Link
@@ -476,7 +476,7 @@ export default function InscriptionParentPage() {
         <div className="p-4 border-b">
           <h2 className="text-lg font-semibold text-black flex items-center gap-2">
             <FileText className="w-5 h-5 text-purple-600" />
-            Mes pré-inscriptions
+            Mes inscriptions
           </h2>
         </div>
 

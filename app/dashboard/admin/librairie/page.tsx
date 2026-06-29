@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   Store, ShoppingCart, Tag, Search, Plus, Trash2, Edit, CreditCard, Box, Check, ImageIcon, X, Loader2
 } from "lucide-react";
@@ -266,6 +267,11 @@ export default function LibrairiePage() {
           <button onClick={() => setActiveTab("ventes")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "ventes" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
             Historique des ventes
           </button>
+          <Link href="/dashboard/admin/librairie/commandes" className="block">
+            <button className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5" />Voir les commandes
+            </button>
+          </Link>
         </div>
 
         <div className="p-4 border-b flex justify-between bg-gray-50/50">

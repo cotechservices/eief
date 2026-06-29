@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import PaiementPlanModal from "@/components/PaiementPlanModal";
-import ParentStatsCharts from "@/components/ParentStatsCharts";
 
 import {
   Users,
@@ -506,7 +505,7 @@ const statsGlobales = {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <FileText className="w-5 h-5 text-purple-600" />
-              Mes pré-inscriptions
+              Mes pinscriptions
             </h2>
             <Link
               href="/register"
@@ -1071,16 +1070,7 @@ const statsGlobales = {
           enfantNom={`${selectedPreinscription.enfant_prenom} ${selectedPreinscription.enfant_nom}`}
           niveau={selectedPreinscription.niveau}
         />
-      )}      
-      {/* GRAPHIQUES DES STATISTIQUES */}
-        <div className="mb-8">
-        <ParentStatsCharts 
-          enfants={enfants}
-          preinscriptions={preinscriptions}
-          statsEnfant={statsEnfant}
-          statsGlobales={statsGlobales}
-        />
-      </div>
+      )}   
     </div>
   );
 }

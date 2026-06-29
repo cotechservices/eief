@@ -8,14 +8,14 @@ import bcrypt from "bcryptjs";
 // GET - Récupérer toutes les pré-inscriptions
 export async function GET(request: NextRequest) {
   console.log("=== API ADMIN GET ===");
-  
+
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
-    
+
     if ((session.user as any).role !== "SUPER_ADMIN" && (session.user as any).role !== "COMPTABLE") {
       return NextResponse.json({ error: "Non autorisé - besoin SUPER_ADMIN ou COMPTABLE" }, { status: 403 });
     }
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
       const data = detailResult.rows[0];
 
       // ===================== VÉRIFIER LES SERVICES SÉLECTIONNÉS =====================
-      
+
       // ⭐ TRANSPORT - Vérifier si sélectionné
       const transportResult = await query(`
         SELECT COALESCE(SUM(pt.prix), 0) as total
@@ -172,11 +172,11 @@ export async function GET(request: NextRequest) {
           JOIN cantine_menus cm ON pc.menu_id = cm.id
           WHERE pc.preinscription_id = $1
         `, [id]);
-        
+
         if (cantinePrixResult.rows.length > 0) {
           cantineSelected = Number(cantinePrixResult.rows[0]?.prix_annuel) || 0;
         }
-        
+
         // Si pas de prix annuel, utiliser la somme des prix
         if (cantineSelected === 0) {
           const sumResult = await query(`
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
           `, [id]);
           cantineSelected = Number(sumResult.rows[0]?.total) || 0;
         }
-        
+
         // Si toujours 0, utiliser le prix annuel par défaut
         if (cantineSelected === 0) {
           const defaultPrix = await query(`
@@ -227,10 +227,10 @@ export async function GET(request: NextRequest) {
       const echeances = data.echeances_paiement || [];
       const echeancesInscription = echeances.filter((e: any) => e.type === 'inscription');
       const toutesPayees = echeancesInscription.length > 0 && echeancesInscription.every((e: any) => e.statut === 'paye');
-      
+
       // ⭐ Mettre à jour le statut en fonction des échéances - DÉCLARER LA VARIABLE ICI
       let fraisStatut = data.frais_statut;
-      
+
       if (toutesPayees && fraisStatut !== 'paye') {
         await query(`
           UPDATE preinscriptions 
@@ -374,14 +374,14 @@ export async function GET(request: NextRequest) {
     sql += ` ORDER BY p.date_preinscription DESC`;
 
     const result = await query(sql, params);
-    
+
     const rows = result.rows.map(row => ({
       ...row,
       frais_statut: row.frais_statut_calcule || row.frais_statut,
       frais_paye: Number(row.frais_paye_calcule) || 0,
       frais_montant: Number(row.montant_total_plan) || Number(row.frais_montant) || 0
     }));
-    
+
     return NextResponse.json(rows);
   } catch (error) {
     console.error("Erreur GET:", error);
@@ -419,10 +419,10 @@ export async function PUT(request: NextRequest) {
         FROM echeances_paiement 
         WHERE preinscription_id = $1 AND type = 'inscription'
       `, [id]);
-      
+
       const totalEcheances = Number(echeancesResult.rows[0]?.total) || 0;
       const payeesEcheances = Number(echeancesResult.rows[0]?.payees) || 0;
-      
+
       // ⭐ Au moins une échéance payée pour valider
       if (totalEcheances > 0 && payeesEcheances === 0) {
         return NextResponse.json(
@@ -430,13 +430,13 @@ export async function PUT(request: NextRequest) {
           { status: 400 }
         );
       }
-      
+
       // Vérifier le paiement unique (cas sans échéances)
       const preinscription = await query(
         "SELECT frais_statut, frais_montant, classe, frais_mode_paiement, frais_reference FROM preinscriptions WHERE id = $1",
         [id]
       );
-      
+
       // Si pas d'échéances, vérifier que le paiement a été effectué
       if (totalEcheances === 0 && preinscription.rows[0]?.frais_statut !== "paye" && preinscription.rows[0]?.frais_statut !== "partiel") {
         return NextResponse.json(
@@ -473,7 +473,7 @@ export async function PUT(request: NextRequest) {
         // 1. Récupérer l'ID de la classe correspondante
         let classeId = null;
         let montantFrais = data.frais_montant || 0;
-        
+
         if (data.classe) {
           const classeResult = await query(
             "SELECT id, frais_inscription, total_versement FROM classes WHERE LOWER(nom) = LOWER($1)",
@@ -502,7 +502,7 @@ export async function PUT(request: NextRequest) {
 
         // 3. Créer la fiche élève
         const matricule = `ELE-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        
+
         const newEleve = await query(`
           INSERT INTO eleves (utilisateur_id, matricule, date_naissance, lieu_naissance, sexe, classe_id, est_inscrit)
           VALUES ($1, $2, $3, $4, $5, $6, true)
@@ -532,9 +532,9 @@ export async function PUT(request: NextRequest) {
           FROM echeances_paiement 
           WHERE preinscription_id = $1 AND statut = 'paye'
         `, [id]);
-        
+
         const totalPayeEcheances = Number(echeancesPayees.rows[0]?.total_paye) || 0;
-        
+
         // ⭐ On ne crée un paiement que s'il n'y a pas d'échéances
         if (totalEcheances === 0) {
           let modePaiementValide = 'especes';
@@ -612,8 +612,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: statut === "valide" ? "✅ Inscription validée" : "❌ Pré-inscription rejetée",
       data: result.rows[0]
     });
@@ -670,12 +670,12 @@ export async function DELETE(request: NextRequest) {
       // ⭐ 1. Si la pré-inscription est validée et a un élève associé, supprimer l'élève et ses données
       if (preinscription.statut === 'valide' && eleveId) {
         console.log(`🗑️ Suppression de l'élève ${eleveId} associé à la pré-inscription ${id}`);
-        
+
         // Supprimer l'utilisateur élève
         const eleveInfo = await query(`
           SELECT utilisateur_id FROM eleves WHERE id = $1
         `, [eleveId]);
-        
+
         if (eleveInfo.rows.length > 0 && eleveInfo.rows[0].utilisateur_id) {
           // Supprimer les sessions de l'utilisateur
           await query(`DELETE FROM sessions WHERE utilisateur_id = $1`, [eleveInfo.rows[0].utilisateur_id]);
@@ -696,10 +696,10 @@ export async function DELETE(request: NextRequest) {
         await query(`DELETE FROM inscriptions_transport WHERE eleve_id = $1`, [eleveId]);
         await query(`DELETE FROM inscriptions_cantine WHERE eleve_id = $1`, [eleveId]);
         await query(`DELETE FROM ventes_librairie WHERE eleve_id = $1`, [eleveId]);
-        
+
         // Supprimer l'élève
         await query(`DELETE FROM eleves WHERE id = $1`, [eleveId]);
-        
+
         console.log(`✅ Élève ${eleveId} supprimé`);
       }
 
@@ -710,7 +710,7 @@ export async function DELETE(request: NextRequest) {
       await query(`DELETE FROM commandes_fournitures WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM preinscription_transport WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM preinscription_cantine WHERE preinscription_id = $1`, [id]);
-      
+
       // ⭐ 3. Supprimer la pré-inscription
       await query(`DELETE FROM preinscriptions WHERE id = $1`, [id]);
 
@@ -720,11 +720,11 @@ export async function DELETE(request: NextRequest) {
 
       await query('COMMIT');
 
-      return NextResponse.json({ 
-        success: true, 
-        message: preinscription.statut === 'valide' 
-          ? "Pré-inscription et élève associé supprimés avec succès (parent conservé)" 
-          : "Pré-inscription supprimée avec succès (parent conservé)" 
+      return NextResponse.json({
+        success: true,
+        message: preinscription.statut === 'valide'
+          ? "Pré-inscription et élève associé supprimés avec succès (parent conservé)"
+          : "Pré-inscription supprimée avec succès (parent conservé)"
       });
     } catch (error) {
       await query('ROLLBACK');

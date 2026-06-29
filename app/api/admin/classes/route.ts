@@ -21,16 +21,22 @@ export async function GET() {
         c.capacite_max as capacite,
         c.frais_inscription,
         COUNT(e.id) as effectif,
-        -- ⭐ Récupérer le plan de paiement pour ce niveau
-        pn.premier_versement,
-        pn.deuxieme_versement,
-        pn.troisieme_versement,
-        pn.total as total_versement
+        -- ⭐ Préinscriptions
+        c.premier_versement,
+        c.deuxieme_versement,
+        c.troisieme_versement,
+        c.total_versement,
+        -- ⭐ Réinscriptions
+        c.reinscription_premier_versement,
+        c.reinscription_deuxieme_versement,
+        c.reinscription_troisieme_versement,
+        c.reinscription_total_versement
       FROM classes c
       LEFT JOIN eleves e ON e.classe_id = c.id AND e.est_inscrit = true
-      LEFT JOIN plans_paiement_niveaux pn ON LOWER(pn.niveau) = LOWER(c.niveau) AND pn.type_inscription = 'inscription'
-      GROUP BY c.id, c.nom, c.niveau, c.salle, c.capacite_max, c.frais_inscription, 
-               pn.premier_versement, pn.deuxieme_versement, pn.troisieme_versement, pn.total
+      GROUP BY c.id, c.nom, c.niveau, c.salle, c.capacite_max, c.frais_inscription,
+               c.premier_versement, c.deuxieme_versement, c.troisieme_versement, c.total_versement,
+               c.reinscription_premier_versement, c.reinscription_deuxieme_versement,
+               c.reinscription_troisieme_versement, c.reinscription_total_versement
       ORDER BY c.niveau, c.nom
     `);
 
@@ -40,11 +46,16 @@ export async function GET() {
       capacite: parseInt(c.capacite) || 0,
       statut: "active",
       horaires: "08:00 - 15:00",
-      // ⭐ S'assurer que les valeurs ne sont pas null
+      // ⭐ Préinscriptions
       premier_versement: parseInt(c.premier_versement) || 0,
       deuxieme_versement: parseInt(c.deuxieme_versement) || 0,
       troisieme_versement: parseInt(c.troisieme_versement) || 0,
       total_versement: parseInt(c.total_versement) || 0,
+      // ⭐ Réinscriptions
+      reinscription_premier_versement: parseInt(c.reinscription_premier_versement) || 0,
+      reinscription_deuxieme_versement: parseInt(c.reinscription_deuxieme_versement) || 0,
+      reinscription_troisieme_versement: parseInt(c.reinscription_troisieme_versement) || 0,
+      reinscription_total_versement: parseInt(c.reinscription_total_versement) || 0,
       frais_inscription: parseInt(c.frais_inscription) || 0
     }));
 
@@ -70,10 +81,16 @@ export async function POST(request: NextRequest) {
       salle, 
       capacite_max, 
       frais_inscription,
+      // ⭐ Préinscriptions
       premier_versement,
       deuxieme_versement,
       troisieme_versement,
-      total_versement
+      total_versement,
+      // ⭐ Réinscriptions
+      reinscription_premier_versement,
+      reinscription_deuxieme_versement,
+      reinscription_troisieme_versement,
+      reinscription_total_versement
     } = body;
 
     if (!nom || !niveau) {
@@ -84,9 +101,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Le montant des frais d'inscription est requis" }, { status: 400 });
     }
 
-    // Vérifier que les versements sont saisis
     if (!premier_versement || !deuxieme_versement || !troisieme_versement) {
-      return NextResponse.json({ error: "Les 3 versements sont requis" }, { status: 400 });
+      return NextResponse.json({ error: "Les 3 versements d'inscription sont requis" }, { status: 400 });
     }
 
     // Récupérer l'année scolaire active
@@ -95,79 +111,26 @@ export async function POST(request: NextRequest) {
     `);
     const anneeId = anneeActive.rows[0]?.id || null;
 
-    // 1. Créer la classe
+    // Créer la classe avec toutes les colonnes
     const result = await query(`
-      INSERT INTO classes (nom, niveau, salle, capacite_max, frais_inscription, annee_scolaire_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, nom, niveau
-    `, [nom, niveau, salle || null, capacite_max || 30, frais_inscription, anneeId]);
-
-    const classeId = result.rows[0].id;
-    const classeNiveau = result.rows[0].niveau;
-
-    // 2. ⭐ Créer ou mettre à jour le plan de paiement pour ce niveau
-    const planExistant = await query(`
-      SELECT id FROM plans_paiement_niveaux 
-      WHERE LOWER(niveau) = LOWER($1) AND type_inscription = 'inscription'
-    `, [classeNiveau]);
-
-    let planId;
-
-    if (planExistant.rows.length > 0) {
-      planId = planExistant.rows[0].id;
-      await query(`
-        UPDATE plans_paiement_niveaux 
-        SET premier_versement = $1,
-            deuxieme_versement = $2,
-            troisieme_versement = $3,
-            total = $4,
-            updated_at = NOW()
-        WHERE id = $5
-      `, [premier_versement, deuxieme_versement, troisieme_versement, total_versement, planId]);
-    } else {
-      const planResult = await query(`
-        INSERT INTO plans_paiement_niveaux (niveau, premier_versement, deuxieme_versement, troisieme_versement, total, type_inscription)
-        VALUES ($1, $2, $3, $4, $5, 'inscription')
-        RETURNING id
-      `, [classeNiveau, premier_versement, deuxieme_versement, troisieme_versement, total_versement]);
-      planId = planResult.rows[0].id;
-    }
-
-    // 3. ⭐ Créer les échéances pour les pré-inscriptions de ce niveau
-    const preinscriptions = await query(`
-      SELECT id FROM preinscriptions 
-      WHERE LOWER(niveau) = LOWER($1) AND statut != 'valide'
-    `, [classeNiveau]);
-
-    for (const p of preinscriptions.rows) {
-      // Supprimer les anciennes échéances d'inscription
-      await query(`
-        DELETE FROM echeances_paiement 
-        WHERE preinscription_id = $1 AND type = 'inscription'
-      `, [p.id]);
-
-      // Créer les nouvelles échéances
-      await query(`
-        INSERT INTO echeances_paiement (preinscription_id, type, echeance, montant, date_echeance, statut)
-        VALUES 
-          ($1, 'inscription', '1er_versement', $2, CURRENT_DATE, 'en_attente'),
-          ($1, 'inscription', '2eme_versement', $3, CURRENT_DATE + INTERVAL '2 months', 'en_attente'),
-          ($1, 'inscription', '3eme_versement', $4, CURRENT_DATE + INTERVAL '4 months', 'en_attente')
-      `, [p.id, premier_versement, deuxieme_versement, troisieme_versement]);
-
-      await query(`
-        UPDATE preinscriptions 
-        SET plan_paiement_id = $1,
-            montant_total_plan = $2,
-            montant_restant_plan = $2,
-            type_inscription = 'inscription'
-        WHERE id = $3
-      `, [planId, total_versement, p.id]);
-    }
+      INSERT INTO classes (
+        nom, niveau, salle, capacite_max, frais_inscription, annee_scolaire_id,
+        premier_versement, deuxieme_versement, troisieme_versement, total_versement,
+        reinscription_premier_versement, reinscription_deuxieme_versement,
+        reinscription_troisieme_versement, reinscription_total_versement
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      RETURNING id
+    `, [
+      nom, niveau, salle || null, capacite_max || 30, frais_inscription, anneeId,
+      premier_versement, deuxieme_versement, troisieme_versement, total_versement,
+      reinscription_premier_versement, reinscription_deuxieme_versement,
+      reinscription_troisieme_versement, reinscription_total_versement
+    ]);
 
     return NextResponse.json({ 
       success: true, 
-      id: classeId,
+      id: result.rows[0].id,
       message: "Classe créée avec succès"
     });
   } catch (error) {
@@ -192,10 +155,16 @@ export async function PUT(request: NextRequest) {
       salle, 
       capacite_max, 
       frais_inscription,
+      // ⭐ Préinscriptions
       premier_versement,
       deuxieme_versement,
       troisieme_versement,
-      total_versement
+      total_versement,
+      // ⭐ Réinscriptions
+      reinscription_premier_versement,
+      reinscription_deuxieme_versement,
+      reinscription_troisieme_versement,
+      reinscription_total_versement
     } = body;
 
     if (!id || !nom || !niveau) {
@@ -206,56 +175,33 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Le montant des frais d'inscription est requis" }, { status: 400 });
     }
 
-    // 1. Mettre à jour la classe
+    // Mettre à jour la classe avec toutes les colonnes
     await query(`
       UPDATE classes 
-      SET nom = $1, niveau = $2, salle = $3, capacite_max = $4, frais_inscription = $5
-      WHERE id = $6
-    `, [nom, niveau, salle || null, capacite_max || 30, frais_inscription, id]);
-
-    // 2. ⭐ Mettre à jour le plan de paiement
-    const planExistant = await query(`
-      SELECT id FROM plans_paiement_niveaux 
-      WHERE LOWER(niveau) = LOWER($1) AND type_inscription = 'inscription'
-    `, [niveau]);
-
-    if (planExistant.rows.length > 0) {
-      await query(`
-        UPDATE plans_paiement_niveaux 
-        SET premier_versement = $1,
-            deuxieme_versement = $2,
-            troisieme_versement = $3,
-            total = $4,
-            updated_at = NOW()
-        WHERE id = $5
-      `, [premier_versement, deuxieme_versement, troisieme_versement, total_versement, planExistant.rows[0].id]);
-    } else {
-      await query(`
-        INSERT INTO plans_paiement_niveaux (niveau, premier_versement, deuxieme_versement, troisieme_versement, total, type_inscription)
-        VALUES ($1, $2, $3, $4, $5, 'inscription')
-      `, [niveau, premier_versement, deuxieme_versement, troisieme_versement, total_versement]);
-    }
-
-    // 3. ⭐ Mettre à jour les échéances des pré-inscriptions
-    const preinscriptions = await query(`
-      SELECT id FROM preinscriptions 
-      WHERE LOWER(niveau) = LOWER($1) AND statut != 'valide'
-    `, [niveau]);
-
-    for (const p of preinscriptions.rows) {
-      await query(`
-        DELETE FROM echeances_paiement 
-        WHERE preinscription_id = $1 AND type = 'inscription'
-      `, [p.id]);
-
-      await query(`
-        INSERT INTO echeances_paiement (preinscription_id, type, echeance, montant, date_echeance, statut)
-        VALUES 
-          ($1, 'inscription', '1er_versement', $2, CURRENT_DATE, 'en_attente'),
-          ($1, 'inscription', '2eme_versement', $3, CURRENT_DATE + INTERVAL '2 months', 'en_attente'),
-          ($1, 'inscription', '3eme_versement', $4, CURRENT_DATE + INTERVAL '4 months', 'en_attente')
-      `, [p.id, premier_versement, deuxieme_versement, troisieme_versement]);
-    }
+      SET 
+        nom = $1, 
+        niveau = $2, 
+        salle = $3, 
+        capacite_max = $4, 
+        frais_inscription = $5,
+        -- ⭐ Préinscriptions
+        premier_versement = $6,
+        deuxieme_versement = $7,
+        troisieme_versement = $8,
+        total_versement = $9,
+        -- ⭐ Réinscriptions
+        reinscription_premier_versement = $10,
+        reinscription_deuxieme_versement = $11,
+        reinscription_troisieme_versement = $12,
+        reinscription_total_versement = $13
+      WHERE id = $14
+    `, [
+      nom, niveau, salle || null, capacite_max || 30, frais_inscription,
+      premier_versement, deuxieme_versement, troisieme_versement, total_versement,
+      reinscription_premier_versement, reinscription_deuxieme_versement,
+      reinscription_troisieme_versement, reinscription_total_versement,
+      id
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

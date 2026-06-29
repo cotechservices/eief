@@ -1,84 +1,174 @@
-// app/dashboard/parent/finances/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import PaiementPlanModal from "@/components/PaiementPlanModal";
+import ParentStatsCharts from "@/components/ParentStatsCharts";
+
 import {
+  Users,
   CreditCard,
-  Download,
-  Eye,
-  Printer,
-  ChevronLeft,
-  ChevronRight,
+  Bus,
   Calendar,
   AlertCircle,
-  CheckCircle,
-  Clock,
-  Smartphone,
-  Wallet,
-  TrendingUp,
-  TrendingDown,
-  FileText,
-  Loader2,
-  Bus,
-  Utensils,
+  MessageSquare,
   GraduationCap,
-  BookOpen,
-  ShoppingBag,
-  Users
+  Eye,
+  Loader2,
+  FileText,
+  Smartphone,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Wallet,
+  Trash2,
+  AlertTriangle,
+  X,
+  Plus,
+  ShoppingCart,
+  Utensils,
+  Camera,
+  File,
+  ExternalLink,
+  Image,
+  User
 } from "lucide-react";
-
-interface Paiement {
-  id: number;
-  date: string;
-  montant: number;
-  type_frais: string;
-  statut: "paye" | "en_attente" | "impaye";
-  mode_paiement: "mobile_money" | "especes" | "carte";
-  reference: string;
-  mois: number;
-  annee: number;
-  description?: string;
-}
 
 interface Enfant {
   id: number;
   matricule: string;
+  eleve_id: number;
   nom: string;
   prenom: string;
   classe_nom: string;
-  frais_total: number;
-  total_paye: number;
-  total_en_attente: number;
-  solde_restant: number;
-  paiements: Paiement[];
+  niveau: string;
+  frais_inscription_classe: number;
+  photo_url: string | null;
 }
 
-interface Totals {
-  total_du: number;
-  total_paye: number;
-  total_en_attente: number;
-  solde_restant: number;
+interface Preinscription {
+  id: number;
+  numero_dossier: string;
+  enfant_nom: string;
+  enfant_prenom: string;
+  date_naissance: string;
+  lieu_naissance?: string;
+  sexe?: string;
+  niveau: string;
+  classe: string;
+  statut: "en_attente" | "valide" | "rejete";
+  date_preinscription: string;
+  frais_statut: string;
+  frais_montant: number;
+  photo_url: string | null;
+  acte_naissance_url?: string | null;
+  bulletin_url?: string | null;
+  transport_montant: number;
+  cantine_montant: number;
+  fournitures_montant: number;
+  scolarite_montant: number;
+  montant_total: number;
 }
 
-interface DepensesParCategorie {
-  inscription: number;
-  mensualite: number;
-  cantine: number;
+interface Stats {
+  notes: Array<{ matiere: string; moyenne: number; coefficient: number }>;
+  presences: { total: number; presents: number; absents: number; retards: number };
+  paiements: {
+    total_paye: number;
+    nombre_paiements: number;
+    details?: Array<{ montant: number; type_frais: string; mode_paiement: string; date_paiement: string }>;
+  };
+  frais_inscription: number;
   transport: number;
-  bibliotheque: number;
-  librairie: number;
-  autre: number;
+  cantine: number;
+  fournitures: number;
+  scolarite: number;
+  total_frais_general: number;
+  montant_a_payer: number;
+  solde_restant: number;
 }
 
-export default function ParentFinancesPage() {
+interface PreinscriptionDetail extends Preinscription {
+  details_frais: {
+    inscription: number;
+    cantine: number;
+    transport: number;
+    librairie: number;
+    scolarite: number;
+    total: number;
+    paye: number;
+    reste: number;
+  };
+  parent_nom: string;
+  parent_prenom: string;
+  parent_email: string;
+  parent_telephone: string;
+  parent_profession: string;
+  mere_info: string | null;
+  acte_naissance_url: string | null;
+  bulletin_url: string | null;
+  photo_url: string | null;
+}
+
+interface Notification {
+  id: number;
+  type: "success" | "error" | "warning" | "info";
+  message: string;
+}
+
+// Valeurs par défaut pour les stats
+const DEFAULT_STATS: Stats = {
+  notes: [],
+  presences: { total: 0, presents: 0, absents: 0, retards: 0 },
+  paiements: { total_paye: 0, nombre_paiements: 0, details: [] },
+  frais_inscription: 0,
+  transport: 0,
+  cantine: 0,
+  fournitures: 0,
+  scolarite: 0,
+  total_frais_general: 0,
+  montant_a_payer: 0,
+  solde_restant: 0
+};
+
+export default function ParentDashboard() {
   const [enfants, setEnfants] = useState<Enfant[]>([]);
-  const [totals, setTotals] = useState<Totals | null>(null);
+  const [preinscriptions, setPreinscriptions] = useState<Preinscription[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedEnfantId, setSelectedEnfantId] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategorie, setSelectedCategorie] = useState<string>("toutes");
-  const itemsPerPage = 10;
+  const [statsEnfant, setStatsEnfant] = useState<{ [key: number]: Stats }>({});
+  const [showPaiementModal, setShowPaiementModal] = useState(false);
+  const [selectedPreinscription, setSelectedPreinscription] = useState<Preinscription | null>(null);
+  const [modePaiement, setModePaiement] = useState("");
+  const [reference, setReference] = useState("");
+  const [paiementLoading, setPaiementLoading] = useState(false);
+
+  // États pour le modal de détails
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedPreinscriptionDetail, setSelectedPreinscriptionDetail] = useState<Preinscription | null>(null);
+  const [preinscriptionDetail, setPreinscriptionDetail] = useState<PreinscriptionDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
+  // États pour l'annulation
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [preinscriptionToCancel, setPreinscriptionToCancel] = useState<Preinscription | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+
+  // État pour les notifications
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Fonction pour ajouter une notification
+  const addNotification = (type: Notification["type"], message: string) => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, type, message }]);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 5000);
+  };
+
+  // Fonction pour supprimer une notification
+  const removeNotification = (id: number) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
 
   useEffect(() => {
     fetchData();
@@ -87,121 +177,239 @@ export default function ParentFinancesPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const financesRes = await fetch("/api/parent/finances");
-      const financesData = await financesRes.json();
+      // 1. Récupérer les enfants et les pré-inscriptions
+      const [enfantsRes, preinscriptionsRes] = await Promise.all([
+        fetch("/api/parent/enfants"),
+        fetch("/api/parent/preinscriptions")
+      ]);
 
-      setEnfants(financesData.enfants || []);
-      setTotals(financesData.totals);
+      const enfantsData = await enfantsRes.json();
+      const preinscriptionsData = await preinscriptionsRes.json();
 
-      if (financesData.enfants?.length > 0 && !selectedEnfantId) {
-        setSelectedEnfantId(financesData.enfants[0].id);
-      }
+      console.log("Enfants reçus:", enfantsData);
+      console.log("Pré-inscriptions reçues:", preinscriptionsData);
+
+      setEnfants(enfantsData);
+
+      // GARDER TOUTES LES PRÉ-INSCRIPTIONS (même en attente)
+      setPreinscriptions(preinscriptionsData);
+
+      // 2. Charger les statistiques pour chaque enfant
+      const statsPromises = enfantsData.map(async (enfant: Enfant) => {
+        try {
+          console.log(` Chargement des stats pour l'enfant ${enfant.eleve_id} (${enfant.prenom} ${enfant.nom})`);
+          const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
+
+          if (!statsResponse.ok) {
+            console.error(`❌ Erreur HTTP ${statsResponse.status} pour l'enfant ${enfant.eleve_id}`);
+            return { eleveId: enfant.eleve_id, stats: { ...DEFAULT_STATS } };
+          }
+
+          const statsData = await statsResponse.json();
+          console.log(`✅ Stats pour ${enfant.prenom}:`, statsData);
+
+          // Valider et nettoyer les données
+          const validatedStats: Stats = {
+            notes: statsData.notes || [],
+            presences: statsData.presences || { total: 0, presents: 0, absents: 0, retards: 0 },
+            paiements: {
+              total_paye: Number(statsData.paiements?.total_paye) || 0,
+              nombre_paiements: Number(statsData.paiements?.nombre_paiements) || 0,
+              details: statsData.paiements?.details || []
+            },
+            frais_inscription: Number(statsData.frais_inscription) || 0,
+            transport: Number(statsData.transport) || 0,
+            cantine: Number(statsData.cantine) || 0,
+            fournitures: Number(statsData.fournitures) || 0,
+            scolarite: Number(statsData.scolarite) || 0,
+            total_frais_general: Number(statsData.total_frais_general) || 0,
+            montant_a_payer: Number(statsData.montant_a_payer) || 0,
+            solde_restant: Number(statsData.solde_restant) || 0
+          };
+
+          return { eleveId: enfant.eleve_id, stats: validatedStats };
+        } catch (error) {
+          console.error(`❌ Erreur chargement stats pour enfant ${enfant.eleve_id}:`, error);
+          return { eleveId: enfant.eleve_id, stats: { ...DEFAULT_STATS } };
+        }
+      });
+
+      const statsResults = await Promise.all(statsPromises);
+
+      // Mettre à jour les stats
+      const newStatsEnfant: { [key: number]: Stats } = {};
+      statsResults.forEach(({ eleveId, stats }) => {
+        newStatsEnfant[eleveId] = stats;
+      });
+      setStatsEnfant(newStatsEnfant);
+
+      console.log("📊 Statistiques finales:", newStatsEnfant);
+
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("❌ Erreur globale:", error);
+      addNotification("error", "Erreur lors du chargement des données");
     } finally {
       setLoading(false);
     }
   };
 
-  const enfantSelectionne = enfants.find(e => e.id === selectedEnfantId);
-  const paiements = enfantSelectionne?.paiements || [];
+  const loadPreinscriptionDetail = async (id: number) => {
+    setLoadingDetail(true);
+    try {
+      const response = await fetch(`/api/parent/preinscriptions/${id}`);
+      if (!response.ok) {
+        throw new Error("Erreur chargement détails");
+      }
+      const data = await response.json();
+      console.log(" Détails pré-inscription reçus:", data);
 
-  // Filtrer par catégorie
-  const paiementsFiltres = selectedCategorie === "toutes"
-    ? paiements
-    : paiements.filter(p => p.type_frais === selectedCategorie);
-
-  const totalPages = Math.ceil(paiementsFiltres.length / itemsPerPage);
-  const paginatedPaiements = paiementsFiltres.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  // Calculer les dépenses par catégorie
-  const depensesParCategorie: DepensesParCategorie = {
-    inscription: paiements.filter(p => p.type_frais === "inscription" && p.statut === "paye").reduce((acc, p) => acc + p.montant, 0),
-    mensualite: paiements.filter(p => p.type_frais === "mensualite" && p.statut === "paye").reduce((acc, p) => acc + p.montant, 0),
-    cantine: paiements.filter(p => p.type_frais === "cantine" && p.statut === "paye").reduce((acc, p) => acc + p.montant, 0),
-    transport: paiements.filter(p => p.type_frais === "transport" && p.statut === "paye").reduce((acc, p) => acc + p.montant, 0),
-    bibliotheque: paiements.filter(p => p.type_frais === "bibliotheque" && p.statut === "paye").reduce((acc, p) => acc + p.montant, 0),
-    librairie: paiements.filter(p => p.type_frais === "librairie" && p.statut === "paye").reduce((acc, p) => acc + p.montant, 0),
-    autre: paiements.filter(p => !["inscription", "mensualite", "cantine", "transport", "bibliotheque", "librairie"].includes(p.type_frais) && p.statut === "paye").reduce((acc, p) => acc + p.montant, 0)
-  };
-
-  const totalDepenses = Object.values(depensesParCategorie).reduce((acc, val) => acc + val, 0);
-
-  const tauxRecouvrement = totals && totals.total_du > 0
-    ? (totals.total_paye / totals.total_du) * 100
-    : 0;
-
-  const getStatutBadge = (statut: string) => {
-    switch (statut) {
-      case "paye":
-        return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
-      case "en_attente":
-        return <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> En attente</span>;
-      case "impaye":
-        return <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Impayé</span>;
-      default:
-        return <span>{statut}</span>;
+      setPreinscriptionDetail(data);
+    } catch (error) {
+      console.error("Erreur:", error);
+      addNotification("error", "Erreur lors du chargement des détails");
+    } finally {
+      setLoadingDetail(false);
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    const icons: Record<string, any> = {
-      inscription: <GraduationCap className="w-4 h-4 text-blue-600" />,
-      mensualite: <CreditCard className="w-4 h-4 text-green-600" />,
-      cantine: <Utensils className="w-4 h-4 text-orange-600" />,
-      transport: <Bus className="w-4 h-4 text-purple-600" />,
-      bibliotheque: <BookOpen className="w-4 h-4 text-teal-600" />,
-      librairie: <ShoppingBag className="w-4 h-4 text-pink-600" />
-    };
-    return icons[type] || <CreditCard className="w-4 h-4 text-gray-900" />;
+  const handlePaiement = async () => {
+    if (!selectedPreinscription || !modePaiement) return;
+
+    setPaiementLoading(true);
+    try {
+      const response = await fetch("/api/parent/paiement-preinscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          preinscriptionId: selectedPreinscription.id,
+          modePaiement,
+          reference: reference || null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        addNotification("success", "Paiement effectué avec succès ! Un email a été envoyé au comptable.");
+        setShowPaiementModal(false);
+        fetchData();
+        setSelectedPreinscription(null);
+        setModePaiement("");
+        setReference("");
+      } else {
+        addNotification("error", data.error || "Erreur lors du paiement");
+      }
+    } catch (error) {
+      console.error("Erreur paiement:", error);
+      addNotification("error", "Erreur lors du paiement");
+    } finally {
+      setPaiementLoading(false);
+    }
   };
 
-  const getTypeLabel = (type: string) => {
-    const types: Record<string, string> = {
-      inscription: "Inscription",
-      mensualite: "Mensualité",
-      cantine: "Cantine",
-      transport: "Transport",
-      bibliotheque: "Bibliothèque",
-      librairie: "Librairie",
-    };
-    return types[type] || type.charAt(0).toUpperCase() + type.slice(1);
+  const handleCancelPreinscription = async () => {
+    if (!preinscriptionToCancel) return;
+
+    setCancelling(true);
+    try {
+      const response = await fetch(`/api/parent/preinscriptions/${preinscriptionToCancel.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        addNotification("success", `Pré-inscription de ${preinscriptionToCancel.enfant_prenom} ${preinscriptionToCancel.enfant_nom} annulée avec succès`);
+        setShowConfirmModal(false);
+        setPreinscriptionToCancel(null);
+        fetchData();
+      } else {
+        addNotification("error", data.error || "Erreur lors de l'annulation");
+      }
+    } catch (error) {
+      console.error("Erreur annulation:", error);
+      addNotification("error", "Erreur lors de l'annulation");
+    } finally {
+      setCancelling(false);
+    }
   };
 
-  const getModeIcon = (mode: string) => {
-    switch (mode) {
-      case "mobile_money":
-        return <Smartphone className="w-4 h-4 text-green-600" />;
-      case "especes":
-        return <Wallet className="w-4 h-4 text-blue-600" />;
-      case "carte":
-        return <CreditCard className="w-4 h-4 text-purple-600" />;
+  const openConfirmCancel = (preinscription: Preinscription) => {
+    setPreinscriptionToCancel(preinscription);
+    setShowConfirmModal(true);
+  };
+
+  const getStatutBadge = (statut: string) => {
+    switch (statut) {
+      case "en_attente":
+        return <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> En attente</span>;
+      case "valide":
+        return <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Validée</span>;
+      case "rejete":
+        return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejetée</span>;
       default:
         return null;
     }
   };
 
-  const getModeLabel = (mode: string) => {
-    const modes: Record<string, string> = {
-      mobile_money: "Orange Money",
-      especes: "Espèces",
-      carte: "Carte bancaire",
-    };
-    return modes[mode] || mode;
+  const getFraisBadge = (fraisStatut: string) => {
+    if (fraisStatut === "paye") {
+      return <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
+    }
+    if (fraisStatut === "partiel") {
+      return <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Partiel</span>;
+    }
+    return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
-  const categories = [
-    { value: "toutes", label: "Toutes les catégories", icon: <CreditCard className="w-4 h-4" /> },
-    { value: "inscription", label: "Inscription", icon: <GraduationCap className="w-4 h-4" /> },
-    { value: "mensualite", label: "Mensualité", icon: <CreditCard className="w-4 h-4" /> },
-    { value: "cantine", label: "Cantine", icon: <Utensils className="w-4 h-4" /> },
-    { value: "transport", label: "Transport", icon: <Bus className="w-4 h-4" /> },
-    { value: "bibliotheque", label: "Bibliothèque", icon: <BookOpen className="w-4 h-4" /> },
-    { value: "librairie", label: "Librairie", icon: <ShoppingBag className="w-4 h-4" /> }
-  ];
+  // Dans ParentDashboard, remplacer la section de calcul des statistiques globales
+
+// CALCUL DES STATISTIQUES GLOBALES 
+
+// 1. Calcul du total des frais de pré-inscription (inscription + services optionnels)
+//    Chaque pré-inscription a un montant_total qui inclut déjà tous les services
+const totalPreinscriptionFrais = preinscriptions.reduce((acc, p) => acc + (Number(p.montant_total) || 0), 0);
+
+// 2. Les services optionnels sont DÉJÀ inclus dans montant_total
+//    On ne les additionne pas séparément pour éviter le double comptage
+const totalCantine = 0;
+const totalTransport = 0;
+const totalFournitures = 0;
+
+// 3. Calcul du total payé pour tous les enfants (paiements direct + échéances)
+const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
+
+//  MONTANT À PAYER = Total des pré-inscriptions (inclut tous les services)
+const totalAPayer = totalPreinscriptionFrais;
+
+//  Solde restant = Montant à payer - Montant payé
+const soldeRestant = Math.max(0, totalAPayer - totalPaye);
+
+const statsGlobales = {
+  totalEnfants: enfants.length,
+  totalPreinscriptions: preinscriptions.length,
+  preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
+  preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
+  totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
+
+  //  Montant à payer = Total des pré-inscriptions (inclut tous les services)
+  totalAPayer: totalAPayer,
+
+  //  Montant payé = total payé pour tous les enfants
+  totalPaye: totalPaye,
+
+  //  Totaux par catégorie (pour affichage)
+  totalFraisInscription: totalPreinscriptionFrais,
+  totalTransport: 0, // Déjà inclus dans montant_total
+  totalCantine: 0,   // Déjà inclus dans montant_total
+  totalFournitures: 0, // Déjà inclus dans montant_total
+
+  // Total général des frais
+  totalFraisGeneral: totalPreinscriptionFrais,
+
+  //  Solde restant = Montant à payer - Montant payé
+  soldeRestant: soldeRestant,
+};
 
   if (loading) {
     return (
@@ -212,238 +420,96 @@ export default function ParentFinancesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Finances</h1>
-        <p className="text-gray-900">Gérez les paiements de vos enfants</p>
+    <div className="relative">
+      {/* Notifications Toast */}
+      <div className="fixed top-20 right-4 z-50 space-y-2">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
+                ? "bg-red-50 border-l-4 border-red-500 text-red-800"
+                : notification.type === "warning"
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
+          >
+            <div className="flex-1">
+              {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
+              {notification.type === "error" && <XCircle className="w-5 h-5 text-red-500" />}
+              {notification.type === "warning" && <AlertTriangle className="w-5 h-5 text-yellow-500" />}
+              {notification.type === "info" && <FileText className="w-5 h-5 text-blue-500" />}
+            </div>
+            <p className="text-sm font-medium">{notification.message}</p>
+            <button
+              onClick={() => removeNotification(notification.id)}
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
       </div>
 
-      {/* Cartes récapitulatives */}
-      {totals && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-            <p className="text-sm opacity-90">Total dû (tous enfants)</p>
-            <p className="text-2xl font-bold">{totals.total_du.toLocaleString()} GNF</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <div className="flex justify-between items-start">
-              <div><p className="text-gray-900 text-sm">Déjà payé</p><p className="text-2xl font-bold text-green-600">{totals.total_paye.toLocaleString()} GNF</p></div>
-              <div className="bg-green-100 p-3 rounded-lg"><CheckCircle className="w-6 h-6 text-green-600" /></div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <div className="flex justify-between items-start">
-              <div><p className="text-gray-900 text-sm">En attente</p><p className="text-2xl font-bold text-yellow-600">{totals.total_en_attente.toLocaleString()} GNF</p></div>
-              <div className="bg-yellow-100 p-3 rounded-lg"><Clock className="w-6 h-6 text-yellow-600" /></div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <div className="flex justify-between items-start">
-              <div><p className="text-gray-900 text-sm">Solde restant</p><p className="text-2xl font-bold text-orange-600">{totals.solde_restant.toLocaleString()} GNF</p></div>
-              <div className="bg-orange-100 p-3 rounded-lg"><AlertCircle className="w-6 h-6 text-orange-600" /></div>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-black">Espace Parent</h1>
+        <p className="text-gray-900">Bienvenue dans votre espace de suivi scolaire</p>
+      </div>
 
-      {/* Barre de progression */}
-      {totals && (
+      {/* STATISTIQUES GLOBALES AVEC LES BONS CALCULS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+          <div className="flex items-center gap-2 mb-1"><Users className="w-5 h-5" /><p className="text-sm opacity-90">Enfants inscrits</p></div>
+          <p className="text-3xl font-bold">{statsGlobales.totalEnfants}</p>
+        </div>
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+          <div className="flex items-center gap-2 mb-1"><FileText className="w-5 h-5" /><p className="text-sm opacity-90">Pré-inscriptions</p></div>
+          <p className="text-3xl font-bold">{statsGlobales.totalPreinscriptions}</p>
+        </div>
+        {/* MONTANT À PAYER = Total des frais de pré-inscription */}
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex justify-between text-sm mb-2">
-            <span>Progression globale des paiements</span>
-            <span className="font-medium">{tauxRecouvrement.toFixed(1)}%</span>
+          <div className="flex items-center gap-2 mb-1 text-gray-900">
+            <CreditCard className="w-5 h-5 text-blue-600" />
+            <p className="text-sm">Montant à payer</p>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-green-500 h-2 rounded-full" style={{ width: `${tauxRecouvrement}%` }}></div>
-          </div>
+          <p className="text-lg font-bold text-blue-600">{statsGlobales.totalAPayer.toLocaleString()} GNF</p>
         </div>
-      )}
-
-      {/* Graphique Dépenses par catégorie (tous enfants) */}
-      {enfants.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-600" />
-            Dépenses par catégorie (tous enfants)
-          </h3>
-          <div className="space-y-3">
-            {Object.entries(depensesParCategorie).map(([categorie, montant]) => {
-              if (montant === 0) return null;
-              const pourcentage = totalDepenses > 0 ? (montant / totalDepenses) * 100 : 0;
-              const labels: Record<string, string> = {
-                inscription: "Inscription",
-                mensualite: "Mensualité",
-                cantine: "Cantine",
-                transport: "Transport",
-                bibliotheque: "Bibliothèque",
-                librairie: "Librairie",
-                autre: "Autre"
-              };
-              const colors: Record<string, string> = {
-                inscription: "bg-blue-500",
-                mensualite: "bg-green-500",
-                cantine: "bg-orange-500",
-                transport: "bg-purple-500",
-                bibliotheque: "bg-teal-500",
-                librairie: "bg-pink-500",
-                autre: "bg-gray-500"
-              };
-              return (
-                <div key={categorie}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium">{labels[categorie]}</span>
-                    <span className="text-gray-900">{montant.toLocaleString()} GNF ({pourcentage.toFixed(1)}%)</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className={`${colors[categorie]} h-2 rounded-full`} style={{ width: `${pourcentage}%` }}></div>
-                  </div>
-                </div>
-              );
-            })}
-            {totalDepenses === 0 && (
-              <p className="text-center text-gray-900 py-4">Aucune dépense enregistrée</p>
-            )}
-          </div>
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-green-600" /><p className="text-sm">Montant payé</p></div>
+          <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
         </div>
-      )}
-
-      {/* Historique des paiements avec sélection de l'enfant intégrée */}
-      {enfants.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b">
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-              <h3 className="font-semibold text-gray-900">Historique des paiements</h3>
-
-              {/* Sélection de l'enfant - intégrée ici */}
-              <div className="flex flex-wrap gap-2">
-                <span className="text-sm text-gray-900 flex items-center gap-1 mr-2">
-                  <Users className="w-4 h-4" /> Enfant:
-                </span>
-                {enfants.map((enfant) => (
-                  <button
-                    key={enfant.id}
-                    onClick={() => { setSelectedEnfantId(enfant.id); setCurrentPage(1); setSelectedCategorie("toutes"); }}
-                    className={`px-3 py-1 rounded-lg text-sm transition ${selectedEnfantId === enfant.id
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-900 hover:bg-gray-200"
-                      }`}
-                  >
-                    {enfant.prenom} {enfant.nom}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Filtre par catégorie */}
-          <div className="px-6 py-3 border-b bg-gray-50">
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.value}
-                  onClick={() => { setSelectedCategorie(cat.value); setCurrentPage(1); }}
-                  className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 transition ${selectedCategorie === cat.value
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-900 hover:bg-gray-200 border"
-                    }`}
-                >
-                  {cat.icon}
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {enfantSelectionne && (
-            <>
-              <div className="px-6 py-2 bg-blue-50 border-b">
-                <div className="flex justify-between items-center text-sm">
-                  <div>
-                    <span className="text-gray-900">Élève:</span>
-                    <span className="font-semibold ml-2">{enfantSelectionne.prenom} {enfantSelectionne.nom}</span>
-                    <span className="text-gray-900 ml-2">({enfantSelectionne.classe_nom})</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-900">Matricule:</span>
-                    <span className="font-mono text-sm ml-2">{enfantSelectionne.matricule}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Catégorie</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-900 uppercase">Montant</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Mode</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {paginatedPaiements.map((paiement) => (
-                      <tr key={paiement.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm">{new Date(paiement.date).toLocaleDateString()}</td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            {getTypeIcon(paiement.type_frais)}
-                            <span className="text-sm">{getTypeLabel(paiement.type_frais)}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right font-medium">{paiement.montant.toLocaleString()} GNF</td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-1">
-                            {getModeIcon(paiement.mode_paiement)}
-                            <span className="text-sm">{getModeLabel(paiement.mode_paiement)}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">{getStatutBadge(paiement.statut)}</td>
-                        <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                            <button className="text-blue-600 hover:text-blue-700"><Eye className="w-4 h-4" /></button>
-                            <button className="text-gray-900 hover:text-gray-900"><Printer className="w-4 h-4" /></button>
-                            {paiement.statut === "impaye" && (
-                              <button className="text-green-600 hover:text-green-700"><CreditCard className="w-4 h-4" /></button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {paiementsFiltres.length === 0 && (
-                <div className="text-center py-8 text-gray-900">
-                  Aucun paiement trouvé
-                </div>
-              )}
-
-              {totalPages > 1 && (
-                <div className="px-6 py-4 border-t flex justify-between items-center">
-                  <p className="text-sm text-gray-900">{paiementsFiltres.length} paiements</p>
-                  <div className="flex gap-2">
-                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button>
-                    <span className="px-3 py-1 text-sm">{currentPage} / {totalPages}</span>
-                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
+        {/* CANTINE - Total des frais de cantine pour tous les enfants */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><Utensils className="w-5 h-5 text-orange-600" /><p className="text-sm">Cantine</p></div>
+          <p className="text-lg font-bold text-orange-600">{statsGlobales.totalCantine.toLocaleString()} GNF</p>
         </div>
-      )}
-
-      {enfants.length === 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-          <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">Aucun enfant inscrit</h3>
-          <p className="text-gray-900 mt-2">Vous n'avez pas encore d'enfant inscrit dans l'école.</p>
-          <Link href="/register" className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Inscrire un enfant</Link>
+        {/* TRANSPORT - Total des frais de transport pour tous les enfants */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><Bus className="w-5 h-5 text-blue-600" /><p className="text-sm">Transport</p></div>
+          <p className="text-lg font-bold text-blue-600">{statsGlobales.totalTransport.toLocaleString()} GNF</p>
         </div>
-      )}
+        {/* FOURNITURES - Total des frais de fournitures pour tous les enfants */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><ShoppingCart className="w-5 h-5 text-purple-600" /><p className="text-sm">Fournitures</p></div>
+          <p className="text-lg font-bold text-purple-600">{statsGlobales.totalFournitures.toLocaleString()} GNF</p>
+        </div>
+        {/* SOLDE RESTANT = Montant à payer - Montant payé */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-red-600" /><p className="text-sm">Solde restant</p></div>
+          <p className="text-lg font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
+        </div>
+      </div>
+         
+      {/* GRAPHIQUES DES STATISTIQUES */}
+        <div className="mb-8">
+        <ParentStatsCharts 
+          enfants={enfants}
+          preinscriptions={preinscriptions}
+          statsEnfant={statsEnfant}
+          statsGlobales={statsGlobales}
+        />
+      </div>
     </div>
   );
 }

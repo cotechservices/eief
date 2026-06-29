@@ -202,7 +202,7 @@ export async function GET(request: Request) {
     // ... reste du code pour les niveaux
     const niveau = url.searchParams.get("niveau");
     const type = url.searchParams.get("type") || "inscription";
-    
+
     if (niveau) {
       const result = await query(`
         SELECT 
