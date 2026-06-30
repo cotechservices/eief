@@ -131,7 +131,7 @@ export async function GET() {
       HAVING GREATEST(0, p.montant_total_plan - COALESCE(SUM(pa.montant), 0)) > 0
     `);
 
-    console.log("📊 DASHBOARD FINANCIER:", {
+    console.log(" DASHBOARD FINANCIER:", {
       totalAPayer,
       totalPaye,
       soldeRestant,

@@ -18,7 +18,7 @@ export async function GET(
     const eleveId = parseInt(id);
     const userEmail = session.user?.email;
 
-    console.log(`📊 Récupération des détails pour l'élève ${eleveId}`);
+    console.log(` Récupération des détails pour l'élève ${eleveId}`);
 
     // Vérifier que l'enfant appartient au parent
     const checkParent = await query(`
@@ -338,7 +338,7 @@ export async function GET(
         WHERE e.preinscription_id = $1 AND e.statut = 'paye'
         ORDER BY e.date_paiement DESC
       `, [preinscriptionId]);
-      
+
       echeancesRows = echeancesPayees.rows || [];
       totalPayeEcheances = echeancesRows.reduce((sum, e) => sum + Number(e.montant), 0);
     }
@@ -358,7 +358,7 @@ export async function GET(
       id: e.id
     }));
 
-    const detailsPaiements = [...detailsDirects, ...detailsEcheances].sort((a, b) => 
+    const detailsPaiements = [...detailsDirects, ...detailsEcheances].sort((a, b) =>
       new Date(b.date_paiement).getTime() - new Date(a.date_paiement).getTime()
     );
 
@@ -441,8 +441,8 @@ export async function GET(
       : "0";
 
     console.log(`=== DÉTAILS COMPLETS pour eleve_id ${eleveId} ===`);
-    console.log(`📊 Services sélectionnés: Transport=${transportSelected}, Cantine=${cantineSelected}, Fournitures=${fournituresSelected}`);
-    console.log(`📊 Total frais: ${totalFraisGeneral} (inscription: ${fraisInscriptionTotal} + transport: ${totalTransport} + cantine: ${totalCantine} + fournitures: ${totalFournitures})`);
+    console.log(` Services sélectionnés: Transport=${transportSelected}, Cantine=${cantineSelected}, Fournitures=${fournituresSelected}`);
+    console.log(` Total frais: ${totalFraisGeneral} (inscription: ${fraisInscriptionTotal} + transport: ${totalTransport} + cantine: ${totalCantine} + fournitures: ${totalFournitures})`);
 
     // ===================== RÉPONSE JSON =====================
     return NextResponse.json({

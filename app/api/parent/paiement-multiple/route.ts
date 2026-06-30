@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
 
     const userRole = (session.user as any).role;
     if (userRole !== "PARENT" && userRole !== "SUPER_ADMIN" && userRole !== "COMPTABLE") {
-      return NextResponse.json({ 
-        error: "Non autorisé - rôles acceptés: PARENT, SUPER_ADMIN, COMPTABLE" 
+      return NextResponse.json({
+        error: "Non autorisé - rôles acceptés: PARENT, SUPER_ADMIN, COMPTABLE"
       }, { status: 403 });
     }
 
@@ -54,20 +54,20 @@ export async function POST(request: NextRequest) {
     }
 
     const echeances = echeancesResult.rows;
-    
+
     // ⭐ Déterminer si c'est une préinscription ou une réinscription
     const firstEcheance = echeances[0];
     const isReinscription = firstEcheance.reinscription_id !== null;
-    const entityId = isReinscription 
-      ? firstEcheance.reinscription_id 
+    const entityId = isReinscription
+      ? firstEcheance.reinscription_id
       : firstEcheance.preinscription_id;
-    const parentId = isReinscription 
-      ? firstEcheance.reinscription_parent_id 
+    const parentId = isReinscription
+      ? firstEcheance.reinscription_parent_id
       : firstEcheance.preinscription_parent_id;
-    const eleveId = isReinscription 
-      ? firstEcheance.reinscription_eleve_id 
+    const eleveId = isReinscription
+      ? firstEcheance.reinscription_eleve_id
       : null;
-    
+
     // Vérifier que le parent est bien le propriétaire
     if (parentId) {
       const parentCheck = await query(`
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     const montantTotal = echeances.reduce((sum: number, e: any) => sum + Number(e.montant), 0);
 
-    console.log(`💰 Montant total: ${montantTotal} GNF pour ${echeances.length} échéances`);
+    console.log(`Montant total: ${montantTotal} GNF pour ${echeances.length} échéances`);
     console.log(`📋 Type: ${isReinscription ? 'Réinscription' : 'Préinscription'}`);
 
     // Démarrer une transaction
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
         // CAS RÉINSCRIPTION
         // ============================================================
         const reinscriptionId = entityId;
-        
+
         // Mettre à jour le montant restant
         await query(`
           UPDATE reinscriptions 
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
         `, [reinscriptionId]);
 
         restant = Number(remainingResult.rows[0].total_restant) || 0;
-        
+
         // ⭐ Utiliser 'partiel' si reste > 0 (maintenant autorisé après modification de la contrainte)
         if (restant === 0) {
           await query(`
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
 
         // ⭐ Déterminer le type de frais
         const typesInclus = [...new Set(echeances.map((e: any) => e.type))];
-        
+
         if (typesInclus.includes('reinscription')) {
           typeFrais = 'inscription';
         } else if (typesInclus.includes('transport')) {
@@ -238,8 +238,8 @@ export async function POST(request: NextRequest) {
 
         await query('COMMIT');
 
-        return NextResponse.json({ 
-          success: true, 
+        return NextResponse.json({
+          success: true,
           message: "Paiement de la réinscription effectué avec succès",
           montant: montantTotal,
           restant: restant,
@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
         // CAS PRÉINSCRIPTION
         // ============================================================
         const preinscriptionId = entityId;
-        
+
         // Mettre à jour le montant restant
         await query(`
           UPDATE preinscriptions 
@@ -270,7 +270,7 @@ export async function POST(request: NextRequest) {
         `, [preinscriptionId]);
 
         restant = Number(remainingResult.rows[0].total_restant) || 0;
-        
+
         if (restant === 0) {
           await query(`
             UPDATE preinscriptions 
@@ -369,8 +369,8 @@ export async function POST(request: NextRequest) {
 
         await query('COMMIT');
 
-        return NextResponse.json({ 
-          success: true, 
+        return NextResponse.json({
+          success: true,
           message: "Paiement effectué avec succès",
           montant: montantTotal,
           restant: restant,
@@ -386,8 +386,8 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error("Erreur paiement multiple:", error);
-    return NextResponse.json({ 
-      error: "Erreur serveur: " + (error as Error).message 
+    return NextResponse.json({
+      error: "Erreur serveur: " + (error as Error).message
     }, { status: 500 });
   }
 }

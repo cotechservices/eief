@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     const userEmail = session.user?.email;
-    
+
     const result = await query(`
       SELECT 
         e.id,
@@ -95,19 +95,19 @@ export async function GET() {
       // ⭐ Le total à payer est le montant de la pré-inscription (qui inclut déjà tous les services)
       const montantTotalInscription = Number(enfant.montant_total_inscription) || 0;
       const fraisPaye = Number(enfant.frais_paye) || 0;
-      
+
       // On garde les détails pour affichage mais le total est le montant de l'inscription
       const fraisInscription = Number(enfant.frais_inscription) || 0;
       const fraisCantine = Number(enfant.frais_cantine) || 0;
       const fraisTransport = Number(enfant.frais_transport) || 0;
       const fraisLibrairie = Number(enfant.frais_librairie) || 0;
       const fraisScolarite = Number(enfant.frais_scolarite) || 0;
-      
+
       // ⭐ Le total est le montant de la pré-inscription (qui inclut déjà tous les services)
       const totalFrais = montantTotalInscription;
       const reste = Math.max(0, totalFrais - fraisPaye);
 
-      console.log(`📊 Frais pour ${enfant.prenom} ${enfant.nom}:`, {
+      console.log(` Frais pour ${enfant.prenom} ${enfant.nom}:`, {
         montantTotalInscription: montantTotalInscription,
         fraisInscription: fraisInscription,
         fraisCantine: fraisCantine,

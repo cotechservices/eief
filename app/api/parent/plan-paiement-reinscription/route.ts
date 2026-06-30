@@ -64,7 +64,7 @@ export async function GET(request: Request) {
       type_inscription: 'reinscription'
     };
 
-    console.log(`📊 Plan pour la réinscription ${reinscriptionId}:`, plan);
+    console.log(` Plan pour la réinscription ${reinscriptionId}:`, plan);
 
     // ⭐ Récupérer TOUTES les échéances
     const echeancesResult = await query(`
@@ -96,7 +96,7 @@ export async function GET(request: Request) {
         END
     `, [reinscriptionId]);
 
-    console.log(`📊 Échéances trouvées: ${echeancesResult.rows.length}`);
+    console.log(` Échéances trouvées: ${echeancesResult.rows.length}`);
 
     // ⭐ Séparer les échéances par type
     const echeancesReinscription = echeancesResult.rows.filter((e: any) => e.type === 'reinscription');
@@ -118,7 +118,7 @@ export async function GET(request: Request) {
     // ⭐ SI AUCUNE ÉCHÉANCE DE RÉINSCRIPTION N'EXISTE, LES CRÉER
     if (echeancesReinscription.length === 0 && plan.total > 0) {
       console.log(`⚠️ Création automatique des échéances de réinscription...`);
-      
+
       const versements = [
         { echeance: '1er_versement', montant: plan.premier_versement },
         { echeance: '2eme_versement', montant: plan.deuxieme_versement },
@@ -140,7 +140,7 @@ export async function GET(request: Request) {
         SELECT id, type, echeance, montant, statut, date_echeance, date_paiement
         FROM echeances_paiement WHERE reinscription_id = $1
       `, [reinscriptionId]);
-      
+
       const newRestant = newResult.rows
         .filter((e: any) => e.statut === 'en_attente')
         .reduce((sum: number, e: any) => sum + Number(e.montant), 0);
@@ -183,26 +183,26 @@ export async function GET(request: Request) {
       echeances_reinscription: echeancesReinscription,
       echeances_services: echeancesResult.rows.filter((e: any) => e.type !== 'reinscription'),
       services_optionnels: {
-        transport: { 
-          total: totalTransport, 
-          details: echeancesTransport.map((e: any) => ({ 
-            nom: e.echeance || 'Transport', 
+        transport: {
+          total: totalTransport,
+          details: echeancesTransport.map((e: any) => ({
+            nom: e.echeance || 'Transport',
             montant: Number(e.montant),
             statut: e.statut
           }))
         },
-        cantine: { 
-          total: totalCantine, 
-          details: echeancesCantine.map((e: any) => ({ 
-            nom: e.echeance || 'Cantine', 
+        cantine: {
+          total: totalCantine,
+          details: echeancesCantine.map((e: any) => ({
+            nom: e.echeance || 'Cantine',
             montant: Number(e.montant),
             statut: e.statut
           }))
         },
-        fournitures: { 
-          total: totalFournitures, 
-          details: echeancesFournitures.map((e: any) => ({ 
-            nom: e.echeance || 'Fournitures', 
+        fournitures: {
+          total: totalFournitures,
+          details: echeancesFournitures.map((e: any) => ({
+            nom: e.echeance || 'Fournitures',
             montant: Number(e.montant),
             statut: e.statut
           }))
@@ -221,8 +221,8 @@ export async function GET(request: Request) {
 
   } catch (error) {
     console.error("Erreur plan paiement réinscription:", error);
-    return NextResponse.json({ 
-      error: "Erreur serveur: " + (error as Error).message 
+    return NextResponse.json({
+      error: "Erreur serveur: " + (error as Error).message
     }, { status: 500 });
   }
 }

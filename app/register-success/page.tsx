@@ -32,7 +32,7 @@ export default function RegisterSuccessPage() {
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
       const role = (session.user as any).role;
-      
+
       const roleUrls: { [key: string]: string } = {
         'SUPER_ADMIN': '/dashboard/admin',
         'DIRECTEUR_GENERAL': '/dashboard/directeur',
@@ -44,10 +44,10 @@ export default function RegisterSuccessPage() {
         'PARENT': '/dashboard/parent',
         'ELEVE': '/dashboard/eleve'
       };
-      
+
       const url = roleUrls[role] || '/';
       setDashboardUrl(url);
-      
+
       // Nettoyer l'ancien timeout s'il existe
       if (redirectTimeoutRef.current) {
         clearTimeout(redirectTimeoutRef.current);
@@ -56,11 +56,11 @@ export default function RegisterSuccessPage() {
 
       // Redirection après 5 secondes avec setTimeout
       let seconds = 5;
-      
+
       const updateCountdown = () => {
         seconds -= 1;
         setCountdown(seconds);
-        
+
         if (seconds <= 0) {
           // Nettoyer le timeout avant la redirection
           if (redirectTimeoutRef.current) {
@@ -76,10 +76,10 @@ export default function RegisterSuccessPage() {
           redirectTimeoutRef.current = setTimeout(updateCountdown, 1000);
         }
       };
-      
+
       // Démarrer le compte à rebours après un court délai
       redirectTimeoutRef.current = setTimeout(updateCountdown, 1000);
-      
+
       return () => {
         if (redirectTimeoutRef.current) {
           clearTimeout(redirectTimeoutRef.current);
@@ -147,7 +147,7 @@ export default function RegisterSuccessPage() {
           <p className="text-gray-900 mb-6">
             Votre demande a été enregistrée avec succès. Vous recevrez un email de confirmation dans les plus brefs délais.
           </p>
-          
+
           {session?.user && (
             <div className="bg-blue-50 p-3 rounded-lg mb-4">
               <p className="text-sm text-gray-700">
@@ -158,7 +158,7 @@ export default function RegisterSuccessPage() {
               </p>
             </div>
           )}
-          
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/"
@@ -166,13 +166,13 @@ export default function RegisterSuccessPage() {
             >
               Fermer
             </Link>
-            
+
             {session?.user ? (
               <button
                 onClick={handleRedirect}
                 className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
               >
-                📊 Aller au Dashboard
+                Aller au Dashboard
               </button>
             ) : (
               <Link
@@ -186,7 +186,7 @@ export default function RegisterSuccessPage() {
 
           {session?.user && (
             <p className="text-xs text-gray-500 mt-4">
-              Connecté en tant que {session.user.name || session.user.email} 
+              Connecté en tant que {session.user.name || session.user.email}
               <span className="ml-1 text-blue-600">
                 ({getRoleLabel((session.user as any).role)})
               </span>

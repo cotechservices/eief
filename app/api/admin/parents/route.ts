@@ -34,7 +34,7 @@ export async function GET() {
       ORDER BY u.nom, u.prenom
     `);
 
-    console.log("👨‍👩‍👧‍👦 Parents trouvés:", parentsResult.rows.length);
+    console.log("Parents trouvés:", parentsResult.rows.length);
 
     const parents = parentsResult.rows;
 

@@ -60,7 +60,7 @@ export async function GET(request: Request) {
         type_inscription: data.type_inscription || 'inscription'
       };
 
-      console.log(`📊 Plan pour la pré-inscription ${preinscriptionId}:`, plan);
+      console.log(` Plan pour la pré-inscription ${preinscriptionId}:`, plan);
 
       // ⭐ Récupérer les services optionnels
       const transport = await query(`
@@ -150,7 +150,7 @@ export async function GET(request: Request) {
           END
       `, [preinscriptionId]);
 
-      console.log(`📊 Échéances pour ${preinscriptionId}:`, echeancesResult.rows);
+      console.log(` Échéances pour ${preinscriptionId}:`, echeancesResult.rows);
 
       // ⭐ Filtrer les échéances d'inscription
       const echeancesInscription = echeancesResult.rows.filter(

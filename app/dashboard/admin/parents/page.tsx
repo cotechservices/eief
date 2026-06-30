@@ -155,7 +155,7 @@ export default function AdminParentsPage() {
         throw new Error("Erreur chargement parents");
       }
       const data = await response.json();
-      console.log("👨‍👩‍👧‍👦 Parents reçus:", data);
+      console.log("Parents reçus:", data);
       setParents(data);
       setFilteredParents(data);
     } catch (error) {

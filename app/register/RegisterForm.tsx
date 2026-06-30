@@ -866,8 +866,8 @@ export default function RegisterForm() {
                     }
                   }}
                   className={`text-sm font-medium transition ${skipSupplies
-                      ? "text-blue-600 hover:text-blue-800"
-                      : "text-red-600 hover:text-red-800"
+                    ? "text-blue-600 hover:text-blue-800"
+                    : "text-red-600 hover:text-red-800"
                     }`}
                 >
                   {skipSupplies ? " Ajouter des fournitures" : "❌ Ignorer les fournitures"}
@@ -980,8 +980,8 @@ export default function RegisterForm() {
                     }
                   }}
                   className={`text-sm font-medium transition ${skipTransport
-                      ? "text-green-600 hover:text-green-800"
-                      : "text-red-600 hover:text-red-800"
+                    ? "text-green-600 hover:text-green-800"
+                    : "text-red-600 hover:text-red-800"
                     }`}
                 >
                   {skipTransport ? "Ajouter le transport" : "❌ Ignorer le transport"}
@@ -1024,10 +1024,10 @@ export default function RegisterForm() {
                               onClick={() => toggleTransport(idx)}
                               disabled={item.prix <= 0}
                               className={`px-4 py-2 rounded-lg transition ${item.selected
-                                  ? "bg-green-600 text-white hover:bg-green-700"
-                                  : item.prix > 0
-                                    ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                ? "bg-green-600 text-white hover:bg-green-700"
+                                : item.prix > 0
+                                  ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
                                 }`}
                             >
                               {item.selected ? "✓ Sélectionné" : item.prix > 0 ? "Ajouter" : "Indisponible"}
@@ -1077,8 +1077,8 @@ export default function RegisterForm() {
                     }
                   }}
                   className={`text-sm font-medium transition ${skipCantine
-                      ? "text-orange-600 hover:text-orange-800"
-                      : "text-red-600 hover:text-red-800"
+                    ? "text-orange-600 hover:text-orange-800"
+                    : "text-red-600 hover:text-red-800"
                     }`}
                 >
                   {skipCantine ? " Ajouter la cantine" : "❌ Ignorer la cantine"}
@@ -1128,10 +1128,10 @@ export default function RegisterForm() {
                               onClick={() => toggleCantine(idx)}
                               disabled={item.prix_annuel <= 0}
                               className={`px-4 py-2 rounded-lg transition ${item.selected
-                                  ? "bg-orange-600 text-white hover:bg-orange-700"
-                                  : item.prix_annuel > 0
-                                    ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                ? "bg-orange-600 text-white hover:bg-orange-700"
+                                : item.prix_annuel > 0
+                                  ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
                                 }`}
                             >
                               {item.selected ? "✓ Sélectionné" : item.prix_annuel > 0 ? "Ajouter" : "Indisponible"}
@@ -1157,7 +1157,7 @@ export default function RegisterForm() {
 
             {/* Récapitulatif des services - inchangé mais corrigé */}
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h4 className="font-semibold text-blue-800 mb-3">📊 Récapitulatif des coûts</h4>
+              <h4 className="font-semibold text-blue-800 mb-3"> Récapitulatif des coûts</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-900">Inscription scolaire</span>

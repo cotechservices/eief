@@ -21,7 +21,7 @@ function getEcheanceDate(echeance: string): Date {
 // ⭐ Fonction pour créer le plan de paiement et les échéances
 // ⭐ Utilise la table classes pour les montants individuels
 async function createPlanPaiement(preinscriptionId: number, niveau: string, classeNom: string, body: any) {
-  console.log(`📊 Création du plan de paiement pour la pré-inscription ${preinscriptionId}`);
+  console.log(` Création du plan de paiement pour la pré-inscription ${preinscriptionId}`);
 
   // ⭐ Récupérer les montants DEPUIS LA TABLE CLASSES (montants individuels)
   // ⭐ Priorité: chercher par nom de classe d'abord, puis par niveau
@@ -41,7 +41,7 @@ async function createPlanPaiement(preinscriptionId: number, niveau: string, clas
   // ⭐ Si pas trouvé par le nom de la classe, essayer par le niveau
   if (planResult.rows.length === 0) {
     console.log(`⚠️ Classe "${classeNom}" non trouvée, recherche par niveau: ${niveau}`);
-    
+
     planResult = await query(`
       SELECT 
         NULL as nom,
@@ -130,9 +130,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { parent, parentId, enfants, fournitures_commande, montant_fournitures } = body;
 
-    console.log("Données reçues:", { 
-      parentEmail: parent?.email, 
-      parentId, 
+    console.log("Données reçues:", {
+      parentEmail: parent?.email,
+      parentId,
       enfantsCount: enfants?.length,
       fournituresCount: fournitures_commande?.length || 0,
       montantFournitures: montant_fournitures || 0,

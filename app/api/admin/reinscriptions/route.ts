@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 // GET - Récupérer les demandes de réinscription
 export async function GET(request: NextRequest) {
   console.log("=== API ADMIN REINSCRIPTIONS GET ===");
-  
+
   try {
     const session = await getServerSession(authOptions);
     if (!session || ((session.user as any).role !== "SUPER_ADMIN" && (session.user as any).role !== "COMPTABLE")) {
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
       // ⭐ Vérifier les échéances payées
       const echeancesInscription = echeances.filter((e: any) => e.type === 'reinscription');
       const toutesPayees = echeancesInscription.length > 0 && echeancesInscription.every((e: any) => e.statut === 'paye');
-      
+
       let fraisStatut = data.frais_statut;
       if (toutesPayees && fraisStatut !== 'paye') {
         await query(`
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
       const totalGeneral = montantFrais + totalServices;
       const reste = Math.max(0, totalGeneral - fraisPaye);
 
-      console.log("📊 Détails des frais pour réinscription:", {
+      console.log(" Détails des frais pour réinscription:", {
         inscription: montantFrais,
         transport: totalTransport,
         cantine: totalCantine,
@@ -316,9 +316,9 @@ export async function DELETE(request: NextRequest) {
 
       await query('COMMIT');
 
-      return NextResponse.json({ 
-        success: true, 
-        message: `Réinscription de ${reinscription.enfant_prenom} ${reinscription.enfant_nom} supprimée avec succès` 
+      return NextResponse.json({
+        success: true,
+        message: `Réinscription de ${reinscription.enfant_prenom} ${reinscription.enfant_nom} supprimée avec succès`
       });
 
     } catch (error) {

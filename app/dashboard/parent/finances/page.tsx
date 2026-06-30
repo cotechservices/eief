@@ -243,7 +243,7 @@ export default function ParentDashboard() {
       });
       setStatsEnfant(newStatsEnfant);
 
-      console.log("📊 Statistiques finales:", newStatsEnfant);
+      console.log(" Statistiques finales:", newStatsEnfant);
 
     } catch (error) {
       console.error("❌ Erreur globale:", error);
@@ -364,52 +364,52 @@ export default function ParentDashboard() {
 
   // Dans ParentDashboard, remplacer la section de calcul des statistiques globales
 
-// CALCUL DES STATISTIQUES GLOBALES 
+  // CALCUL DES STATISTIQUES GLOBALES 
 
-// 1. Calcul du total des frais de pré-inscription (inscription + services optionnels)
-//    Chaque pré-inscription a un montant_total qui inclut déjà tous les services
-const totalPreinscriptionFrais = preinscriptions.reduce((acc, p) => acc + (Number(p.montant_total) || 0), 0);
+  // 1. Calcul du total des frais de pré-inscription (inscription + services optionnels)
+  //    Chaque pré-inscription a un montant_total qui inclut déjà tous les services
+  const totalPreinscriptionFrais = preinscriptions.reduce((acc, p) => acc + (Number(p.montant_total) || 0), 0);
 
-// 2. Les services optionnels sont DÉJÀ inclus dans montant_total
-//    On ne les additionne pas séparément pour éviter le double comptage
-const totalCantine = 0;
-const totalTransport = 0;
-const totalFournitures = 0;
+  // 2. Les services optionnels sont DÉJÀ inclus dans montant_total
+  //    On ne les additionne pas séparément pour éviter le double comptage
+  const totalCantine = 0;
+  const totalTransport = 0;
+  const totalFournitures = 0;
 
-// 3. Calcul du total payé pour tous les enfants (paiements direct + échéances)
-const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
+  // 3. Calcul du total payé pour tous les enfants (paiements direct + échéances)
+  const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
 
-//  MONTANT À PAYER = Total des pré-inscriptions (inclut tous les services)
-const totalAPayer = totalPreinscriptionFrais;
-
-//  Solde restant = Montant à payer - Montant payé
-const soldeRestant = Math.max(0, totalAPayer - totalPaye);
-
-const statsGlobales = {
-  totalEnfants: enfants.length,
-  totalPreinscriptions: preinscriptions.length,
-  preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
-  preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
-  totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
-
-  //  Montant à payer = Total des pré-inscriptions (inclut tous les services)
-  totalAPayer: totalAPayer,
-
-  //  Montant payé = total payé pour tous les enfants
-  totalPaye: totalPaye,
-
-  //  Totaux par catégorie (pour affichage)
-  totalFraisInscription: totalPreinscriptionFrais,
-  totalTransport: 0, // Déjà inclus dans montant_total
-  totalCantine: 0,   // Déjà inclus dans montant_total
-  totalFournitures: 0, // Déjà inclus dans montant_total
-
-  // Total général des frais
-  totalFraisGeneral: totalPreinscriptionFrais,
+  //  MONTANT À PAYER = Total des pré-inscriptions (inclut tous les services)
+  const totalAPayer = totalPreinscriptionFrais;
 
   //  Solde restant = Montant à payer - Montant payé
-  soldeRestant: soldeRestant,
-};
+  const soldeRestant = Math.max(0, totalAPayer - totalPaye);
+
+  const statsGlobales = {
+    totalEnfants: enfants.length,
+    totalPreinscriptions: preinscriptions.length,
+    preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
+    preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
+    totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
+
+    //  Montant à payer = Total des pré-inscriptions (inclut tous les services)
+    totalAPayer: totalAPayer,
+
+    //  Montant payé = total payé pour tous les enfants
+    totalPaye: totalPaye,
+
+    //  Totaux par catégorie (pour affichage)
+    totalFraisInscription: totalPreinscriptionFrais,
+    totalTransport: 0, // Déjà inclus dans montant_total
+    totalCantine: 0,   // Déjà inclus dans montant_total
+    totalFournitures: 0, // Déjà inclus dans montant_total
+
+    // Total général des frais
+    totalFraisGeneral: totalPreinscriptionFrais,
+
+    //  Solde restant = Montant à payer - Montant payé
+    soldeRestant: soldeRestant,
+  };
 
   if (loading) {
     return (
@@ -500,10 +500,10 @@ const statsGlobales = {
           <p className="text-lg font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
         </div>
       </div>
-         
+
       {/* GRAPHIQUES DES STATISTIQUES */}
-        <div className="mb-8">
-        <ParentStatsCharts 
+      <div className="mb-8">
+        <ParentStatsCharts
           enfants={enfants}
           preinscriptions={preinscriptions}
           statsEnfant={statsEnfant}

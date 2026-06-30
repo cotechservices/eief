@@ -23,7 +23,7 @@ export async function GET(
       return NextResponse.json({ error: "ID invalide" }, { status: 400 });
     }
 
-    console.log(`📊 Récupération des détails de la pré-inscription ${preinscriptionId} pour le parent`);
+    console.log(` Récupération des détails de la pré-inscription ${preinscriptionId} pour le parent`);
 
     // Vérifier que la pré-inscription appartient au parent connecté
     const checkParent = await query(`
@@ -86,7 +86,7 @@ export async function GET(
 
     // ⭐ CANTINE - Vérifier si sélectionnée et récupérer le prix correct
     let cantineSelected = 0;
-    
+
     // Vérifier si la cantine est sélectionnée
     const cantineExists = await query(`
       SELECT COUNT(*) as count FROM preinscription_cantine WHERE preinscription_id = $1
@@ -100,11 +100,11 @@ export async function GET(
         JOIN cantine_menus cm ON pc.menu_id = cm.id
         WHERE pc.preinscription_id = $1
       `, [preinscriptionId]);
-      
+
       if (cantinePrixResult.rows.length > 0) {
         cantineSelected = Number(cantinePrixResult.rows[0]?.prix_annuel) || 0;
       }
-      
+
       // Si pas de prix annuel, utiliser la somme des prix
       if (cantineSelected === 0) {
         const sumResult = await query(`
@@ -114,7 +114,7 @@ export async function GET(
         `, [preinscriptionId]);
         cantineSelected = Number(sumResult.rows[0]?.total) || 0;
       }
-      
+
       // Si toujours 0, utiliser le prix annuel par défaut
       if (cantineSelected === 0) {
         const defaultPrix = await query(`
@@ -188,7 +188,7 @@ export async function GET(
 
     const fraisPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
 
-    console.log("📊 Détails des frais calculés (UNIQUEMENT services sélectionnés):", {
+    console.log(" Détails des frais calculés (UNIQUEMENT services sélectionnés):", {
       inscription: fraisInscription,
       transport: transportSelected,
       cantine: cantineSelected,
@@ -285,7 +285,7 @@ export async function DELETE(
     const paiementsCheck = await query(`
       SELECT COUNT(*) as count FROM paiements WHERE preinscription_id = $1
     `, [preinscriptionId]);
-    
+
     const hasPaiements = parseInt(paiementsCheck.rows[0].count) > 0;
 
     // ⭐ Démarrer une transaction
@@ -306,7 +306,7 @@ export async function DELETE(
       await query(`DELETE FROM commandes_fournitures WHERE preinscription_id = $1`, [preinscriptionId]);
       await query(`DELETE FROM preinscription_transport WHERE preinscription_id = $1`, [preinscriptionId]);
       await query(`DELETE FROM preinscription_cantine WHERE preinscription_id = $1`, [preinscriptionId]);
-      
+
       // Enfin, supprimer la pré-inscription
       await query(`DELETE FROM preinscriptions WHERE id = $1`, [preinscriptionId]);
 

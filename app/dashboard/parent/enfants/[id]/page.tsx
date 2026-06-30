@@ -145,7 +145,7 @@ export default function EnfantDetailPage() {
         throw new Error(`HTTP ${response.status}`);
       }
       const result = await response.json();
-      console.log("📊 Données reçues:", result);
+      console.log(" Données reçues:", result);
       setData(result);
     } catch (error) {
       console.error("Erreur:", error);
@@ -208,9 +208,9 @@ export default function EnfantDetailPage() {
         </Link>
         <div className="flex items-center gap-4 flex-1">
           {eleve.photo_url ? (
-            <img 
-              src={eleve.photo_url} 
-              alt="photo" 
+            <img
+              src={eleve.photo_url}
+              alt="photo"
               className="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
@@ -225,7 +225,7 @@ export default function EnfantDetailPage() {
             <h1 className="text-2xl font-bold text-gray-900">{eleve.prenom} {eleve.nom}</h1>
             <p className="text-gray-900">{eleve.classe_nom} - Matricule: {eleve.matricule}</p>
             <p className="text-sm text-gray-500">
-              {eleve.sexe === "M" ? "Garçon" : "Fille"} - 
+              {eleve.sexe === "M" ? "Garçon" : "Fille"} -
               {eleve.date_naissance ? new Date(eleve.date_naissance).toLocaleDateString() : "Date non renseignée"}
             </p>
           </div>
@@ -308,10 +308,10 @@ export default function EnfantDetailPage() {
                 <span className="font-medium text-gray-900">Acte de naissance</span>
               </div>
               {eleve.acte_naissance_url ? (
-                <a 
-                  href={eleve.acte_naissance_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={eleve.acte_naissance_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                 >
                   Voir le document <ExternalLink className="w-3 h-3" />
@@ -328,10 +328,10 @@ export default function EnfantDetailPage() {
                 <span className="font-medium text-gray-900">Photo d'identité</span>
               </div>
               {eleve.photo_url ? (
-                <a 
-                  href={eleve.photo_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={eleve.photo_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                 >
                   Voir la photo <ExternalLink className="w-3 h-3" />
@@ -348,10 +348,10 @@ export default function EnfantDetailPage() {
                 <span className="font-medium text-gray-900">Bulletin scolaire</span>
               </div>
               {eleve.bulletin_url ? (
-                <a 
-                  href={eleve.bulletin_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={eleve.bulletin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                 >
                   Voir le bulletin <ExternalLink className="w-3 h-3" />
@@ -438,9 +438,9 @@ export default function EnfantDetailPage() {
                     <span>{Math.round((frais.total_paye / frais.total_a_payer) * 100)}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
-                      className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
-                      style={{ width: `${Math.min(100, (frais.total_paye / frais.total_a_payer) * 100)}%` }} 
+                    <div
+                      className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(100, (frais.total_paye / frais.total_a_payer) * 100)}%` }}
                     />
                   </div>
                 </div>
@@ -453,7 +453,7 @@ export default function EnfantDetailPage() {
           )}
         </div>
       </div>
-      
+
 
       {/* Notes par matière */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">

@@ -1,8 +1,14 @@
-// app/dashboard/admin/cantine/page.tsx
+// app/dashboard/admin/cantine/page.tsx - Version sans colonnes Inscrits, Présents, Recette réelle
+
 "use client";
 
 import { useState, useEffect } from "react";
-import { Utensils, Calendar, Users, CreditCard, Plus, Edit, Trash2, Eye, Search, Download, Check, X } from "lucide-react";
+import {
+  Utensils, Calendar, Users, CreditCard, Plus, Edit, Trash2,
+  Eye, Search, Download, Check, X, TrendingUp, TrendingDown,
+  User, UserCheck, DollarSign, BarChart3, FileText, UserPlus, RefreshCw,
+  ClipboardList, BookOpen, Wallet, Clock, AlertCircle, PieChart
+} from "lucide-react";
 
 interface Menu {
   id: number;
@@ -15,15 +21,72 @@ interface Menu {
   prix_annuel: number | null;
   inscrits: number;
   presents: number;
+  recette_reelle: number;
+}
+
+// Interfaces pour les inscriptions
+interface PreinscriptionCantine {
+  id: number;
+  numero_dossier: string;
+  enfant_nom: string;
+  enfant_prenom: string;
+  classe: string;
+  statut: string;
+  menu_plat: string;
+  prix_cantine: number;
+  frais_statut: string;
+  date: string;
+}
+
+interface ReinscriptionCantine {
+  id: number;
+  numero_dossier: string;
+  enfant_nom: string;
+  enfant_prenom: string;
+  classe_nom: string;
+  statut: string;
+  montant_cantine: number;
+  frais_statut: string;
+  date: string;
+}
+
+interface CantineStats {
+  totalInscrits: number;
+  totalGarcons: number;
+  totalFilles: number;
+  moyenneJour: number;
+  recettesMois: number;
+  recettesAnnuel: number;
+  recetteTotaleReelle: number;
+  tauxPresence: number;
+  totalMenus: number;
+  nbMenusAvecPrix: number;
+  recetteMoyenneParMenu: number;
+  presentsGarcons: number;
+  presentsFilles: number;
+  preinscriptions?: PreinscriptionCantine[];
+  reinscriptions?: ReinscriptionCantine[];
+  totalPreinscriptions?: number;
+  totalReinscriptions?: number;
+  preinscriptionsPayees?: number;
+  reinscriptionsPayees?: number;
+  montantTotalPaye?: number;
+  montantTotalEnAttente?: number;
+  montantTotalNonPaye?: number;
+  tauxPaiement?: number;
+  pourcentagePaye?: number;
+  pourcentageEnAttente?: number;
+  pourcentageNonPaye?: number;
 }
 
 export default function CantinePage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [menus, setMenus] = useState<Menu[]>([]);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<CantineStats | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const [activeTab, setActiveTab] = useState<'preinscriptions' | 'reinscriptions'>('preinscriptions');
 
-  // Form states
   const [showForm, setShowForm] = useState(false);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [formData, setFormData] = useState({
@@ -32,8 +95,8 @@ export default function CantinePage() {
     accompagnement: "",
     dessert: "",
     regime_special: false,
-    prix: "" as string, // ⭐ Champ text pour éviter les valeurs par défaut
-    prix_annuel: "" as string // ⭐ Champ text pour éviter les valeurs par défaut
+    prix: "" as string,
+    prix_annuel: "" as string
   });
 
   const fetchCantine = async () => {
@@ -42,11 +105,54 @@ export default function CantinePage() {
       if (response.ok) {
         const data = await response.json();
         setMenus(data.menus || []);
-        setStats(data.stats || {
-          totalInscrits: 0,
-          moyenneJour: 0,
-          recettesMois: 0,
-          tauxPresence: 0
+        
+        const preinscriptions = data.stats?.preinscriptions || [];
+        const reinscriptions = data.stats?.reinscriptions || [];
+        
+        const preinscriptionsPayees = preinscriptions.filter((p: any) => p.frais_statut === 'paye');
+        const reinscriptionsPayees = reinscriptions.filter((r: any) => r.frais_statut === 'paye');
+        
+        const montantTotalPaye = preinscriptionsPayees.reduce((sum: number, p: any) => sum + (p.prix_cantine || 0), 0) +
+                                 reinscriptionsPayees.reduce((sum: number, r: any) => sum + (r.montant_cantine || 0), 0);
+        
+        const montantTotal = preinscriptions.reduce((sum: number, p: any) => sum + (p.prix_cantine || 0), 0) +
+                            reinscriptions.reduce((sum: number, r: any) => sum + (r.montant_cantine || 0), 0);
+        
+        const montantTotalEnAttente = montantTotal - montantTotalPaye;
+        const montantTotalNonPaye = montantTotalEnAttente;
+        
+        const tauxPaiement = montantTotal > 0 ? Math.round((montantTotalPaye / montantTotal) * 100) : 0;
+        const pourcentagePaye = montantTotal > 0 ? Math.round((montantTotalPaye / montantTotal) * 100) : 0;
+        const pourcentageEnAttente = montantTotal > 0 ? Math.round((montantTotalEnAttente / montantTotal) * 100) : 0;
+        const pourcentageNonPaye = montantTotal > 0 ? Math.round((montantTotalNonPaye / montantTotal) * 100) : 0;
+        
+        setStats({
+          totalInscrits: data.stats?.totalInscrits || 0,
+          totalGarcons: data.stats?.totalGarcons || 0,
+          totalFilles: data.stats?.totalFilles || 0,
+          moyenneJour: data.stats?.moyenneJour || 0,
+          recettesMois: data.stats?.recettesMois || 0,
+          recettesAnnuel: data.stats?.recettesAnnuel || 0,
+          recetteTotaleReelle: data.stats?.recetteTotaleReelle || 0,
+          tauxPresence: data.stats?.tauxPresence || 0,
+          totalMenus: data.stats?.totalMenus || 0,
+          nbMenusAvecPrix: data.stats?.nbMenusAvecPrix || 0,
+          recetteMoyenneParMenu: data.stats?.recetteMoyenneParMenu || 0,
+          presentsGarcons: data.stats?.presentsGarcons || 0,
+          presentsFilles: data.stats?.presentsFilles || 0,
+          preinscriptions: preinscriptions,
+          reinscriptions: reinscriptions,
+          totalPreinscriptions: preinscriptions.length,
+          totalReinscriptions: reinscriptions.length,
+          preinscriptionsPayees: preinscriptionsPayees.length,
+          reinscriptionsPayees: reinscriptionsPayees.length,
+          montantTotalPaye: montantTotalPaye,
+          montantTotalEnAttente: montantTotalEnAttente,
+          montantTotalNonPaye: montantTotalNonPaye,
+          tauxPaiement: tauxPaiement,
+          pourcentagePaye: pourcentagePaye,
+          pourcentageEnAttente: pourcentageEnAttente,
+          pourcentageNonPaye: pourcentageNonPaye
         });
       }
     } catch (error) {
@@ -94,7 +200,6 @@ export default function CantinePage() {
       const method = editingMenu ? "PUT" : "POST";
       const body = {
         ...formData,
-        // ⭐ Convertir en nombre ou null
         prix: formData.prix ? parseInt(formData.prix) : null,
         prix_annuel: formData.prix_annuel ? parseInt(formData.prix_annuel) : null,
         id: editingMenu?.id
@@ -139,12 +244,36 @@ export default function CantinePage() {
     return <div className="flex justify-center items-center h-64">Chargement...</div>;
   }
 
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '-';
+    try {
+      return new Date(dateStr).toLocaleDateString('fr-FR');
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const paymentStats = {
+    totalPreinscriptions: stats.totalPreinscriptions || 0,
+    totalReinscriptions: stats.totalReinscriptions || 0,
+    preinscriptionsPayees: stats.preinscriptionsPayees || 0,
+    reinscriptionsPayees: stats.reinscriptionsPayees || 0,
+    montantTotalPaye: stats.montantTotalPaye || 0,
+    montantTotalEnAttente: stats.montantTotalEnAttente || 0,
+    montantTotalNonPaye: stats.montantTotalNonPaye || 0,
+    tauxPaiement: stats.tauxPaiement || 0,
+    pourcentagePaye: stats.pourcentagePaye || 0,
+    pourcentageEnAttente: stats.pourcentageEnAttente || 0,
+    pourcentageNonPaye: stats.pourcentageNonPaye || 0
+  };
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-black">Gestion de la cantine</h1>
-          <p className="text-gray-900">Menus, réservations, présence</p>
+          <p className="text-gray-900">Menus, reservations, presence et recettes</p>
         </div>
         <button
           onClick={handleOpenAdd}
@@ -154,40 +283,236 @@ export default function CantinePage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
-          <div>
-            <p className="text-gray-900 text-sm">Inscrits cantine</p>
-            <p className="text-2xl font-bold text-blue-600">{stats.totalInscrits}</p>
+      {/* Statistiques de paiement - 4 cartes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Montant total paye */}
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 shadow-sm border border-green-200">
+          <div className="flex items-center gap-3">
+            <div className="bg-green-600 p-3 rounded-lg">
+              <DollarSign className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Montant total paye</p>
+              <p className="text-xl font-bold text-green-700">
+                {(paymentStats.montantTotalPaye).toLocaleString()} GNF
+              </p>
+              <p className="text-xs text-gray-500">
+                {paymentStats.pourcentagePaye}% du total
+              </p>
+            </div>
           </div>
-          <Users className="w-8 h-8 text-blue-200" />
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
-          <div>
-            <p className="text-gray-900 text-sm">Moyenne/jour</p>
-            <p className="text-2xl font-bold text-green-600">{stats.moyenneJour}</p>
+
+        {/* Montant total en attente */}
+        <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl p-4 shadow-sm border border-yellow-200">
+          <div className="flex items-center gap-3">
+            <div className="bg-yellow-600 p-3 rounded-lg">
+              <Clock className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Montant total en attente</p>
+              <p className="text-xl font-bold text-yellow-700">
+                {(paymentStats.montantTotalEnAttente).toLocaleString()} GNF
+              </p>
+              <p className="text-xs text-gray-500">
+                {paymentStats.pourcentageEnAttente}% du total
+              </p>
+            </div>
           </div>
-          <Utensils className="w-8 h-8 text-green-200" />
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
-          <div>
-            <p className="text-gray-900 text-sm">Recettes (mois)</p>
-            <p className="text-2xl font-bold text-orange-600">{stats.recettesMois.toLocaleString()} GNF</p>
+
+        {/* Montant total non paye */}
+        <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-4 shadow-sm border border-red-200">
+          <div className="flex items-center gap-3">
+            <div className="bg-red-600 p-3 rounded-lg">
+              <X className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Montant total non paye</p>
+              <p className="text-xl font-bold text-red-700">
+                {(paymentStats.montantTotalNonPaye).toLocaleString()} GNF
+              </p>
+              <p className="text-xs text-gray-500">
+                {paymentStats.pourcentageNonPaye}% du total
+              </p>
+            </div>
           </div>
-          <CreditCard className="w-8 h-8 text-orange-200" />
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
-          <div>
-            <p className="text-gray-900 text-sm">Taux présence</p>
-            <p className="text-2xl font-bold text-purple-600">{stats.tauxPresence}%</p>
+
+        {/* Taux de paiement global */}
+        <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-xl p-4 shadow-sm border border-indigo-200">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 p-3 rounded-lg">
+              <PieChart className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Taux de paiement global</p>
+              <p className="text-2xl font-bold text-indigo-700">
+                {paymentStats.tauxPaiement}%
+              </p>
+              <p className="text-xs text-gray-500">
+                {(paymentStats.montantTotalPaye).toLocaleString()} / {(paymentStats.montantTotalPaye + paymentStats.montantTotalEnAttente + paymentStats.montantTotalNonPaye || 1).toLocaleString()} GNF
+              </p>
+            </div>
           </div>
-          <Users className="w-8 h-8 text-purple-200" />
         </div>
       </div>
 
+      {/* Section : Liste des inscriptions a la cantine par type */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-gray-900">Inscriptions a la cantine</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActiveTab('preinscriptions')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+                  activeTab === 'preinscriptions'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                Pre-inscriptions ({stats.preinscriptions?.length || 0})
+              </button>
+              <button
+                onClick={() => setActiveTab('reinscriptions')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+                  activeTab === 'reinscriptions'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <RefreshCw className="w-4 h-4" />
+                Reinscriptions ({stats.reinscriptions?.length || 0})
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          {/* Tab : Pre-inscriptions */}
+          {activeTab === 'preinscriptions' && (
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-900 uppercase">
+                <tr>
+                  <th className="px-6 py-3">Dossier</th>
+                  <th className="px-6 py-3">Eleve</th>
+                  <th className="px-6 py-3">Classe</th>
+                  <th className="px-6 py-3">Menu choisi</th>
+                  <th className="px-6 py-3">Prix cantine</th>
+                  <th className="px-6 py-3">Statut</th>
+                  <th className="px-6 py-3">Paiement</th>
+                  <th className="px-6 py-3">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {stats.preinscriptions && stats.preinscriptions.length > 0 ? (
+                  stats.preinscriptions.map((p: PreinscriptionCantine) => (
+                    <tr key={p.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 font-mono text-xs text-blue-600">{p.numero_dossier || '-'}</td>
+                      <td className="px-6 py-4 font-medium">{p.enfant_prenom} {p.enfant_nom}</td>
+                      <td className="px-6 py-4">{p.classe || '-'}</td>
+                      <td className="px-6 py-4">{p.menu_plat || '-'}</td>
+                      <td className="px-6 py-4 font-medium text-orange-600">
+                        {(p.prix_cantine || 0).toLocaleString()} GNF
+                      </td>
+                      <td className="px-6 py-4">
+                        {p.statut === 'en_attente' && (
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs">En attente</span>
+                        )}
+                        {p.statut === 'valide' && (
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">Validee</span>
+                        )}
+                        {p.statut === 'rejete' && (
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs">Rejetee</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {p.frais_statut === 'paye' ? (
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">Paye</span>
+                        ) : p.frais_statut === 'partiel' ? (
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs">Partiel</span>
+                        ) : (
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs">Non paye</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-gray-500 text-xs">{formatDate(p.date)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                      Aucune pre-inscription avec cantine
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+
+          {/* Tab : Reinscriptions */}
+          {activeTab === 'reinscriptions' && (
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-900 uppercase">
+                <tr>
+                  <th className="px-6 py-3">Dossier</th>
+                  <th className="px-6 py-3">Eleve</th>
+                  <th className="px-6 py-3">Classe</th>
+                  <th className="px-6 py-3">Montant cantine</th>
+                  <th className="px-6 py-3">Statut</th>
+                  <th className="px-6 py-3">Paiement</th>
+                  <th className="px-6 py-3">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {stats.reinscriptions && stats.reinscriptions.length > 0 ? (
+                  stats.reinscriptions.map((r: ReinscriptionCantine) => (
+                    <tr key={r.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 font-mono text-xs text-purple-600">{r.numero_dossier || '-'}</td>
+                      <td className="px-6 py-4 font-medium">{r.enfant_prenom} {r.enfant_nom}</td>
+                      <td className="px-6 py-4">{r.classe_nom || '-'}</td>
+                      <td className="px-6 py-4 font-medium text-orange-600">
+                        {(r.montant_cantine || 0).toLocaleString()} GNF
+                      </td>
+                      <td className="px-6 py-4">
+                        {r.statut === 'en_attente' && (
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs">En attente</span>
+                        )}
+                        {r.statut === 'valide' && (
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">Validee</span>
+                        )}
+                        {r.statut === 'rejete' && (
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs">Rejetee</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {r.frais_statut === 'paye' ? (
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">Paye</span>
+                        ) : (
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs">Non paye</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-gray-500 text-xs">{formatDate(r.date)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                      Aucune reinscription avec cantine
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
+      {/* Tableau des menus - sans colonnes Inscrits, Presents, Recette reelle */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h3 className="font-semibold text-gray-900">Menus enregistrés</h3>
+          <h3 className="font-semibold text-gray-900">Menus enregistres</h3>
           <div className="flex gap-2">
             <input
               type="date"
@@ -195,8 +520,12 @@ export default function CantinePage() {
               onChange={(e) => setSelectedDate(e.target.value)}
               className="px-3 py-1 border rounded-lg text-sm"
             />
-            <button className="p-2 border rounded-lg hover:bg-gray-50"><Search className="w-4 h-4 text-gray-900" /></button>
-            <button className="p-2 border rounded-lg hover:bg-gray-50"><Download className="w-4 h-4 text-gray-900" /></button>
+            <button className="p-2 border rounded-lg hover:bg-gray-50">
+              <Search className="w-4 h-4 text-gray-900" />
+            </button>
+            <button className="p-2 border rounded-lg hover:bg-gray-50">
+              <Download className="w-4 h-4 text-gray-900" />
+            </button>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -207,9 +536,7 @@ export default function CantinePage() {
                 <th className="px-6 py-3">Accompagnement</th>
                 <th className="px-6 py-3">Dessert</th>
                 <th className="px-6 py-3">Prix Annuel</th>
-                <th className="px-6 py-3">Régime Spécial</th>
-                <th className="px-6 py-3">Inscrits</th>
-                <th className="px-6 py-3">Présents</th>
+                <th className="px-6 py-3">Regime Special</th>
                 <th className="px-6 py-3">Actions</th>
               </tr>
             </thead>
@@ -229,8 +556,6 @@ export default function CantinePage() {
                       <span className="text-gray-900 text-xs">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{m.inscrits}</td>
-                  <td className="px-6 py-4 text-gray-900">{m.presents}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
                       <button
@@ -251,7 +576,9 @@ export default function CantinePage() {
               ))}
               {menus.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-6 py-8 text-center text-gray-900">Aucun menu disponible.</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-900">
+                    Aucun menu disponible.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -259,7 +586,7 @@ export default function CantinePage() {
         </div>
       </div>
 
-      {/* Form modal avec prix et prix_annuel - Sans boutons + et - */}
+      {/* Form modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 animate-fade-in">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border border-gray-100 max-h-[90vh] overflow-y-auto">
@@ -305,20 +632,18 @@ export default function CantinePage() {
                   className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1">Prix Annuel (GNF)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1000"
-                    placeholder="Ex: 2500000"
-                    value={formData.prix_annuel}
-                    onChange={e => setFormData({ ...formData, prix_annuel: e.target.value })}
-                    className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">Laissez vide si non défini</p>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Prix Annuel (GNF)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1000"
+                  placeholder="Ex: 2500000"
+                  value={formData.prix_annuel}
+                  onChange={e => setFormData({ ...formData, prix_annuel: e.target.value })}
+                  className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-400 mt-1">Laissez vide si non defini</p>
               </div>
               <div className="flex items-center gap-2 py-2">
                 <input
@@ -329,7 +654,7 @@ export default function CantinePage() {
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
                 <label htmlFor="regime_special" className="text-sm font-medium text-gray-900 select-none cursor-pointer">
-                  Option de régime spécial disponible (végétarien, allergies...)
+                  Option de regime special disponible (vegetarien, allergies...)
                 </label>
               </div>
               <div className="flex justify-end gap-3 mt-6">

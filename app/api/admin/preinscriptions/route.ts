@@ -251,7 +251,7 @@ export async function GET(request: NextRequest) {
         console.log(`⚠️ Paiement partiel pour la pré-inscription ${id}: ${fraisPaye}/${totalFrais}`);
       }
 
-      console.log("📊 Détails des frais calculés (UNIQUEMENT services sélectionnés):", {
+      console.log(" Détails des frais calculés (UNIQUEMENT services sélectionnés):", {
         inscription: fraisInscription,
         transport: transportSelected,
         cantine: cantineSelected,
