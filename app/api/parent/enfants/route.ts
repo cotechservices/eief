@@ -1,4 +1,5 @@
-// app/api/parent/enfants/route.ts
+// app/api/parent/enfants/route.ts - Version corrigée avec frais_reinscription_classe
+
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -26,6 +27,8 @@ export async function GET() {
         e.date_naissance,
         e.lieu_naissance,
         c.frais_inscription as frais_inscription_classe,
+        -- ⭐ AJOUT : Frais de réinscription depuis la classe
+        COALESCE(c.reinscription_total_versement, c.total_versement, 0) as frais_reinscription_classe,
         COALESCE(e.photo_url, pre.photo_url) as photo_url,
         COALESCE((
           SELECT AVG(n.valeur) 
@@ -102,12 +105,15 @@ export async function GET() {
       const fraisTransport = Number(enfant.frais_transport) || 0;
       const fraisLibrairie = Number(enfant.frais_librairie) || 0;
       const fraisScolarite = Number(enfant.frais_scolarite) || 0;
+      const fraisReinscriptionClasse = Number(enfant.frais_reinscription_classe) || 0;
 
       // ⭐ Le total est le montant de la pré-inscription (qui inclut déjà tous les services)
       const totalFrais = montantTotalInscription;
       const reste = Math.max(0, totalFrais - fraisPaye);
 
-      console.log(` Frais pour ${enfant.prenom} ${enfant.nom}:`, {
+      console.log(`📊 Frais pour ${enfant.prenom} ${enfant.nom}:`, {
+        fraisReinscriptionClasse: fraisReinscriptionClasse,
+        fraisInscriptionClasse: enfant.frais_inscription_classe,
         montantTotalInscription: montantTotalInscription,
         fraisInscription: fraisInscription,
         fraisCantine: fraisCantine,
@@ -121,6 +127,7 @@ export async function GET() {
 
       return {
         ...enfant,
+        frais_reinscription_classe: fraisReinscriptionClasse, // ⭐ AJOUTÉ
         details_frais: {
           inscription: fraisInscription,
           cantine: fraisCantine,

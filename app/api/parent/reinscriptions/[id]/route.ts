@@ -22,7 +22,7 @@ export async function DELETE(
     // ⭐ Attendre les params (Next.js 15)
     const resolvedParams = await params;
     const reinscriptionId = parseInt(resolvedParams.id);
-    
+
     if (!reinscriptionId) {
       return NextResponse.json({ error: "ID de réinscription invalide" }, { status: 400 });
     }
@@ -46,15 +46,15 @@ export async function DELETE(
 
     // Vérifier que la réinscription est en attente
     if (reinscription.statut !== "en_attente") {
-      return NextResponse.json({ 
-        error: "Impossible d'annuler une réinscription déjà traitée" 
+      return NextResponse.json({
+        error: "Impossible d'annuler une réinscription déjà traitée"
       }, { status: 400 });
     }
 
     // Vérifier qu'aucun paiement n'a été effectué
     if (reinscription.frais_statut === "paye") {
-      return NextResponse.json({ 
-        error: "Impossible d'annuler une réinscription déjà payée" 
+      return NextResponse.json({
+        error: "Impossible d'annuler une réinscription déjà payée"
       }, { status: 400 });
     }
 
@@ -89,8 +89,8 @@ export async function DELETE(
 
   } catch (error) {
     console.error("Erreur annulation réinscription:", error);
-    return NextResponse.json({ 
-      error: "Erreur serveur: " + (error as Error).message 
+    return NextResponse.json({
+      error: "Erreur serveur: " + (error as Error).message
     }, { status: 500 });
   }
 }

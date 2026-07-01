@@ -1,4 +1,5 @@
-// app/api/parent/enfants/[id]/route.ts
+// app/api/parent/enfants/[id]/route.ts - Version corrigée
+
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -18,7 +19,7 @@ export async function GET(
     const eleveId = parseInt(id);
     const userEmail = session.user?.email;
 
-    console.log(` Récupération des détails pour l'élève ${eleveId}`);
+    console.log(`📊 Récupération des détails pour l'élève ${eleveId}`);
 
     // Vérifier que l'enfant appartient au parent
     const checkParent = await query(`
@@ -47,6 +48,8 @@ export async function GET(
         c.nom as classe_nom,
         c.niveau,
         c.frais_inscription as frais_inscription_classe,
+        -- ⭐ AJOUT : Frais de réinscription depuis la classe
+        c.reinscription_total_versement as frais_reinscription_classe,
         i.id as inscription_id,
         i.date_inscription,
         i.statut as inscription_statut,
@@ -116,13 +119,18 @@ export async function GET(
       WHERE eleve_id = $1
     `, [eleveId]);
 
-    // ===================== 4. FRAIS D'INSCRIPTION =====================
-    const fraisInscription = await query(`
-      SELECT COALESCE(c.frais_inscription, 0) as frais_inscription
+    // ===================== 4. FRAIS D'INSCRIPTION & RÉINSCRIPTION =====================
+    const fraisClasses = await query(`
+      SELECT 
+        COALESCE(c.frais_inscription, 0) as frais_inscription,
+        COALESCE(c.reinscription_total_versement, c.total_versement, 0) as frais_reinscription
       FROM eleves e
       LEFT JOIN classes c ON e.classe_id = c.id
       WHERE e.id = $1
     `, [eleveId]);
+
+    const fraisInscriptionTotal = Number(fraisClasses.rows[0]?.frais_inscription) || 0;
+    const fraisReinscriptionTotal = Number(fraisClasses.rows[0]?.frais_reinscription) || 0;
 
     // ===================== 5. TRANSPORT - UNIQUEMENT SI SÉLECTIONNÉ =====================
     let totalTransport = 0;
@@ -261,8 +269,8 @@ export async function GET(
       fournituresSelected = totalFournitures > 0;
     }
 
-    // ===================== 8. SCOLARITÉ (DÉJÀ INCLUSE DANS FRAIS_INSCRIPTION) =====================
-    // On ne l'ajoute pas séparément car elle est déjà dans frais_inscription
+    // ===================== 8. SCOLARITÉ (DÉJÀ INCLUSE DANS FRAIS) =====================
+    // On ne l'ajoute pas séparément
 
     // ===================== 9. PAIEMENTS =====================
     const paiementsDirects = await query(`
@@ -409,12 +417,12 @@ export async function GET(
     }
 
     // ===================== CALCUL DES TOTAUX =====================
-    // ⭐ UNIQUEMENT les services sélectionnés !
-    const fraisInscriptionTotal = Number(fraisInscription.rows[0]?.frais_inscription) || 0;
+    // ⭐ Utiliser les frais de réinscription si disponibles (pour la réinscription)
+    // Ou les frais d'inscription si c'est une première inscription
+    const fraisBase = fraisReinscriptionTotal > 0 ? fraisReinscriptionTotal : fraisInscriptionTotal;
 
-    // ⭐ Le total = inscription + services sélectionnés UNIQUEMENT
-    // La scolarité est déjà incluse dans frais_inscription
-    const totalFraisGeneral = fraisInscriptionTotal + totalTransport + totalCantine + totalFournitures;
+    // ⭐ Le total = frais de base + services sélectionnés UNIQUEMENT
+    const totalFraisGeneral = fraisBase + totalTransport + totalCantine + totalFournitures;
     const soldeRestant = Math.max(0, totalFraisGeneral - totalPaye);
 
     // Calcul de la moyenne générale
@@ -441,8 +449,9 @@ export async function GET(
       : "0";
 
     console.log(`=== DÉTAILS COMPLETS pour eleve_id ${eleveId} ===`);
-    console.log(` Services sélectionnés: Transport=${transportSelected}, Cantine=${cantineSelected}, Fournitures=${fournituresSelected}`);
-    console.log(` Total frais: ${totalFraisGeneral} (inscription: ${fraisInscriptionTotal} + transport: ${totalTransport} + cantine: ${totalCantine} + fournitures: ${totalFournitures})`);
+    console.log(`Frais de réinscription: ${fraisReinscriptionTotal}, Frais d'inscription: ${fraisInscriptionTotal}`);
+    console.log(`Services sélectionnés: Transport=${transportSelected}, Cantine=${cantineSelected}, Fournitures=${fournituresSelected}`);
+    console.log(`Total frais: ${totalFraisGeneral} (base: ${fraisBase} + transport: ${totalTransport} + cantine: ${totalCantine} + fournitures: ${totalFournitures})`);
 
     // ===================== RÉPONSE JSON =====================
     return NextResponse.json({
@@ -451,6 +460,7 @@ export async function GET(
         photo_url: photoUrl,
         acte_naissance_url: eleveData.acte_naissance_url || null,
         bulletin_url: eleveData.bulletin_url || null,
+        frais_reinscription_classe: fraisReinscriptionTotal, // ⭐ AJOUTÉ
         moyenne_generale: parseFloat(moyenneGenerale.toFixed(2)),
         appreciation: getAppreciation(moyenneGenerale),
         taux_presence: tauxPresence
@@ -468,6 +478,7 @@ export async function GET(
 
       frais: {
         inscription: fraisInscriptionTotal,
+        reinscription: fraisReinscriptionTotal, // ⭐ AJOUTÉ
         transport: totalTransport,
         transport_details: transportDetails,
         transport_selected: transportSelected,
@@ -480,7 +491,7 @@ export async function GET(
         fournitures: totalFournitures,
         fournitures_details: fournituresDetails,
         fournitures_selected: fournituresSelected,
-        scolarite: 0, // Déjà inclus dans inscription
+        scolarite: 0,
         total_a_payer: totalFraisGeneral,
         total_paye: totalPaye,
         total_paye_direct: totalPayeDirect,
@@ -509,6 +520,7 @@ export async function GET(
       presences: { total: 0, presents: 0, absents: 0, retards: 0, justifies: 0 },
       frais: {
         inscription: 0,
+        reinscription: 0,
         transport: 0,
         transport_details: null,
         transport_selected: false,

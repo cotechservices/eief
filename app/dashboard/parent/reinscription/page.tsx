@@ -38,6 +38,7 @@ interface Enfant {
   niveau: string;
   frais_inscription_classe: number;
   photo_url: string | null;
+  frais_reinscription_classe: number; 
 }
 
 interface Classe {
@@ -389,8 +390,8 @@ export default function ReinscriptionParentPage() {
   };
 
   const getMontantTotal = () => {
-    const fraisInscription = selectedEnfant?.frais_inscription_classe || 500000;
-    return fraisInscription + getTotalServices();
+    const fraisBase = selectedEnfant?.frais_reinscription_classe || selectedEnfant?.frais_inscription_classe || 500000;
+    return fraisBase + getTotalServices();
   };
 
   const handleSubmitReinscription = async () => {
@@ -398,14 +399,15 @@ export default function ReinscriptionParentPage() {
 
     setSubmitting(true);
     try {
+      const fraisBase = selectedEnfant.frais_reinscription_classe || selectedEnfant.frais_inscription_classe || 500000;
+
       const response = await fetch("/api/parent/reinscriptions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           eleveId: selectedEnfant.eleve_id,
           classeId: selectedClasseId,
-          montantFrais: selectedEnfant.frais_inscription_classe || 500000,
-          // ⭐ Services optionnels
+          montantFrais: fraisBase,
           transport: transportOptions.filter(t => t.selected).map(t => ({ id: t.id, prix: t.prix })),
           cantine: cantineOptions.filter(c => c.selected).map(c => ({ id: c.id, prix: c.prix_annuel })),
           fournitures: supplies.filter(s => s.selectedQty > 0).map(s => ({ id: s.id, quantite: s.selectedQty, prix_unitaire: s.prix_unitaire })),
@@ -829,39 +831,44 @@ export default function ReinscriptionParentPage() {
               )}
 
               {/* Récapitulatif */}
-              {selectedClasseId && (
-                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <h4 className="font-semibold text-black mb-2">Récapitulatif</h4>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-900">Inscription</span>
-                      <span className="font-medium text-black">{(selectedEnfant.frais_inscription_classe || 500000).toLocaleString()} GNF</span>
-                    </div>
-                    {totalTransport > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-green-600">Transport</span>
-                        <span className="font-medium text-green-600">{totalTransport.toLocaleString()} GNF</span>
-                      </div>
-                    )}
-                    {totalCantine > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-orange-600">Cantine</span>
-                        <span className="font-medium text-orange-600">{totalCantine.toLocaleString()} GNF</span>
-                      </div>
-                    )}
-                    {totalFournitures > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-purple-600">Fournitures</span>
-                        <span className="font-medium text-purple-600">{totalFournitures.toLocaleString()} GNF</span>
-                      </div>
-                    )}
-                    <div className="border-t pt-1 text-blue-700 flex justify-between font-bold text-lg">
-                      <span>Total</span>
-                      <span className="text-blue-700">{getMontantTotal().toLocaleString()} GNF</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Récapitulatif */}
+{/* Récapitulatif - CORRIGÉ */}
+{selectedClasseId && (
+  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+    <h4 className="font-semibold text-black mb-2">Récapitulatif</h4>
+    <div className="space-y-1 text-sm">
+      <div className="flex justify-between">
+        <span className="text-gray-900">Frais de réinscription</span>
+        <span className="font-medium text-black">
+          {/* ⭐ CORRECTION : Utiliser frais_reinscription_classe en priorité */}
+          {(selectedEnfant.frais_reinscription_classe || selectedEnfant.frais_inscription_classe || 500000).toLocaleString()} GNF
+        </span>
+      </div>
+      {totalTransport > 0 && (
+        <div className="flex justify-between">
+          <span className="text-green-600">Transport</span>
+          <span className="font-medium text-green-600">{totalTransport.toLocaleString()} GNF</span>
+        </div>
+      )}
+      {totalCantine > 0 && (
+        <div className="flex justify-between">
+          <span className="text-orange-600">Cantine</span>
+          <span className="font-medium text-orange-600">{totalCantine.toLocaleString()} GNF</span>
+        </div>
+      )}
+      {totalFournitures > 0 && (
+        <div className="flex justify-between">
+          <span className="text-purple-600">Fournitures</span>
+          <span className="font-medium text-purple-600">{totalFournitures.toLocaleString()} GNF</span>
+        </div>
+      )}
+      <div className="border-t pt-1 text-blue-700 flex justify-between font-bold text-lg">
+        <span>Total</span>
+        <span className="text-blue-700">{getMontantTotal().toLocaleString()} GNF</span>
+      </div>
+    </div>
+  </div>
+)}
 
               {/* Boutons */}
               <div className="flex justify-between pt-4 border-t">
@@ -1071,8 +1078,8 @@ export default function ReinscriptionParentPage() {
                   onClick={confirmCancelReinscription}
                   disabled={isCancelling}
                   className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${isCancelling
-                      ? "bg-gray-300 cursor-not-allowed"
-                      : "bg-red-600 text-white hover:bg-red-700"
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-red-600 text-white hover:bg-red-700"
                     }`}
                 >
                   {isCancelling ? (
