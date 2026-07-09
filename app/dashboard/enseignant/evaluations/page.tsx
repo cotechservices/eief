@@ -44,15 +44,15 @@ export default function EnseignantEvaluationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Award className="w-6 h-6 text-purple-500" />
-            Évaluations QCM
+            Évaluations
           </h1>
-          <p className="text-gray-500 mt-1">Vos examens interactifs et QCM en ligne</p>
+          <p className="text-gray-500 mt-1">Vos examens interactifs en ligne</p>
         </div>
         <Link
           href="/dashboard/enseignant/evaluations/nouveau"
           className="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-purple-700 transition"
         >
-          <Plus className="w-4 h-4" /> Créer un QCM
+          <Plus className="w-4 h-4" /> Créer une évaluation
         </Link>
       </div>
 
@@ -61,7 +61,7 @@ export default function EnseignantEvaluationsPage() {
           <div className="col-span-full bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-400">
             <Award className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="font-medium text-gray-600">Aucune évaluation créée</p>
-            <p className="text-sm mt-1">Cliquez sur "Créer un QCM" pour générer votre première évaluation interactive.</p>
+            <p className="text-sm mt-1">Cliquez sur "Créer une évaluation" pour générer votre première évaluation interactive.</p>
           </div>
         ) : (
           examens.map((examen) => (
@@ -82,9 +82,7 @@ export default function EnseignantEvaluationsPage() {
                   )}
                 </div>
                 <h3 className="font-bold text-gray-900 leading-tight mb-1">{examen.titre}</h3>
-                <p className="text-sm text-gray-500 flex items-center gap-1.5">
-                  <BookOpen className="w-3.5 h-3.5" /> {examen.matiere}
-                </p>
+                {/* ⭐ Supprimé l'affichage de la matière */}
               </div>
 
               <div className="p-5 flex-1 flex flex-col justify-between">

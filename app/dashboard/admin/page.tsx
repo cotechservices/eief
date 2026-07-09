@@ -275,7 +275,7 @@ export default function AdminDashboard() {
       <div className="mt-8">
         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
           <DollarSign className="w-6 h-6 text-green-600" />
-          Statistiquesy financière
+          Statistiques financière
         </h2>
       </div>
 

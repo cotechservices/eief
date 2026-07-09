@@ -72,6 +72,13 @@ export async function addToSyncQueue(
   return item;
 }
 
+export async function getPendingSyncItems(urlPrefix: string): Promise<SyncItem[]> {
+  const db = await initOfflineDB();
+  const queue = await db.getAll("syncQueue");
+  // Filtrer par préfixe d'URL (utile car les URLs peuvent contenir des query strings)
+  return queue.filter(item => item.url.startsWith(urlPrefix)).sort((a, b) => a.timestamp - b.timestamp);
+}
+
 export async function syncOfflineData(
   onItemSynced?: (item: SyncItem, success: boolean) => void
 ) {

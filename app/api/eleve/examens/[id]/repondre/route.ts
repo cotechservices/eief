@@ -1,4 +1,3 @@
-// app/api/eleve/examens/[id]/repondre/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -6,7 +5,7 @@ import { query, transaction } from "@/lib/db";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,7 +13,8 @@ export async function POST(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const examenId = parseInt(params.id);
+    const { id } = await params;
+    const examenId = parseInt(id);
     const userId = (session.user as any).id;
 
     const eleveRes = await query(
@@ -26,6 +26,27 @@ export async function POST(
     }
     const eleveId = eleveRes.rows[0].id;
 
+    // ⭐ Vérifier que l'élève est bien associé à l'examen
+    const checkAccess = await query(
+      `SELECT 1 FROM public.examens_eleves 
+       WHERE examen_id = $1 AND eleve_id = $2`,
+      [examenId, eleveId]
+    );
+
+    if (checkAccess.rows.length === 0) {
+      return NextResponse.json({ error: "Accès non autorisé à cet examen" }, { status: 403 });
+    }
+
+    // ⭐ Vérifier que l'examen a des questions
+    const questionsCheck = await query(
+      `SELECT COUNT(*) as nb FROM public.questions_qcm WHERE examen_id = $1`,
+      [examenId]
+    );
+
+    if (parseInt(questionsCheck.rows[0].nb) === 0) {
+      return NextResponse.json({ error: "Cet examen n'a pas de questions" }, { status: 400 });
+    }
+
     // Vérifier si déjà passé
     const existing = await query(
       "SELECT COUNT(*) as nb FROM public.reponses_eleves_qcm WHERE examen_id = $1 AND eleve_id = $2",
@@ -36,7 +57,6 @@ export async function POST(
     }
 
     const body = await req.json();
-    // reponses: Array<{ question_id: number, option_id: number }>
     const { reponses } = body;
 
     if (!reponses || !Array.isArray(reponses) || reponses.length === 0) {
@@ -56,8 +76,8 @@ export async function POST(
     // Calculer le score
     const scoreRes = await query(
       `SELECT 
-        SUM(q.points) FILTER (WHERE o.est_correcte = true) AS score,
-        SUM(q.points) AS total_points,
+        COALESCE(SUM(q.points) FILTER (WHERE o.est_correcte = true), 0) AS score,
+        COALESCE(SUM(q.points), 0) AS total_points,
         COUNT(*) AS nb_reponses,
         COUNT(*) FILTER (WHERE o.est_correcte = true) AS nb_correctes
        FROM public.reponses_eleves_qcm r
@@ -76,8 +96,8 @@ export async function POST(
       score,
       totalPoints,
       note,
-      nbCorrectes: parseInt(scoreRes.rows[0].nb_correctes),
-      nbReponses: parseInt(scoreRes.rows[0].nb_reponses),
+      nbCorrectes: parseInt(scoreRes.rows[0].nb_correctes) || 0,
+      nbReponses: parseInt(scoreRes.rows[0].nb_reponses) || 0,
     });
   } catch (error: any) {
     console.error("API /eleve/examens/[id]/repondre error:", error);

@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     }
     const { id: eleveId, classe_id: classeId } = eleveRes.rows[0];
 
-    // Devoirs de la classe de l'élève avec statut soumission
+    // Devoirs de la classe de l'élève avec statut soumission - SANS MATIERE
     const devoirsRes = await query(
       `SELECT 
         d.id,
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
         d.fichier_url,
         d.date_limite,
         d.date_publication,
-        m.nom AS matiere,
+        '' AS matiere,  -- Pas de matière, on met une chaîne vide
         CONCAT(u.prenom, ' ', u.nom) AS enseignant,
         sd.id AS soumission_id,
         sd.date_soumission,
@@ -40,12 +40,12 @@ export async function GET(req: NextRequest) {
         sd.est_retard
       FROM public.devoirs d
       JOIN public.enseignements en ON en.id = d.enseignement_id
-      JOIN public.matieres m ON m.id = en.matiere_id
       JOIN public.personnels p ON p.id = en.enseignant_id
       JOIN public.utilisateurs u ON u.id = p.utilisateur_id
       LEFT JOIN public.soumissions_devoirs sd 
         ON sd.devoir_id = d.id AND sd.eleve_id = $1
       WHERE en.classe_id = $2
+        AND en.annee_scolaire_id = (SELECT id FROM annees_scolaires WHERE est_active = true)
       ORDER BY d.date_limite ASC`,
       [eleveId, classeId]
     );

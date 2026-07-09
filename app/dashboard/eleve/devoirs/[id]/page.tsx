@@ -1,12 +1,12 @@
 // app/dashboard/eleve/devoirs/[id]/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft, Send, CheckCircle, AlertCircle, Clock,
-  FileText, Calendar, User, Award
+  FileText, Calendar, User, Award, Upload, X, File
 } from "lucide-react";
 
 interface DevoirDetail {
@@ -30,36 +30,139 @@ interface DevoirDetail {
 export default function DevoirDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const devoirId = params.id;
+  // ⭐ Récupérer l'ID correctement
+  const devoirId = params.id as string;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [devoir, setDevoir] = useState<DevoirDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [commentaire, setCommentaire] = useState("");
-  const [fichierUrl, setFichierUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    fetch("/api/eleve/devoirs")
-      .then((r) => r.json())
-      .then((d) => {
-        const found = d.devoirs?.find((dv: DevoirDetail) => dv.id === parseInt(devoirId as string));
-        setDevoir(found || null);
-      })
-      .finally(() => setLoading(false));
-  }, [devoirId]);
-
-  const handleSoumettre = async () => {
-    if (!commentaire.trim() && !fichierUrl.trim()) {
-      setMessage({ type: "error", text: "Veuillez ajouter un commentaire ou un lien vers votre travail." });
+    // ⭐ Vérifier que l'ID est valide avant de faire la requête
+    if (!devoirId || isNaN(parseInt(devoirId))) {
+      setLoading(false);
+      setMessage({ type: "error", text: "ID de devoir invalide" });
       return;
     }
+
+    fetchDevoirDetail();
+  }, [devoirId]);
+
+  const fetchDevoirDetail = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/eleve/devoirs");
+      const data = await res.json();
+      const found = data.devoirs?.find(
+        (dv: DevoirDetail) => dv.id === parseInt(devoirId)
+      );
+      setDevoir(found || null);
+    } catch (error) {
+      console.error("Erreur:", error);
+      setMessage({ type: "error", text: "Erreur lors du chargement du devoir" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      setMessage({ type: "error", text: "Format non accepté. Veuillez choisir une image (JPEG, PNG, GIF, WEBP) ou un PDF." });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setMessage({ type: "error", text: "Le fichier ne doit pas dépasser 10MB." });
+      return;
+    }
+
+    setSelectedFile(file);
+    setUploadingFile(true);
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFilePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview('pdf');
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('enfantId', `soumission_${devoirId}`);
+      formData.append('type', 'soumission');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de l\'upload');
+      }
+
+      const data = await response.json();
+      setUploadedFileUrl(data.url);
+      setMessage({ type: "success", text: "✅ Fichier uploadé avec succès !" });
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      setMessage({ type: "error", text: err.message || "Erreur lors de l'upload du fichier" });
+      setSelectedFile(null);
+      setFilePreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const removeFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    setUploadedFileUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSoumettre = async () => {
+    if (!commentaire.trim() && !uploadedFileUrl) {
+      setMessage({ type: "error", text: "Veuillez joindre un fichier ou ajouter un commentaire." });
+      return;
+    }
+
+    if (!uploadedFileUrl) {
+      setMessage({ type: "error", text: "Veuillez uploader votre fichier avant de soumettre." });
+      return;
+    }
+
     setSubmitLoading(true);
     try {
-      const res = await fetch(`/api/eleve/devoirs/${devoirId}/soumettre`, {
+      // ⭐ Utiliser l'ID numérique pour l'API
+      const numericId = parseInt(devoirId);
+      const res = await fetch(`/api/eleve/devoirs/${numericId}/soumettre`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ commentaire, fichier_url: fichierUrl }),
+        body: JSON.stringify({
+          commentaire,
+          fichier_url: uploadedFileUrl,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -119,7 +222,7 @@ export default function DevoirDetailPage() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-lg">
-                {devoir.matiere}
+                Titre du devoir
               </span>
               <h1 className="text-xl font-bold text-gray-900 mt-2">{devoir.titre}</h1>
             </div>
@@ -255,18 +358,71 @@ export default function DevoirDetailPage() {
               )}
 
               <div className="space-y-4">
+                {/* Upload de fichier */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Lien vers votre travail (Drive, OneDrive, etc.) <span className="text-gray-400 font-normal">optionnel</span>
+                    Votre fichier (image ou PDF) <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="url"
-                    value={fichierUrl}
-                    onChange={(e) => setFichierUrl(e.target.value)}
-                    placeholder="https://drive.google.com/..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*,.pdf"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        disabled={uploadingFile || submitLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingFile || submitLoading}
+                        className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition text-sm text-gray-600 disabled:opacity-50"
+                      >
+                        {uploadingFile ? (
+                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Upload className="w-4 h-4" />
+                        )}
+                        {uploadingFile ? "Upload en cours..." : "Choisir un fichier"}
+                      </button>
+                    </div>
+
+                    {filePreview && (
+                      <div className="relative">
+                        {filePreview === 'pdf' ? (
+                          <div className="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center border border-red-200">
+                            <File className="w-8 h-8 text-red-600" />
+                          </div>
+                        ) : (
+                          <img
+                            src={filePreview}
+                            alt="Aperçu"
+                            className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                          />
+                        )}
+                        <button
+                          type="button"
+                          onClick={removeFile}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition"
+                          disabled={submitLoading}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        {uploadedFileUrl && (
+                          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[8px] bg-green-500 text-white px-1.5 py-0.5 rounded whitespace-nowrap">
+                            ✓ Uploadé
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Formats acceptés : JPG, PNG, GIF, WEBP, PDF. Taille max : 10MB.
+                  </p>
                 </div>
+
+                {/* Commentaire */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Votre réponse / commentaire <span className="text-gray-400 font-normal">optionnel</span>
@@ -289,7 +445,7 @@ export default function DevoirDetailPage() {
 
                 <button
                   onClick={handleSoumettre}
-                  disabled={submitLoading}
+                  disabled={submitLoading || uploadingFile || !uploadedFileUrl}
                   className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-blue-700 transition disabled:opacity-60"
                 >
                   {submitLoading ? (

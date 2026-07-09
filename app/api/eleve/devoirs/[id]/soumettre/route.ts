@@ -6,7 +6,7 @@ import { query } from "@/lib/db";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ⭐ params est une Promise
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,9 +14,30 @@ export async function POST(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const devoirId = parseInt(params.id);
+    // ⭐ Déballer params avec await
+    const { id } = await params;
+    
+    // ⭐ Vérifier que l'ID est valide
+    const devoirId = parseInt(id);
+    if (isNaN(devoirId) || devoirId <= 0) {
+      return NextResponse.json(
+        { error: "ID de devoir invalide" },
+        { status: 400 }
+      );
+    }
+
     const userId = (session.user as any).id;
 
+    // ⭐ Vérifier que l'utilisateur existe
+    const userRes = await query(
+      "SELECT id FROM public.utilisateurs WHERE id = $1 AND role = 'ELEVE'",
+      [userId]
+    );
+    if (userRes.rows.length === 0) {
+      return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });
+    }
+
+    // Récupérer l'élève
     const eleveRes = await query(
       "SELECT id FROM public.eleves WHERE utilisateur_id = $1",
       [userId]
@@ -47,13 +68,21 @@ export async function POST(
     const body = await req.json();
     const { fichier_url, commentaire } = body;
 
+    // ⭐ Vérifier qu'au moins un fichier ou un commentaire est fourni
+    if (!fichier_url && !commentaire) {
+      return NextResponse.json(
+        { error: "Veuillez fournir un fichier ou un commentaire" },
+        { status: 400 }
+      );
+    }
+
     const dateLimite = new Date(devoirRes.rows[0].date_limite);
     const estRetard = new Date() > dateLimite;
 
     const result = await query(
       `INSERT INTO public.soumissions_devoirs 
-        (devoir_id, eleve_id, fichier_url, commentaire, est_retard)
-       VALUES ($1, $2, $3, $4, $5)
+        (devoir_id, eleve_id, fichier_url, commentaire, est_retard, date_soumission)
+       VALUES ($1, $2, $3, $4, $5, NOW())
        RETURNING id, date_soumission`,
       [devoirId, eleveId, fichier_url || null, commentaire || null, estRetard]
     );
@@ -62,9 +91,15 @@ export async function POST(
       success: true,
       soumission: result.rows[0],
       estRetard,
+      message: estRetard 
+        ? "Devoir soumis avec retard" 
+        : "Devoir soumis avec succès"
     });
   } catch (error: any) {
     console.error("API /eleve/devoirs/[id]/soumettre error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Erreur lors de la soumission" },
+      { status: 500 }
+    );
   }
 }

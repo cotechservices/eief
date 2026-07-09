@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, AlertCircle, Clock, FileText, User, Save } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertCircle, Clock, FileText, User, Save, X } from "lucide-react";
 
 interface Soumission {
   id: number;
@@ -22,24 +22,49 @@ interface Soumission {
 
 export default function SoumissionsPage() {
   const params = useParams();
-  const devoirId = params.id;
+  // ⭐ Récupérer l'ID correctement
+  const devoirId = params.id as string;
+  
   const [soumissions, setSoumissions] = useState<Soumission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedSoumission, setSelectedSoumission] = useState<Soumission | null>(null);
   const [noteForm, setNoteForm] = useState({ note: "", commentaire: "" });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
-    fetch(`/api/enseignant/soumissions?devoir_id=${devoirId}`)
-      .then((r) => r.json())
-      .then((d) => setSoumissions(d.soumissions || []))
-      .finally(() => setLoading(false));
+    // ⭐ Vérifier que l'ID est valide
+    if (!devoirId || isNaN(parseInt(devoirId))) {
+      setError("ID de devoir invalide");
+      setLoading(false);
+      return;
+    }
+    fetchSoumissions();
   }, [devoirId]);
+
+  const fetchSoumissions = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/enseignant/soumissions?devoir_id=${devoirId}`);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Erreur de chargement");
+      }
+      const data = await res.json();
+      setSoumissions(data.soumissions || []);
+    } catch (err: any) {
+      setError(err.message || "Impossible de charger les soumissions");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSelect = (s: Soumission) => {
     setSelectedSoumission(s);
-    setNoteForm({ note: s.note || "", commentaire: "" }); // Charger note existante, vider commentaire prof
+    setNoteForm({ note: s.note || "", commentaire: "" });
     setMessage(null);
   };
 
@@ -65,7 +90,6 @@ export default function SoumissionsPage() {
 
       if (res.ok) {
         const data = await res.json();
-        // Mettre à jour la liste locale
         setSoumissions(soumissions.map(s => 
           s.id === selectedSoumission.id 
             ? { ...s, note: data.soumission.note, commentaire: data.soumission.commentaire }
@@ -95,6 +119,20 @@ export default function SoumissionsPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-xl text-center">
+        <p className="font-medium">{error}</p>
+        <button
+          onClick={fetchSoumissions}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
+
   const devoirInfo = soumissions.length > 0 ? { titre: soumissions[0].devoir_titre, classe: soumissions[0].classe } : null;
 
   return (
@@ -107,11 +145,11 @@ export default function SoumissionsPage() {
       </Link>
 
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Liste des soumissions (Sidebar) */}
+        {/* Liste des soumissions */}
         <div className="w-full md:w-1/3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-12rem)]">
           <div className="p-4 border-b bg-gray-50">
             <h2 className="font-bold text-gray-900 line-clamp-1">{devoirInfo?.titre || "Soumissions"}</h2>
-            <p className="text-sm text-gray-500 mt-1">{devoirInfo?.classe} • {soumissions.length} reçues</p>
+            <p className="text-sm text-gray-500 mt-1">{devoirInfo?.classe} • {soumissions.length} reçue(s)</p>
           </div>
           <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
             {soumissions.length === 0 ? (
@@ -154,7 +192,7 @@ export default function SoumissionsPage() {
           </div>
         </div>
 
-        {/* Détail et notation (Main Content) */}
+        {/* Détail et notation */}
         <div className="w-full md:w-2/3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-[calc(100vh-12rem)] flex flex-col">
           {selectedSoumission ? (
             <div className="flex flex-col h-full">
@@ -182,7 +220,7 @@ export default function SoumissionsPage() {
                 )}
               </div>
 
-              {/* Contenu élève */}
+              {/* Contenu */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50">
                 {selectedSoumission.commentaire && (
                   <div>
@@ -229,7 +267,7 @@ export default function SoumissionsPage() {
 
                 <form onSubmit={handleNoteSubmit} className="flex flex-col sm:flex-row gap-4">
                   <div className="w-full sm:w-32">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Note (/20)</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Note </label>
                     <input
                       type="number"
                       min="0"
@@ -251,7 +289,7 @@ export default function SoumissionsPage() {
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-sm"
                     />
                   </div>
-                  <div className="flex items-end">
+                  <div className="flex items-end gap-2">
                     <button
                       type="submit"
                       disabled={submitLoading}
@@ -264,6 +302,18 @@ export default function SoumissionsPage() {
                       )}
                       Enregistrer
                     </button>
+                    {selectedSoumission.note !== null && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNoteForm({ note: "", commentaire: "" });
+                          setMessage(null);
+                        }}
+                        className="text-gray-400 hover:text-gray-600 p-2.5"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </form>
               </div>

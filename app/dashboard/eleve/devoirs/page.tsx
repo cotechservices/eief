@@ -135,7 +135,7 @@ export default function DevoirsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">
-                      {devoir.matiere}
+                      {devoir.matiere || "Devoir"}
                     </span>
                     {getStatutBadge(devoir.statut)}
                     {devoir.note_soumission !== null && (

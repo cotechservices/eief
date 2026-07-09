@@ -1,4 +1,3 @@
-// app/dashboard/layout.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -24,13 +23,10 @@ import {
   X,
   Bell,
   UserCircle,
-  DollarSign,
-  Euro,
   FileText,
   UserPlus,
   RefreshCw,
-  ShoppingBasket,
-  ShoppingBag
+  FileQuestionMark
 } from "lucide-react";
 import { Providers } from "./providers";
 
@@ -84,10 +80,13 @@ const menuItems = {
   ],
   ENSEIGNANT: [
     { name: "Dashboard", href: "/dashboard/enseignant", icon: LayoutDashboard },
-    { name: "Mes classes", href: "/dashboard/enseignant/classes", icon: GraduationCap },
+    { name: "Classes", href: "/dashboard/enseignant/classes", icon: GraduationCap },
+    { name: "Élèves", href: "/dashboard/enseignant/eleves", icon: Users },
     { name: "Leçons", href: "/dashboard/enseignant/lecons", icon: BookOpen },
-    { name: "Devoirs", href: "/dashboard/enseignant/devoirs", icon: BookOpen },
+    { name: "Devoirs", href: "/dashboard/enseignant/devoirs", icon: BookMarked },
+    { name: "Évaluations", href: "/dashboard/enseignant/evaluations", icon: GraduationCap },
     { name: "Emploi", href: "/dashboard/enseignant/emploi", icon: Calendar },
+    { name: "Salaire", href: "/dashboard/enseignant/salaire", icon: CreditCard },
     { name: "Messages", href: "/dashboard/enseignant/messages", icon: MessageSquare },
   ],
   PARENT: [
@@ -103,11 +102,31 @@ const menuItems = {
     { name: "Dashboard", href: "/dashboard/eleve", icon: LayoutDashboard },
     { name: "Mes cours", href: "/dashboard/eleve/cours", icon: BookOpen },
     { name: "Mes devoirs", href: "/dashboard/eleve/devoirs", icon: BookOpen },
+    { name: "Mes évaluations", href: "/dashboard/eleve/examens", icon: BookOpen },
     { name: "Mes notes", href: "/dashboard/eleve/notes", icon: GraduationCap },
+    { name: "Mes bulletins", href: "/dashboard/eleve/bulletins", icon: Calendar },
     { name: "Emploi", href: "/dashboard/eleve/emploi", icon: Calendar },
-    { name: "Présences", href: "/dashboard/eleve/presences", icon: Calendar },
-    { name: "Transport", href: "/dashboard/parent/transport", icon: Bus },
-    { name: "Cantine", href: "/dashboard/parent/cantine", icon: Utensils },
+    { name: "Quiz", href: "/dashboard/eleve/quiz", icon: FileQuestionMark },
+  ],
+  ADMIN_CANTINE: [
+    { name: "Dashboard", href: "/dashboard/admin_cantine", icon: LayoutDashboard },
+    { name: "Cantine", href: "/dashboard/admin_cantine/cantine", icon: Utensils },
+    //{ name: "Rapports", href: "/dashboard/admin_cantine/rapports", icon: FileText },
+  ],
+  ADMIN_TRANSPORT: [
+    { name: "Dashboard", href: "/dashboard/admin_transport", icon: LayoutDashboard },
+    { name: "Transport", href: "/dashboard/admin_transport/transport", icon: Bus },
+    { name: "Rapports", href: "/dashboard/admin_transport/rapports", icon: FileText },
+  ],
+  ADMIN_BIBLIOTHEQUE: [
+    { name: "Dashboard", href: "/dashboard/admin_bibliotheque", icon: LayoutDashboard },
+    { name: "Bibliothèque", href: "/dashboard/admin_bibliotheque/bibliotheque", icon: Library },
+    { name: "Rapports", href: "/dashboard/admin_bibliotheque/rapports", icon: FileText },
+  ],
+  ADMIN_LIBRAIRIE: [
+    { name: "Dashboard", href: "/dashboard/admin_librairie", icon: LayoutDashboard },
+    { name: "Librairie", href: "/dashboard/admin_librairie/librairie", icon: BookMarked },
+    { name: "Rapports", href: "/dashboard/admin_librairie/rapports", icon: FileText },
   ],
 };
 
@@ -139,19 +158,31 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }
 
   const getMenuItems = () => {
-    // Utiliser les noms exacts des rôles dans votre base de données
-    if (userRole === "SUPER_ADMIN") return menuItems.SUPER_ADMIN;
-    if (userRole === "DIRECTEUR_GENERAL") return menuItems.DIRECTEUR;  // ← CORRIGÉ
-    if (userRole === "COMPTABLE") return menuItems.SUPER_ADMIN;
-    if (userRole === "ENSEIGNANT") return menuItems.ENSEIGNANT;
-    if (userRole === "PARENT") return menuItems.PARENT;
-    if (userRole === "ELEVE") return menuItems.ELEVE;
-    return menuItems.PARENT;
+    // ⭐ Tous les rôles possibles
+    const roleMap: Record<string, any> = {
+      "SUPER_ADMIN": menuItems.SUPER_ADMIN,
+      "ADMIN": menuItems.SUPER_ADMIN,
+      "DIRECTEUR_GENERAL": menuItems.DIRECTEUR,
+      "DIRECTEUR_ETUDES": menuItems.DIRECTEUR,
+      "COMPTABLE": menuItems.SUPER_ADMIN,
+      "SECRETARIAT": menuItems.SUPER_ADMIN,
+      "SURVEILLANT": menuItems.SUPER_ADMIN,
+      "ENSEIGNANT": menuItems.ENSEIGNANT,
+      "PARENT": menuItems.PARENT,
+      "ELEVE": menuItems.ELEVE,
+      "ADMIN_CANTINE": menuItems.ADMIN_CANTINE,
+      "ADMIN_TRANSPORT": menuItems.ADMIN_TRANSPORT,
+      "ADMIN_BIBLIOTHEQUE": menuItems.ADMIN_BIBLIOTHEQUE,
+      "ADMIN_LIBRAIRIE": menuItems.ADMIN_LIBRAIRIE,
+      "CHAUFFEUR": menuItems.ADMIN_TRANSPORT,
+      "CANTINE": menuItems.ADMIN_CANTINE,
+    };
+
+    return roleMap[userRole] || menuItems.PARENT;
   };
 
   const items = getMenuItems();
 
-  // Fonction pour vérifier si un lien est actif
   const isActive = (href: string) => {
     if (href === "/dashboard/admin" && pathname === "/dashboard/admin") return true;
     if (href !== "/dashboard/admin" && pathname.startsWith(href)) return true;
@@ -160,10 +191,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <aside className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 bg-white shadow-lg ${sidebarOpen ? "w-64" : "w-20"}`}>
         <div className="flex flex-col h-full">
-          {/* Logo */}
           <div className="flex items-center justify-between p-4 border-b">
             {sidebarOpen ? (
               <Link href="/dashboard" className="flex items-center gap-2">
@@ -188,7 +217,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </button>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4">
             {items.map((item) => {
               const active = isActive(item.href);
@@ -208,7 +236,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          {/* Footer Sidebar */}
           <div className="p-4 border-t">
             <button
               onClick={() => router.push("/api/auth/signout")}
@@ -221,9 +248,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className={`transition-all duration-300 ${sidebarOpen ? "ml-64" : "ml-20"}`}>
-        {/* Top Header */}
         <header className="bg-white shadow-sm sticky top-0 z-30">
           <div className="flex justify-between items-center px-6 py-3">
             <h1 className="text-xl font-semibold text-gray-900">Tableau de bord</h1>
@@ -239,7 +264,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="p-6">{children}</main>
       </div>
     </div>

@@ -372,8 +372,8 @@ export default function CantinePage() {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                <FileText className="w-4 h-4" />
-                Pre-inscriptions ({stats.preinscriptions?.length || 0})
+                <UserCheck className="w-4 h-4" />
+                Inscriptions ({stats.preinscriptions?.length || 0})
               </button>
               <button
                 onClick={() => setActiveTab('reinscriptions')}

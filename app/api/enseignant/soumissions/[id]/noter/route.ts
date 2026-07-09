@@ -6,7 +6,7 @@ import { query } from "@/lib/db";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ⭐ params est une Promise
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,8 +14,19 @@ export async function PATCH(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const soumissionId = parseInt(params.id);
     const userId = (session.user as any).id;
+    
+    // ⭐ Déballer params avec await
+    const { id: soumissionId } = await params;
+
+    // ⭐ Vérifier que l'ID est valide
+    if (!soumissionId || isNaN(parseInt(soumissionId))) {
+      return NextResponse.json(
+        { error: "ID de soumission invalide" },
+        { status: 400 }
+      );
+    }
+
     const body = await req.json();
     const { note, commentaire } = body;
 
@@ -23,43 +34,39 @@ export async function PATCH(
       return NextResponse.json({ error: "Note requise" }, { status: 400 });
     }
 
-    if (parseFloat(note) < 0 || parseFloat(note) > 20) {
-      return NextResponse.json({ error: "La note doit être entre 0 et 20" }, { status: 400 });
+    if (isNaN(note) || note < 0 || note > 20) {
+      return NextResponse.json({ error: "Note invalide (0-20)" }, { status: 400 });
     }
 
-    const personnelRes = await query(
-      "SELECT id FROM public.personnels WHERE utilisateur_id = $1",
-      [userId]
-    );
-    if (personnelRes.rows.length === 0) {
-      return NextResponse.json({ error: "Personnel introuvable" }, { status: 404 });
-    }
-    const personnelId = personnelRes.rows[0].id;
-
-    // Vérifier que la soumission appartient à un devoir de cet enseignant
-    const soumRes = await query(
-      `SELECT sd.id FROM public.soumissions_devoirs sd
+    // Vérifier que la soumission existe et appartient à un devoir de l'enseignant
+    const checkRes = await query(
+      `SELECT sd.id 
+       FROM public.soumissions_devoirs sd
        JOIN public.devoirs d ON d.id = sd.devoir_id
-       JOIN public.enseignements en ON en.id = d.enseignement_id
-       WHERE sd.id = $1 AND en.enseignant_id = $2`,
-      [soumissionId, personnelId]
+       JOIN public.enseignements e ON e.id = d.enseignement_id
+       JOIN public.personnels p ON p.id = e.enseignant_id
+       WHERE sd.id = $1 AND p.utilisateur_id = $2`,
+      [parseInt(soumissionId), userId]
     );
 
-    if (soumRes.rows.length === 0) {
-      return NextResponse.json({ error: "Soumission introuvable" }, { status: 404 });
+    if (checkRes.rows.length === 0) {
+      return NextResponse.json({ error: "Soumission non trouvée ou non autorisée" }, { status: 404 });
     }
 
     const result = await query(
       `UPDATE public.soumissions_devoirs
        SET note = $1, commentaire = $2
        WHERE id = $3
-       RETURNING id, note, commentaire, date_soumission`,
-      [parseFloat(note), commentaire || null, soumissionId]
+       RETURNING *`,
+      [note, commentaire || null, parseInt(soumissionId)]
     );
 
-    return NextResponse.json({ success: true, soumission: result.rows[0] });
+    return NextResponse.json({ 
+      success: true, 
+      soumission: result.rows[0] 
+    });
   } catch (error: any) {
-    console.error("API /enseignant/soumissions/[id]/noter error:", error);
+    console.error("API /enseignant/soumissions/noter PATCH error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

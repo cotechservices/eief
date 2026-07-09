@@ -28,6 +28,7 @@ interface Eleve {
   id: number;
   numero_dossier: string;
   matricule: string;
+  enfant_email: string;
   parent_nom: string;
   parent_prenom: string;
   parent_email: string;
@@ -188,7 +189,7 @@ export default function ListeElevesPage() {
 
       {/* Filtres */}
       <div className="bg-white rounded-xl shadow-sm p-4">
-        <div className="flex flex-wrap gap-4">          
+        <div className="flex flex-wrap gap-4">
           <Link
             href="/dashboard/admin/eleves"
             className="flex items-center hover:bg-gray-100 hover:border-sm rounded-lg gap-2 text-gray-700 hover:text-gray-900 transition"
@@ -271,6 +272,7 @@ export default function ListeElevesPage() {
                         <span className="font-medium text-gray-900">{e.enfant_prenom} {e.enfant_nom}</span>
                         <p className="text-xs text-gray-500">{e.sexe === "M" ? "Garçon" : "Fille"} - {new Date(e.date_naissance).toLocaleDateString()}</p>
                         <p className="text-xs text-gray-500">Matricule: {e.matricule}</p>
+                        <p className="text-xs text-blue-600">Email: {e.enfant_email}</p>
                       </td>
                       <td className="px-4 py-4">
                         <p className="text-sm text-gray-700">{e.parent_prenom} {e.parent_nom}</p>

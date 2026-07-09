@@ -1,4 +1,3 @@
-// app/dashboard/enseignant/devoirs/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,18 +19,48 @@ interface Devoir {
 export default function EnseignantDevoirsPage() {
   const [devoirs, setDevoirs] = useState<Devoir[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/enseignant/devoirs")
-      .then((r) => r.json())
-      .then((d) => setDevoirs(d.devoirs || []))
-      .finally(() => setLoading(false));
+    fetchDevoirs();
   }, []);
+
+  const fetchDevoirs = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/enseignant/devoirs");
+      if (!res.ok) {
+        throw new Error("Erreur de chargement");
+      }
+      const data = await res.json();
+      setDevoirs(data.devoirs || []);
+    } catch (err) {
+      setError("Impossible de charger les devoirs");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-10 h-10 border-4 border-orange-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-xl text-center">
+        <p className="font-medium">{error}</p>
+        <button
+          onClick={fetchDevoirs}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
+        >
+          Réessayer
+        </button>
       </div>
     );
   }
@@ -83,6 +112,9 @@ export default function EnseignantDevoirsPage() {
                   </div>
                   <h3 className="font-bold text-gray-900 leading-tight">{devoir.titre}</h3>
                   <p className="text-sm text-gray-500 mt-1">{devoir.matiere}</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    À rendre avant le {new Date(devoir.date_limite).toLocaleDateString("fr-FR")}
+                  </p>
                 </div>
                 
                 <div className="bg-gray-50 p-5">
@@ -110,7 +142,7 @@ export default function EnseignantDevoirsPage() {
                           <CheckCircle className="w-3.5 h-3.5" /> Entièrement noté
                         </span>
                       ) : devoir.nb_soumissions > 0 ? (
-                        <span className="text-red-600 flex items-center gap-1">
+                        <span className="text-orange-600 flex items-center gap-1">
                           <AlertCircle className="w-3.5 h-3.5" /> {devoir.nb_soumissions - devoir.nb_notes} à noter
                         </span>
                       ) : (

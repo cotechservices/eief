@@ -5,7 +5,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   BookOpen, Calendar, Clock, CheckCircle, AlertCircle,
-  Download, TrendingUp, Award, FileText, Brain, ClipboardList
+  Download, TrendingUp, Award, FileText, Brain, ClipboardList,
+  HelpingHand, HelpCircle
 } from "lucide-react";
 
 interface Profil {
@@ -101,22 +102,22 @@ export default function EleveDashboard() {
       {/* En-tête */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-black">
             Bonjour {profil?.prenom || "Élève"} ! 👋
           </h1>
-          <p className="text-gray-500 mt-1">
-            {profil?.classe_nom || "—"} • {profil?.annee_scolaire || "—"} •{" "}
+          <p className="text-gray-900 font-semibold mt-1">
+            Elève de la {profil?.classe_nom || "—"}  • Année scolaire {profil?.annee_scolaire || "—"}  • Matricule : {" "}
             <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
               {profil?.matricule}
             </span>
           </p>
         </div>
         <Link
-          href="/dashboard/eleve/bulletin"
+          href="/dashboard/eleve/messages"
           className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
         >
-          <Download className="w-4 h-4" />
-          Voir mon bulletin
+          <HelpCircle className="w-4 h-4" />
+          Demander de l'aide
         </Link>
       </div>
 
@@ -128,35 +129,19 @@ export default function EleveDashboard() {
       )}
 
       {/* Stats rapides */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
           className={`bg-gradient-to-br ${getMoyenneBg(notesData?.moyenneGenerale || 0)} rounded-2xl shadow-sm p-5 text-white`}
         >
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm opacity-90">Moyenne générale</p>
+              <p className="text-sm opacity-90">Moyenne générale de l'annee_scolaire</p>
               <p className="text-4xl font-bold mt-1">
                 {notesData?.moyenneGenerale?.toFixed(2) || "—"}
               </p>
-              <p className="text-xs mt-2 opacity-80">/20</p>
             </div>
             <div className="bg-white/20 p-2 rounded-xl">
               <Award className="w-6 h-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-500 text-sm">Matières</p>
-              <p className="text-3xl font-bold text-blue-600 mt-1">
-                {notesData?.matieres?.length || 0}
-              </p>
-              <p className="text-xs text-gray-400 mt-2">avec notes</p>
-            </div>
-            <div className="bg-blue-50 p-2 rounded-xl">
-              <BookOpen className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
@@ -207,6 +192,12 @@ export default function EleveDashboard() {
             color: "blue",
           },
           {
+            href: "/dashboard/eleve/quiz",
+            icon: Brain,
+            label: "Quiz & Jeux",
+            color: "purple",
+          },
+          {
             href: "/dashboard/eleve/devoirs",
             icon: FileText,
             label: "Mes devoirs",
@@ -215,11 +206,11 @@ export default function EleveDashboard() {
           {
             href: "/dashboard/eleve/examens",
             icon: ClipboardList,
-            label: "Évaluations QCM",
+            label: "Évaluations",
             color: "purple",
           },
           {
-            href: "/dashboard/eleve/revision",
+            href: "/dashboard/eleve/quiz",
             icon: Brain,
             label: "Espace révision",
             color: "green",

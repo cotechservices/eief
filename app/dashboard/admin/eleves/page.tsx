@@ -1,4 +1,3 @@
-// app/dashboard/admin/eleves/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -23,7 +22,10 @@ import {
   Loader2,
   Trash2,
   AlertTriangle,
-  X
+  X,
+  Bus,
+  Utensils,
+  Library
 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
@@ -48,6 +50,15 @@ interface Eleve {
   frais_statut: string;
   frais_mode_paiement: string;
   photo_url: string | null;
+  // ⭐ Nouveaux champs
+  transport_inscrit: boolean;
+  transport_statut: string;
+  transport_montant: number;
+  cantine_inscrit: boolean;
+  cantine_statut: string;
+  cantine_montant: number;
+  bibliotheque_inscrit: boolean;
+  bibliotheque_statut: string;
 }
 
 interface Notification {
@@ -76,17 +87,14 @@ export default function GestionElevesPage() {
 
   const itemsPerPage = 10;
 
-  // Fonction pour ajouter une notification
   const addNotification = (type: Notification["type"], message: string) => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, type, message }]);
-    // Auto-supprimer après 5 secondes
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }, 5000);
   };
 
-  // Fonction pour supprimer une notification
   const removeNotification = (id: number) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
@@ -100,11 +108,9 @@ export default function GestionElevesPage() {
     setError(null);
     try {
       const response = await fetch("/api/admin/eleves");
-
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-
       const data = await response.json();
       setEleves(data);
     } catch (error) {
@@ -128,13 +134,11 @@ export default function GestionElevesPage() {
 
   const handleDelete = async () => {
     if (!eleveToDelete) return;
-
     setDeleting(true);
     try {
       const response = await fetch(`/api/admin/eleves?id=${eleveToDelete.id}`, {
         method: "DELETE",
       });
-
       if (response.ok) {
         await fetchEleves();
         if (selectedEleve?.id === eleveToDelete.id) {
@@ -149,19 +153,18 @@ export default function GestionElevesPage() {
         try {
           const error = await response.json();
           errorMessage = error.error || errorMessage;
-        } catch (e) {
-          console.error("Erreur de parsing:", e);
-        }
+        } catch (e) {}
         addNotification("error", errorMessage);
       }
     } catch (error) {
       console.error("Erreur:", error);
-      addNotification("error", "Erreur lors de la suppression. Vérifiez que l'API est correctement configurée.");
+      addNotification("error", "Erreur lors de la suppression");
     } finally {
       setDeleting(false);
     }
   };
 
+  // ⭐ Fonction pour exporter vers Excel
   const exportToExcel = () => {
     try {
       const exportData = filteredByClasse.map(e => ({
@@ -182,22 +185,17 @@ export default function GestionElevesPage() {
         'Statut': e.statut === 'actif' ? 'Actif' : e.statut === 'inactif' ? 'Inactif' : 'Suspendu',
         'Montant frais': `${e.frais_montant?.toLocaleString() || 0} GNF`,
         'Statut paiement': e.frais_statut === 'paye' ? 'Payé' : 'Non payé',
-        'Mode paiement': e.frais_mode_paiement ? e.frais_mode_paiement.replace('_', ' ') : '-'
+        'Mode paiement': e.frais_mode_paiement ? e.frais_mode_paiement.replace('_', ' ') : '-',
+        // ⭐ Nouveaux champs
+        'Transport': e.transport_inscrit ? e.transport_statut : 'Non inscrit',
+        'Transport Montant': e.transport_montant || 0,
+        'Cantine': e.cantine_inscrit ? e.cantine_statut : 'Non inscrit',
+        'Cantine Montant': e.cantine_montant || 0,
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
-
-      const colWidths = [
-        { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 },
-        { wch: 20 }, { wch: 8 }, { wch: 12 }, { wch: 15 }, { wch: 15 },
-        { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 10 },
-        { wch: 15 }, { wch: 12 }, { wch: 15 }
-      ];
-      ws['!cols'] = colWidths;
-
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Eleves');
-
       const fileName = `eleves_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
       addNotification("success", "Export Excel effectué avec succès");
@@ -206,6 +204,7 @@ export default function GestionElevesPage() {
     }
   };
 
+  // ⭐ Fonction pour le badge de statut général
   const getStatutBadge = (statut: string) => {
     switch (statut) {
       case "actif":
@@ -219,6 +218,7 @@ export default function GestionElevesPage() {
     }
   };
 
+  // ⭐ Fonction pour le badge des frais
   const getFraisBadge = (fraisStatut: string) => {
     if (fraisStatut === "paye" || fraisStatut === "valide") {
       return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
@@ -228,6 +228,45 @@ export default function GestionElevesPage() {
     }
     return <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
+
+  // ⭐ Fonction pour le badge des services (Transport, Cantine, Bibliothèque)
+  const getServiceBadge = (inscrit: boolean, statut: string) => {
+    // Non inscrit
+    if (!inscrit || statut === 'non_inscrit') {
+      return (
+        <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+          <XCircle className="w-3 h-3" />
+          Non inscrit
+        </span>
+      );
+    }
+    // Payé
+    if (statut === 'paye' || statut === 'valide') {
+      return (
+        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+          <CheckCircle className="w-3 h-3" />
+          Payé
+        </span>
+      );
+    }
+    // Partiel
+    if (statut === 'partiel') {
+      return (
+        <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3" />
+          Partiel
+        </span>
+      );
+    }
+    // En attente (inscrit mais pas encore payé)
+    return (
+      <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+        <XCircle className="w-3 h-3" />
+        En attente
+      </span>
+    );
+  };
+
   const classes = ["all", ...new Set(eleves.map(e => e.classe_nom).filter(Boolean))];
 
   const filteredEleves = eleves.filter(e => {
@@ -253,7 +292,6 @@ export default function GestionElevesPage() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
@@ -301,6 +339,15 @@ export default function GestionElevesPage() {
     );
   }
 
+  // ⭐ Statistiques des services
+  const stats = {
+    total: eleves.length,
+    transport: eleves.filter(e => e.transport_inscrit).length,
+    cantine: eleves.filter(e => e.cantine_inscrit).length,
+    garcons: eleves.filter(e => e.sexe === "M").length,
+    filles: eleves.filter(e => e.sexe === "F").length,
+  };
+
   return (
     <div className="space-y-6 relative">
       {/* Notifications Toast */}
@@ -308,14 +355,15 @@ export default function GestionElevesPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
-              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
-              : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
+              notification.type === "success"
+                ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+                : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-              }`}
+                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+            }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -326,7 +374,7 @@ export default function GestionElevesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-900 transition"
+              className="ml-4 text-gray-500 hover:text-gray-700 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -348,30 +396,36 @@ export default function GestionElevesPage() {
         </button>
       </div>
 
-      {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* ⭐ Statistiques avec Transport et Cantine */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-900 text-sm">Total inscrits</p><p className="text-2xl font-bold text-blue-600">{eleves.length}</p></div>
+            <div><p className="text-gray-900 text-sm">Total inscrits</p><p className="text-2xl font-bold text-blue-600">{stats.total}</p></div>
             <FileText className="w-8 h-8 text-blue-700" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-900 text-sm">Garçons</p><p className="text-2xl font-bold text-blue-600">{eleves.filter(e => e.sexe === "M").length}</p></div>
+            <div><p className="text-gray-900 text-sm">🚌 Transport</p><p className="text-2xl font-bold text-green-600">{stats.transport}</p></div>
+            <Bus className="w-8 h-8 text-green-700" />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center justify-between">
+            <div><p className="text-gray-900 text-sm">🍽️ Cantine</p><p className="text-2xl font-bold text-orange-600">{stats.cantine}</p></div>
+            <Utensils className="w-8 h-8 text-orange-700" />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center justify-between">
+            <div><p className="text-gray-900 text-sm">Garçons</p><p className="text-2xl font-bold text-blue-600">{stats.garcons}</p></div>
             <User className="w-8 h-8 text-blue-700" />
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
-            <div><p className="text-gray-900 text-sm">Filles</p><p className="text-2xl font-bold text-pink-600">{eleves.filter(e => e.sexe === "F").length}</p></div>
+            <div><p className="text-gray-900 text-sm">Filles</p><p className="text-2xl font-bold text-pink-600">{stats.filles}</p></div>
             <User className="w-8 h-8 text-pink-700" />
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center justify-between">
-            <div><p className="text-gray-900 text-sm">Classes</p><p className="text-2xl font-bold text-purple-600">{classes.length - 1}</p></div>
-            <GraduationCap className="w-8 h-8 text-purple-700" />
           </div>
         </div>
       </div>
@@ -417,7 +471,7 @@ export default function GestionElevesPage() {
         </div>
       </div>
 
-      {/* Tableau */}
+      {/* Tableau avec Transport et Cantine */}
       {filteredByClasse.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
@@ -427,7 +481,7 @@ export default function GestionElevesPage() {
         <>
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[1200px]">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Dossier</th>
@@ -435,6 +489,9 @@ export default function GestionElevesPage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Enfant</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Parent</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Classe</th>
+                    {/* ⭐ Nouvelles colonnes */}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Transport</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Cantine</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Frais</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Statut</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
@@ -471,7 +528,40 @@ export default function GestionElevesPage() {
                           <span>{e.classe_nom}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-4">{getFraisBadge(e.frais_statut)}</td>
+                      {/* ⭐ Transport */}
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1">
+                            <Bus className="w-3 h-3 text-gray-400" />
+                            {getServiceBadge(e.transport_inscrit, e.transport_statut)}
+                          </div>
+                          {e.transport_inscrit && e.transport_montant > 0 && (
+                            <span className="text-xs text-gray-500 ml-5">
+                              {e.transport_montant.toLocaleString()} GNF
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      {/* ⭐ Cantine */}
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1">
+                            <Utensils className="w-3 h-3 text-gray-400" />
+                            {getServiceBadge(e.cantine_inscrit, e.cantine_statut)}
+                          </div>
+                          {e.cantine_inscrit && e.cantine_montant > 0 && (
+                            <span className="text-xs text-gray-500 ml-5">
+                              {e.cantine_montant.toLocaleString()} GNF
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        {getFraisBadge(e.frais_statut)}
+                        <p className="text-xs text-green-600 font-medium mt-1">
+                          {(e.frais_montant || 0).toLocaleString()} GNF
+                        </p>
+                      </td>
                       <td className="px-4 py-4">{getStatutBadge(e.statut)}</td>
                       <td className="px-4 py-4">
                         <div className="flex gap-2">
@@ -507,7 +597,6 @@ export default function GestionElevesPage() {
                   <span className="font-medium">{Math.min(endIndex, filteredByClasse.length)}</span>{' '}
                   sur <span className="font-medium">{filteredByClasse.length}</span> élèves
                 </p>
-
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -516,7 +605,6 @@ export default function GestionElevesPage() {
                   >
                     <ChevronLeft className="w-4 h-4 text-black" />
                   </button>
-
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
@@ -525,17 +613,17 @@ export default function GestionElevesPage() {
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page as number)}
-                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'text-gray-900 hover:bg-gray-100'
-                            }`}
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-900 hover:bg-gray-100'
+                          }`}
                         >
                           {page}
                         </button>
                       )
                     ))}
                   </div>
-
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
@@ -550,7 +638,7 @@ export default function GestionElevesPage() {
         </>
       )}
 
-      {/* Modal de confirmation de suppression */}
+      {/* Modal de confirmation de suppression (inchangé) */}
       {showConfirmModal && eleveToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
@@ -562,26 +650,19 @@ export default function GestionElevesPage() {
                 <h2 className="text-xl font-bold text-gray-900">Confirmer la suppression</h2>
               </div>
             </div>
-
             <div className="p-6">
-              <p className="text-gray-900 mb-2">
-                Êtes-vous sûr de vouloir supprimer l'élève ?
-              </p>
+              <p className="text-gray-900 mb-2">Êtes-vous sûr de vouloir supprimer l'élève ?</p>
               <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg mb-4">
                 {eleveToDelete.prenom} {eleveToDelete.nom}
               </p>
               <p className="text-sm text-red-600 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
-                Cette action est irréversible. Toutes les données associées seront supprimées.
+                Cette action est irréversible.
               </p>
             </div>
-
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
               <button
-                onClick={() => {
-                  setShowConfirmModal(false);
-                  setEleveToDelete(null);
-                }}
+                onClick={() => { setShowConfirmModal(false); setEleveToDelete(null); }}
                 className="px-4 py-2 border text-black rounded-lg hover:bg-gray-100 transition"
                 disabled={deleting}
               >
@@ -609,14 +690,14 @@ export default function GestionElevesPage() {
         </div>
       )}
 
-      {/* Modal Détail */}
+      {/* Modal Détail avec Transport et Cantine */}
       {showDetailModal && selectedEleve && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-black">Fiche élève</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-500 hover:text-gray-700">✕</button>
               </div>
             </div>
             <div className="p-6 space-y-6">
@@ -624,25 +705,25 @@ export default function GestionElevesPage() {
               <div className="flex items-start gap-6 pb-6 border-b">
                 <div className="flex-shrink-0">
                   {selectedEleve.photo_url ? (
-                    <img src={selectedEleve.photo_url} alt="Photo" className="w-32 h-32 rounded-lg object-cover shadow-md text-black" />
+                    <img src={selectedEleve.photo_url} alt="Photo" className="w-32 h-32 rounded-lg object-cover shadow-md" />
                   ) : (
                     <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Camera className="w-12 h-12 text-gray-900" />
+                      <Camera className="w-12 h-12 text-gray-400" />
                     </div>
                   )}
                 </div>
                 <div className="flex-1">
                   <div className="bg-gray-50 p-3 rounded-lg mb-3">
-                    <p className="text-sm text-gray-900">Matricule</p>
+                    <p className="text-sm text-gray-500">Matricule</p>
                     <p className="font-mono text-xl font-bold text-blue-600">{selectedEleve.matricule}</p>
                   </div>
                   <div className="flex gap-4 flex-wrap">
                     <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-900">Statut</p>
+                      <p className="text-xs text-gray-500">Statut</p>
                       {getStatutBadge(selectedEleve.statut)}
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-900">Paiement</p>
+                      <p className="text-xs text-gray-500">Paiement</p>
                       {getFraisBadge(selectedEleve.frais_statut)}
                     </div>
                   </div>
@@ -652,33 +733,79 @@ export default function GestionElevesPage() {
               {/* Informations parent */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <User className="w-5 h-5 text-blue-700" />
+                  <User className="w-5 h-5 text-blue-600" />
                   Informations du parent
                 </h3>
                 <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg text-black">
-                  <div><p className="text-sm text-gray-900">Nom complet</p><p className="font-medium">{selectedEleve.parent_prenom} {selectedEleve.parent_nom}</p></div>
-                  <div><p className="text-sm text-gray-900">Email</p><p>{selectedEleve.parent_email}</p></div>
-                  <div><p className="text-sm text-gray-900">Téléphone</p><p>{selectedEleve.parent_telephone}</p></div>
+                  <div><p className="text-sm text-gray-500">Nom complet</p><p className="font-medium">{selectedEleve.parent_prenom} {selectedEleve.parent_nom}</p></div>
+                  <div><p className="text-sm text-gray-500">Email</p><p>{selectedEleve.parent_email}</p></div>
+                  <div><p className="text-sm text-gray-500">Téléphone</p><p>{selectedEleve.parent_telephone}</p></div>
                 </div>
               </div>
 
               {/* Informations enfant */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-green-700" />
+                  <GraduationCap className="w-5 h-5 text-green-600" />
                   Informations de l'enfant
                 </h3>
                 <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg text-black">
-                  <div><p className="text-sm text-gray-900">Nom complet</p><p className="font-medium">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</p></div>
-                  <div><p className="text-sm text-gray-900">Date de naissance</p><p>{new Date(selectedEleve.date_naissance).toLocaleDateString()}</p></div>
-                  <div><p className="text-sm text-gray-900">Lieu de naissance</p><p>{selectedEleve.lieu_naissance || "Non renseigné"}</p></div>
-                  <div><p className="text-sm text-gray-900">Sexe</p><p>{selectedEleve.sexe === "M" ? "Masculin" : "Féminin"}</p></div>
-                  <div><p className="text-sm text-gray-900">Niveau</p><p>{selectedEleve.niveau}</p></div>
-                  <div><p className="text-sm text-gray-900">Classe</p><p>{selectedEleve.classe_nom}</p></div>
+                  <div><p className="text-sm text-gray-500">Nom complet</p><p className="font-medium">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</p></div>
+                  <div><p className="text-sm text-gray-500">Date de naissance</p><p>{new Date(selectedEleve.date_naissance).toLocaleDateString()}</p></div>
+                  <div><p className="text-sm text-gray-500">Lieu de naissance</p><p>{selectedEleve.lieu_naissance || "Non renseigné"}</p></div>
+                  <div><p className="text-sm text-gray-500">Sexe</p><p>{selectedEleve.sexe === "M" ? "Masculin" : "Féminin"}</p></div>
+                  <div><p className="text-sm text-gray-500">Niveau</p><p>{selectedEleve.niveau}</p></div>
+                  <div><p className="text-sm text-gray-500">Classe</p><p>{selectedEleve.classe_nom}</p></div>
                 </div>
               </div>
 
-              {/* Paiement */}
+              {/* ⭐ Services (Transport, Cantine) */}
+              <div>
+                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                  <Wallet className="w-5 h-5 text-purple-600" />
+                  Services annexes
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                  {/* Transport */}
+                  <div className="bg-white p-3 rounded-lg shadow-sm border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Bus className="w-5 h-5 text-green-600" />
+                      <h4 className="font-medium text-black">Transport</h4>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500">Statut:</span>
+                        {getServiceBadge(selectedEleve.transport_inscrit, selectedEleve.transport_statut)}
+                      </div>
+                      {selectedEleve.transport_inscrit && selectedEleve.transport_montant > 0 && (
+                        <p className="text-sm text-gray-700">
+                          Montant: <span className="font-medium">{selectedEleve.transport_montant.toLocaleString()} GNF</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Cantine */}
+                  <div className="bg-white p-3 rounded-lg shadow-sm border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Utensils className="w-5 h-5 text-orange-600" />
+                      <h4 className="font-medium text-black">Cantine</h4>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500">Statut:</span>
+                        {getServiceBadge(selectedEleve.cantine_inscrit, selectedEleve.cantine_statut)}
+                      </div>
+                      {selectedEleve.cantine_inscrit && selectedEleve.cantine_montant > 0 && (
+                        <p className="text-sm text-gray-700">
+                          Montant: <span className="font-medium">{selectedEleve.cantine_montant.toLocaleString()} GNF</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Paiement */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
@@ -687,18 +814,18 @@ export default function GestionElevesPage() {
                 </h3>
                 <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-900">Montant des frais</p>
+                    <p className="text-sm text-gray-500">Montant des frais</p>
                     <p className="font-bold text-lg text-black">
                       {(selectedEleve.frais_montant || 0).toLocaleString()} GNF
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-900">Statut paiement</p>
+                    <p className="text-sm text-gray-500">Statut paiement</p>
                     {getFraisBadge(selectedEleve.frais_statut)}
                   </div>
                   {selectedEleve.frais_mode_paiement && (
                     <div>
-                      <p className="text-sm text-gray-900">Mode de paiement</p>
+                      <p className="text-sm text-gray-500">Mode de paiement</p>
                       <p className="capitalize text-black">{selectedEleve.frais_mode_paiement.replace("_", " ")}</p>
                     </div>
                   )}

@@ -111,7 +111,7 @@ export async function GET() {
       const totalFrais = montantTotalInscription;
       const reste = Math.max(0, totalFrais - fraisPaye);
 
-      console.log(`📊 Frais pour ${enfant.prenom} ${enfant.nom}:`, {
+      console.log(` Frais pour ${enfant.prenom} ${enfant.nom}:`, {
         fraisReinscriptionClasse: fraisReinscriptionClasse,
         fraisInscriptionClasse: enfant.frais_inscription_classe,
         montantTotalInscription: montantTotalInscription,

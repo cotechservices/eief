@@ -1,4 +1,3 @@
-// app/api/admin/eleves/route.ts
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -15,6 +14,7 @@ export async function GET() {
     SELECT 
       e.id,
       e.matricule,
+      u.email as enfant_email,
       e.date_naissance,
       e.lieu_naissance,
       e.sexe,
@@ -36,46 +36,82 @@ export async function GET() {
         WHEN e.est_inscrit = true THEN 'actif'
         ELSE 'inactif'
       END as statut,
-      -- Transport
+      
+      -- ⭐ TRANSPORT - Amélioration avec statut réel
       EXISTS (
         SELECT 1 FROM inscriptions_transport it 
         WHERE it.eleve_id = e.id AND it.est_actif = true
       ) as transport_inscrit,
       COALESCE(
-        (SELECT statut FROM paiements p 
-         WHERE p.eleve_id = e.id AND p.type_frais = 'transport' 
+        (SELECT p.statut FROM paiements p 
+         WHERE p.eleve_id = e.id 
+         AND p.type_frais = 'transport' 
+         AND p.statut IN ('valide', 'paye')
          ORDER BY p.date_paiement DESC LIMIT 1),
-        'non_paye'
+        CASE 
+          WHEN EXISTS (SELECT 1 FROM inscriptions_transport it WHERE it.eleve_id = e.id AND it.est_actif = true)
+          THEN 'en_attente'
+          ELSE 'non_inscrit'
+        END
       ) as transport_statut,
-      -- Cantine
+      COALESCE(
+        (SELECT p.montant FROM paiements p 
+         WHERE p.eleve_id = e.id 
+         AND p.type_frais = 'transport' 
+         AND p.statut IN ('valide', 'paye')
+         ORDER BY p.date_paiement DESC LIMIT 1),
+        0
+      ) as transport_montant,
+      
+      -- ⭐ CANTINE - Amélioration avec statut réel
       EXISTS (
         SELECT 1 FROM inscriptions_cantine ic 
         WHERE ic.eleve_id = e.id AND ic.est_actif = true
       ) as cantine_inscrit,
       COALESCE(
-        (SELECT statut FROM paiements p 
-         WHERE p.eleve_id = e.id AND p.type_frais = 'cantine' 
+        (SELECT p.statut FROM paiements p 
+         WHERE p.eleve_id = e.id 
+         AND p.type_frais = 'cantine' 
+         AND p.statut IN ('valide', 'paye')
          ORDER BY p.date_paiement DESC LIMIT 1),
-        'non_paye'
+        CASE 
+          WHEN EXISTS (SELECT 1 FROM inscriptions_cantine ic WHERE ic.eleve_id = e.id AND ic.est_actif = true)
+          THEN 'en_attente'
+          ELSE 'non_inscrit'
+        END
       ) as cantine_statut,
-      -- Bibliothèque
+      COALESCE(
+        (SELECT p.montant FROM paiements p 
+         WHERE p.eleve_id = e.id 
+         AND p.type_frais = 'cantine' 
+         AND p.statut IN ('valide', 'paye')
+         ORDER BY p.date_paiement DESC LIMIT 1),
+        0
+      ) as cantine_montant,
+      
+      -- ⭐ BIBLIOTHÈQUE
       EXISTS (
         SELECT 1 FROM emprunts_bibliotheque eb 
         WHERE eb.eleve_id = e.id AND eb.statut = 'en_cours'
       ) as bibliotheque_inscrit,
       COALESCE(
-        (SELECT statut FROM paiements p 
-         WHERE p.eleve_id = e.id AND p.type_frais = 'bibliotheque' 
+        (SELECT p.statut FROM paiements p 
+         WHERE p.eleve_id = e.id 
+         AND p.type_frais = 'bibliotheque' 
+         AND p.statut IN ('valide', 'paye')
          ORDER BY p.date_paiement DESC LIMIT 1),
-        'non_paye'
+        'non_inscrit'
       ) as bibliotheque_statut
+      
     FROM eleves e
     JOIN utilisateurs u ON e.utilisateur_id = u.id
     LEFT JOIN classes c ON e.classe_id = c.id
     LEFT JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id
     LEFT JOIN parents p ON lpe.parent_id = p.id
     LEFT JOIN utilisateurs pu ON p.utilisateur_id = pu.id
-    LEFT JOIN preinscriptions pre ON pre.parent_id = p.id AND pre.enfant_nom = u.nom AND pre.enfant_prenom = u.prenom
+    LEFT JOIN preinscriptions pre ON pre.parent_id = p.id 
+      AND pre.enfant_nom = u.nom 
+      AND pre.enfant_prenom = u.prenom
     WHERE e.est_inscrit = true
     ORDER BY e.id DESC
     `);

@@ -1,4 +1,3 @@
-// app/api/enseignant/evaluations/[id]/resultats/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -6,7 +5,7 @@ import { query } from "@/lib/db";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,7 +13,13 @@ export async function GET(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const examenId = parseInt(params.id);
+    const { id } = await params;
+    const examenId = parseInt(id);
+
+    if (isNaN(examenId) || examenId <= 0) {
+      return NextResponse.json({ error: "ID d'examen invalide" }, { status: 400 });
+    }
+
     const userId = (session.user as any).id;
 
     // Vérifier appartenance
@@ -24,11 +29,15 @@ export async function GET(
     );
     const personnelId = personnelRes.rows[0]?.id;
 
+    if (!personnelId) {
+      return NextResponse.json({ error: "Enseignant non trouvé" }, { status: 404 });
+    }
+
+    // Récupérer les infos de l'examen
     const examenRes = await query(
-      `SELECT ex.id, ex.titre, m.nom as matiere, c.nom as classe
+      `SELECT ex.id, ex.titre, c.nom as classe
        FROM public.examens ex
        JOIN public.enseignements en ON en.id = ex.enseignement_id
-       JOIN public.matieres m ON m.id = en.matiere_id
        JOIN public.classes c ON c.id = en.classe_id
        WHERE ex.id = $1 AND en.enseignant_id = $2`,
       [examenId, personnelId]
@@ -38,7 +47,7 @@ export async function GET(
       return NextResponse.json({ error: "Examen introuvable" }, { status: 404 });
     }
 
-    // Récupérer les résultats des élèves
+    // ⭐ Récupérer les résultats des élèves UNIQUEMENT ceux associés via examens_eleves
     const resultatsRes = await query(
       `WITH scores AS (
          SELECT 
@@ -58,14 +67,19 @@ export async function GET(
          u.nom,
          u.prenom,
          u.email,
-         s.score,
-         s.total_points,
-         s.nb_correctes,
-         s.nb_reponses,
-         CASE WHEN s.total_points > 0 THEN ROUND((s.score::numeric / s.total_points::numeric) * 20, 2) ELSE 0 END AS note
-       FROM scores s
-       JOIN public.eleves e ON e.id = s.eleve_id
+         COALESCE(s.score, 0) AS score,
+         COALESCE(s.total_points, 0) AS total_points,
+         COALESCE(s.nb_correctes, 0) AS nb_correctes,
+         COALESCE(s.nb_reponses, 0) AS nb_reponses,
+         CASE 
+           WHEN COALESCE(s.total_points, 0) > 0 
+           THEN ROUND((COALESCE(s.score, 0)::numeric / s.total_points::numeric) * 20, 2) 
+           ELSE 0 
+         END AS note
+       FROM public.eleves e
        JOIN public.utilisateurs u ON u.id = e.utilisateur_id
+       INNER JOIN public.examens_eleves ee ON ee.eleve_id = e.id AND ee.examen_id = $1
+       LEFT JOIN scores s ON s.eleve_id = e.id
        ORDER BY note DESC, u.nom ASC`,
       [examenId]
     );

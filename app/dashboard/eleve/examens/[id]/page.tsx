@@ -1,11 +1,11 @@
-// app/dashboard/eleve/examens/[id]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft, Clock, CheckCircle, AlertCircle, Play, FileText, ChevronRight, Check
+  ArrowLeft, Clock, CheckCircle, AlertCircle, Play, FileText, 
+  ChevronRight, Check, Image, File, Download, Eye
 } from "lucide-react";
 
 interface Option {
@@ -26,11 +26,27 @@ interface ExamenData {
     titre: string;
     matiere: string;
     duree_minutes: number;
+    fichier_url?: string;
   };
   questions: Question[];
   dejaPassé: boolean;
   resultat: any | null;
 }
+
+// ⭐ Fonction pour déterminer le type de fichier
+const getFileType = (url: string): 'image' | 'pdf' | 'other' => {
+  if (!url) return 'other';
+  if (url.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i)) return 'image';
+  if (url.endsWith('.pdf')) return 'pdf';
+  return 'other';
+};
+
+// ⭐ Fonction pour obtenir le nom du fichier
+const getFileName = (url: string) => {
+  if (!url) return '';
+  const parts = url.split('/');
+  return parts[parts.length - 1];
+};
 
 export default function ExamenInteractifPage() {
   const params = useParams();
@@ -38,6 +54,7 @@ export default function ExamenInteractifPage() {
   const [data, setData] = useState<ExamenData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   const [started, setStarted] = useState(false);
   const [currentQ, setCurrentQ] = useState(0);
@@ -85,6 +102,21 @@ export default function ExamenInteractifPage() {
   };
 
   const handleSubmit = async () => {
+    if (!data || data.questions.length === 0) {
+      alert("Cet examen n'a pas de questions à soumettre.");
+      return;
+    }
+
+    const totalQuestions = data.questions.length;
+    const answered = Object.keys(reponses).length;
+    
+    if (answered < totalQuestions) {
+      const confirmSubmit = confirm(
+        `Vous avez répondu à ${answered}/${totalQuestions} questions. Voulez-vous vraiment soumettre ?`
+      );
+      if (!confirmSubmit) return;
+    }
+
     setSubmitLoading(true);
     const reponsesArray = Object.entries(reponses).map(([qId, oId]) => ({
       question_id: parseInt(qId),
@@ -98,7 +130,7 @@ export default function ExamenInteractifPage() {
         body: JSON.stringify({ reponses: reponsesArray }),
       });
       if (res.ok) {
-        window.location.reload(); // Recharger pour voir les résultats
+        window.location.reload();
       } else {
         const err = await res.json();
         alert(err.error || "Erreur de soumission");
@@ -131,8 +163,9 @@ export default function ExamenInteractifPage() {
   }
 
   const { examen, questions, dejaPassé, resultat } = data;
+  const fileType = getFileType(examen.fichier_url || '');
 
-  // RÉSULTATS (Si déjà passé)
+  // ⭐ RÉSULTATS
   if (dejaPassé && resultat) {
     return (
       <div className="max-w-3xl mx-auto space-y-6">
@@ -158,12 +191,47 @@ export default function ExamenInteractifPage() {
               <p className="text-2xl font-bold text-gray-800 mt-2">{resultat.score} / {resultat.totalPoints}</p>
             </div>
           </div>
+
+          {examen.fichier_url && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 inline-flex items-center gap-3">
+              <FileText className="w-5 h-5 text-purple-500" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-gray-700">📎 Sujet de l'évaluation</p>
+                <a 
+                  href={examen.fichier_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-purple-600 hover:text-purple-800 hover:underline flex items-center gap-1"
+                >
+                  {getFileName(examen.fichier_url)}
+                  <Download className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // ÉCRAN DE DÉBUT
+  // ⭐ Si l'examen n'a pas de questions
+  if (questions.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-10">
+        <Link href="/dashboard/eleve/examens" className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 text-sm mb-8">
+          <ArrowLeft className="w-4 h-4" /> Retour
+        </Link>
+        <div className="bg-white rounded-2xl p-10 border border-yellow-100 shadow-lg">
+          <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{examen.titre}</h1>
+          <p className="text-gray-500">Cet examen n'a pas encore de questions.</p>
+          <p className="text-sm text-gray-400 mt-2">Veuillez contacter votre enseignant.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ⭐ ÉCRAN DE DÉBUT (SANS AFFICHER LE SUJET)
   if (!started) {
     return (
       <div className="max-w-2xl mx-auto text-center py-10">
@@ -207,7 +275,7 @@ export default function ExamenInteractifPage() {
     );
   }
 
-  // INTERFACE DE L'EXAMEN EN COURS
+  // ⭐ INTERFACE DE L'EXAMEN EN COURS (AVEC AFFICHAGE DU SUJET)
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -235,6 +303,79 @@ export default function ExamenInteractifPage() {
           {formatTime(timeLeft)}
         </div>
       </div>
+
+      {/* ⭐ AFFICHAGE DU SUJET (APRÈS AVOIR COMMENCÉ) */}
+      {examen.fichier_url && (
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="p-4 border-b bg-purple-50/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-purple-600" />
+                <span className="text-sm font-medium text-gray-700">📎 Sujet de l'évaluation</span>
+              </div>
+              <a 
+                href={examen.fichier_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-purple-600 hover:text-purple-800 hover:underline flex items-center gap-1"
+              >
+                <Download className="w-3 h-3" /> Télécharger
+              </a>
+            </div>
+          </div>
+          <div className="p-4">
+            {/* ⭐ APERÇU DE L'IMAGE */}
+            {fileType === 'image' && (
+              <div className="relative">
+                <img 
+                  src={examen.fichier_url} 
+                  alt="Sujet de l'évaluation"
+                  className="w-full max-h-96 object-contain rounded-lg border border-gray-200 bg-white"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+                <p className="text-xs text-gray-400 mt-2 text-center">
+                  {getFileName(examen.fichier_url)}
+                </p>
+              </div>
+            )}
+
+            {/* ⭐ APERÇU PDF */}
+            {fileType === 'pdf' && (
+              <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 text-center">
+                <FileText className="w-16 h-16 text-red-500 mx-auto mb-3" />
+                <p className="text-sm text-gray-600 font-medium">Document PDF</p>
+                <p className="text-xs text-gray-400 mt-1">{getFileName(examen.fichier_url)}</p>
+                <a 
+                  href={examen.fichier_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block mt-3 text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium"
+                >
+                  📄 Ouvrir le PDF
+                </a>
+              </div>
+            )}
+
+            {/* ⭐ AUTRE TYPE DE FICHIER */}
+            {fileType === 'other' && (
+              <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 text-center">
+                <File className="w-16 h-16 text-gray-400 mx-auto mb-3" />
+                <p className="text-sm text-gray-600 font-medium">{getFileName(examen.fichier_url)}</p>
+                <a 
+                  href={examen.fichier_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block mt-3 text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium"
+                >
+                  📎 Télécharger le fichier
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Question Card */}
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">

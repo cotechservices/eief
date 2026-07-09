@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     // Récupérer le prix et le stock de l'article
     const articleRes = await query('SELECT prix_unitaire, quantite_stock FROM articles_librairie WHERE id = $1', [article_id]);
     if (articleRes.rows.length === 0) return NextResponse.json({ error: "Article introuvable" }, { status: 404 });
-    
+
     const { prix_unitaire, quantite_stock } = articleRes.rows[0];
 
     if (quantite_stock < quantite) {
@@ -92,7 +92,7 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
-    
+
     if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "ADMIN_LIBRAIRIE" && userRole !== "DIRECTEUR_GENERAL" && userRole !== "COMPTABLE")) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
@@ -146,7 +146,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const userRole = (session?.user as any)?.role;
-    
+
     if (!session || (userRole !== "SUPER_ADMIN" && userRole !== "ADMIN_LIBRAIRIE" && userRole !== "DIRECTEUR_GENERAL" && userRole !== "COMPTABLE")) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }

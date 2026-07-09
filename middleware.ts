@@ -2,16 +2,33 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
-// Configuration des rôles par route
+// Routes protégées et rôles autorisés
 const routeRoles: Record<string, string[]> = {
-  "/admin": ["SUPER_ADMIN", "COMPTABLE"],
-  "/dashboard/admin": ["SUPER_ADMIN", "COMPTABLE"],
-  "/parent": ["PARENT"],
+  // Routes spécifiques
+  "/dashboard/admin_cantine": ["ADMIN_CANTINE"],
+  "/admin_cantine": ["ADMIN_CANTINE"],
+
+  "/dashboard/admin_transport": ["ADMIN_TRANSPORT"],
+  "/admin_transport": ["ADMIN_TRANSPORT"],
+
+  "/dashboard/admin_bibliotheque": ["ADMIN_BIBLIOTHEQUE"],
+  "/admin_bibliotheque": ["ADMIN_BIBLIOTHEQUE"],
+
+  "/dashboard/admin_librairie": ["ADMIN_LIBRAIRIE"],
+  "/admin_librairie": ["ADMIN_LIBRAIRIE"],
+
   "/dashboard/parent": ["PARENT"],
-  "/eleve": ["ELEVE"],
+  "/parent": ["PARENT"],
+
   "/dashboard/eleve": ["ELEVE"],
-  "/enseignant": ["ENSEIGNANT"],
+  "/eleve": ["ELEVE"],
+
   "/dashboard/enseignant": ["ENSEIGNANT"],
+  "/enseignant": ["ENSEIGNANT"],
+
+  // Routes génériques (toujours en dernier)
+  "/dashboard/admin": ["SUPER_ADMIN", "COMPTABLE"],
+  "/admin": ["SUPER_ADMIN", "COMPTABLE"],
 };
 
 export default withAuth(
@@ -19,13 +36,22 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    // Vérifier chaque route configurée
+    console.log("=== MIDDLEWARE ===");
+    console.log("Path :", path);
+    console.log("Role :", token?.role);
+
     for (const [route, allowedRoles] of Object.entries(routeRoles)) {
       if (path.startsWith(route)) {
-        if (!token || !allowedRoles.includes(token.role as string)) {
+        // Le token est normalement présent grâce à authorized()
+        if (!token) {
+          return NextResponse.redirect(new URL("/login", req.url));
+        }
+
+        if (!allowedRoles.includes(token.role as string)) {
           return NextResponse.redirect(new URL("/unauthorized", req.url));
         }
-        break;
+
+        return NextResponse.next();
       }
     }
 
@@ -33,7 +59,11 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token }) => {
+        // Seules les routes du matcher arrivent ici.
+        // Si pas de token, NextAuth redirige automatiquement vers /login.
+        return !!token;
+      },
     },
   }
 );
@@ -42,6 +72,10 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/admin/:path*",
+    "/admin_cantine/:path*",
+    "/admin_transport/:path*",
+    "/admin_bibliotheque/:path*",
+    "/admin_librairie/:path*",
     "/parent/:path*",
     "/eleve/:path*",
     "/enseignant/:path*",

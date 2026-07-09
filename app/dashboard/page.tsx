@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx
 import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -21,40 +20,34 @@ async function DashboardRedirect() {
   const role = (session.user as any)?.role;
   console.log("Rôle détecté:", role);
 
-  // SUPER_ADMIN vers admin
-  if (role === "SUPER_ADMIN") {
-    console.log("Redirection vers /dashboard/admin");
-    redirect("/dashboard/admin");
+  // ⭐ Tous les rôles possibles
+  const roleRedirectMap: Record<string, string> = {
+    "SUPER_ADMIN": "/dashboard/admin",
+    "ADMIN": "/dashboard/admin",
+    "DIRECTEUR_GENERAL": "/dashboard/directeur",
+    "DIRECTEUR_ETUDES": "/dashboard/directeur",
+    "COMPTABLE": "/dashboard/admin",
+    "SECRETARIAT": "/dashboard/admin",
+    "SURVEILLANT": "/dashboard/admin",
+    "ENSEIGNANT": "/dashboard/enseignant",
+    "PARENT": "/dashboard/parent",
+    "ELEVE": "/dashboard/eleve",
+    "ADMIN_CANTINE": "/dashboard/admin_cantine",        // ⭐ Ajouté
+    "ADMIN_TRANSPORT": "/dashboard/admin_transport",    // ⭐ Ajouté
+    "ADMIN_BIBLIOTHEQUE": "/dashboard/admin_bibliotheque", // ⭐ Ajouté
+    "ADMIN_LIBRAIRIE": "/dashboard/admin_librairie",    // ⭐ Ajouté
+    "CHAUFFEUR": "/dashboard/admin_transport",          // ⭐ Ajouté
+    "CANTINE": "/dashboard/admin_cantine",              // ⭐ Ajouté
+  };
+
+  const redirectPath = roleRedirectMap[role];
+
+  if (redirectPath) {
+    console.log(`✅ Redirection vers ${redirectPath}`);
+    redirect(redirectPath);
   }
 
-  // DIRECTEUR_GENERAL vers son propre dashboard
-  if (role === "DIRECTEUR_GENERAL" || role === "DIRECTEUR_ETUDES") {
-    console.log("Redirection vers /dashboard/directeur");
-    redirect("/dashboard/directeur");
-  }
-
-  // COMPTABLE vers admin
-  if (role === "COMPTABLE") {
-    console.log("Redirection vers /dashboard/admin");
-    redirect("/dashboard/admin");
-  }
-
-  if (role === "ENSEIGNANT") {
-    console.log("Redirection vers /dashboard/enseignant");
-    redirect("/dashboard/enseignant");
-  }
-
-  if (role === "PARENT") {
-    console.log("Redirection vers /dashboard/parent");
-    redirect("/dashboard/parent");
-  }
-
-  if (role === "ELEVE") {
-    console.log("Redirection vers /dashboard/eleve");
-    redirect("/dashboard/eleve");
-  }
-
-  console.log("Rôle non reconnu -> redirection vers login");
+  console.log("❌ Rôle non reconnu -> redirection vers login");
   redirect("/login");
 }
 

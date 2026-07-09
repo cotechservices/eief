@@ -1,10 +1,13 @@
-// app/dashboard/enseignant/evaluations/[id]/resultats/page.tsx
+//app\dashboard\enseignant\evaluations\[id]\resultats\page.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Award, Users, Printer, CheckCircle, TrendingUp, BookOpen } from "lucide-react";
+import { 
+  ArrowLeft, Award, Users, Printer, CheckCircle, 
+  TrendingUp, BookOpen, File, FileText, Image, Download 
+} from "lucide-react";
 
 interface Resultat {
   eleve_id: number;
@@ -15,7 +18,7 @@ interface Resultat {
   total_points: number;
   nb_correctes: number;
   nb_reponses: number;
-  note: string; // venant de la DB c'est un string numeric
+  note: string;
 }
 
 interface Examen {
@@ -23,11 +26,12 @@ interface Examen {
   titre: string;
   matiere: string;
   classe: string;
+  fichier_url?: string; // ⭐ Ajouté
 }
 
 export default function ResultatsQCMPage() {
   const params = useParams();
-  const examenId = params.id;
+  const examenId = params.id as string;
   
   const [resultats, setResultats] = useState<Resultat[]>([]);
   const [examen, setExamen] = useState<Examen | null>(null);
@@ -35,6 +39,11 @@ export default function ResultatsQCMPage() {
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!examenId || isNaN(parseInt(examenId))) {
+      setLoading(false);
+      return;
+    }
+    
     fetch(`/api/enseignant/evaluations/${examenId}/resultats`)
       .then((r) => r.json())
       .then((d) => {
@@ -70,7 +79,6 @@ export default function ResultatsQCMPage() {
     );
   }
 
-  // Stats
   const notesNumber = resultats.map(r => parseFloat(r.note));
   const moyenneClass = notesNumber.length > 0 
     ? (notesNumber.reduce((a,b) => a+b, 0) / notesNumber.length).toFixed(2) 
@@ -78,6 +86,13 @@ export default function ResultatsQCMPage() {
   const maxNote = notesNumber.length > 0 ? Math.max(...notesNumber).toFixed(2) : "0.00";
   const minNote = notesNumber.length > 0 ? Math.min(...notesNumber).toFixed(2) : "0.00";
   const reussites = notesNumber.filter(n => n >= 10).length;
+
+  // ⭐ Fonction pour déterminer le type de fichier
+  const getFileIcon = (url: string) => {
+    if (url.endsWith('.pdf')) return <FileText className="w-4 h-4 text-red-500" />;
+    if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) return <Image className="w-4 h-4 text-green-500" />;
+    return <File className="w-4 h-4 text-gray-500" />;
+  };
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
@@ -97,18 +112,33 @@ export default function ResultatsQCMPage() {
       </div>
 
       <div ref={printRef} className="space-y-6">
-        {/* Header Examen */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-purple-50 to-fuchsia-50">
             <div>
               <span className="text-xs font-bold text-purple-700 bg-purple-100 px-3 py-1 rounded-full uppercase tracking-wide">
-                Résultats QCM
+                Titre de l'évaluation
               </span>
               <h1 className="text-2xl font-black text-gray-900 mt-3">{examen.titre}</h1>
               <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 font-medium">
-                <span className="flex items-center gap-1.5"><BookOpen className="w-4 h-4 text-purple-500" /> {examen.matiere}</span>
                 <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-purple-500" /> {examen.classe}</span>
               </div>
+              
+              {/* ⭐ Affichage du fichier joint */}
+              {examen.fichier_url && (
+                <div className="mt-3 flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-purple-200 inline-flex">
+                  {getFileIcon(examen.fichier_url)}
+                  <span className="text-xs font-medium text-gray-600">Fichier joint :</span>
+                  <a 
+                    href={examen.fichier_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-purple-700 hover:text-purple-900 font-semibold hover:underline flex items-center gap-1"
+                  >
+                    {examen.fichier_url.endsWith('.pdf') ? '📄 Voir le PDF' : '🖼️ Voir l\'image'}
+                    <Download className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
             </div>
             
             <div className="flex gap-4">
@@ -134,7 +164,6 @@ export default function ResultatsQCMPage() {
           </div>
         </div>
 
-        {/* Tableau des résultats */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">

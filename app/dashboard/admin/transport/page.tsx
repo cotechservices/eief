@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bus, MapPin, Users, CreditCard, Plus, Edit, Trash2, Eye, Search, Download, AlertCircle, X } from "lucide-react";
+import Link from "next/link";
+import { Bus, MapPin, Users, CreditCard, Plus, Edit, Trash2, Eye, Search, Download, AlertCircle, X, Calendar, BookA } from "lucide-react";
 
 interface BusItem {
   id: number;
@@ -132,25 +133,45 @@ export default function TransportPage() {
     }
   };
 
+  // ⭐ Calcul des recettes annuelles (sur 10 mois)
+  const recettesAnnuelles = stats ? stats.recettesMois * 10 : 0;
+
   if (loading || !stats) {
     return <div className="flex justify-center items-center h-64">Chargement...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-black">Gestion du transport</h1>
           <p className="text-gray-900">Bus, trajets, inscriptions</p>
         </div>
-        <button
-          onClick={handleOpenAdd}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
-        >
-          <Plus className="w-4 h-4" />Ajouter un bus
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/dashboard/admin/admin_transport/presences"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+          >
+            <Calendar className="w-4 h-4" />
+            Présences
+          </Link>
+          <Link
+            href="/dashboard/admin/admin_transport/rapports"
+            className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 transition"
+          >
+            <BookA className="w-4 h-4" />
+            Rapports
+          </Link>
+          <button
+            onClick={handleOpenAdd}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+          >
+            <Plus className="w-4 h-4" />Ajouter un bus
+          </button>
+        </div>
       </div>
 
+      {/* ⭐ Statistiques - avec Recettes annuelles */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
           <div>
@@ -175,8 +196,8 @@ export default function TransportPage() {
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
           <div>
-            <p className="text-gray-900 text-sm">Recettes (mois)</p>
-            <p className="text-2xl font-bold text-purple-600">{stats.recettesMois.toLocaleString()} GNF</p>
+            <p className="text-gray-900 text-sm">Recettes annuelles</p>
+            <p className="text-2xl font-bold text-purple-600">{recettesAnnuelles.toLocaleString()} GNF</p>
           </div>
           <CreditCard className="w-8 h-8 text-purple-200" />
         </div>

@@ -749,6 +749,45 @@ SELECT 'directeur@eief.com',
 WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'directeur@eief.com');
 
 -- ============================================
+-- CRÉATION CHAUFFEUR TEST
+-- ============================================
+
+INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
+SELECT 'transport@eief.com', 
+       '$2b$10$Cl.LbpccIdc1.rBfxmuvGuhrvsgOasr/kus9dyvifHCojG8ZiPR72',
+       'Amadou', 'Camara', 'ADMIN_TRANSPORT', true
+WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'transport@eief.com');
+
+-- ============================================
+-- CRÉATION CANTINE TEST
+-- ============================================
+
+INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
+SELECT 'cantine@eief.com', 
+       '$2b$10$Cl.LbpccIdc1.rBfxmuvGuhrvsgOasr/kus9dyvifHCojG8ZiPR72',
+       'Aissatou', 'Kane', 'ADMIN_CANTINE', true
+WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'cantine@eief.com');
+
+
+-- ============================================
+-- CRÉATION LIBRAIRIE TEST
+
+INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
+SELECT 'librairie@eief.com', 
+       '$2b$10$Cl.LbpccIdc1.rBfxmuvGuhrvsgOasr/kus9dyvifHCojG8ZiPR72',
+       'Fatou', 'Diop', 'ADMIN_LIBRAIRIE', true
+WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'librairie@eief.com');
+
+-- ============================================
+-- CREATION BIBLIOTHECAIRE TEST
+-- ============================================
+
+INSERT INTO utilisateurs (email, password, prenom, nom, role, est_actif)
+SELECT 'bibliotheque@eief.com', 
+       '$2b$10$Cl.LbpccIdc1.rBfxmuvGuhrvsgOasr/kus9dyvifHCojG8ZiPR72',
+       'Mamadou', 'Diallo', 'ADMIN_BIBLIOTHEQUE', true
+WHERE NOT EXISTS (SELECT 1 FROM utilisateurs WHERE email = 'bibliotheque@eief.com');
+-- ============================================
 -- AFFICHAGE DES UTILISATEURS CRÉÉS
 -- ============================================
 

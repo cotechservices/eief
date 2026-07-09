@@ -1,82 +1,114 @@
-// app/api/enseignant/profil/route.ts
-import { NextRequest, NextResponse } from "next/server";
+//app\api\enseignant\profil\route.ts
+import { NextResponse } from "next/server";
+import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { query } from "@/lib/db";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ENSEIGNANT") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    if (!session) {
+      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
     const userId = (session.user as any).id;
-
-    // Profil enseignant
-    const enseignantRes = await query(
-      `SELECT 
-        p.id, p.matricule_personnel, p.type, p.date_embauche, p.statut, p.departement,
-        u.prenom, u.nom, u.email, u.telephone, u.photo_url
-       FROM public.personnels p
-       JOIN public.utilisateurs u ON u.id = p.utilisateur_id
-       WHERE u.id = $1 AND p.type = 'enseignant'`,
-      [userId]
-    );
-
-    if (enseignantRes.rows.length === 0) {
-      return NextResponse.json({ error: "Profil enseignant introuvable" }, { status: 404 });
+    if (!userId) {
+      return NextResponse.json({ error: "ID utilisateur non trouvé" }, { status: 400 });
     }
-    const enseignant = enseignantRes.rows[0];
 
-    // Ses enseignements (classe + matière)
-    const enseignementsRes = await query(
-      `SELECT 
-        en.id AS enseignement_id,
-        c.id AS classe_id,
-        c.nom AS classe_nom,
-        c.niveau,
-        c.salle,
-        m.id AS matiere_id,
-        m.nom AS matiere_nom,
-        m.coefficient,
-        en.heures_semaine,
-        an.libelle AS annee_scolaire,
-        COUNT(DISTINCT e.id) AS nb_eleves
-       FROM public.enseignements en
-       JOIN public.classes c ON c.id = en.classe_id
-       JOIN public.matieres m ON m.id = en.matiere_id
-       JOIN public.annees_scolaires an ON an.id = en.annee_scolaire_id
-       LEFT JOIN public.eleves e ON e.classe_id = c.id AND e.est_inscrit = true
-       WHERE en.enseignant_id = $1
-         AND an.est_active = true
-       GROUP BY en.id, c.id, c.nom, c.niveau, c.salle, m.id, m.nom, m.coefficient,
-                en.heures_semaine, an.libelle
-       ORDER BY c.nom, m.nom`,
-      [enseignant.id]
-    );
+    // 1. Récupérer le profil de l'enseignant
+    const profilResult = await query(`
+      SELECT 
+        u.id as utilisateur_id,
+        u.prenom,
+        u.nom,
+        u.email,
+        p.id as personnel_id,
+        p.statut,
+        p.type,
+        p.matricule_personnel
+      FROM public.utilisateurs u
+      JOIN public.personnels p ON p.utilisateur_id = u.id
+      WHERE u.id = $1 AND u.role = 'ENSEIGNANT'
+    `, [userId]);
 
-    // Stats globales
-    const statsRes = await query(
-      `SELECT 
-        COUNT(DISTINCT d.id) AS total_devoirs,
-        COUNT(DISTINCT sd.id) FILTER (WHERE sd.note IS NULL) AS soumissions_a_noter,
-        COUNT(DISTINCT ex.id) AS total_examens
-       FROM public.enseignements en
-       LEFT JOIN public.devoirs d ON d.enseignement_id = en.id
-       LEFT JOIN public.soumissions_devoirs sd ON sd.devoir_id = d.id
-       LEFT JOIN public.examens ex ON ex.enseignement_id = en.id
-       WHERE en.enseignant_id = $1`,
-      [enseignant.id]
-    );
+    if (profilResult.rows.length === 0) {
+      return NextResponse.json({ error: "Enseignant non trouvé" }, { status: 404 });
+    }
 
+    const profil = profilResult.rows[0];
+    const enseignantId = profil.personnel_id;
+
+    // 2. Récupérer les enseignements avec les détails des classes
+    const enseignementsResult = await query(`
+      SELECT 
+        e.id as enseignement_id,
+        e.classe_id,
+        c.nom as classe_nom,
+        c.niveau as classe_niveau,
+        COALESCE(m.nom, 'Non défini') as matiere_nom,
+        (
+          SELECT COUNT(DISTINCT ele.id) 
+          FROM public.eleves ele
+          WHERE ele.classe_id = c.id 
+            AND ele.est_inscrit = true
+        ) as nb_eleves
+      FROM public.enseignements e
+      JOIN public.classes c ON e.classe_id = c.id
+      LEFT JOIN public.matieres m ON e.matiere_id = m.id
+      WHERE e.enseignant_id = $1
+        AND e.annee_scolaire_id = (SELECT id FROM public.annees_scolaires WHERE est_active = true)
+      ORDER BY c.niveau, c.nom
+    `, [enseignantId]);
+
+    // 3. Récupérer les stats globales
+    const statsResult = await query(`
+      SELECT 
+        COALESCE(
+          (SELECT COUNT(*) FROM public.devoirs d 
+           JOIN public.enseignements e ON d.enseignement_id = e.id
+           WHERE e.enseignant_id = $1
+          ), 0
+        ) as total_devoirs,
+        COALESCE(
+          (SELECT COUNT(*) FROM public.soumissions_devoirs sd
+           JOIN public.devoirs d ON sd.devoir_id = d.id
+           JOIN public.enseignements e ON d.enseignement_id = e.id
+           WHERE e.enseignant_id = $1
+           AND sd.note IS NULL
+          ), 0
+        ) as soumissions_a_noter,
+        COALESCE(
+          (SELECT COUNT(DISTINCT ele.id)
+           FROM public.eleves ele
+           JOIN public.classes c ON c.id = ele.classe_id
+           JOIN public.enseignements e ON e.classe_id = c.id
+           WHERE e.enseignant_id = $1
+             AND ele.est_inscrit = true
+             AND e.annee_scolaire_id = (SELECT id FROM public.annees_scolaires WHERE est_active = true)
+          ), 0
+        ) as total_eleves,
+        COALESCE(
+          (SELECT COUNT(DISTINCT c.id)
+           FROM public.enseignements e
+           JOIN public.classes c ON e.classe_id = c.id
+           WHERE e.enseignant_id = $1
+             AND e.annee_scolaire_id = (SELECT id FROM public.annees_scolaires WHERE est_active = true)
+          ), 0
+        ) as total_classes
+    `, [enseignantId]);
+
+    // 4. Retourner les données
     return NextResponse.json({
-      profil: enseignant,
-      enseignements: enseignementsRes.rows,
-      stats: statsRes.rows[0],
+      profil,
+      enseignements: enseignementsResult.rows,
+      stats: statsResult.rows[0]
     });
-  } catch (error: any) {
-    console.error("API /enseignant/profil error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    console.error("Erreur GET profil enseignant:", error);
+    return NextResponse.json(
+      { error: "Erreur serveur" },
+      { status: 500 }
+    );
   }
 }

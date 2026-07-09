@@ -1,10 +1,9 @@
-// app/dashboard/admin/librairie/page.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
-  Store, ShoppingCart, Tag, Search, Plus, Trash2, Edit, CreditCard, Box, Check, ImageIcon, X, Loader2
+  Store, Package, ShoppingCart, Tag, Search, Plus, Trash2, Edit, CreditCard, Box, Check, ImageIcon, X, Loader2, BookOpen
 } from "lucide-react";
 import Image from "next/image";
 
@@ -81,24 +80,13 @@ export default function LibrairiePage() {
     return new Intl.NumberFormat('fr-FR').format(valeur);
   };
 
-  // Fonction pour parser un nombre depuis une chaîne formatée
-  const parsePrix = (valeur: string) => {
-    // Supprimer tous les séparateurs de milliers (espaces, points, virgules)
-    const clean = valeur.replace(/[^\d]/g, '');
-    return parseInt(clean) || 0;
-  };
-
   // Gérer le changement du prix
   const handlePrixChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;
-    // Supprimer tout ce qui n'est pas un chiffre
     const digitsOnly = rawValue.replace(/[^\d]/g, '');
     const numericValue = parseInt(digitsOnly) || 0;
     
-    // Mettre à jour le prix formaté
     setPrixFormate(formatPrix(numericValue));
-    
-    // Mettre à jour les données
     setArticleData({ 
       ...articleData, 
       prix_unitaire: numericValue 
@@ -183,7 +171,6 @@ export default function LibrairiePage() {
     }
   };
 
-  // Lors de l'ouverture du formulaire d'édition, formater le prix
   const openEditForm = (article: Article) => {
     setEditingArticle(article);
     setArticleData(article);
@@ -206,10 +193,13 @@ export default function LibrairiePage() {
     e.preventDefault();
     try {
       const res = await fetch('/api/admin/librairie/ventes', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(venteData)
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify(venteData)
       });
       if (res.ok) {
         setShowVenteForm(false);
+        setVenteData({ article_id: "", eleve_id: "", quantite: 1 });
         fetchData();
       } else {
         const error = await res.json();
@@ -221,11 +211,13 @@ export default function LibrairiePage() {
   const filteredArticles = articles.filter(a => a.nom.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredVentes = ventes.filter(v => v.article_nom.toLowerCase().includes(searchTerm.toLowerCase()) || (v.eleve_nom && v.eleve_nom.toLowerCase().includes(searchTerm.toLowerCase())));
 
+  // ⭐ Statistiques avec "Articles vendus"
   const stats = {
     totalArticles: articles.length,
     valeurStock: articles.reduce((acc, a) => acc + (a.prix_unitaire * a.quantite_stock), 0),
     nombreVentes: ventes.length,
-    recettesVentes: ventes.reduce((acc, v) => acc + Number(v.montant_total), 0)
+    recettesVentes: ventes.reduce((acc, v) => acc + Number(v.montant_total), 0),
+    totalQuantiteVendue: ventes.reduce((acc, v) => acc + v.quantite, 0), // ⭐ Articles vendus
   };
 
   if (loading) return <div className="flex justify-center p-10"><div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent"></div></div>;
@@ -240,7 +232,7 @@ export default function LibrairiePage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 flex items-center justify-between">
           <div><p className="text-sm text-gray-900">Articles en stock</p><p className="text-2xl font-bold">{stats.totalArticles}</p></div>
           <Box className="text-blue-200 w-10 h-10" />
@@ -257,14 +249,21 @@ export default function LibrairiePage() {
           <div><p className="text-sm text-gray-900">Recettes</p><p className="text-2xl font-bold text-orange-600">{stats.recettesVentes.toLocaleString()} GNF</p></div>
           <CreditCard className="text-orange-200 w-10 h-10" />
         </div>
+        {/* ⭐ Nouvelle carte "Articles vendus" */}
+        <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-indigo-500 flex items-center justify-between">
+          <div><p className="text-sm text-gray-900">Articles vendus</p><p className="text-2xl font-bold text-indigo-600">{stats.totalQuantiteVendue}</p></div>
+          <BookOpen className="text-indigo-200 w-10 h-10" />
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
-        <div className="flex border-b">
+        <div className="flex border-b flex-wrap">
           <button onClick={() => setActiveTab("articles")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "articles" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
+            <Package className="w-4 h-4 inline mr-2" />
             Inventaire
           </button>
           <button onClick={() => setActiveTab("ventes")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "ventes" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
+            <ShoppingCart className="w-4 h-4 inline mr-2" />
             Historique des ventes
           </button>
           <Link href="/dashboard/admin/librairie/commandes" className="block">
@@ -274,8 +273,8 @@ export default function LibrairiePage() {
           </Link>
         </div>
 
-        <div className="p-4 border-b flex justify-between bg-gray-50/50">
-          <div className="relative w-72">
+        <div className="p-4 border-b flex flex-wrap justify-between gap-2 bg-gray-50/50">
+          <div className="relative w-full sm:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 w-4 h-4" />
             <input type="text" placeholder="Rechercher..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm text-gray-900" />
           </div>
@@ -287,31 +286,32 @@ export default function LibrairiePage() {
               setSelectedFile(null); 
               setPreviewUrl(""); 
               setShowArticleForm(true); 
-            }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
+            }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700 whitespace-nowrap">
               <Plus className="w-4 h-4" /> Ajouter un article
             </button>
           ) : (
-            <button onClick={() => setShowVenteForm(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-green-700">
+            <button onClick={() => setShowVenteForm(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-green-700 whitespace-nowrap">
               <ShoppingCart className="w-4 h-4" /> Nouvelle vente
             </button>
           )}
         </div>
 
+        {/* Contenu - Articles */}
         {activeTab === "articles" && (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 text-black">
                 <tr>
-                  <th className="px-6 py-3 text-left">Article</th>
-                  <th className="px-6 py-3 text-left">Catégorie</th>
-                  <th className="px-6 py-3 text-right">Prix Unitaire</th>
-                  <th className="px-6 py-3 text-center">En Stock</th>
-                  <th className="px-6 py-3">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Article</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Catégorie</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase">Prix Unitaire</th>
+                  <th className="px-6 py-3 text-center text-xs font-semibold uppercase">En Stock</th>
+                  <th className="px-6 py-3 text-center text-xs font-semibold uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {filteredArticles.map((a) => (
-                  <tr key={a.id}>
+                  <tr key={a.id} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {a.image_url ? (
@@ -324,75 +324,94 @@ export default function LibrairiePage() {
                           </div>
                         )}
                         <div>
-                          <p className="font-bold">{a.nom}</p>
-                          <p className="text-sm text-gray-900">{a.description}</p>
+                          <p className="font-bold text-gray-900">{a.nom}</p>
+                          <p className="text-sm text-gray-600">{a.description}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="bg-gray-100 text-gray-900 px-2 py-1 rounded-full text-xs capitalize">{a.categorie}</span>
+                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs capitalize">{a.categorie}</span>
                     </td>
-                    <td className="px-6 py-4 text-right font-medium">{formatPrix(a.prix_unitaire)} GNF</td>
+                    <td className="px-6 py-4 text-right font-medium text-gray-900">{formatPrix(a.prix_unitaire)} GNF</td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-2 py-1 rounded-full text-xs font-bold ${a.quantite_stock > 10 ? "bg-green-100 text-green-700" : a.quantite_stock > 0 ? "bg-orange-100 text-orange-700" : "bg-red-100 text-red-700"}`}>
                         {a.quantite_stock}
                       </span>
                     </td>
-                    <td className="px-6 py-4 flex gap-2">
-                      <button onClick={() => openEditForm(a)} className="text-blue-600"><Edit className="w-4 h-4" /></button>
-                      <button onClick={() => handleDeleteArticle(a.id)} className="text-red-600"><Trash2 className="w-4 h-4" /></button>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => openEditForm(a)} className="text-blue-600 hover:text-blue-800 p-1 transition">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDeleteArticle(a.id)} className="text-red-600 hover:text-red-800 p-1 transition">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {filteredArticles.length === 0 && (
-              <div className="text-center py-8 text-gray-900">Aucun article trouvé</div>
+              <div className="text-center py-8 text-gray-500">
+                <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="font-medium">Aucun article trouvé</p>
+              </div>
             )}
           </div>
         )}
 
+        {/* Contenu - Ventes */}
         {activeTab === "ventes" && (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 text-black">
                 <tr>
-                  <th className="px-6 py-3 text-left">Date</th>
-                  <th className="px-6 py-3 text-left">Article</th>
-                  <th className="px-6 py-3 text-left">Élève</th>
-                  <th className="px-6 py-3 text-center">Quantité</th>
-                  <th className="px-6 py-3 text-right">Montant Total</th>
-                  <th className="px-6 py-3 text-left">Vendeur</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Article</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Élève</th>
+                  <th className="px-6 py-3 text-center text-xs font-semibold uppercase">Quantité</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase">Montant Total</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Vendeur</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {filteredVentes.map((v) => (
-                  <tr key={v.id}>
-                    <td className="px-6 py-4 text-sm">{new Date(v.date_vente).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 font-medium">{v.article_nom}</td>
-                    <td className="px-6 py-4 text-sm">{v.eleve_nom || "Vente libre"}</td>
-                    <td className="px-6 py-4 text-center">{v.quantite}</td>
+                  <tr key={v.id} className="hover:bg-gray-50 transition">
+                    <td className="px-6 py-4 text-sm text-gray-600">{new Date(v.date_vente).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900">{v.article_nom}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{v.eleve_nom || "Vente libre"}</td>
+                    <td className="px-6 py-4 text-center font-semibold">{v.quantite}</td>
                     <td className="px-6 py-4 text-right font-bold text-green-600">{formatPrix(v.montant_total)} GNF</td>
-                    <td className="px-6 py-4 text-sm">{v.vendeur}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{v.vendeur}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {filteredVentes.length === 0 && (
-              <div className="text-center py-8 text-gray-900">Aucune vente trouvée</div>
+              <div className="text-center py-8 text-gray-500">
+                <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="font-medium">Aucune vente trouvée</p>
+              </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Formulaire Article - CORRIGÉ avec formatage du prix */}
+      {/* Formulaire Article */}
       {showArticleForm && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">{editingArticle ? "Modifier l'article" : "Nouvel article"}</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">{editingArticle ? "Modifier l'article" : "Nouvel article"}</h2>
+              <button onClick={() => setShowArticleForm(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             <form onSubmit={handleArticleSubmit} className="space-y-4">
+              {/* Image */}
               <div>
-                <label className="block text-sm mb-1">Image de l'article</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image de l'article</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 transition relative">
                   <input
                     ref={fileInputRef}
@@ -404,16 +423,8 @@ export default function LibrairiePage() {
                   />
                   {previewUrl || articleData.image_url ? (
                     <div className="relative inline-block">
-                      <img 
-                        src={previewUrl || articleData.image_url || ""} 
-                        alt="Aperçu" 
-                        className="w-32 h-32 object-cover rounded-lg mx-auto"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
-                      >
+                      <img src={previewUrl || articleData.image_url || ""} alt="Aperçu" className="w-32 h-32 object-cover rounded-lg mx-auto" />
+                      <button type="button" onClick={handleRemoveImage} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -428,71 +439,34 @@ export default function LibrairiePage() {
               </div>
 
               <div>
-                <label className="block text-sm mb-1">Nom de l'article *</label>
-                <input 
-                  required 
-                  type="text" 
-                  value={articleData.nom || ""} 
-                  onChange={e => setArticleData({ ...articleData, nom: e.target.value })} 
-                  className="w-full border p-2 rounded-lg" 
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'article *</label>
+                <input required type="text" value={articleData.nom || ""} onChange={e => setArticleData({ ...articleData, nom: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
-                <label className="block text-sm mb-1">Description</label>
-                <textarea 
-                  rows={2} 
-                  value={articleData.description || ""} 
-                  onChange={e => setArticleData({ ...articleData, description: e.target.value })} 
-                  className="w-full border p-2 rounded-lg" 
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea rows={2} value={articleData.description || ""} onChange={e => setArticleData({ ...articleData, description: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-1">Prix Unitaire (GNF) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix Unitaire (GNF) *</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">GNF</span>
-                    <input 
-                      required 
-                      type="text" 
-                      inputMode="numeric"
-                      value={prixFormate || (articleData.prix_unitaire ? formatPrix(articleData.prix_unitaire) : "")} 
-                      onChange={handlePrixChange}
-                      placeholder="0"
-                      className="w-full pl-12 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                    />
+                    <input required type="text" inputMode="numeric" value={prixFormate || (articleData.prix_unitaire ? formatPrix(articleData.prix_unitaire) : "")} onChange={handlePrixChange} placeholder="0" className="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Saisissez uniquement des chiffres</p>
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Quantité en stock *</label>
-                  <input 
-                    required 
-                    type="number" 
-                    min="0"
-                    placeholder="0"
-                    value={articleData.quantite_stock === 0 && !editingArticle ? "" : articleData.quantite_stock ?? 0} 
-                    onChange={e => {
-                      const value = e.target.value;
-                      if (value === "") {
-                        setArticleData({ ...articleData, quantite_stock: 0 });
-                      } else {
-                        const val = parseInt(value);
-                        if (!isNaN(val) && val >= 0) {
-                          setArticleData({ ...articleData, quantite_stock: val });
-                        }
-                      }
-                    }} 
-                    className="w-full border p-2 rounded-lg" 
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantité en stock *</label>
+                  <input required type="number" min="0" placeholder="0" value={articleData.quantite_stock === 0 && !editingArticle ? "" : articleData.quantite_stock ?? 0} onChange={e => {
+                    const value = e.target.value;
+                    if (value === "") setArticleData({ ...articleData, quantite_stock: 0 });
+                    else { const val = parseInt(value); if (!isNaN(val) && val >= 0) setArticleData({ ...articleData, quantite_stock: val }); }
+                  }} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm mb-1">Catégorie</label>
-                <select 
-                  value={articleData.categorie || "fourniture"} 
-                  onChange={e => setArticleData({ ...articleData, categorie: e.target.value })} 
-                  className="w-full border p-2 rounded-lg"
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+                <select value={articleData.categorie || "fourniture"} onChange={e => setArticleData({ ...articleData, categorie: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="fourniture">Fourniture scolaire</option>
                   <option value="uniforme">Uniforme / Tenue</option>
                   <option value="livre">Livre / Cahier</option>
@@ -500,8 +474,8 @@ export default function LibrairiePage() {
                 </select>
               </div>
               <div className="flex justify-end gap-3 mt-6">
-                <button type="button" onClick={() => setShowArticleForm(false)} className="px-4 py-2 border rounded-lg">Annuler</button>
-                <button type="submit" disabled={uploading} className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50">
+                <button type="button" onClick={() => setShowArticleForm(false)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">Annuler</button>
+                <button type="submit" disabled={uploading} className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50 hover:bg-blue-700 transition">
                   {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
                   {uploading ? "Enregistrement..." : "Enregistrer"}
                 </button>
@@ -513,18 +487,18 @@ export default function LibrairiePage() {
 
       {/* Formulaire Vente */}
       {showVenteForm && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Nouvelle vente</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Nouvelle vente</h2>
+              <button onClick={() => setShowVenteForm(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             <form onSubmit={handleVenteSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm mb-1">Article</label>
-                <select 
-                  required 
-                  value={venteData.article_id} 
-                  onChange={e => setVenteData({ ...venteData, article_id: e.target.value })} 
-                  className="w-full border p-2 rounded-lg"
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-1">Article *</label>
+                <select required value={venteData.article_id} onChange={e => setVenteData({ ...venteData, article_id: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="">Sélectionner un article</option>
                   {articles.filter(a => a.quantite_stock > 0).map(a => (
                     <option key={a.id} value={a.id}>{a.nom} - {formatPrix(a.prix_unitaire)} GNF (Stock: {a.quantite_stock})</option>
@@ -532,12 +506,8 @@ export default function LibrairiePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm mb-1">Élève (Optionnel)</label>
-                <select 
-                  value={venteData.eleve_id} 
-                  onChange={e => setVenteData({ ...venteData, eleve_id: e.target.value })} 
-                  className="w-full border p-2 rounded-lg"
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-1">Élève (Optionnel)</label>
+                <select value={venteData.eleve_id} onChange={e => setVenteData({ ...venteData, eleve_id: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="">Vente libre / Anonyme</option>
                   {eleves.map(e => (
                     <option key={e.id} value={e.id}>{e.prenom} {e.nom} ({e.matricule})</option>
@@ -545,25 +515,15 @@ export default function LibrairiePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm mb-1">Quantité</label>
-                <input 
-                  required 
-                  type="number" 
-                  min="1" 
-                  value={venteData.quantite || 1} 
-                  onChange={e => {
-                    const val = parseInt(e.target.value);
-                    setVenteData({ 
-                      ...venteData, 
-                      quantite: isNaN(val) || val < 1 ? 1 : val 
-                    });
-                  }} 
-                  className="w-full border p-2 rounded-lg" 
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Quantité *</label>
+                <input required type="number" min="1" value={venteData.quantite || 1} onChange={e => {
+                  const val = parseInt(e.target.value);
+                  setVenteData({ ...venteData, quantite: isNaN(val) || val < 1 ? 1 : val });
+                }} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div className="flex justify-end gap-3 mt-6">
-                <button type="button" onClick={() => setShowVenteForm(false)} className="px-4 py-2 border rounded-lg">Annuler</button>
-                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg">Valider la vente</button>
+                <button type="button" onClick={() => setShowVenteForm(false)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">Annuler</button>
+                <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">Valider la vente</button>
               </div>
             </form>
           </div>

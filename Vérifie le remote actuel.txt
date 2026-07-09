@@ -1,0 +1,46 @@
+Vérifie le remote actuel
+
+Exécute :
+
+git remote -v
+
+Tu devrais obtenir quelque chose comme :
+
+origin  https://github.com/cotechservices/eief.git (fetch)
+origin  https://github.com/cotechservices/eief.git (push)
+Si tu veux pousser vers mohamede10/enfantsdufutur
+
+Il faut remplacer l'URL du remote :
+
+git remote set-url origin https://github.com/mohamede10/enfantsdufutur.git
+
+Vérifie :
+
+git remote -v
+
+Tu devrais maintenant voir :
+
+origin  https://github.com/mohamede10/enfantsdufutur.git (fetch)
+origin  https://github.com/mohamede10/enfantsdufutur.git (push)
+
+Puis pousse le code :
+
+git push -u origin main
+Si tu souhaites conserver les deux dépôts
+
+Tu peux garder origin pour le dépôt actuel et ajouter un deuxième remote :
+
+git remote add enfantsdufutur https://github.com/mohamede10/enfantsdufutur.git
+
+Vérifie :
+
+git remote -v
+
+Tu verras quelque chose comme :
+
+origin           https://github.com/cotechservices/eief.git
+enfantsdufutur   https://github.com/mohamede10/enfantsdufutur.git
+
+Puis envoie le code vers le second dépôt :
+
+git push -u enfantsdufutur main
