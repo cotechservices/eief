@@ -85,7 +85,6 @@ export default function PresencesTransportPage() {
             return existing || p;
           });
           setPresences(updatedPresences);
-        }
       }
     } catch (error) {
       console.error("Erreur chargement présences existantes:", error);

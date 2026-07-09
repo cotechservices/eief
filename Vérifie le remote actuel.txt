@@ -44,3 +44,34 @@ enfantsdufutur   https://github.com/mohamede10/enfantsdufutur.git
 Puis envoie le code vers le second dépôt :
 
 git push -u enfantsdufutur main
+
+------------------------------Remets le bon dépôt-----------------------------
+Exécute :
+git remote set-url origin https://github.com/cotechservices/eief.
+
+Vérifie 
+Tu dois obtenir :
+origin            https://github.com/cotechservices/eief.git (fetch)
+origin            https://github.com/cotechservices/eief.git (push)
+
+enfantsdufutur    https://github.com/mohamede10/enfantsdufutur.git (fetch)
+enfantsdufutur    https://github.com/mohamede10/enfantsdufutur.git (push)
+
+Ensuite, pousse vers le dépôt d'origine :
+
+git push origin main
+ 
+--------------------------À l'avenir------------------------------------
+
+Tu auras donc :
+
+origin → https://github.com/cotechservices/eief.git
+enfantsdufutur → https://github.com/mohamede10/enfantsdufutur.git
+
+Et ton workflow sera toujours :
+
+git add .
+git commit -m "Description des modifications"
+
+git push origin main
+git push enfantsdufutur main
