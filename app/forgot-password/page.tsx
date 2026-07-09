@@ -20,16 +20,32 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError("");
 
-    // Simulation d'envoi (à remplacer par appel API réel)
-    setTimeout(() => {
-      if (email && email.includes("@")) {
+    if (!email || !email.includes("@")) {
+      setError("Veuillez entrer une adresse email valide");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
         setSubmitted(true);
         setShowForm(false);
       } else {
-        setError("Veuillez entrer une adresse email valide");
+        setError(data.error || "Une erreur est survenue lors de l'envoi");
       }
+    } catch (err) {
+      setError("Vérifier votre connexion");
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const handleResend = () => {

@@ -114,7 +114,7 @@ export default function NouveauDevoirPage() {
 
     setImageFile(file);
     setUploadingImage(true);
-    
+
     const reader = new FileReader();
     reader.onload = (event) => {
       setImagePreview(event.target?.result as string);
@@ -217,7 +217,7 @@ export default function NouveauDevoirPage() {
         const data = await res.json();
         console.log("✅ Devoir créé:", data);
         setSuccess(true);
-        
+
         setTimeout(() => {
           router.push("/dashboard/enseignant/devoirs");
         }, 2000);
@@ -228,7 +228,7 @@ export default function NouveauDevoirPage() {
       }
     } catch (err) {
       console.error("❌ Erreur:", err);
-      setError("Erreur de connexion au serveur");
+      setError("Vérifier votre connexion");
     } finally {
       setSubmitLoading(false);
     }
@@ -352,7 +352,7 @@ export default function NouveauDevoirPage() {
               <ImageIcon className="w-4 h-4 text-gray-400" />
               Image du sujet (optionnel)
             </label>
-            
+
             <div className="flex items-center gap-4">
               <div>
                 <input
@@ -401,7 +401,7 @@ export default function NouveauDevoirPage() {
                 </div>
               )}
             </div>
-            
+
             <p className="text-xs text-gray-400">
               Formats acceptés : JPG, PNG, GIF. Taille max : 5MB.
               {uploadedImageUrl && (
@@ -429,11 +429,10 @@ export default function NouveauDevoirPage() {
             <button
               type="submit"
               disabled={submitLoading || classes.length === 0 || uploadingImage || success}
-              className={`px-8 py-3 rounded-xl font-bold shadow-md transition flex items-center gap-2 ${
-                success 
-                  ? 'bg-green-600 text-white hover:bg-green-700' 
+              className={`px-8 py-3 rounded-xl font-bold shadow-md transition flex items-center gap-2 ${success
+                  ? 'bg-green-600 text-white hover:bg-green-700'
                   : 'bg-orange-600 text-white hover:bg-orange-700'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {submitLoading ? (
                 <>

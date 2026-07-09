@@ -54,7 +54,7 @@ export default function TransportPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Élèves inscrits
   const [showElevesList, setShowElevesList] = useState(false);
   const [elevesInscrits, setElevesInscrits] = useState<EleveInscrit[]>([]);
@@ -194,7 +194,7 @@ export default function TransportPage() {
       }
     } catch (error) {
       console.error("Erreur soumission transport:", error);
-      alert("Erreur de connexion au serveur");
+      alert("Vérifier votre connexion");
     }
   };
 
@@ -236,7 +236,7 @@ export default function TransportPage() {
           </h1>
           <p className="text-gray-500 mt-1">Gérez les bus, trajets et inscriptions</p>
         </div>
-        
+
         {/* ⭐ Groupe de boutons avec espacement réduit */}
         <div className="flex items-center gap-2 flex-wrap">
           <Link
@@ -246,7 +246,7 @@ export default function TransportPage() {
             <Calendar className="w-4 h-4" />
             Présences
           </Link>
-           <Link
+          <Link
             href="/dashboard/admin_transport/rapports"
             className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition flex items-center gap-1.5 shadow-sm whitespace-nowrap"
           >
@@ -281,9 +281,9 @@ export default function TransportPage() {
             </div>
             <Bus className="w-8 h-8 text-blue-200" />
           </div>
-          
+
           {/* ⭐ Carte "Élèves inscrits" cliquable */}
-          <div 
+          <div
             className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer hover:shadow-md transition"
             onClick={fetchElevesInscrits}
           >
@@ -293,7 +293,7 @@ export default function TransportPage() {
             </div>
             <Users className="w-8 h-8 text-green-200" />
           </div>
-          
+
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
             <div>
               <p className="text-gray-500 text-sm">Taux remplissage</p>
@@ -319,8 +319,8 @@ export default function TransportPage() {
                   Total : {elevesInscrits.length} élèves
                 </p>
               </div>
-              <button 
-                onClick={() => setShowElevesList(false)} 
+              <button
+                onClick={() => setShowElevesList(false)}
                 className="text-gray-400 hover:text-gray-600 transition p-2 hover:bg-gray-100 rounded-lg"
               >
                 ✕
@@ -403,15 +403,15 @@ export default function TransportPage() {
           <div className="flex gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Rechercher..." 
+              <input
+                type="text"
+                placeholder="Rechercher..."
                 className="pl-9 pr-4 py-1.5 border rounded-lg text-sm bg-gray-50/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -467,15 +467,15 @@ export default function TransportPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
-                        <button 
-                          onClick={() => handleOpenEdit(b)} 
+                        <button
+                          onClick={() => handleOpenEdit(b)}
                           className="text-blue-600 hover:text-blue-800 p-1 rounded-lg hover:bg-blue-50 transition"
                           title="Modifier"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button 
-                          onClick={() => handleDelete(b.id)} 
+                        <button
+                          onClick={() => handleDelete(b.id)}
                           className="text-red-600 hover:text-red-800 p-1 rounded-lg hover:bg-red-50 transition"
                           title="Supprimer"
                         >
@@ -508,15 +508,15 @@ export default function TransportPage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingBus ? "Modifier le bus" : "Ajouter un bus"}
               </h2>
-              <button 
-                onClick={() => setShowForm(false)} 
+              <button
+                onClick={() => setShowForm(false)}
                 className="text-gray-400 hover:text-gray-600 transition"
               >
                 <span className="sr-only">Fermer</span>
                 ✕
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* Immatriculation */}
               <div>
