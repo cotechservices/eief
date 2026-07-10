@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email invalide" }, { status: 400 });
     }
 
-    // ⭐ 1. Vérifier si l'utilisateur existe
+    // 1. Vérifier si l'utilisateur existe
     const userResult = await query(
       "SELECT id, email, nom, prenom FROM utilisateurs WHERE email = $1",
       [email]
@@ -20,40 +20,42 @@ export async function POST(request: Request) {
 
     const user = userResult.rows[0];
 
-    // ⭐ 2. Si l'utilisateur n'existe pas, on retourne un succès (sécurité)
     if (!user) {
       console.log(`[Sécurité] Email non trouvé: ${email}`);
-      // On retourne quand même un succès pour ne pas révéler l'existence des comptes
       return NextResponse.json({ 
         success: true, 
         message: "Si cette adresse email correspond à un compte, un lien de réinitialisation a été envoyé." 
       });
     }
 
-    // ⭐ 3. Générer un token unique
+    // 2. Générer un token unique
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 3600000); // Expire dans 1 heure
+    const expiresAt = new Date(Date.now() + 3600000);
 
-    // ⭐ 4. Sauvegarder le token en base de données
+    // ⭐ 3. Sauvegarder le token - CORRIGÉ avec used = FALSE
     await query(
       `INSERT INTO reset_tokens (email, token, expires_at, created_at)
        VALUES ($1, $2, $3, NOW())
        ON CONFLICT (email) DO UPDATE 
-       SET token = $2, expires_at = $3, created_at = NOW()`,
+       SET token = $2, 
+           expires_at = $3, 
+           created_at = NOW(),
+           used = FALSE  -- ⭐ AJOUT ESSENTIEL !
+      `,
       [email, token, expiresAt]
     );
 
-    // ⭐ 5. Envoyer l'email
-    const resetLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password/${token}`;
+    // 4. Construire le lien
+    const resetLink = `${process.env.NEXTAUTH_URL || 'https://eief.vercel.app'}/reset-password/${token}`;
 
-    // Configuration du transporteur email
+    // 5. Configuration email
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.EMAIL_SECURE === 'true',
+      secure: false,
       auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        pass: process.env.SMTP_PASS?.replace(/\s/g, ''),
       },
     });
 
@@ -108,7 +110,7 @@ export async function POST(request: Request) {
     `;
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || '"E.I.E.F" <mohamedkc237@gmail.com>',
+      from: process.env.EMAIL_FROM || '"E.I.E.F" <eief.infos@gmail.com>',
       to: email,
       subject: "Réinitialisation de votre mot de passe - E.I.E.F",
       html: htmlContent,

@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
         setError(data.error || "Une erreur est survenue lors de l'envoi");
       }
     } catch (err) {
-      setError("Vérifier votre connexion");
+      setError("Erreur de connexion au serveur");
     } finally {
       setLoading(false);
     }
