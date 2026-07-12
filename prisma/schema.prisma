@@ -8,222 +8,1129 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Utilisateur {
-  id              Int        @id @default(autoincrement())
-  email           String     @unique
-  password        String
-  nom             String
-  prenom          String
-  telephone       String?
-  role            Role       @default(PARENT)
-  estActif        Boolean    @default(true)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  eleve           Eleve?
-  messagesRecus   Message[]  @relation("MessagesRecus")
-  messagesEnvoyes Message[]  @relation("MessagesEnvoyes")
-  parent          Parent?
-  personnel       Personnel?
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model annees_scolaires {
+  id              Int               @id @default(autoincrement())
+  libelle         String            @db.VarChar(20)
+  date_debut      DateTime          @db.Date
+  date_fin        DateTime          @db.Date
+  est_active      Boolean?          @default(false)
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  classes         classes[]
+  enseignements   enseignements[]
+  frais_scolaires frais_scolaires[]
+  inscriptions    inscriptions[]
+  reinscriptions  reinscriptions[]
 }
 
-model Eleve {
-  id              Int                @id @default(autoincrement())
-  utilisateurId   Int                @unique
-  matricule       String             @unique
-  dateNaissance   DateTime
-  classeId        Int?
-  dateInscription DateTime           @default(now())
-  estInscrit      Boolean            @default(true)
-  classe          Classe?            @relation(fields: [classeId], references: [id])
-  utilisateur     Utilisateur        @relation(fields: [utilisateurId], references: [id])
-  parents         LienParentEleve[]
-  notes           Note[]
-  paiements       Paiement[]
-  presences       Presence[]
-  soumissions     SoumissionDevoir[]
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model annonces {
+  id                Int           @id @default(autoincrement())
+  titre             String        @db.VarChar(255)
+  contenu           String
+  cible             String?       @default("tous") @db.VarChar(50)
+  type              String?       @default("information") @db.VarChar(50)
+  classe_id         Int?
+  image_url         String?
+  date_publication  DateTime?     @default(now()) @db.Timestamp(6)
+  date_modification DateTime?     @db.Timestamp(6)
+  date_programmee   DateTime?     @db.Timestamp(6)
+  publie_par        Int?
+  classes           classes?      @relation(fields: [classe_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  utilisateurs      utilisateurs? @relation(fields: [publie_par], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model Classe {
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model articles_librairie {
+  id                           Int                            @id @default(autoincrement())
+  nom                          String                         @db.VarChar(255)
+  description                  String?
+  prix_unitaire                Int
+  quantite_stock               Int?                           @default(0)
+  categorie                    String?                        @default("fourniture") @db.VarChar(100)
+  image_url                    String?
+  created_at                   DateTime?                      @default(now()) @db.Timestamp(6)
+  commandes_fournitures        commandes_fournitures[]
+  commandes_librairie_articles commandes_librairie_articles[]
+  ventes_librairie             ventes_librairie[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model avances_salaires {
+  id              Int           @id @default(autoincrement())
+  personnel_id    Int
+  montant         Int
+  motif           String?
+  date_avance     DateTime?     @default(now()) @db.Timestamptz(6)
+  mois_deduction  Int
+  annee_deduction Int
+  statut          String?       @default("accorde") @db.VarChar(20)
+  accorde_par     Int?
+  created_at      DateTime?     @default(now()) @db.Timestamptz(6)
+  utilisateurs    utilisateurs? @relation(fields: [accorde_par], references: [id], onUpdate: NoAction)
+  personnels      personnels    @relation(fields: [personnel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model budget_previsionnel {
+  id                  Int                 @id @default(autoincrement())
+  annee               Int
+  categorie_code      String              @db.VarChar(20)
+  montant_prevu       Int                 @default(0)
+  notes               String?
+  created_at          DateTime?           @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?           @default(now()) @db.Timestamptz(6)
+  categories_depenses categories_depenses @relation(fields: [categorie_code], references: [code], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([annee, categorie_code])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model bus {
+  id               Int                @id @default(autoincrement())
+  immatriculation  String             @unique @db.VarChar(50)
+  capacite         Int?
+  chauffeur_nom    String?            @db.VarChar(100)
+  chauffeur_tel    String?            @db.VarChar(20)
+  lignes_transport lignes_transport[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cantine_menus {
+  id                     Int                      @id @default(autoincrement())
+  date                   DateTime                 @db.Date
+  plat                   String?                  @db.VarChar(255)
+  accompagnement         String?                  @db.VarChar(255)
+  dessert                String?                  @db.VarChar(255)
+  regime_special         Boolean?                 @default(false)
+  prix                   Int?
+  prix_annuel            Int?
+  preinscription_cantine preinscription_cantine[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model categories_depenses {
+  id                  Int                   @id @default(autoincrement())
+  code                String                @unique @db.VarChar(20)
+  libelle             String                @db.VarChar(100)
+  type                String                @default("sortie") @db.VarChar(10)
+  description         String?
+  is_active           Boolean?              @default(true)
+  created_at          DateTime?             @default(now()) @db.Timestamptz(6)
+  budget_previsionnel budget_previsionnel[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model categories_quiz {
+  id             Int              @id @default(autoincrement())
+  nom            String           @unique @db.VarChar(100)
+  description    String?
+  couleur        String?          @default("#6B46C1") @db.VarChar(7)
+  icon           String?          @default("BookOpen") @db.VarChar(50)
+  est_active     Boolean?         @default(true)
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  questions_quiz questions_quiz[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model classes {
+  id                                Int               @id @default(autoincrement())
+  nom                               String            @db.VarChar(50)
+  niveau                            String            @db.VarChar(50)
+  salle                             String?           @db.VarChar(50)
+  capacite_max                      Int?              @default(30)
+  titulaire_id                      Int?
+  code_acces                        String?           @db.VarChar(20)
+  frais_inscription                 Int?              @default(0)
+  annee_scolaire_id                 Int?
+  created_at                        DateTime?         @default(now()) @db.Timestamp(6)
+  premier_versement                 Int?              @default(0)
+  deuxieme_versement                Int?              @default(0)
+  troisieme_versement               Int?              @default(0)
+  total_versement                   Int?              @default(0)
+  reinscription_premier_versement   Int?              @default(0)
+  reinscription_deuxieme_versement  Int?              @default(0)
+  reinscription_troisieme_versement Int?              @default(0)
+  reinscription_total_versement     Int?              @default(0)
+  annonces                          annonces[]
+  annees_scolaires                  annees_scolaires? @relation(fields: [annee_scolaire_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  personnels                        personnels?       @relation(fields: [titulaire_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  eleves                            eleves[]
+  enseignements                     enseignements[]
+  presences                         presences[]
+  reinscriptions                    reinscriptions[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model commandes_fournitures {
+  id                 Int                 @id @default(autoincrement())
+  preinscription_id  Int?
+  article_id         Int?
+  quantite           Int                 @default(1)
+  prix_unitaire      Int
+  created_at         DateTime?           @default(now()) @db.Timestamp(6)
+  articles_librairie articles_librairie? @relation(fields: [article_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  preinscriptions    preinscriptions?    @relation(fields: [preinscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model commandes_librairie {
+  id                           Int                            @id @default(autoincrement())
+  parent_id                    Int?
+  numero_commande              String                         @unique @db.VarChar(50)
+  date_commande                DateTime?                      @default(now()) @db.Timestamp(6)
+  statut                       String?                        @default("en_attente") @db.VarChar(20)
+  total                        Int
+  observations                 String?
+  date_traitement              DateTime?                      @db.Timestamp(6)
+  created_at                   DateTime?                      @default(now()) @db.Timestamp(6)
+  updated_at                   DateTime?                      @default(now()) @db.Timestamp(6)
+  parents                      parents?                       @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  commandes_librairie_articles commandes_librairie_articles[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model commandes_librairie_articles {
+  id                  Int                  @id @default(autoincrement())
+  commande_id         Int?
+  article_id          Int?
+  quantite            Int
+  prix_unitaire       Int
+  created_at          DateTime?            @default(now()) @db.Timestamp(6)
+  articles_librairie  articles_librairie?  @relation(fields: [article_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  commandes_librairie commandes_librairie? @relation(fields: [commande_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model conges_personnel {
+  id               Int           @id @default(autoincrement())
+  personnel_id     Int
+  type_conge       String        @default("annuel") @db.VarChar(50)
+  date_debut       DateTime      @db.Date
+  date_fin         DateTime      @db.Date
+  nombre_jours     Int?
+  motif            String?
+  statut           String?       @default("en_attente") @db.VarChar(20)
+  approuve_par     Int?
+  date_approbation DateTime?     @db.Timestamptz(6)
+  created_at       DateTime?     @default(now()) @db.Timestamptz(6)
+  utilisateurs     utilisateurs? @relation(fields: [approuve_par], references: [id], onUpdate: NoAction)
+  personnels       personnels    @relation(fields: [personnel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model contrats_personnel {
+  id             Int        @id @default(autoincrement())
+  personnel_id   Int
+  type_contrat   String     @default("CDI") @db.VarChar(50)
+  date_debut     DateTime   @db.Date
+  date_fin       DateTime?  @db.Date
+  salaire_brut   Int
+  salaire_net    Int
+  heures_semaine Decimal?   @default(40) @db.Decimal(5, 2)
+  conges_annuels Int?       @default(25)
+  observations   String?
+  is_actif       Boolean?   @default(true)
+  created_at     DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime?  @default(now()) @db.Timestamptz(6)
+  personnels     personnels @relation(fields: [personnel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model depenses {
+  id                                             Int           @id @default(autoincrement())
+  categorie                                      String        @db.VarChar(100)
+  montant                                        Int
+  description                                    String?
+  date_depense                                   DateTime?     @default(now()) @db.Timestamptz(6)
+  sous_categorie                                 String?       @db.VarChar(100)
+  reference                                      String?       @db.VarChar(100)
+  fournisseur                                    String?       @db.VarChar(200)
+  numero_recu                                    String?       @db.VarChar(100)
+  saisi_par                                      Int?
+  valide_par                                     Int?
+  statut                                         String?       @default("valide") @db.VarChar(20)
+  exercice_annee                                 Int?          @default(dbgenerated("EXTRACT(year FROM now())"))
+  exercice_mois                                  Int?          @default(dbgenerated("EXTRACT(month FROM now())"))
+  created_at                                     DateTime?     @default(now()) @db.Timestamptz(6)
+  updated_at                                     DateTime?     @default(now()) @db.Timestamptz(6)
+  utilisateurs_depenses_saisi_parToutilisateurs  utilisateurs? @relation("depenses_saisi_parToutilisateurs", fields: [saisi_par], references: [id], onUpdate: NoAction)
+  utilisateurs_depenses_valide_parToutilisateurs utilisateurs? @relation("depenses_valide_parToutilisateurs", fields: [valide_par], references: [id], onUpdate: NoAction)
+
+  @@index([exercice_annee, exercice_mois], map: "idx_depenses_annee_mois")
+  @@index([categorie], map: "idx_depenses_categorie")
+  @@index([date_depense], map: "idx_depenses_date")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model devoirs {
+  id                  Int                   @id @default(autoincrement())
+  enseignement_id     Int?
+  titre               String                @db.VarChar(255)
+  description         String?
+  fichier_url         String?
+  date_limite         DateTime              @db.Date
+  date_publication    DateTime?             @default(dbgenerated("CURRENT_DATE")) @db.Date
+  enseignements       enseignements?        @relation(fields: [enseignement_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  soumissions_devoirs soumissions_devoirs[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model echeances_paiement {
+  id                    Int              @id @default(autoincrement())
+  preinscription_id     Int?
+  type                  String           @db.VarChar(50)
+  echeance              String           @db.VarChar(50)
+  montant               Int
+  date_echeance         DateTime?        @db.Date
+  statut                String?          @default("en_attente") @db.VarChar(20)
+  date_paiement         DateTime?        @db.Date
+  reference_transaction String?          @db.VarChar(100)
+  mode_paiement         String?          @db.VarChar(50)
+  created_at            DateTime?        @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?        @default(now()) @db.Timestamp(6)
+  reinscription_id      Int?
+  preinscriptions       preinscriptions? @relation(fields: [preinscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reinscriptions        reinscriptions?  @relation(fields: [reinscription_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([reinscription_id], map: "idx_echeances_paiement_reinscription_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model eleves {
+  id                     Int                      @id @default(autoincrement())
+  utilisateur_id         Int?                     @unique
+  matricule              String                   @unique @db.VarChar(50)
+  date_naissance         DateTime                 @db.Date
+  lieu_naissance         String?                  @db.VarChar(100)
+  sexe                   String?                  @db.VarChar(1)
+  nationalite            String?                  @default("Guinéenne") @db.VarChar(50)
+  classe_id              Int?
+  date_inscription       DateTime?                @default(dbgenerated("CURRENT_DATE")) @db.Date
+  est_inscrit            Boolean?                 @default(true)
+  carte_scolaire_url     String?
+  photo_url              String?
+  classes                classes?                 @relation(fields: [classe_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  utilisateurs           utilisateurs?            @relation(fields: [utilisateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  emprunts_bibliotheque  emprunts_bibliotheque[]
+  examens_eleves         examens_eleves[]
+  inscriptions           inscriptions[]
+  inscriptions_cantine   inscriptions_cantine[]
+  inscriptions_transport inscriptions_transport[]
+  lien_parent_eleve      lien_parent_eleve[]
+  notes                  notes[]
+  paiements              paiements[]
+  participations_quiz    participations_quiz[]
+  presences              presences[]
+  presences_transport    presences_transport[]
+  reinscriptions         reinscriptions[]
+  reponses_eleves_qcm    reponses_eleves_qcm[]
+  reservations_cantine   reservations_cantine[]
+  reserves_cantine       reserves_cantine[]
+  soumissions_devoirs    soumissions_devoirs[]
+  transactions_cantine   transactions_cantine[]
+  ventes_librairie       ventes_librairie[]
+
+  @@index([classe_id], map: "idx_eleves_classe")
+  @@index([matricule], map: "idx_eleves_matricule")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model emprunts_bibliotheque {
+  id                  Int                  @id @default(autoincrement())
+  livre_id            Int?
+  eleve_id            Int?
+  date_emprunt        DateTime?            @default(now()) @db.Timestamp(6)
+  date_retour_prevue  DateTime             @db.Timestamp(6)
+  date_retour_reelle  DateTime?            @db.Timestamp(6)
+  statut              String?              @default("en_cours") @db.VarChar(20)
+  eleves              eleves?              @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  livres_bibliotheque livres_bibliotheque? @relation(fields: [livre_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model enseignements {
+  id                Int               @id @default(autoincrement())
+  enseignant_id     Int?
+  classe_id         Int?
+  matiere_id        Int?
+  heures_semaine    Decimal?          @db.Decimal(5, 2)
+  heures_mois       Decimal?          @db.Decimal(5, 2)
+  heures_an         Decimal?          @db.Decimal(5, 2)
+  annee_scolaire_id Int?
+  devoirs           devoirs[]
+  annees_scolaires  annees_scolaires? @relation(fields: [annee_scolaire_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  classes           classes?          @relation(fields: [classe_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  personnels        personnels?       @relation(fields: [enseignant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  matieres          matieres?         @relation(fields: [matiere_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  examens           examens[]
+  lecons            lecons[]
+  notes             notes[]
+  questions_quiz    questions_quiz[]
+  quiz              quiz[]
+
+  @@index([classe_id], map: "idx_enseignements_classe")
+  @@index([enseignant_id], map: "idx_enseignements_enseignant")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model examens {
+  id                  Int                   @id @default(autoincrement())
+  enseignement_id     Int?
+  titre               String                @db.VarChar(255)
+  duree_minutes       Int?
+  date_debut          DateTime?             @db.Timestamp(6)
+  date_fin            DateTime?             @db.Timestamp(6)
+  est_actif           Boolean?              @default(true)
+  fichier_url         String?
+  enseignements       enseignements?        @relation(fields: [enseignement_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  examens_eleves      examens_eleves[]
+  questions_qcm       questions_qcm[]
+  reponses_eleves_qcm reponses_eleves_qcm[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model examens_eleves {
+  id         Int       @id @default(autoincrement())
+  examen_id  Int
+  eleve_id   Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  eleves     eleves    @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  examens    examens   @relation(fields: [examen_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([examen_id, eleve_id])
+  @@index([eleve_id], map: "idx_examens_eleves_eleve_id")
+  @@index([examen_id], map: "idx_examens_eleves_examen_id")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model frais_scolaires {
+  id                Int               @id @default(autoincrement())
+  nom               String?           @db.VarChar(100)
+  type_frais        String            @db.VarChar(50)
+  montant           Int
+  obligatoire       Boolean?          @default(true)
+  frequence         String?           @default("mensuel") @db.VarChar(50)
+  niveau            String?           @db.VarChar(50)
+  annee_scolaire_id Int?
+  description       String?
+  annees_scolaires  annees_scolaires? @relation(fields: [annee_scolaire_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inscriptions {
+  id                Int               @id @default(autoincrement())
+  preinscription_id Int?
+  eleve_id          Int?
+  parent_id         Int?
+  numero_matricule  String            @unique @db.VarChar(50)
+  date_inscription  DateTime?         @default(dbgenerated("CURRENT_DATE")) @db.Date
+  annee_scolaire_id Int?
+  statut            String?           @default("active") @db.VarChar(50)
+  created_at        DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at        DateTime?         @default(now()) @db.Timestamp(6)
+  annees_scolaires  annees_scolaires? @relation(fields: [annee_scolaire_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  eleves            eleves?           @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  parents           parents?          @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  preinscriptions   preinscriptions?  @relation(fields: [preinscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reinscriptions    reinscriptions[]
+
+  @@index([eleve_id], map: "idx_inscriptions_eleve")
+  @@index([parent_id], map: "idx_inscriptions_parent")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inscriptions_cantine {
+  id                       Int       @id @default(autoincrement())
+  eleve_id                 Int?
+  est_actif                Boolean?  @default(true)
+  solde                    Decimal?  @default(0) @db.Decimal(12, 2)
+  preferences_alimentaires String?
+  allergies                String?
+  date_inscription         DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+  eleves                   eleves?   @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model inscriptions_transport {
+  id               Int               @id @default(autoincrement())
+  eleve_id         Int?
+  ligne_id         Int?
+  date_debut       DateTime?         @db.Date
+  date_fin         DateTime?         @db.Date
+  est_actif        Boolean?          @default(true)
+  eleves           eleves?           @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  lignes_transport lignes_transport? @relation(fields: [ligne_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lecons {
+  id               Int            @id @default(autoincrement())
+  enseignement_id  Int?
+  titre            String         @db.VarChar(255)
+  description      String?
+  contenu          String?
+  fichier_url      String?
+  video_url        String?
+  date_publication DateTime?      @default(dbgenerated("CURRENT_DATE")) @db.Date
+  enseignements    enseignements? @relation(fields: [enseignement_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lien_parent_eleve {
+  parent_id Int
+  eleve_id  Int
+  lien      String? @default("parent") @db.VarChar(50)
+  eleves    eleves  @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  parents   parents @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([parent_id, eleve_id])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lignes_transport {
+  id                       Int                        @id @default(autoincrement())
+  nom                      String?                    @db.VarChar(100)
+  bus_id                   Int?
+  horaire_matin            DateTime?                  @db.Time(6)
+  horaire_soir             DateTime?                  @db.Time(6)
+  prix_abonnement          Int?
+  inscriptions_transport   inscriptions_transport[]
+  bus                      bus?                       @relation(fields: [bus_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  preinscription_transport preinscription_transport[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model livres_bibliotheque {
+  id                    Int                     @id @default(autoincrement())
+  titre                 String                  @db.VarChar(255)
+  auteur                String?                 @db.VarChar(255)
+  isbn                  String?                 @db.VarChar(50)
+  quantite              Int?                    @default(1)
+  disponible            Int?                    @default(1)
+  emplacement           String?                 @db.VarChar(50)
+  categorie             String?                 @db.VarChar(100)
+  image_url             String?
+  emprunts_bibliotheque emprunts_bibliotheque[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model logs_activites {
+  id             Int           @id @default(autoincrement())
+  utilisateur_id Int?
+  action         String?       @db.VarChar(255)
+  details        String?
+  ip_address     String?       @db.VarChar(45)
+  date_action    DateTime?     @default(now()) @db.Timestamp(6)
+  utilisateurs   utilisateurs? @relation(fields: [utilisateur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model matieres {
+  id            Int             @id @default(autoincrement())
+  nom           String          @db.VarChar(100)
+  coefficient   Int?            @default(1)
+  description   String?
+  enseignements enseignements[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model menus_cantine {
+  id                   Int                    @id @default(autoincrement())
+  date                 DateTime               @db.Date
+  plat                 String?                @db.VarChar(255)
+  accompagnement       String?                @db.VarChar(255)
+  dessert              String?                @db.VarChar(255)
+  prix                 Decimal?               @default(5000) @db.Decimal(10, 2)
+  allergenes           String?
+  calories             Int?
+  regime_special       Boolean?               @default(false)
+  reservations_cantine reservations_cantine[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model messages {
+  id                                                  Int           @id @default(autoincrement())
+  expediteur_id                                       Int?
+  destinataire_id                                     Int?
+  sujet                                               String?       @db.VarChar(255)
+  contenu                                             String?
+  est_lu                                              Boolean?      @default(false)
+  date_envoi                                          DateTime?     @default(now()) @db.Timestamp(6)
+  utilisateurs_messages_destinataire_idToutilisateurs utilisateurs? @relation("messages_destinataire_idToutilisateurs", fields: [destinataire_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateurs_messages_expediteur_idToutilisateurs   utilisateurs? @relation("messages_expediteur_idToutilisateurs", fields: [expediteur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([destinataire_id, est_lu], map: "idx_messages_destinataire")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model mouvements_caisse {
+  id                                                      Int           @id @default(autoincrement())
+  type                                                    String        @db.VarChar(10)
+  montant                                                 Int
+  categorie                                               String        @db.VarChar(100)
+  sous_categorie                                          String?       @db.VarChar(100)
+  description                                             String?
+  reference                                               String?       @db.VarChar(100)
+  date_mouvement                                          DateTime      @default(now()) @db.Timestamptz(6)
+  exercice_annee                                          Int           @default(dbgenerated("EXTRACT(year FROM now())"))
+  exercice_mois                                           Int           @default(dbgenerated("EXTRACT(month FROM now())"))
+  saisi_par                                               Int?
+  valide_par                                              Int?
+  statut                                                  String?       @default("valide") @db.VarChar(20)
+  recu_url                                                String?
+  created_at                                              DateTime?     @default(now()) @db.Timestamptz(6)
+  updated_at                                              DateTime?     @default(now()) @db.Timestamptz(6)
+  utilisateurs_mouvements_caisse_saisi_parToutilisateurs  utilisateurs? @relation("mouvements_caisse_saisi_parToutilisateurs", fields: [saisi_par], references: [id], onUpdate: NoAction)
+  utilisateurs_mouvements_caisse_valide_parToutilisateurs utilisateurs? @relation("mouvements_caisse_valide_parToutilisateurs", fields: [valide_par], references: [id], onUpdate: NoAction)
+
+  @@index([exercice_annee, exercice_mois], map: "idx_mouvements_caisse_annee_mois")
+  @@index([date_mouvement], map: "idx_mouvements_caisse_date")
+  @@index([type], map: "idx_mouvements_caisse_type")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model notes {
   id              Int            @id @default(autoincrement())
-  nom             String
-  niveau          String
-  salle           String?
-  capaciteMax     Int            @default(30)
-  titulaireId     Int?
-  anneeScolaireId Int
-  eleves          Eleve[]
-  enseignements   Enseignement[]
-  presences       Presence[]
+  eleve_id        Int?
+  enseignement_id Int?
+  type_note       String?        @db.VarChar(50)
+  valeur          Decimal        @db.Decimal(5, 2)
+  coefficient     Int?           @default(1)
+  date_saisie     DateTime?      @default(dbgenerated("CURRENT_DATE")) @db.Date
+  commentaire     String?
+  enseignant_id   Int?
+  eleves          eleves?        @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  personnels      personnels?    @relation(fields: [enseignant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  enseignements   enseignements? @relation(fields: [enseignement_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([eleve_id], map: "idx_notes_eleve")
 }
 
-model Enseignement {
-  id              Int       @id @default(autoincrement())
-  enseignantId    Int
-  classeId        Int
-  matiereId       Int
-  heuresSemaine   Decimal?  @db.Decimal(5, 2)
-  anneeScolaireId Int
-  devoirs         Devoir[]
-  classe          Classe    @relation(fields: [classeId], references: [id])
-  enseignant      Personnel @relation(fields: [enseignantId], references: [id])
-  matiere         Matiere   @relation(fields: [matiereId], references: [id])
-  lecons          Lecon[]
-  notes           Note[]
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model options_qcm {
+  id                  Int                   @id @default(autoincrement())
+  question_id         Int?
+  option_texte        String
+  est_correcte        Boolean?              @default(false)
+  questions_qcm       questions_qcm?        @relation(fields: [question_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reponses_eleves_qcm reponses_eleves_qcm[]
 }
 
-model Matiere {
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model options_quiz {
+  id             Int             @id @default(autoincrement())
+  question_id    Int?
+  option_texte   String
+  est_correcte   Boolean?        @default(false)
+  ordre          Int?
+  questions_quiz questions_quiz? @relation(fields: [question_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reponses_quiz  reponses_quiz[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model paiements {
+  id                    Int              @id @default(autoincrement())
+  eleve_id              Int?
+  montant               Int
+  type_frais            String?          @db.VarChar(50)
+  mois                  Int?
+  annee                 Int?
+  mode_paiement         String?          @db.VarChar(50)
+  reference_transaction String?          @db.VarChar(100)
+  statut                String?          @default("valide") @db.VarChar(20)
+  date_paiement         DateTime?        @default(dbgenerated("CURRENT_DATE")) @db.Date
+  re_u_url              String?          @map("reçu_url")
+  saisie_par            Int?
+  preinscription_id     Int?
+  reinscription_id      Int?
+  eleves                eleves?          @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  preinscriptions       preinscriptions? @relation(fields: [preinscription_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  reinscriptions        reinscriptions?  @relation(fields: [reinscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateurs          utilisateurs?    @relation(fields: [saisie_par], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([date_paiement], map: "idx_paiements_date")
+  @@index([eleve_id], map: "idx_paiements_eleve")
+  @@index([preinscription_id], map: "idx_paiements_preinscription_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model paiements_salaires {
+  id                    Int           @id @default(autoincrement())
+  personnel_id          Int?
+  montant               Int
+  mois                  Int
+  annee                 Int
+  mode_paiement         String?       @db.VarChar(50)
+  reference_transaction String?       @db.VarChar(100)
+  saisie_par            Int?
+  statut                String?       @default("paye") @db.VarChar(20)
+  date_paiement         DateTime?     @default(now()) @db.Timestamp(6)
+  note                  String?
+  personnels            personnels?   @relation(fields: [personnel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateurs          utilisateurs? @relation(fields: [saisie_par], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([personnel_id, mois, annee])
+  @@index([mois, annee], map: "idx_paiements_salaires_mois_annee")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model parents {
+  id                     Int                   @id @default(autoincrement())
+  utilisateur_id         Int?                  @unique
+  profession             String?               @db.VarChar(100)
+  situation_matrimoniale String?               @db.VarChar(100)
+  commandes_librairie    commandes_librairie[]
+  inscriptions           inscriptions[]
+  lien_parent_eleve      lien_parent_eleve[]
+  utilisateurs           utilisateurs?         @relation(fields: [utilisateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  preinscriptions        preinscriptions[]
+  reinscriptions         reinscriptions[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model participations_quiz {
+  id                 Int             @id @default(autoincrement())
+  quiz_id            Int?
+  eleve_id           Int?
+  date_debut         DateTime?       @default(now()) @db.Timestamp(6)
+  date_fin           DateTime?       @db.Timestamp(6)
+  score_total        Int?            @default(0)
+  points_obtenus     Int?            @default(0)
+  reponses_correctes Int?            @default(0)
+  reponses_totales   Int?            @default(0)
+  pourcentage        Decimal?        @default(0) @db.Decimal(5, 2)
+  est_termine        Boolean?        @default(false)
+  eleves             eleves?         @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  quiz               quiz?           @relation(fields: [quiz_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reponses_quiz      reponses_quiz[]
+
+  @@unique([quiz_id, eleve_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model personnels {
+  id                    Int                  @id @default(autoincrement())
+  utilisateur_id        Int?                 @unique
+  matricule_personnel   String               @unique @db.VarChar(50)
+  type                  String?              @db.VarChar(50)
+  date_embauche         DateTime?            @default(dbgenerated("CURRENT_DATE")) @db.Date
+  salaire_base          Int?
+  carte_personnel_url   String?
+  statut                String?              @default("actif") @db.VarChar(20)
+  departement           String?              @db.VarChar(100)
+  prime_mensuelle       Int?                 @default(0)
+  mode_paiement_salaire String?              @default("virement") @db.VarChar(50)
+  avances_salaires      avances_salaires[]
+  classes               classes[]
+  conges_personnel      conges_personnel[]
+  contrats_personnel    contrats_personnel[]
+  enseignements         enseignements[]
+  notes                 notes[]
+  paiements_salaires    paiements_salaires[]
+  utilisateurs          utilisateurs?        @relation(fields: [utilisateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  presences             presences[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model preinscription_cantine {
+  id                Int              @id @default(autoincrement())
+  preinscription_id Int?
+  menu_id           Int?
+  prix              Int              @default(0)
+  created_at        DateTime?        @default(now()) @db.Timestamp(6)
+  cantine_menus     cantine_menus?   @relation(fields: [menu_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  preinscriptions   preinscriptions? @relation(fields: [preinscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model preinscription_transport {
+  id                Int               @id @default(autoincrement())
+  preinscription_id Int?
+  ligne_id          Int?
+  prix              Int               @default(0)
+  created_at        DateTime?         @default(now()) @db.Timestamp(6)
+  lignes_transport  lignes_transport? @relation(fields: [ligne_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  preinscriptions   preinscriptions?  @relation(fields: [preinscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model preinscriptions {
+  id                       Int                        @id @default(autoincrement())
+  parent_id                Int?
+  enfant_nom               String                     @db.VarChar(100)
+  enfant_prenom            String                     @db.VarChar(100)
+  date_naissance           DateTime                   @db.Date
+  lieu_naissance           String?                    @db.VarChar(100)
+  sexe                     String                     @db.VarChar(10)
+  niveau                   String                     @db.VarChar(50)
+  classe                   String                     @db.VarChar(50)
+  acte_naissance_url       String?
+  photo_url                String?
+  bulletin_url             String?
+  statut                   String?                    @default("en_attente") @db.VarChar(50)
+  numero_dossier           String?                    @unique @db.VarChar(50)
+  date_preinscription      DateTime?                  @default(now()) @db.Timestamp(6)
+  observations             String?
+  traite_par               Int?
+  date_traitement          DateTime?                  @db.Timestamp(6)
+  frais_montant            Int?                       @default(0)
+  frais_statut             String?                    @default("non_paye") @db.VarChar(20)
+  frais_mode_paiement      String?                    @db.VarChar(50)
+  frais_reference          String?                    @db.VarChar(100)
+  frais_date_paiement      DateTime?                  @db.Timestamp(6)
+  plan_paiement_id         Int?
+  montant_total_plan       Int?                       @default(0)
+  montant_restant_plan     Int?                       @default(0)
+  type_inscription         String?                    @default("inscription") @db.VarChar(50)
+  est_reinscription        Boolean?                   @default(false)
+  commandes_fournitures    commandes_fournitures[]
+  echeances_paiement       echeances_paiement[]
+  inscriptions             inscriptions[]
+  paiements                paiements[]
+  preinscription_cantine   preinscription_cantine[]
+  preinscription_transport preinscription_transport[]
+  parents                  parents?                   @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateurs             utilisateurs?              @relation(fields: [traite_par], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([date_preinscription], map: "idx_preinscriptions_date")
+  @@index([enfant_nom, enfant_prenom], map: "idx_preinscriptions_nom_enfant")
+  @@index([numero_dossier], map: "idx_preinscriptions_numero_dossier")
+  @@index([parent_id], map: "idx_preinscriptions_parent_id")
+  @@index([statut], map: "idx_preinscriptions_statut")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model presences {
+  id               Int         @id @default(autoincrement())
+  eleve_id         Int?
+  classe_id        Int?
+  date             DateTime    @db.Date
+  statut           String?     @db.VarChar(20)
+  heure_arrivee    DateTime?   @db.Time(6)
+  justificatif_url String?
+  enseignant_id    Int?
+  classes          classes?    @relation(fields: [classe_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  eleves           eleves?     @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  personnels       personnels? @relation(fields: [enseignant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([date], map: "idx_presences_date")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model presences_transport {
+  id            Int       @id @default(autoincrement())
+  eleve_id      Int
+  date          DateTime  @db.Date
+  statut        String    @db.VarChar(20)
+  heure_arrivee DateTime? @db.Time(6)
+  commentaire   String?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  eleves        eleves    @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([eleve_id, date])
+  @@index([date], map: "idx_presences_transport_date")
+  @@index([eleve_id], map: "idx_presences_transport_eleve")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model questions_qcm {
+  id                  Int                   @id @default(autoincrement())
+  examen_id           Int?
+  question            String
+  points              Int?                  @default(1)
+  ordre               Int?
+  options_qcm         options_qcm[]
+  examens             examens?              @relation(fields: [examen_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reponses_eleves_qcm reponses_eleves_qcm[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model questions_quiz {
+  id              Int              @id @default(autoincrement())
+  categorie_id    Int?
+  enseignement_id Int?
+  question        String
+  explication     String?
+  difficulte      String?          @default("facile") @db.VarChar(20)
+  points          Int?             @default(1)
+  temps_secondes  Int?             @default(30)
+  est_active      Boolean?         @default(true)
+  ordre           Int?
+  created_at      DateTime?        @default(now()) @db.Timestamp(6)
+  created_by      Int?
+  options_quiz    options_quiz[]
+  categories_quiz categories_quiz? @relation(fields: [categorie_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  utilisateurs    utilisateurs?    @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  enseignements   enseignements?   @relation(fields: [enseignement_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  quiz_questions  quiz_questions[]
+  reponses_quiz   reponses_quiz[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model quiz {
+  id                  Int                   @id @default(autoincrement())
+  enseignement_id     Int?
+  titre               String                @db.VarChar(255)
+  description         String?
+  type                String?               @default("qcm") @db.VarChar(50)
+  duree_minutes       Int?                  @default(10)
+  est_actif           Boolean?              @default(true)
+  date_debut          DateTime?             @db.Timestamp(6)
+  date_fin            DateTime?             @db.Timestamp(6)
+  est_aleatoire       Boolean?              @default(false)
+  afficher_resultats  Boolean?              @default(true)
+  created_at          DateTime?             @default(now()) @db.Timestamp(6)
+  fichier_url         String?
+  participations_quiz participations_quiz[]
+  enseignements       enseignements?        @relation(fields: [enseignement_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  quiz_questions      quiz_questions[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model quiz_questions {
+  id                   Int             @id @default(autoincrement())
+  quiz_id              Int?
+  question_id          Int?
+  ordre                Int?
+  points_personnalises Int?
+  questions_quiz       questions_quiz? @relation(fields: [question_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  quiz                 quiz?           @relation(fields: [quiz_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([quiz_id, question_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reinscriptions {
+  id                   Int                  @id @default(autoincrement())
+  inscription_id       Int?
+  eleve_id             Int?
+  parent_id            Int?
+  annee_scolaire_id    Int?
+  classe_id            Int?
+  montant_frais        Int?                 @default(500000)
+  frais_statut         String?              @default("non_paye") @db.VarChar(50)
+  frais_mode_paiement  String?              @db.VarChar(50)
+  frais_reference      String?              @db.VarChar(100)
+  frais_date_paiement  DateTime?            @db.Timestamp(6)
+  statut               String?              @default("en_attente") @db.VarChar(50)
+  date_reinscription   DateTime?            @default(now()) @db.Timestamp(6)
+  observations         String?
+  created_at           DateTime?            @default(now()) @db.Timestamp(6)
+  updated_at           DateTime?            @default(now()) @db.Timestamp(6)
+  acte_naissance_url   String?
+  photo_url            String?
+  bulletin_url         String?
+  date_traitement      DateTime?            @db.Timestamp(6)
+  numero_dossier       String?              @unique @db.VarChar(50)
+  enfant_nom           String?              @db.VarChar(100)
+  enfant_prenom        String?              @db.VarChar(100)
+  date_naissance       DateTime?            @db.Date
+  lieu_naissance       String?              @db.VarChar(200)
+  sexe                 String?              @db.VarChar(10)
+  niveau               String?              @db.VarChar(50)
+  classe_nom           String?              @db.VarChar(50)
+  parent_nom           String?              @db.VarChar(100)
+  parent_prenom        String?              @db.VarChar(100)
+  parent_email         String?              @db.VarChar(100)
+  parent_telephone     String?              @db.VarChar(20)
+  montant_total_plan   Int?                 @default(0)
+  montant_restant_plan Int?                 @default(0)
+  echeances_paiement   echeances_paiement[]
+  paiements            paiements[]
+  annees_scolaires     annees_scolaires?    @relation(fields: [annee_scolaire_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  classes              classes?             @relation(fields: [classe_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  eleves               eleves?              @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  inscriptions         inscriptions?        @relation(fields: [inscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  parents              parents?             @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([annee_scolaire_id], map: "idx_reinscriptions_annee")
+  @@index([eleve_id], map: "idx_reinscriptions_eleve")
+  @@index([statut], map: "idx_reinscriptions_statut")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reponses_eleves_qcm {
   id            Int            @id @default(autoincrement())
-  nom           String
-  coefficient   Int            @default(1)
-  enseignements Enseignement[]
+  examen_id     Int?
+  eleve_id      Int?
+  question_id   Int?
+  option_id     Int?
+  date_reponse  DateTime?      @default(now()) @db.Timestamp(6)
+  eleves        eleves?        @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  examens       examens?       @relation(fields: [examen_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  options_qcm   options_qcm?   @relation(fields: [option_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  questions_qcm questions_qcm? @relation(fields: [question_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model Lecon {
-  id              Int          @id @default(autoincrement())
-  enseignementId  Int
-  titre           String
-  contenu         String?
-  fichierUrl      String?
-  videoUrl        String?
-  datePublication DateTime     @default(now())
-  enseignement    Enseignement @relation(fields: [enseignementId], references: [id])
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reponses_quiz {
+  id                  Int                  @id @default(autoincrement())
+  participation_id    Int?
+  question_id         Int?
+  option_id           Int?
+  est_correcte        Boolean?             @default(false)
+  temps_reponse_ms    Int?
+  date_reponse        DateTime?            @default(now()) @db.Timestamp(6)
+  options_quiz        options_quiz?        @relation(fields: [option_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  participations_quiz participations_quiz? @relation(fields: [participation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  questions_quiz      questions_quiz?      @relation(fields: [question_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
-model Devoir {
-  id              Int                @id @default(autoincrement())
-  enseignementId  Int
-  titre           String
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reservations_cantine {
+  id            Int            @id @default(autoincrement())
+  eleve_id      Int?
+  menu_id       Int?
+  date          DateTime       @db.Date
+  statut        String?        @default("confirmee") @db.VarChar(20)
+  paye          Boolean?       @default(false)
+  created_at    DateTime?      @default(now()) @db.Timestamp(6)
+  eleves        eleves?        @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  menus_cantine menus_cantine? @relation(fields: [menu_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reserves_cantine {
+  id               Int       @id @default(autoincrement())
+  eleve_id         Int?
+  date             DateTime  @db.Date
+  est_present      Boolean?  @default(false)
+  date_reservation DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+  eleves           eleves?   @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reset_tokens {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique(map: "unique_email_token") @db.VarChar(255)
+  token      String    @db.VarChar(255)
+  expires_at DateTime  @db.Timestamp(6)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  used       Boolean?  @default(false)
+
+  @@index([email], map: "idx_reset_tokens_email")
+  @@index([token], map: "idx_reset_tokens_token")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model services_annexes {
+  id              Int       @id @default(autoincrement())
+  nom             String    @unique @db.VarChar(100)
+  montant_mensuel Int
+  type            String?   @default("optionnel") @db.VarChar(50)
   description     String?
-  fichierUrl      String?
-  dateLimite      DateTime
-  datePublication DateTime           @default(now())
-  enseignement    Enseignement       @relation(fields: [enseignementId], references: [id])
-  soumissions     SoumissionDevoir[]
+  actif           Boolean?  @default(true)
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+  updated_at      DateTime? @default(now()) @db.Timestamp(6)
 }
 
-model SoumissionDevoir {
-  id             Int      @id @default(autoincrement())
-  devoirId       Int
-  eleveId        Int
-  fichierUrl     String
-  dateSoumission DateTime @default(now())
-  note           Decimal? @db.Decimal(5, 2)
-  commentaire    String?
-  isOffline      Boolean  @default(false)
-  syncId         String?
-  devoir         Devoir   @relation(fields: [devoirId], references: [id])
-  eleve          Eleve    @relation(fields: [eleveId], references: [id])
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sessions {
+  id             Int           @id @default(autoincrement())
+  utilisateur_id Int?
+  token          String        @unique @db.VarChar(255)
+  expire_le      DateTime      @db.Timestamp(6)
+  created_at     DateTime?     @default(now()) @db.Timestamp(6)
+  utilisateurs   utilisateurs? @relation(fields: [utilisateur_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
-model Presence {
-  id           Int       @id @default(autoincrement())
-  eleveId      Int
-  classeId     Int
-  date         DateTime
-  statut       String
-  heureArrivee DateTime?
-  enseignantId Int?
-  isOffline    Boolean   @default(false)
-  syncId       String?
-  classe       Classe    @relation(fields: [classeId], references: [id])
-  eleve        Eleve     @relation(fields: [eleveId], references: [id])
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model soumissions_devoirs {
+  id              Int       @id @default(autoincrement())
+  devoir_id       Int?
+  eleve_id        Int?
+  fichier_url     String?
+  date_soumission DateTime? @default(now()) @db.Timestamp(6)
+  note            Decimal?  @db.Decimal(5, 2)
+  commentaire     String?
+  est_retard      Boolean?  @default(false)
+  devoirs         devoirs?  @relation(fields: [devoir_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  eleves          eleves?   @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
-model Paiement {
-  id                   Int      @id @default(autoincrement())
-  eleveId              Int
-  montant              Int
-  typeFrais            String
-  modePaiement         String
-  referenceTransaction String?
-  statut               String   @default("valide")
-  datePaiement         DateTime @default(now())
-  recuUrl              String?
-  saisiePar            Int?
-  eleve                Eleve    @relation(fields: [eleveId], references: [id])
-}
-
-model Note {
-  id             Int          @id @default(autoincrement())
-  eleveId        Int
-  enseignementId Int
-  valeur         Decimal      @db.Decimal(5, 2)
-  coefficient    Int          @default(1)
-  dateSaisie     DateTime     @default(now())
-  commentaire    String?
-  enseignantId   Int?
-  isOffline      Boolean      @default(false)
-  syncId         String?
-  eleve          Eleve        @relation(fields: [eleveId], references: [id])
-  enseignement   Enseignement @relation(fields: [enseignementId], references: [id])
-}
-
-model Message {
-  id             Int         @id @default(autoincrement())
-  expediteurId   Int
-  destinataireId Int
-  sujet          String?
-  contenu        String
-  estLu          Boolean     @default(false)
-  dateEnvoi      DateTime    @default(now())
-  isOffline      Boolean     @default(false)
-  syncId         String?
-  destinataire   Utilisateur @relation("MessagesRecus", fields: [destinataireId], references: [id])
-  expediteur     Utilisateur @relation("MessagesEnvoyes", fields: [expediteurId], references: [id])
-}
-
-model Parent {
-  id            Int               @id @default(autoincrement())
-  utilisateurId Int               @unique
-  profession    String?
-  eleves        LienParentEleve[]
-  utilisateur   Utilisateur       @relation(fields: [utilisateurId], references: [id])
-}
-
-model LienParentEleve {
-  parentId Int
-  eleveId  Int
-  lien     String @default("parent")
-  eleve    Eleve  @relation(fields: [eleveId], references: [id])
-  parent   Parent @relation(fields: [parentId], references: [id])
-
-  @@id([parentId, eleveId])
-}
-
-model Personnel {
-  id                 Int               @id @default(autoincrement())
-  utilisateurId      Int               @unique
-  matriculePersonnel String            @unique
-  type               String
-  dateEmbauche       DateTime          @default(now())
-  salaireBase        Int?
-  enseignements      Enseignement[]
-  paiementsSalaires  PaiementSalaire[]
-  utilisateur        Utilisateur       @relation(fields: [utilisateurId], references: [id])
-}
-
-model PaiementSalaire {
-  id                   Int       @id @default(autoincrement())
-  personnelId          Int
-  mois                 Int
-  annee                Int
-  montant              Int
-  statut               String    @default("paye")
-  datePaiement         DateTime  @default(now())
-  modePaiement         String
-  referenceTransaction String?
-  saisiePar            Int?
-  personnel            Personnel @relation(fields: [personnelId], references: [id])
-}
-
-model Depense {
-  id          Int      @id @default(autoincrement())
-  categorie   String
-  montant     Int
-  dateDepense DateTime @default(now())
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model transactions_cantine {
+  id          Int       @id @default(autoincrement())
+  eleve_id    Int?
+  montant     Decimal   @db.Decimal(12, 2)
+  type        String?   @db.VarChar(20)
   description String?
-  recuUrl     String?
-  saisiePar   Int?
+  date        DateTime? @default(now()) @db.Timestamp(6)
+  eleves      eleves?   @relation(fields: [eleve_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model utilisateurs {
+  id                                                           Int                  @id @default(autoincrement())
+  email                                                        String               @unique @db.VarChar(255)
+  password                                                     String               @db.VarChar(255)
+  prenom                                                       String               @db.VarChar(100)
+  nom                                                          String               @db.VarChar(100)
+  telephone                                                    String?              @db.VarChar(20)
+  adresse                                                      String?
+  photo_url                                                    String?
+  role                                                         String               @db.VarChar(50)
+  est_actif                                                    Boolean?             @default(true)
+  derniere_connexion                                           DateTime?            @db.Timestamp(6)
+  created_at                                                   DateTime?            @default(now()) @db.Timestamp(6)
+  updated_at                                                   DateTime?            @default(now()) @db.Timestamp(6)
+  annonces                                                     annonces[]
+  avances_salaires                                             avances_salaires[]
+  conges_personnel                                             conges_personnel[]
+  depenses_depenses_saisi_parToutilisateurs                    depenses[]           @relation("depenses_saisi_parToutilisateurs")
+  depenses_depenses_valide_parToutilisateurs                   depenses[]           @relation("depenses_valide_parToutilisateurs")
+  eleves                                                       eleves?
+  logs_activites                                               logs_activites[]
+  messages_messages_destinataire_idToutilisateurs              messages[]           @relation("messages_destinataire_idToutilisateurs")
+  messages_messages_expediteur_idToutilisateurs                messages[]           @relation("messages_expediteur_idToutilisateurs")
+  mouvements_caisse_mouvements_caisse_saisi_parToutilisateurs  mouvements_caisse[]  @relation("mouvements_caisse_saisi_parToutilisateurs")
+  mouvements_caisse_mouvements_caisse_valide_parToutilisateurs mouvements_caisse[]  @relation("mouvements_caisse_valide_parToutilisateurs")
+  paiements                                                    paiements[]
+  paiements_salaires                                           paiements_salaires[]
+  parents                                                      parents?
+  personnels                                                   personnels?
+  preinscriptions                                              preinscriptions[]
+  questions_quiz                                               questions_quiz[]
+  sessions                                                     sessions[]
+  ventes_librairie                                             ventes_librairie[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ventes_librairie {
+  id                 Int                 @id @default(autoincrement())
+  article_id         Int?
+  eleve_id           Int?
+  quantite           Int                 @default(1)
+  montant_total      Int
+  date_vente         DateTime?           @default(now()) @db.Timestamp(6)
+  vendu_par          Int?
+  articles_librairie articles_librairie? @relation(fields: [article_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  eleves             eleves?             @relation(fields: [eleve_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  utilisateurs       utilisateurs?       @relation(fields: [vendu_par], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum Role {
@@ -236,4 +1143,6 @@ enum Role {
   ENSEIGNANT
   PARENT
   ELEVE
+  CHAUFFEUR
+  CANTINE
 }
