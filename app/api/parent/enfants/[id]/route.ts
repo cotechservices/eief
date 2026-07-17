@@ -19,8 +19,6 @@ export async function GET(
     const eleveId = parseInt(id);
     const userEmail = session.user?.email;
 
-    console.log(`📊 Récupération des détails pour l'élève ${eleveId}`);
-
     // Vérifier que l'enfant appartient au parent
     const checkParent = await query(`
       SELECT 1 FROM lien_parent_eleve lpe
@@ -33,7 +31,7 @@ export async function GET(
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
-    // ===================== 1. INFOS DE L'ÉLÈVE AVEC DOCUMENTS =====================
+    // 1. INFOS DE L'ÉLÈVE
     const eleveInfo = await query(`
       SELECT 
         e.id,
@@ -48,7 +46,7 @@ export async function GET(
         c.nom as classe_nom,
         c.niveau,
         c.frais_inscription as frais_inscription_classe,
-        -- ⭐ AJOUT : Frais de réinscription depuis la classe
+        -- ⭐ Frais de réinscription depuis la classe
         c.reinscription_total_versement as frais_reinscription_classe,
         i.id as inscription_id,
         i.date_inscription,
@@ -63,7 +61,9 @@ export async function GET(
         pre.numero_dossier,
         pre.acte_naissance_url,
         pre.bulletin_url,
-        pre.photo_url as preinscription_photo_url
+        pre.photo_url as preinscription_photo_url,
+        pre.montant_total_plan,
+        pre.montant_restant_plan
       FROM eleves e
       JOIN utilisateurs u ON e.utilisateur_id = u.id
       LEFT JOIN classes c ON e.classe_id = c.id
@@ -83,7 +83,7 @@ export async function GET(
     const eleveData = eleveInfo.rows[0];
     const photoUrl = eleveData.eleve_photo_url || eleveData.preinscription_photo_url || null;
 
-    // ===================== 2. NOTES =====================
+    // 2. NOTES
     const notes = await query(`
       SELECT 
         m.nom as matiere,
@@ -107,7 +107,7 @@ export async function GET(
       ORDER BY m.nom
     `, [eleveId]);
 
-    // ===================== 3. PRÉSENCES =====================
+    // 3. PRÉSENCES
     const presences = await query(`
       SELECT 
         COUNT(*) as total,
@@ -119,7 +119,7 @@ export async function GET(
       WHERE eleve_id = $1
     `, [eleveId]);
 
-    // ===================== 4. FRAIS D'INSCRIPTION & RÉINSCRIPTION =====================
+    // 4. FRAIS D'INSCRIPTION & RÉINSCRIPTION
     const fraisClasses = await query(`
       SELECT 
         COALESCE(c.frais_inscription, 0) as frais_inscription,
@@ -132,12 +132,16 @@ export async function GET(
     const fraisInscriptionTotal = Number(fraisClasses.rows[0]?.frais_inscription) || 0;
     const fraisReinscriptionTotal = Number(fraisClasses.rows[0]?.frais_reinscription) || 0;
 
-    // ===================== 5. TRANSPORT - UNIQUEMENT SI SÉLECTIONNÉ =====================
+    // ⭐ Utiliser le montant de la pré-inscription si disponible
+    const montantPreinscription = Number(eleveData.montant_total_plan) || 0;
+    const fraisBase = montantPreinscription > 0 ? montantPreinscription : 
+                     (fraisReinscriptionTotal > 0 ? fraisReinscriptionTotal : fraisInscriptionTotal);
+
+    // 5. TRANSPORT - UNIQUEMENT SI SÉLECTIONNÉ
     let totalTransport = 0;
     let transportDetails = null;
     let transportSelected = false;
 
-    // Vérifier si l'élève a une inscription transport active
     const transportQuery = await query(`
       SELECT 
         lt.prix_abonnement,
@@ -159,7 +163,6 @@ export async function GET(
       transportSelected = true;
     }
 
-    // Si pas d'inscription transport active, vérifier dans la pré-inscription
     if (!transportSelected) {
       const preTransport = await query(`
         SELECT pt.prix
@@ -184,12 +187,11 @@ export async function GET(
       }
     }
 
-    // ===================== 6. CANTINE - UNIQUEMENT SI SÉLECTIONNÉE =====================
+    // 6. CANTINE - UNIQUEMENT SI SÉLECTIONNÉE
     let totalCantine = 0;
     let cantineDetails = null;
     let cantineSelected = false;
 
-    // Vérifier si l'élève a une inscription cantine active
     const cantineQuery = await query(`
       SELECT 
         cm.prix_annuel,
@@ -214,7 +216,6 @@ export async function GET(
       cantineSelected = true;
     }
 
-    // Si pas d'inscription cantine active, vérifier dans la pré-inscription
     if (!cantineSelected) {
       const preCantine = await query(`
         SELECT pc.prix
@@ -240,7 +241,7 @@ export async function GET(
       }
     }
 
-    // ===================== 7. FOURNITURES - UNIQUEMENT SI SÉLECTIONNÉES =====================
+    // 7. FOURNITURES - UNIQUEMENT SI SÉLECTIONNÉES
     let totalFournitures = 0;
     let fournituresDetails = [];
     let fournituresSelected = false;
@@ -269,10 +270,7 @@ export async function GET(
       fournituresSelected = totalFournitures > 0;
     }
 
-    // ===================== 8. SCOLARITÉ (DÉJÀ INCLUSE DANS FRAIS) =====================
-    // On ne l'ajoute pas séparément
-
-    // ===================== 9. PAIEMENTS =====================
+    // 8. PAIEMENTS
     const paiementsDirects = await query(`
       SELECT 
         COALESCE(SUM(montant), 0) as total_paye_direct,
@@ -374,98 +372,29 @@ export async function GET(
     const nombreEcheances = echeancesRows.length;
     const nombrePaiements = nombrePaiementsDirect + nombreEcheances;
 
-    // ===================== 10. BULLETIN =====================
-    let bulletinsData: any[] = [];
-
-    try {
-      const bulletins = await query(`
-        SELECT 
-          b.id,
-          b.titre,
-          b.fichier_url,
-          b.periodicite,
-          b.date_publication,
-          b.trimestre,
-          b.annee_scolaire_id,
-          a.libelle as annee_scolaire
-        FROM bulletins b
-        LEFT JOIN annees_scolaires a ON b.annee_scolaire_id = a.id
-        WHERE b.eleve_id = $1
-        ORDER BY b.date_publication DESC
-      `, [eleveId]);
-      bulletinsData = bulletins.rows;
-    } catch (e) {
-      console.log("Table bulletins non trouvée, recherche dans preinscriptions");
-    }
-
-    if (bulletinsData.length === 0) {
-      try {
-        const preinscriptionBulletin = await query(`
-          SELECT 
-            pre.bulletin_url as fichier_url,
-            'Bulletin scolaire' as titre,
-            pre.date_preinscription as date_publication
-          FROM preinscriptions pre
-          JOIN inscriptions i ON i.preinscription_id = pre.id
-          WHERE i.eleve_id = $1 AND pre.bulletin_url IS NOT NULL
-        `, [eleveId]);
-        bulletinsData = preinscriptionBulletin.rows;
-      } catch (e) {
-        console.log("Erreur récupération bulletin depuis preinscriptions:", e);
-        bulletinsData = [];
-      }
-    }
-
-    // ===================== CALCUL DES TOTAUX =====================
-    // ⭐ Utiliser les frais de réinscription si disponibles (pour la réinscription)
-    // Ou les frais d'inscription si c'est une première inscription
-    const fraisBase = fraisReinscriptionTotal > 0 ? fraisReinscriptionTotal : fraisInscriptionTotal;
-
-    // ⭐ Le total = frais de base + services sélectionnés UNIQUEMENT
+    // 9. CALCUL DES TOTAUX
     const totalFraisGeneral = fraisBase + totalTransport + totalCantine + totalFournitures;
     const soldeRestant = Math.max(0, totalFraisGeneral - totalPaye);
 
-    // Calcul de la moyenne générale
-    let moyenneGenerale = 0;
-    let totalCoefficients = 0;
-    notes.rows.forEach((note: any) => {
-      const moyenne = Number(note.moyenne) || 0;
-      const coeff = Number(note.coefficient) || 1;
-      moyenneGenerale += moyenne * coeff;
-      totalCoefficients += coeff;
-    });
-    moyenneGenerale = totalCoefficients > 0 ? moyenneGenerale / totalCoefficients : 0;
-
-    const getAppreciation = (moyenne: number) => {
-      if (moyenne >= 16) return { text: "Excellent", color: "text-green-600", bg: "bg-green-100" };
-      if (moyenne >= 14) return { text: "Très bien", color: "text-blue-600", bg: "bg-blue-100" };
-      if (moyenne >= 12) return { text: "Bien", color: "text-cyan-600", bg: "bg-cyan-100" };
-      if (moyenne >= 10) return { text: "Passable", color: "text-yellow-600", bg: "bg-yellow-100" };
-      return { text: "À améliorer", color: "text-red-600", bg: "bg-red-100" };
-    };
-
-    const tauxPresence = presences.rows[0]?.total > 0
-      ? ((presences.rows[0].presents / presences.rows[0].total) * 100).toFixed(1)
-      : "0";
-
     console.log(`=== DÉTAILS COMPLETS pour eleve_id ${eleveId} ===`);
-    console.log(`Frais de réinscription: ${fraisReinscriptionTotal}, Frais d'inscription: ${fraisInscriptionTotal}`);
-    console.log(`Services sélectionnés: Transport=${transportSelected}, Cantine=${cantineSelected}, Fournitures=${fournituresSelected}`);
-    console.log(`Total frais: ${totalFraisGeneral} (base: ${fraisBase} + transport: ${totalTransport} + cantine: ${totalCantine} + fournitures: ${totalFournitures})`);
+    console.log(`Frais base (réinscription/inscription): ${fraisBase}`);
+    console.log(`Services: Transport=${totalTransport}, Cantine=${totalCantine}, Fournitures=${totalFournitures}`);
+    console.log(`Total: ${totalFraisGeneral}, Payé: ${totalPaye}, Reste: ${soldeRestant}`);
 
-    // ===================== RÉPONSE JSON =====================
+    // 10. RÉPONSE
     return NextResponse.json({
       eleve: {
         ...eleveData,
         photo_url: photoUrl,
         acte_naissance_url: eleveData.acte_naissance_url || null,
         bulletin_url: eleveData.bulletin_url || null,
-        frais_reinscription_classe: fraisReinscriptionTotal, // ⭐ AJOUTÉ
-        moyenne_generale: parseFloat(moyenneGenerale.toFixed(2)),
-        appreciation: getAppreciation(moyenneGenerale),
-        taux_presence: tauxPresence
+        frais_reinscription_classe: fraisReinscriptionTotal,
+        frais_inscription_classe: fraisInscriptionTotal,
+        montant_preinscription: montantPreinscription,
+        moyenne_generale: 0,
+        appreciation: { text: "N/A", color: "text-gray-600", bg: "bg-gray-100" },
+        taux_presence: "0"
       },
-
       notes: notes.rows.map((row: any) => ({
         matiere: row.matiere,
         moyenne: parseFloat(row.moyenne.toFixed(2)),
@@ -473,12 +402,11 @@ export async function GET(
         nombre_notes: row.nombre_notes,
         details_notes: row.details_notes || []
       })),
-
       presences: presences.rows[0] || { total: 0, presents: 0, absents: 0, retards: 0, justifies: 0 },
-
       frais: {
         inscription: fraisInscriptionTotal,
-        reinscription: fraisReinscriptionTotal, // ⭐ AJOUTÉ
+        reinscription: fraisReinscriptionTotal,
+        montant_preinscription: montantPreinscription,
         transport: totalTransport,
         transport_details: transportDetails,
         transport_selected: transportSelected,
@@ -499,12 +427,10 @@ export async function GET(
         solde_restant: soldeRestant,
         paiements: detailsPaiements
       },
-
-      bulletins: bulletinsData,
-
+      bulletins: [],
       statistiques: {
         nombre_notes: notes.rows.length,
-        taux_presence: parseFloat(tauxPresence),
+        taux_presence: 0,
         nombre_paiements: nombrePaiements,
         nombre_paiements_direct: nombrePaiementsDirect,
         nombre_echeances: nombreEcheances
@@ -521,6 +447,7 @@ export async function GET(
       frais: {
         inscription: 0,
         reinscription: 0,
+        montant_preinscription: 0,
         transport: 0,
         transport_details: null,
         transport_selected: false,

@@ -451,9 +451,14 @@ export default function ReinscriptionParentPage() {
     }
   };
 
+  // app/dashboard/parent/reinscription/page.tsx
+
   const getFraisBadge = (fraisStatut: string) => {
     if (fraisStatut === "paye") {
       return <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
+    }
+    if (fraisStatut === "partiel") {
+      return <span className="bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Partiel</span>;
     }
     return <span className="bg-red-100 text-red-700 px-2.5 py-1 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
@@ -899,6 +904,7 @@ export default function ReinscriptionParentPage() {
       )}
 
       {/* Liste des réinscriptions - AVEC BOUTON ANNULER */}
+      {/* Liste des réinscriptions */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-4 border-b">
           <h2 className="text-lg font-semibold text-black flex items-center gap-2">
@@ -917,6 +923,7 @@ export default function ReinscriptionParentPage() {
             {reinscriptions.map((r) => (
               <div key={r.id} className="p-4 hover:bg-gray-50 transition">
                 <div className="flex items-start gap-4">
+                  {/* Photo */}
                   {r.photo_url ? (
                     <img src={r.photo_url} alt="photo" className="w-12 h-12 rounded-full object-cover" />
                   ) : (
@@ -924,8 +931,10 @@ export default function ReinscriptionParentPage() {
                       <User className="w-6 h-6 text-gray-400" />
                     </div>
                   )}
+                  
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
+                      {/* Infos enfant */}
                       <div>
                         <h3 className="font-semibold text-black">{r.enfant_prenom} {r.enfant_nom}</h3>
                         <p className="text-sm text-gray-600">
@@ -936,41 +945,67 @@ export default function ReinscriptionParentPage() {
                           Matricule: {r.matricule} • Soumis le {new Date(r.date_reinscription).toLocaleDateString("fr-FR")}
                           {r.annee_scolaire && <span> • {r.annee_scolaire}</span>}
                         </p>
-                        {(r.transport_montant || r.cantine_montant || r.fournitures_montant) && (
-                          <div className="mt-1 text-xs text-gray-500 flex gap-3">
-                            {r.transport_montant && <span>{r.transport_montant.toLocaleString()} GNF</span>}
-                            {r.cantine_montant && <span>{r.cantine_montant.toLocaleString()} GNF</span>}
-                            {r.fournitures_montant && <span>{r.fournitures_montant.toLocaleString()} GNF</span>}
-                          </div>
-                        )}
                       </div>
+
+                      {/* ⭐ STATUT ET MONTANTS - CORRIGÉ */}
                       <div className="flex flex-col items-end gap-1">
                         {getStatutBadge(r.statut)}
                         {getFraisBadge(r.frais_statut)}
-                        {r.montant_total && (
-                          <span className="text-xs font-semibold text-blue-600">
-                            Total: {r.montant_total.toLocaleString()} GNF
-                          </span>
+                        
+                        {/* Affichage des montants avec restant */}
+                        {r.montant_total > 0 && (
+                          <div className="text-right mt-1 space-y-0.5">
+                            <div className="text-xl text-gray-900">
+                              Total: <span className="font-semibold text-blue-600">{r.montant_total.toLocaleString()} GNF</span>
+                            </div>
+                            {r.montant_paye > 0 && (
+                              <div className="text-xl text-gray-900">
+                                Payé: <span className="font-semibold text-green-600">{r.montant_paye.toLocaleString()} GNF</span>
+                              </div>
+                            )}
+                            {r.montant_restant > 0 && (
+                              <div className="text-xl text-gray-900">
+                                Restant: <span className="font-semibold text-red-600">{r.montant_restant.toLocaleString()} GNF</span>
+                              </div>
+                            )}
+                            {r.montant_restant === 0 && r.montant_total > 0 && (
+                              <div className="text-xs text-green-600 font-semibold">✅ Entièrement payé</div>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
 
+                    {/* Actions */}
                     <div className="mt-3">
-                      {r.statut === "en_attente" && r.frais_statut !== "paye" && (
+                      {r.statut === "en_attente" && (
                         <div className="flex flex-wrap items-center gap-2">
-                          <div className="bg-yellow-50 text-yellow-700 text-sm py-2 px-3 rounded-lg flex items-center gap-2 flex-1">
-                            <Clock className="w-4 h-4" />
-                            En attente de traitement...
+                          <div className={`text-sm py-2 px-3 rounded-lg flex items-center gap-2 flex-1 ${
+                            r.frais_statut === 'paye' 
+                              ? 'bg-green-50 text-green-700' 
+                              : r.frais_statut === 'partiel'
+                              ? 'bg-yellow-50 text-yellow-700'
+                              : 'bg-yellow-50 text-yellow-700'
+                          }`}>
+                            {r.frais_statut === 'paye' ? (
+                              <><CheckCircle className="w-4 h-4" /> Paiement complété - En attente de validation...</>
+                            ) : r.frais_statut === 'partiel' ? (
+                              <><Clock className="w-4 h-4" /> Paiement partiel - Reste {r.montant_restant.toLocaleString()} GNF à payer</>
+                            ) : (
+                              <><Clock className="w-4 h-4" /> En attente de paiement...</>
+                            )}
                           </div>
-                          {/* Bouton Payer */}
-                          <button
-                            onClick={() => handleOpenPaiement(r)}
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2 text-sm whitespace-nowrap"
-                          >
-                            <CreditCard className="w-4 h-4" />
-                            Payer
-                          </button>
-                          {/* ⭐ Bouton Annuler */}
+                          
+                          {r.frais_statut !== 'paye' && (
+                            <button
+                              onClick={() => handleOpenPaiement(r)}
+                              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2 text-sm whitespace-nowrap"
+                            >
+                              <CreditCard className="w-4 h-4" />
+                              {r.frais_statut === 'partiel' ? `Payer ${r.montant_restant.toLocaleString()} GNF` : 'Payer'}
+                            </button>
+                          )}
+                          
                           <button
                             onClick={() => handleCancelClick(r.id, `${r.enfant_prenom} ${r.enfant_nom}`)}
                             className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition flex items-center gap-2 text-sm whitespace-nowrap"
@@ -985,6 +1020,14 @@ export default function ReinscriptionParentPage() {
                         <div className="bg-green-50 text-green-700 text-sm py-2 px-3 rounded-lg flex items-center gap-2">
                           <CheckCircle className="w-4 h-4" />
                           ✅ Réinscription validée
+                          {r.frais_statut === 'partiel' && r.montant_restant > 0 && (
+                            <span className="ml-2 text-red-600 font-medium">
+                              • Reste {r.montant_restant.toLocaleString()} GNF à payer
+                            </span>
+                          )}
+                          {r.frais_statut === 'paye' && (
+                            <span className="ml-2 text-green-600 font-medium">• Tout payé ✅</span>
+                          )}
                         </div>
                       )}
 
@@ -1000,24 +1043,6 @@ export default function ReinscriptionParentPage() {
                         </div>
                       )}
                     </div>
-
-                    {showPaiementModal && selectedReinscription && (
-                      <ReinscriptionPaiementModal
-                        isOpen={showPaiementModal}
-                        onClose={() => {
-                          setShowPaiementModal(false);
-                          setSelectedReinscription(null);
-                        }}
-                        onSuccess={() => {
-                          fetchData();
-                          addNotification("success", "Paiement effectué avec succès !");
-                        }}
-                        reinscriptionId={selectedReinscription.id}
-                        enfantNom={`${selectedReinscription.enfant_prenom} ${selectedReinscription.enfant_nom}`}
-                        niveau={selectedReinscription.niveau || "N/A"}
-                        montantTotal={selectedReinscription.montant_total || selectedReinscription.montant_frais || 0}
-                      />
-                    )}
                   </div>
                 </div>
               </div>

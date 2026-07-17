@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
           u.telephone as parent_telephone,
           pa.profession as parent_profession,
           pa.situation_matrimoniale as mere_info,
-          -- ⭐ FRAIS D'INSCRIPTION depuis la table classes
+          -- FRAIS D'INSCRIPTION depuis la table classes
           COALESCE(
             (SELECT c.total_versement 
              FROM classes c
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
              LIMIT 1),
             0
           ) as frais_montant,
-          -- ⭐ PLAN DE PAIEMENT depuis la table classes
+          -- PLAN DE PAIEMENT depuis la table classes
           COALESCE(
             (SELECT JSON_BUILD_OBJECT(
               'id', c.id,
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
             WHERE pc.preinscription_id = p.id),
             '[]'::json
           ) as cantine_selectionnee,
-          -- ⭐ Récupérer les échéances de paiement
+          -- Récupérer les échéances de paiement (pour affichage uniquement)
           COALESCE(
             (SELECT JSON_AGG(
               JSON_BUILD_OBJECT(
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
 
       // ===================== VÉRIFIER LES SERVICES SÉLECTIONNÉS =====================
 
-      // ⭐ TRANSPORT - Vérifier si sélectionné
+      // TRANSPORT - Vérifier si sélectionné
       const transportResult = await query(`
         SELECT COALESCE(SUM(pt.prix), 0) as total
         FROM preinscription_transport pt
@@ -156,16 +156,13 @@ export async function GET(request: NextRequest) {
       `, [id]);
       const transportSelected = Number(transportResult.rows[0]?.total) || 0;
 
-      // ⭐ CANTINE - Vérifier si sélectionnée et récupérer le prix correct
+      // CANTINE - Vérifier si sélectionnée
       let cantineSelected = 0;
-
-      // Vérifier si la cantine est sélectionnée
       const cantineExists = await query(`
         SELECT COUNT(*) as count FROM preinscription_cantine WHERE preinscription_id = $1
       `, [id]);
 
       if (Number(cantineExists.rows[0]?.count) > 0) {
-        // Récupérer le prix annuel depuis cantine_menus
         const cantinePrixResult = await query(`
           SELECT COALESCE(cm.prix_annuel, 0) as prix_annuel
           FROM preinscription_cantine pc
@@ -177,7 +174,6 @@ export async function GET(request: NextRequest) {
           cantineSelected = Number(cantinePrixResult.rows[0]?.prix_annuel) || 0;
         }
 
-        // Si pas de prix annuel, utiliser la somme des prix
         if (cantineSelected === 0) {
           const sumResult = await query(`
             SELECT COALESCE(SUM(pc.prix), 0) as total
@@ -187,7 +183,6 @@ export async function GET(request: NextRequest) {
           cantineSelected = Number(sumResult.rows[0]?.total) || 0;
         }
 
-        // Si toujours 0, utiliser le prix annuel par défaut
         if (cantineSelected === 0) {
           const defaultPrix = await query(`
             SELECT COALESCE(prix_annuel, 0) as prix_annuel
@@ -196,11 +191,10 @@ export async function GET(request: NextRequest) {
             LIMIT 1
           `, []);
           cantineSelected = Number(defaultPrix.rows[0]?.prix_annuel) || 0;
-          console.log(`⚠️ Cantine sélectionnée, utilisation du prix annuel par défaut: ${cantineSelected}`);
         }
       }
 
-      // ⭐ FOURNITURES - Vérifier si sélectionnées
+      // FOURNITURES - Vérifier si sélectionnées
       const fournituresResult = await query(`
         SELECT COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total
         FROM commandes_fournitures cf
@@ -208,88 +202,87 @@ export async function GET(request: NextRequest) {
       `, [id]);
       const fournituresSelected = Number(fournituresResult.rows[0]?.total) || 0;
 
-      // ⭐ Calculer les totaux UNIQUEMENT avec les services sélectionnés
+      // ⭐ Calculer le total des frais
       const fraisInscription = Number(data.frais_montant) || 0;
-
-      // ⭐ TOTAL = Inscription + services sélectionnés UNIQUEMENT
       const totalFrais = fraisInscription + transportSelected + cantineSelected + fournituresSelected;
 
-      // ⭐ Récupérer les paiements effectués
+      // ⭐ UNIQUE SOURCE : Récupérer les paiements UNIQUEMENT depuis la table paiements
       const paiementsResult = await query(`
         SELECT 
           COALESCE(SUM(montant), 0) as total_paye
         FROM paiements
         WHERE preinscription_id = $1 AND statut = 'valide'
       `, [id]);
-      const fraisPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
+      
+      const totalPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
 
-      // ⭐ Vérifier si toutes les échéances d'inscription sont payées
-      const echeances = data.echeances_paiement || [];
-      const echeancesInscription = echeances.filter((e: any) => e.type === 'inscription');
-      const toutesPayees = echeancesInscription.length > 0 && echeancesInscription.every((e: any) => e.statut === 'paye');
-
-      // ⭐ Mettre à jour le statut en fonction des échéances - DÉCLARER LA VARIABLE ICI
-      let fraisStatut = data.frais_statut;
-
-      if (toutesPayees && fraisStatut !== 'paye') {
-        await query(`
-          UPDATE preinscriptions 
-          SET frais_statut = 'paye'
-          WHERE id = $1
-        `, [id]);
+      // ⭐ Déterminer le statut de paiement UNIQUEMENT à partir des paiements
+      let fraisStatut = 'non_paye';
+      
+      if (totalPaye >= totalFrais && totalFrais > 0) {
         fraisStatut = 'paye';
-        console.log(`✅ Statut paiement mis à jour pour la pré-inscription ${id}: paye`);
-      } else if (fraisPaye > 0 && fraisPaye < totalFrais) {
-        if (fraisStatut !== 'partiel') {
-          await query(`
-            UPDATE preinscriptions 
-            SET frais_statut = 'partiel'
-            WHERE id = $1
-          `, [id]);
-          fraisStatut = 'partiel';
-        }
-        console.log(`⚠️ Paiement partiel pour la pré-inscription ${id}: ${fraisPaye}/${totalFrais}`);
+      } else if (totalPaye > 0 && totalPaye < totalFrais) {
+        fraisStatut = 'partiel';
+      } else if (totalFrais === 0) {
+        fraisStatut = 'paye';
       }
 
-      console.log(" Détails des frais calculés (UNIQUEMENT services sélectionnés):", {
+      // ⭐ Mettre à jour le statut et le restant dans la base si différent
+      const restant = Math.max(0, totalFrais - totalPaye);
+      if (fraisStatut !== data.frais_statut || restant !== Number(data.montant_restant_plan)) {
+        await query(`
+          UPDATE preinscriptions 
+          SET frais_statut = $1,
+              montant_restant_plan = $2
+          WHERE id = $3
+        `, [fraisStatut, restant, id]);
+        console.log(`✅ Statut mis à jour: ${fraisStatut}, restant: ${restant} pour la pré-inscription ${id}`);
+      }
+
+      // ⭐ Récupérer les échéances pour affichage
+      const echeances = data.echeances_paiement || [];
+
+      console.log("📊 Détails des frais calculés (UNIQUEMENT paiements):", {
         inscription: fraisInscription,
         transport: transportSelected,
         cantine: cantineSelected,
         fournitures: fournituresSelected,
         total: totalFrais,
-        paye: fraisPaye,
-        reste: Math.max(0, totalFrais - fraisPaye)
+        total_paye: totalPaye,
+        reste: restant,
+        statut: fraisStatut
       });
 
       return NextResponse.json({
         ...data,
         frais_statut: fraisStatut,
-        est_partiel: fraisPaye > 0 && fraisPaye < totalFrais,
+        est_partiel: totalPaye > 0 && totalPaye < totalFrais,
         fournitures_commandees: data.fournitures_commandees || [],
         transport_selectionne: data.transport_selectionne || [],
         cantine_selectionnee: data.cantine_selectionnee || [],
         echeances_paiement: echeances,
         plan_paiement: data.plan_paiement,
-        // ⭐ Surcharger les montants avec les valeurs réelles sélectionnées
         transport_montant: transportSelected,
         cantine_montant: cantineSelected,
         fournitures_montant: fournituresSelected,
-        scolarite_montant: 0, // Déjà inclus dans frais_montant
+        scolarite_montant: 0,
         montant_total: totalFrais,
         details_frais: {
           inscription: fraisInscription,
-          cantine: cantineSelected,      // ⭐ 0 si non sélectionné
-          transport: transportSelected,   // ⭐ 0 si non sélectionné
-          librairie: fournituresSelected, // ⭐ 0 si non sélectionné
-          scolarite: 0, // ⭐ 0 car déjà inclus
+          cantine: cantineSelected,
+          transport: transportSelected,
+          librairie: fournituresSelected,
+          scolarite: 0,
           total: totalFrais,
-          paye: fraisPaye,
-          reste: Math.max(0, totalFrais - fraisPaye)
+          paye: totalPaye,
+          reste: restant
         }
       });
     }
 
-    // Sinon, retourner la liste des pré-inscriptions
+    // ============================================================
+    // LISTE DES PRÉ-INSCRIPTIONS
+    // ============================================================
     let sql = `
       SELECT 
         p.id,
@@ -320,40 +313,25 @@ export async function GET(request: NextRequest) {
         u.telephone as parent_telephone,
         pa.profession as parent_profession,
         pa.situation_matrimoniale as mere_info,
-        -- ⭐ Calculer le statut de paiement basé sur les échéances
-        CASE 
-          WHEN p.frais_statut = 'paye' THEN 'paye'
-          WHEN EXISTS (
-            SELECT 1 FROM echeances_paiement e 
-            WHERE e.preinscription_id = p.id 
-              AND e.type = 'inscription' 
-              AND e.statut = 'paye'
-          ) AND EXISTS (
-            SELECT 1 FROM echeances_paiement e 
-            WHERE e.preinscription_id = p.id 
-              AND e.type = 'inscription' 
-              AND e.statut != 'paye'
-          ) THEN 'partiel'
-          WHEN EXISTS (
-            SELECT 1 FROM echeances_paiement e 
-            WHERE e.preinscription_id = p.id 
-              AND e.type = 'inscription'
-          ) AND NOT EXISTS (
-            SELECT 1 FROM echeances_paiement e 
-            WHERE e.preinscription_id = p.id 
-              AND e.type = 'inscription' 
-              AND e.statut != 'paye'
-          ) THEN 'paye'
-          WHEN p.frais_statut = 'paye' THEN 'paye'
-          ELSE 'non_paye'
-        END as frais_statut_calcule,
-        -- ⭐ Calculer le montant payé pour la liste
+        -- ⭐ Calculer le total des frais
         COALESCE(
-          (SELECT SUM(e.montant) 
-           FROM echeances_paiement e
-           WHERE e.preinscription_id = p.id AND e.statut = 'paye'),
+          (SELECT c.total_versement 
+           FROM classes c
+           WHERE LOWER(c.nom) = LOWER(p.classe)
+           LIMIT 1),
+          (SELECT c.frais_inscription 
+           FROM classes c
+           WHERE LOWER(c.nom) = LOWER(p.classe)
+           LIMIT 1),
           0
-        ) as frais_paye_calcule
+        ) as frais_inscription_calcule,
+        -- ⭐ UNIQUE SOURCE : Calculer le total payé via paiements UNIQUEMENT
+        COALESCE(
+          (SELECT SUM(montant) 
+           FROM paiements 
+           WHERE preinscription_id = p.id AND statut = 'valide'),
+          0
+        ) as frais_paye_direct
       FROM preinscriptions p
       JOIN parents pa ON p.parent_id = pa.id
       JOIN utilisateurs u ON pa.utilisateur_id = u.id
@@ -375,12 +353,29 @@ export async function GET(request: NextRequest) {
 
     const result = await query(sql, params);
 
-    const rows = result.rows.map(row => ({
-      ...row,
-      frais_statut: row.frais_statut_calcule || row.frais_statut,
-      frais_paye: Number(row.frais_paye_calcule) || 0,
-      frais_montant: Number(row.montant_total_plan) || Number(row.frais_montant) || 0
-    }));
+    // ⭐ Mapper les résultats avec le bon statut UNIQUEMENT à partir des paiements
+    const rows = result.rows.map(row => {
+      const fraisInscription = Number(row.frais_inscription_calcule) || 0;
+      const totalPaye = Number(row.frais_paye_direct) || 0;
+      
+      // ⭐ Déterminer le statut final UNIQUEMENT à partir des paiements
+      let finalStatut = 'non_paye';
+      
+      if (totalPaye >= fraisInscription && fraisInscription > 0) {
+        finalStatut = 'paye';
+      } else if (totalPaye > 0 && totalPaye < fraisInscription) {
+        finalStatut = 'partiel';
+      } else if (fraisInscription === 0) {
+        finalStatut = 'paye';
+      }
+
+      return {
+        ...row,
+        frais_statut: finalStatut,
+        frais_paye: totalPaye,
+        frais_montant: fraisInscription
+      };
+    });
 
     return NextResponse.json(rows);
   } catch (error) {
@@ -412,35 +407,34 @@ export async function PUT(request: NextRequest) {
 
     // Vérifier le paiement si on essaie de valider
     if (statut === "valide") {
-      // ⭐ Vérifier si au moins une échéance d'inscription est payée
-      const echeancesResult = await query(`
-        SELECT COUNT(*) as total, 
-               SUM(CASE WHEN statut = 'paye' THEN 1 ELSE 0 END) as payees
-        FROM echeances_paiement 
-        WHERE preinscription_id = $1 AND type = 'inscription'
+      // ⭐ Vérifier le statut de paiement UNIQUEMENT via paiements
+      const checkResult = await query(`
+        SELECT 
+          p.frais_statut,
+          p.frais_montant,
+          p.classe,
+          COALESCE(
+            (SELECT SUM(montant) 
+             FROM paiements 
+             WHERE preinscription_id = p.id AND statut = 'valide'),
+            0
+          ) as total_paye
+        FROM preinscriptions p
+        WHERE p.id = $1
       `, [id]);
 
-      const totalEcheances = Number(echeancesResult.rows[0]?.total) || 0;
-      const payeesEcheances = Number(echeancesResult.rows[0]?.payees) || 0;
-
-      // ⭐ Au moins une échéance payée pour valider
-      if (totalEcheances > 0 && payeesEcheances === 0) {
-        return NextResponse.json(
-          { error: "❌ Au moins un versement doit être effectué avant la validation" },
-          { status: 400 }
-        );
+      if (checkResult.rows.length === 0) {
+        return NextResponse.json({ error: "Pré-inscription non trouvée" }, { status: 404 });
       }
 
-      // Vérifier le paiement unique (cas sans échéances)
-      const preinscription = await query(
-        "SELECT frais_statut, frais_montant, classe, frais_mode_paiement, frais_reference FROM preinscriptions WHERE id = $1",
-        [id]
-      );
+      const check = checkResult.rows[0];
+      const totalPaye = Number(check.total_paye) || 0;
+      const fraisTotal = Number(check.frais_montant) || 0;
 
-      // Si pas d'échéances, vérifier que le paiement a été effectué
-      if (totalEcheances === 0 && preinscription.rows[0]?.frais_statut !== "paye" && preinscription.rows[0]?.frais_statut !== "partiel") {
+      // ⭐ Vérifier si au moins un paiement a été effectué
+      if (totalPaye === 0 && fraisTotal > 0) {
         return NextResponse.json(
-          { error: "❌ Le paiement des frais est requis avant la validation" },
+          { error: "❌ Aucun paiement n'a été effectué. Veuillez d'abord enregistrer le paiement." },
           { status: 400 }
         );
       }
@@ -526,67 +520,6 @@ export async function PUT(request: NextRequest) {
           VALUES ($1, $2, $3, $4, $5, 'active')
         `, [id, newEleve.rows[0].id, data.parent_id, matricule, anneeScolaire.rows[0]?.id || null]);
 
-        // 7. ⭐ GÉRER LES PAIEMENTS UNIQUEMENT SI PAS DÉJÀ PAYÉS VIA ÉCHÉANCES
-        const echeancesPayees = await query(`
-          SELECT SUM(montant) as total_paye
-          FROM echeances_paiement 
-          WHERE preinscription_id = $1 AND statut = 'paye'
-        `, [id]);
-
-        const totalPayeEcheances = Number(echeancesPayees.rows[0]?.total_paye) || 0;
-
-        // ⭐ On ne crée un paiement que s'il n'y a pas d'échéances
-        if (totalEcheances === 0) {
-          let modePaiementValide = 'especes';
-          if (data.frais_mode_paiement === 'orange_money') {
-            modePaiementValide = 'mobile_money';
-          } else if (data.frais_mode_paiement === 'carte') {
-            modePaiementValide = 'carte';
-          } else if (data.frais_mode_paiement === 'especes') {
-            modePaiementValide = 'especes';
-          }
-
-          const fraisInfo = await query(
-            `SELECT frais_statut FROM preinscriptions WHERE id = $1`,
-            [id]
-          );
-          const fraisStatut = fraisInfo.rows[0]?.frais_statut;
-
-          if (fraisStatut !== 'paye' && fraisStatut !== 'partiel') {
-            const currentYear = new Date().getFullYear();
-            const currentMonth = new Date().getMonth() + 1;
-
-            await query(`
-              INSERT INTO paiements (
-                eleve_id,
-                preinscription_id,
-                montant,
-                type_frais,
-                mode_paiement,
-                reference_transaction,
-                statut,
-                date_paiement,
-                mois,
-                annee,
-                saisie_par
-              )
-              VALUES ($1, $2, $3, $4, $5, $6, 'valide', NOW(), $7, $8, $9)
-            `, [
-              newEleve.rows[0].id,
-              id,
-              montantFrais,
-              'inscription',
-              modePaiementValide,
-              data.frais_reference || null,
-              currentMonth,
-              currentYear,
-              (session.user as any).id
-            ]);
-          }
-        } else {
-          console.log(`✅ Paiements déjà effectués via échéances pour la pré-inscription ${id}: ${totalPayeEcheances} GNF`);
-        }
-
         console.log(`✅ Élève créé: ${data.enfant_prenom} ${data.enfant_nom} (Matricule: ${matricule})`);
 
       } catch (createError) {
@@ -626,7 +559,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// ⭐ DELETE - Supprimer une pré-inscription (même si validée) - NE SUPPRIME PAS LE PARENT
+// DELETE - Supprimer une pré-inscription
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -641,13 +574,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requis" }, { status: 400 });
     }
 
-    // ⭐ Vérifier si la pré-inscription existe
     const checkResult = await query(`
       SELECT 
         p.id, 
         p.statut,
         p.parent_id,
-        -- Récupérer l'ID de l'élève si la pré-inscription a été validée
         (SELECT e.id FROM eleves e 
          JOIN inscriptions i ON i.eleve_id = e.id 
          WHERE i.preinscription_id = p.id 
@@ -663,27 +594,21 @@ export async function DELETE(request: NextRequest) {
     const preinscription = checkResult.rows[0];
     const eleveId = preinscription.eleve_id;
 
-    // Démarrer une transaction
     await query('BEGIN');
 
     try {
-      // ⭐ 1. Si la pré-inscription est validée et a un élève associé, supprimer l'élève et ses données
       if (preinscription.statut === 'valide' && eleveId) {
         console.log(`🗑️ Suppression de l'élève ${eleveId} associé à la pré-inscription ${id}`);
 
-        // Supprimer l'utilisateur élève
         const eleveInfo = await query(`
           SELECT utilisateur_id FROM eleves WHERE id = $1
         `, [eleveId]);
 
         if (eleveInfo.rows.length > 0 && eleveInfo.rows[0].utilisateur_id) {
-          // Supprimer les sessions de l'utilisateur
           await query(`DELETE FROM sessions WHERE utilisateur_id = $1`, [eleveInfo.rows[0].utilisateur_id]);
-          // Supprimer l'utilisateur
           await query(`DELETE FROM utilisateurs WHERE id = $1`, [eleveInfo.rows[0].utilisateur_id]);
         }
 
-        // Supprimer les données liées à l'élève
         await query(`DELETE FROM lien_parent_eleve WHERE eleve_id = $1`, [eleveId]);
         await query(`DELETE FROM paiements WHERE eleve_id = $1`, [eleveId]);
         await query(`DELETE FROM presences WHERE eleve_id = $1`, [eleveId]);
@@ -696,35 +621,26 @@ export async function DELETE(request: NextRequest) {
         await query(`DELETE FROM inscriptions_transport WHERE eleve_id = $1`, [eleveId]);
         await query(`DELETE FROM inscriptions_cantine WHERE eleve_id = $1`, [eleveId]);
         await query(`DELETE FROM ventes_librairie WHERE eleve_id = $1`, [eleveId]);
-
-        // Supprimer l'élève
         await query(`DELETE FROM eleves WHERE id = $1`, [eleveId]);
 
         console.log(`✅ Élève ${eleveId} supprimé`);
       }
 
-      // ⭐ 2. Supprimer toutes les données associées à la pré-inscription
       await query(`DELETE FROM paiements WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM echeances_paiement WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM inscriptions WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM commandes_fournitures WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM preinscription_transport WHERE preinscription_id = $1`, [id]);
       await query(`DELETE FROM preinscription_cantine WHERE preinscription_id = $1`, [id]);
-
-      // ⭐ 3. Supprimer la pré-inscription
       await query(`DELETE FROM preinscriptions WHERE id = $1`, [id]);
-
-      // ⭐ 4. NE PAS SUPPRIMER LE PARENT - On garde le parent même s'il n'a plus d'enfants
-      // Le parent peut avoir d'autres pré-inscriptions ou inscriptions
-      // On ne supprime donc pas la ligne dans la table parents ni l'utilisateur associé
 
       await query('COMMIT');
 
       return NextResponse.json({
         success: true,
         message: preinscription.statut === 'valide'
-          ? "Pré-inscription et élève associé supprimés avec succès (parent conservé)"
-          : "Pré-inscription supprimée avec succès (parent conservé)"
+          ? "Pré-inscription et élève associé supprimés avec succès"
+          : "Pré-inscription supprimée avec succès"
       });
     } catch (error) {
       await query('ROLLBACK');

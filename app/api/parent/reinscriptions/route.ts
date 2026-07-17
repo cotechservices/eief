@@ -4,6 +4,8 @@ import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+// app/api/parent/reinscriptions/route.ts
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -13,7 +15,7 @@ export async function GET() {
 
     const userEmail = session.user?.email;
 
-    // ⭐ Récupérer les réinscriptions avec les frais de réinscription depuis la classe
+    // ⭐ Récupérer les réinscriptions
     const result = await query(`
       SELECT 
         r.id,
@@ -35,7 +37,6 @@ export async function GET() {
         e.matricule,
         c.nom as classe_actuelle_nom,
         a.libelle as annee_scolaire,
-        -- ⭐ Récupérer les frais de réinscription DEPUIS LA CLASSE CHOISIE
         COALESCE(cl.reinscription_total_versement, cl.total_versement, 0) as frais_reinscription_classe,
         COALESCE(cl.reinscription_premier_versement, cl.premier_versement, 0) as premier_versement_classe,
         COALESCE(cl.reinscription_deuxieme_versement, cl.deuxieme_versement, 0) as deuxieme_versement_classe,
@@ -45,15 +46,16 @@ export async function GET() {
       JOIN parents p ON r.parent_id = p.id
       JOIN utilisateurs u_parent ON p.utilisateur_id = u_parent.id
       LEFT JOIN classes c ON e.classe_id = c.id
-      LEFT JOIN classes cl ON r.classe_id = cl.id  -- ⭐ La classe choisie pour la réinscription
+      LEFT JOIN classes cl ON r.classe_id = cl.id
       LEFT JOIN annees_scolaires a ON r.annee_scolaire_id = a.id
       WHERE u_parent.email = $1
       ORDER BY r.date_reinscription DESC
     `, [userEmail]);
 
-    // ⭐ Récupérer les échéances pour chaque réinscription
-    const reinscriptionsWithEcheances = await Promise.all(
+    // ⭐ Récupérer les échéances et paiements pour chaque réinscription
+    const reinscriptionsWithDetails = await Promise.all(
       result.rows.map(async (reinscription) => {
+        // Récupérer les échéances
         const echeances = await query(`
           SELECT 
             id,
@@ -77,82 +79,81 @@ export async function GET() {
               WHEN 'fournitures' THEN 6
             END
         `, [reinscription.id]);
-        
-        // ⭐ Calculer le montant TOTAL de la réinscription
-        // Priorité: 1. frais_reinscription_classe, 2. montant_total_plan, 3. montant_frais
+
+        // ⭐ Récupérer les paiements validés (UNIQUE SOURCE)
+        const paiements = await query(`
+          SELECT 
+            id,
+            montant,
+            type_frais,
+            mode_paiement,
+            date_paiement,
+            reference_transaction,
+            statut
+          FROM paiements
+          WHERE reinscription_id = $1 AND statut = 'valide'
+        `, [reinscription.id]);
+
+        // ⭐ Calculer le montant total
         let montantTotal = Number(reinscription.frais_reinscription_classe) || 0;
-        
-        if (montantTotal === 0) {
-          montantTotal = Number(reinscription.montant_total_plan) || 0;
-        }
-        
-        if (montantTotal === 0) {
-          montantTotal = Number(reinscription.montant_frais) || 0;
-        }
-        
-        // ⭐ Si toujours 0, récupérer depuis la classe de l'élève
-        if (montantTotal === 0 && reinscription.eleve_id) {
-          const classeEleve = await query(`
-            SELECT COALESCE(c.reinscription_total_versement, c.total_versement, 0) as montant
-            FROM eleves e
-            LEFT JOIN classes c ON e.classe_id = c.id
-            WHERE e.id = $1
-          `, [reinscription.eleve_id]);
-          
-          if (classeEleve.rows.length > 0) {
-            montantTotal = Number(classeEleve.rows[0].montant) || 0;
-          }
-        }
-        
-        // ⭐ Calculer le montant total payé pour cette réinscription
-        const totalPaye = echeances.rows
-          .filter((e: any) => e.statut === 'paye')
-          .reduce((sum: number, e: any) => sum + Number(e.montant), 0);
-        
-        // ⭐ Calculer le montant restant
+        if (montantTotal === 0) montantTotal = Number(reinscription.montant_total_plan) || 0;
+        if (montantTotal === 0) montantTotal = Number(reinscription.montant_frais) || 0;
+
+        // ⭐ Calculer le total payé UNIQUEMENT à partir des paiements
+        const totalPaye = paiements.rows.reduce((sum: number, p: any) => sum + Number(p.montant), 0);
+
+        // ⭐ Calculer le restant
         const restant = Math.max(0, montantTotal - totalPaye);
-        
+
         // ⭐ Déterminer le statut de paiement
-        let fraisStatut = reinscription.frais_statut;
+        let fraisStatut = 'non_paye';
         if (montantTotal > 0) {
           if (restant === 0) {
             fraisStatut = 'paye';
           } else if (totalPaye > 0 && restant > 0) {
             fraisStatut = 'partiel';
-          } else {
-            fraisStatut = 'non_paye';
-          }
-          
-          // ⭐ Mettre à jour le statut si nécessaire
-          if (fraisStatut !== reinscription.frais_statut) {
-            await query(`
-              UPDATE reinscriptions SET frais_statut = $1 WHERE id = $2
-            `, [fraisStatut, reinscription.id]);
           }
         }
-        
+
+        // ⭐ Mettre à jour le statut dans la base si différent
+        if (fraisStatut !== reinscription.frais_statut) {
+          await query(`
+            UPDATE reinscriptions 
+            SET frais_statut = $1,
+                montant_restant_plan = $2
+            WHERE id = $3
+          `, [fraisStatut, restant, reinscription.id]);
+        }
+
+        // ⭐ Calculer les montants des services payés
+        const transportPaye = paiements.rows
+          .filter((p: any) => p.type_frais === 'transport')
+          .reduce((sum: number, p: any) => sum + Number(p.montant), 0);
+
+        const cantinePaye = paiements.rows
+          .filter((p: any) => p.type_frais === 'cantine')
+          .reduce((sum: number, p: any) => sum + Number(p.montant), 0);
+
+        const fournituresPaye = paiements.rows
+          .filter((p: any) => p.type_frais === 'fournitures')
+          .reduce((sum: number, p: any) => sum + Number(p.montant), 0);
+
         return {
           ...reinscription,
           echeances: echeances.rows,
+          paiements: paiements.rows,
           montant_total: montantTotal,
           montant_paye: totalPaye,
           montant_restant: restant,
           frais_statut: fraisStatut,
-          // ⭐ Services optionnels
-          transport_montant: echeances.rows
-            .filter((e: any) => e.type === 'transport' && e.statut === 'paye')
-            .reduce((sum: number, e: any) => sum + Number(e.montant), 0),
-          cantine_montant: echeances.rows
-            .filter((e: any) => e.type === 'cantine' && e.statut === 'paye')
-            .reduce((sum: number, e: any) => sum + Number(e.montant), 0),
-          fournitures_montant: echeances.rows
-            .filter((e: any) => e.type === 'fournitures' && e.statut === 'paye')
-            .reduce((sum: number, e: any) => sum + Number(e.montant), 0)
+          transport_montant: transportPaye,
+          cantine_montant: cantinePaye,
+          fournitures_montant: fournituresPaye
         };
       })
     );
 
-    return NextResponse.json(reinscriptionsWithEcheances);
+    return NextResponse.json(reinscriptionsWithDetails);
   } catch (error) {
     console.error("Erreur API Parent Réinscriptions (GET):", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

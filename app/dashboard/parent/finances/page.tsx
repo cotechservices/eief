@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import PaiementPlanModal from "@/components/PaiementPlanModal";
+import PaiementUnifieModal from "@/components/PaiementUnifieModal";
 import ParentStatsCharts from "@/components/ParentStatsCharts";
 
 import {

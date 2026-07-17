@@ -1,4 +1,4 @@
-// app/api/parent/enfants/route.ts - Version corrigée avec frais_reinscription_classe
+// app/api/parent/enfants/route.ts - Version corrigée
 
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
@@ -27,7 +27,7 @@ export async function GET() {
         e.date_naissance,
         e.lieu_naissance,
         c.frais_inscription as frais_inscription_classe,
-        -- ⭐ AJOUT : Frais de réinscription depuis la classe
+        -- ⭐ Frais de réinscription depuis la classe
         COALESCE(c.reinscription_total_versement, c.total_versement, 0) as frais_reinscription_classe,
         COALESCE(e.photo_url, pre.photo_url) as photo_url,
         COALESCE((
@@ -36,11 +36,10 @@ export async function GET() {
           WHERE n.eleve_id = e.id 
           AND n.type_note = 'composition'
         ), 0) as moyenne,
-        -- ⭐ Pour un enfant déjà inscrit, le montant total est le frais_montant de la pré-inscription
-        -- qui inclut déjà tous les services (transport, cantine, fournitures)
-        COALESCE(pre.frais_montant, c.frais_inscription, 0) as montant_total_inscription,
-        -- ⭐ On garde les détails mais on ne les additionne pas pour le total
-        COALESCE(c.frais_inscription, 0) as frais_inscription,
+        -- ⭐ Montant total de l'inscription (pré-inscription)
+        COALESCE(pre.montant_total_plan, c.total_versement, c.frais_inscription, 0) as montant_total_inscription,
+        -- ⭐ Montant des frais de la classe
+        COALESCE(c.total_versement, c.frais_inscription, 0) as frais_inscription,
         COALESCE(
           (SELECT cm.prix_annuel
            FROM cantine_menus cm
@@ -59,29 +58,22 @@ export async function GET() {
            WHERE cf.preinscription_id = pre.id),
           0
         ) as frais_librairie,
-        COALESCE(
-          (SELECT SUM(f.montant) 
-           FROM frais_scolaires f
-           WHERE f.type_frais = 'mensualite' 
-             AND f.annee_scolaire_id = (
-               SELECT id FROM annees_scolaires WHERE est_active = true LIMIT 1
-             )),
-          0
-        ) as frais_scolarite,
-        -- ⭐ FRAIS DÉJÀ PAYÉS : PAIEMENTS DIRECTS + ÉCHÉANCES
+        -- ⭐ FRAIS DÉJÀ PAYÉS : PAIEMENTS DIRECTS
         COALESCE(
           (SELECT SUM(pai.montant) 
            FROM paiements pai
            WHERE pai.eleve_id = e.id AND pai.statut = 'valide'),
           0
-        ) + COALESCE(
+        ) as frais_paye_direct,
+        -- ⭐ FRAIS DÉJÀ PAYÉS : ÉCHÉANCES
+        COALESCE(
           (SELECT SUM(eche.montant) 
            FROM echeances_paiement eche
            JOIN preinscriptions pre2 ON eche.preinscription_id = pre2.id
            JOIN inscriptions i2 ON i2.preinscription_id = pre2.id
            WHERE i2.eleve_id = e.id AND eche.statut = 'paye'),
           0
-        ) as frais_paye
+        ) as frais_paye_echeances
       FROM inscriptions i
       JOIN eleves e ON i.eleve_id = e.id
       JOIN utilisateurs u ON e.utilisateur_id = u.id
@@ -95,47 +87,35 @@ export async function GET() {
 
     // Calculer les totaux pour chaque enfant
     const enfantsAvecFrais = result.rows.map((enfant: any) => {
-      // ⭐ Le total à payer est le montant de la pré-inscription (qui inclut déjà tous les services)
-      const montantTotalInscription = Number(enfant.montant_total_inscription) || 0;
-      const fraisPaye = Number(enfant.frais_paye) || 0;
-
-      // On garde les détails pour affichage mais le total est le montant de l'inscription
-      const fraisInscription = Number(enfant.frais_inscription) || 0;
-      const fraisCantine = Number(enfant.frais_cantine) || 0;
-      const fraisTransport = Number(enfant.frais_transport) || 0;
-      const fraisLibrairie = Number(enfant.frais_librairie) || 0;
-      const fraisScolarite = Number(enfant.frais_scolarite) || 0;
       const fraisReinscriptionClasse = Number(enfant.frais_reinscription_classe) || 0;
+      const montantTotalInscription = Number(enfant.montant_total_inscription) || 0;
+      const fraisPayeDirect = Number(enfant.frais_paye_direct) || 0;
+      const fraisPayeEcheances = Number(enfant.frais_paye_echeances) || 0;
+      const totalPaye = fraisPayeDirect + fraisPayeEcheances;
 
-      // ⭐ Le total est le montant de la pré-inscription (qui inclut déjà tous les services)
-      const totalFrais = montantTotalInscription;
-      const reste = Math.max(0, totalFrais - fraisPaye);
+      // ⭐ Si c'est une réinscription, utiliser les frais de réinscription
+      const totalFrais = fraisReinscriptionClasse > 0 ? fraisReinscriptionClasse : montantTotalInscription;
+      const reste = Math.max(0, totalFrais - totalPaye);
 
-      console.log(` Frais pour ${enfant.prenom} ${enfant.nom}:`, {
-        fraisReinscriptionClasse: fraisReinscriptionClasse,
-        fraisInscriptionClasse: enfant.frais_inscription_classe,
-        montantTotalInscription: montantTotalInscription,
-        fraisInscription: fraisInscription,
-        fraisCantine: fraisCantine,
-        fraisTransport: fraisTransport,
-        fraisLibrairie: fraisLibrairie,
-        fraisScolarite: fraisScolarite,
-        total: totalFrais,
-        paye: fraisPaye,
-        reste: reste
+      console.log(`📊 Frais pour ${enfant.prenom} ${enfant.nom}:`, {
+        fraisReinscriptionClasse,
+        montantTotalInscription,
+        totalFrais,
+        totalPaye,
+        reste
       });
 
       return {
         ...enfant,
-        frais_reinscription_classe: fraisReinscriptionClasse, // ⭐ AJOUTÉ
+        frais_reinscription_classe: fraisReinscriptionClasse,
         details_frais: {
-          inscription: fraisInscription,
-          cantine: fraisCantine,
-          transport: fraisTransport,
-          librairie: fraisLibrairie,
-          scolarite: fraisScolarite,
+          inscription: Number(enfant.frais_inscription) || 0,
+          cantine: Number(enfant.frais_cantine) || 0,
+          transport: Number(enfant.frais_transport) || 0,
+          librairie: Number(enfant.frais_librairie) || 0,
+          scolarite: 0,
           total: totalFrais,
-          paye: fraisPaye,
+          paye: totalPaye,
           reste: reste
         }
       };

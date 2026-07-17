@@ -1,4 +1,5 @@
 // app/dashboard/admin/reinscriptions/page.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -23,9 +24,12 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
-  X
+  X,
+  Plus,
+  RefreshCw
 } from "lucide-react";
-import PaiementModal from "@/components/PaiementPlanModal";
+import ReinscriptionPaiementModal from "@/components/ReinscriptionPaiementModal";
+import AdminReinscriptionModal from "@/components/AdminReinscriptionModal";
 import * as XLSX from 'xlsx';
 
 interface Reinscription {
@@ -51,9 +55,20 @@ interface Reinscription {
   acte_naissance_url: string | null;
   photo_url: string | null;
   bulletin_url: string | null;
+  montant_total_plan?: number;
+  montant_restant_plan?: number;
 }
 
-// ⭐ Interface pour les détails des frais
+interface Eleve {
+  id: number;
+  nom: string;
+  prenom: string;
+  matricule: string;
+  classe_nom: string;
+  niveau: string;
+  photo_url: string | null;
+}
+
 interface DetailsFrais {
   inscription: number;
   cantine: number;
@@ -65,7 +80,6 @@ interface DetailsFrais {
   reste: number;
 }
 
-// ⭐ Interface pour les détails complets de la réinscription
 interface ReinscriptionDetail extends Reinscription {
   details_frais: DetailsFrais;
   echeances_paiement: {
@@ -120,21 +134,25 @@ export default function GestionReinscriptionsPage() {
   const [showPaiementModal, setShowPaiementModal] = useState(false);
   const [paiementReinscription, setPaiementReinscription] = useState<Reinscription | null>(null);
 
-  // ⭐ États pour les détails enrichis
+  // ⭐ États pour le modal de création de réinscription
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedEleve, setSelectedEleve] = useState<Eleve | null>(null);
+  const [eleves, setEleves] = useState<Eleve[]>([]);
+  const [loadingEleves, setLoadingEleves] = useState(false);
+
   const [reinscriptionDetail, setReinscriptionDetail] = useState<ReinscriptionDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  // États pour le modal de confirmation
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [reinscriptionToDelete, setReinscriptionToDelete] = useState<{ id: number; nom: string; prenom: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // État pour les notifications
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const itemsPerPage = 10;
 
-  // Fonction pour ajouter une notification
   const addNotification = (type: Notification["type"], message: string) => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, type, message }]);
@@ -143,14 +161,14 @@ export default function GestionReinscriptionsPage() {
     }, 5000);
   };
 
-  // Fonction pour supprimer une notification
   const removeNotification = (id: number) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   useEffect(() => {
     fetchReinscriptions();
-  }, [selectedStatut]);
+    fetchEleves();
+  }, [refreshTrigger, selectedStatut]);
 
   const fetchReinscriptions = async () => {
     setLoading(true);
@@ -178,7 +196,25 @@ export default function GestionReinscriptionsPage() {
     }
   };
 
-  // ⭐ Fonction pour charger les détails complets d'une réinscription
+  const fetchEleves = async () => {
+    setLoadingEleves(true);
+    try {
+      const response = await fetch("/api/admin/eleves");
+      if (response.ok) {
+        const data = await response.json();
+        setEleves(data);
+      }
+    } catch (error) {
+      console.error("Erreur chargement élèves:", error);
+    } finally {
+      setLoadingEleves(false);
+    }
+  };
+
+  const triggerRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   const loadReinscriptionDetail = async (id: number) => {
     setLoadingDetail(true);
     try {
@@ -216,7 +252,7 @@ export default function GestionReinscriptionsPage() {
       });
 
       if (response.ok) {
-        await fetchReinscriptions();
+        triggerRefresh();
         if (selectedReinscription?.id === reinscriptionToDelete.id) {
           setShowDetailModal(false);
           setSelectedReinscription(null);
@@ -254,7 +290,7 @@ export default function GestionReinscriptionsPage() {
       const data = await response.json();
 
       if (response.ok) {
-        fetchReinscriptions();
+        triggerRefresh();
         setShowDetailModal(false);
         const message = statut === "valide"
           ? "Inscription validée avec succès"
@@ -275,8 +311,26 @@ export default function GestionReinscriptionsPage() {
   };
 
   const handlePaiementSuccess = () => {
-    fetchReinscriptions();
+    if (paiementReinscription) {
+      setReinscriptions(prev => 
+        prev.map(p => 
+          p.id === paiementReinscription.id 
+            ? { ...p, frais_statut: 'paye' } 
+            : p
+        )
+      );
+    }
+    
+    setTimeout(() => {
+      triggerRefresh();
+    }, 300);
+    
     addNotification("success", "Paiement enregistré avec succès");
+  };
+
+  const handleCreateReinscription = (eleve: Eleve) => {
+    setSelectedEleve(eleve);
+    setShowCreateModal(true);
   };
 
   const exportToExcel = () => {
@@ -416,7 +470,7 @@ export default function GestionReinscriptionsPage() {
 
   return (
     <div className="space-y-6 relative">
-      {/* Notifications Toast - inchangé */}
+      {/* Notifications Toast */}
       <div className="fixed top-20 right-4 z-50 space-y-2">
         {notifications.map((notification) => (
           <div
@@ -447,19 +501,28 @@ export default function GestionReinscriptionsPage() {
         ))}
       </div>
 
-      {/* Header - inchangé */}
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-black">Gestion des réinscriptions</h1>
-          <p className="text-gray-900">Gérez les demandes d'inscription, les documents et les paiements</p>
+          <p className="text-gray-900">Gérez les demandes de réinscription</p>
         </div>
-        <button
-          onClick={exportToExcel}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          Exporter Excel
-        </button>
+        <div className="flex gap-3">
+         <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nouvelle réinscription
+          </button>
+          <button
+            onClick={exportToExcel}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Exporter Excel
+          </button>
+        </div>
       </div>
 
       {/* Statistiques - inchangé */}
@@ -551,7 +614,7 @@ export default function GestionReinscriptionsPage() {
         </div>
       </div>
 
-      {/* Tableau - inchangé sauf l'appel à loadReinscriptionDetail */}
+      {/* Tableau - inchangé */}
       {filteredReinscriptions.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
@@ -739,7 +802,7 @@ export default function GestionReinscriptionsPage() {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* En-tête avec photo - inchangé */}
+              {/* En-tête avec photo */}
               <div className="flex items-start gap-6 pb-6 border-b">
                 <div className="flex-shrink-0">
                   {selectedReinscription.photo_url ? (
@@ -767,6 +830,7 @@ export default function GestionReinscriptionsPage() {
                   </div>
                 </div>
               </div>
+
               {/* ⭐ SECTION DÉTAIL DES FRAIS AVEC PLAN DE PAIEMENT */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
@@ -780,68 +844,6 @@ export default function GestionReinscriptionsPage() {
                   </div>
                 ) : reinscriptionDetail?.details_frais ? (
                   <>
-                    {/* ⭐ AFFICHAGE DU PLAN DE PAIEMENT */}
-                    {reinscriptionDetail?.plan_paiement && (
-                      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mb-4">
-                        <h4 className="font-semibold text-indigo-800 mb-3 flex items-center gap-2">
-                          <Wallet className="w-4 h-4" />
-                          Plan de paiement échelonné (Réinscription)
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <div className={`bg-white p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
-                            <p className="text-xs text-gray-500">1er versement</p>
-                            <p className="font-bold text-indigo-600 text-lg">
-                              {reinscriptionDetail.plan_paiement.premier_versement.toLocaleString()} GNF
-                            </p>
-                            {reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
-                                <CheckCircle className="w-3 h-3" /> Payé
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
-                                <Clock className="w-3 h-3" /> En attente
-                              </span>
-                            )}
-                          </div>
-                          <div className={`bg-white p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
-                            <p className="text-xs text-gray-500">2ème versement</p>
-                            <p className="font-bold text-indigo-600 text-lg">
-                              {reinscriptionDetail.plan_paiement.deuxieme_versement.toLocaleString()} GNF
-                            </p>
-                            {reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
-                                <CheckCircle className="w-3 h-3" /> Payé
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
-                                <Clock className="w-3 h-3" /> En attente
-                              </span>
-                            )}
-                          </div>
-                          <div className={`bg-white p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
-                            <p className="text-xs text-gray-500">3ème versement</p>
-                            <p className="font-bold text-indigo-600 text-lg">
-                              {reinscriptionDetail.plan_paiement.troisieme_versement.toLocaleString()} GNF
-                            </p>
-                            {reinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
-                                <CheckCircle className="w-3 h-3" /> Payé
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
-                                <Clock className="w-3 h-3" /> En attente
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="mt-3 text-center">
-                          <p className="text-sm text-gray-600">
-                            Total du plan: <span className="font-bold text-gray-800">{reinscriptionDetail.plan_paiement.total.toLocaleString()} GNF</span>
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
                     {/* ⭐ RÉCAPITULATIF DES FRAIS - AVEC STATUT POUR CHAQUE SERVICE */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                       {/* Frais réinscription */}
@@ -927,57 +929,7 @@ export default function GestionReinscriptionsPage() {
                       </div>
                     </div>
 
-                    {/* ⭐ MESSAGE RÉCAPITULATIF DES SERVICES SÉLECTIONNÉS */}
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-sm font-medium text-gray-700 mb-1">Services sélectionnés :</p>
-                      <div className="flex flex-wrap gap-3 text-sm">
-                        <span className="flex items-center gap-1">
-                          {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'reinscription' && e.statut === 'paye') ? (
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                          ) : (
-                            <Clock className="w-4 h-4 text-yellow-600" />
-                          )}
-                          Réinscription
-                        </span>
-                        {reinscriptionDetail.details_frais.cantine > 0 && (
-                          <span className="flex items-center gap-1">
-                            {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? (
-                              <CheckCircle className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <Clock className="w-4 h-4 text-yellow-600" />
-                            )}
-                            Cantine
-                          </span>
-                        )}
-                        {reinscriptionDetail.details_frais.transport > 0 && (
-                          <span className="flex items-center gap-1">
-                            {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? (
-                              <CheckCircle className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <Clock className="w-4 h-4 text-yellow-600" />
-                            )}
-                            Transport
-                          </span>
-                        )}
-                        {reinscriptionDetail.details_frais.librairie > 0 && (
-                          <span className="flex items-center gap-1">
-                            {reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? (
-                              <CheckCircle className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <Clock className="w-4 h-4 text-yellow-600" />
-                            )}
-                            Fournitures
-                          </span>
-                        )}
-                        {reinscriptionDetail.details_frais.cantine === 0 && 
-                        reinscriptionDetail.details_frais.transport === 0 && 
-                        reinscriptionDetail.details_frais.librairie === 0 && (
-                          <span className="text-gray-500 text-xs italic">Aucun service optionnel</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* SUIVI DES PAIEMENTS - inchangé */}
+                    {/* SUIVI DES PAIEMENTS */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
                       <div>
                         <p className="text-xs text-gray-600">Déjà payé</p>
@@ -1009,7 +961,7 @@ export default function GestionReinscriptionsPage() {
                       </div>
                     </div>
 
-                    {/* BARRE DE PROGRESSION - inchangé */}
+                    {/* BARRE DE PROGRESSION */}
                     {reinscriptionDetail.details_frais.total > 0 && (
                       <div className="mt-3">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
@@ -1036,7 +988,7 @@ export default function GestionReinscriptionsPage() {
                 )}
               </div>
 
-              {/* Observations - inchangé */}
+              {/* Observations */}
               <div>
                 <label className="block text-black mb-2">Observations</label>
                 <textarea
@@ -1049,7 +1001,7 @@ export default function GestionReinscriptionsPage() {
               </div>
             </div>
 
-            {/* Boutons d'action - inchangés */}
+            {/* Boutons d'action */}
             <div className="p-6 border-t bg-gray-50 flex justify-between gap-3">
               {selectedReinscription.statut === "en_attente" && (
                 <div className="flex gap-3">
@@ -1059,21 +1011,31 @@ export default function GestionReinscriptionsPage() {
                   >
                     Rejeter
                   </button>
-                  {selectedReinscription.frais_statut === "paye" ? (
-                    <button
-                      onClick={() => handleUpdateStatut(selectedReinscription.id, "valide")}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                    >
-                      Valider l'inscription
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => { setShowDetailModal(false); handleOpenPaiement(selectedReinscription); }}
-                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-                    >
-                      Enregistrer le paiement
-                    </button>
-                  )}
+                  {(() => {
+                    const auMoinsUnePayee = reinscriptionDetail?.echeances_paiement?.some(
+                      (e: any) => e.type === 'reinscription' && e.statut === 'paye'
+                    ) || false;
+                    
+                    const peutValider = selectedReinscription.frais_statut === 'paye' || 
+                                        selectedReinscription.frais_statut === 'partiel' ||
+                                        auMoinsUnePayee;
+                    
+                    return peutValider ? (
+                      <button
+                        onClick={() => handleUpdateStatut(selectedReinscription.id, "valide")}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                      >
+                        Valider l'inscription
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => { setShowDetailModal(false); handleOpenPaiement(selectedReinscription); }}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                      >
+                        Enregistrer le paiement
+                      </button>
+                    );
+                  })()}
                 </div>
               )}
               <div className="flex gap-3 ml-auto">
@@ -1096,15 +1058,40 @@ export default function GestionReinscriptionsPage() {
         </div>
       )}
 
-      {/* Modal Paiement - inchangé */}
+      {/* Modal Paiement */}
       {showPaiementModal && paiementReinscription && (
-        <PaiementModal
+        <ReinscriptionPaiementModal
           isOpen={showPaiementModal}
-          onClose={() => setShowPaiementModal(false)}
-          onSuccess={handlePaiementSuccess}
+          onClose={() => {
+            setShowPaiementModal(false);
+            setPaiementReinscription(null);
+          }}
+          onSuccess={() => {
+            handlePaiementSuccess();
+            setShowPaiementModal(false);
+            triggerRefresh();
+          }}
+          onPaymentComplete={() => {
+            triggerRefresh();
+          }}
           reinscriptionId={paiementReinscription.id}
           enfantNom={`${paiementReinscription.enfant_prenom} ${paiementReinscription.enfant_nom}`}
-          montantFrais={500000}
+          niveau={paiementReinscription.niveau || "Primaire"}
+        />
+      )}
+
+      {/* ⭐ MODAL DE CRÉATION DE RÉINSCRIPTION */}
+      {showCreateModal && (
+      <AdminReinscriptionModal
+        isOpen={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+        }}
+        onSuccess={() => {
+          triggerRefresh();
+          addNotification("success", "Réinscription créée avec succès");
+          setShowCreateModal(false);
+        }}
         />
       )}
     </div>

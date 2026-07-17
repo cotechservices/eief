@@ -67,6 +67,7 @@ interface Preinscription {
   fournitures_montant: number;
   scolarite_montant: number;
   montant_total: number;
+  montant_restant_plan?: number;
 }
 
 interface Stats {
@@ -155,6 +156,9 @@ export default function ParentDashboard() {
   // État pour les notifications
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // ⭐ AJOUTER UN ÉTAT POUR LE RAFRAÎCHISSEMENT
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   // Fonction pour ajouter une notification
   const addNotification = (type: Notification["type"], message: string) => {
     const id = Date.now();
@@ -169,9 +173,15 @@ export default function ParentDashboard() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  // ⭐ MODIFIER useEffect pour dépendre de refreshTrigger
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [refreshTrigger]);
+
+  // ⭐ FONCTION POUR FORCER LE RAFRAÎCHISSEMENT
+  const triggerRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -271,41 +281,6 @@ export default function ParentDashboard() {
     }
   };
 
-  const handlePaiement = async () => {
-    if (!selectedPreinscription || !modePaiement) return;
-
-    setPaiementLoading(true);
-    try {
-      const response = await fetch("/api/parent/paiement-preinscription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          preinscriptionId: selectedPreinscription.id,
-          modePaiement,
-          reference: reference || null,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        addNotification("success", "Paiement effectué avec succès ! Un email a été envoyé au comptable.");
-        setShowPaiementModal(false);
-        fetchData();
-        setSelectedPreinscription(null);
-        setModePaiement("");
-        setReference("");
-      } else {
-        addNotification("error", data.error || "Erreur lors du paiement");
-      }
-    } catch (error) {
-      console.error("Erreur paiement:", error);
-      addNotification("error", "Erreur lors du paiement");
-    } finally {
-      setPaiementLoading(false);
-    }
-  };
-
   const handleCancelPreinscription = async () => {
     if (!preinscriptionToCancel) return;
 
@@ -321,7 +296,7 @@ export default function ParentDashboard() {
         addNotification("success", `Pré-inscription de ${preinscriptionToCancel.enfant_prenom} ${preinscriptionToCancel.enfant_nom} annulée avec succès`);
         setShowConfirmModal(false);
         setPreinscriptionToCancel(null);
-        fetchData();
+        triggerRefresh(); // ⭐ RAFRAÎCHIR
       } else {
         addNotification("error", data.error || "Erreur lors de l'annulation");
       }
@@ -361,27 +336,10 @@ export default function ParentDashboard() {
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
-  // Dans ParentDashboard, remplacer la section de calcul des statistiques globales
-
-  // CALCUL DES STATISTIQUES GLOBALES 
-
-  // 1. Calcul du total des frais de pré-inscription (inscription + services optionnels)
-  //    Chaque pré-inscription a un montant_total qui inclut déjà tous les services
+  // CALCUL DES STATISTIQUES GLOBALES
   const totalPreinscriptionFrais = preinscriptions.reduce((acc, p) => acc + (Number(p.montant_total) || 0), 0);
-
-  // 2. Les services optionnels sont DÉJÀ inclus dans montant_total
-  //    On ne les additionne pas séparément pour éviter le double comptage
-  const totalCantine = 0;
-  const totalTransport = 0;
-  const totalFournitures = 0;
-
-  // 3. Calcul du total payé pour tous les enfants (paiements direct + échéances)
   const totalPaye = Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.paiements?.total_paye) || 0), 0);
-
-  //  MONTANT À PAYER = Total des pré-inscriptions (inclut tous les services)
   const totalAPayer = totalPreinscriptionFrais;
-
-  //  Solde restant = Montant à payer - Montant payé
   const soldeRestant = Math.max(0, totalAPayer - totalPaye);
 
   const statsGlobales = {
@@ -390,23 +348,13 @@ export default function ParentDashboard() {
     preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
     preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
-
-    //  Montant à payer = Total des pré-inscriptions (inclut tous les services)
     totalAPayer: totalAPayer,
-
-    //  Montant payé = total payé pour tous les enfants
     totalPaye: totalPaye,
-
-    //  Totaux par catégorie (pour affichage)
     totalFraisInscription: totalPreinscriptionFrais,
-    totalTransport: 0, // Déjà inclus dans montant_total
-    totalCantine: 0,   // Déjà inclus dans montant_total
-    totalFournitures: 0, // Déjà inclus dans montant_total
-
-    // Total général des frais
+    totalTransport: 0,
+    totalCantine: 0,
+    totalFournitures: 0,
     totalFraisGeneral: totalPreinscriptionFrais,
-
-    //  Solde restant = Montant à payer - Montant payé
     soldeRestant: soldeRestant,
   };
 
@@ -456,7 +404,7 @@ export default function ParentDashboard() {
         <p className="text-gray-900">Bienvenue dans votre espace de suivi scolaire</p>
       </div>
 
-      {/* STATISTIQUES GLOBALES AVEC LES BONS CALCULS */}
+      {/* STATISTIQUES GLOBALES */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
           <div className="flex items-center gap-2 mb-1"><Users className="w-5 h-5" /><p className="text-sm opacity-90">Enfants inscrits</p></div>
@@ -466,7 +414,6 @@ export default function ParentDashboard() {
           <div className="flex items-center gap-2 mb-1"><FileText className="w-5 h-5" /><p className="text-sm opacity-90">Pré-inscriptions</p></div>
           <p className="text-3xl font-bold">{statsGlobales.totalPreinscriptions}</p>
         </div>
-        {/* MONTANT À PAYER = Total des frais de pré-inscription */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900">
             <CreditCard className="w-5 h-5 text-blue-600" />
@@ -478,34 +425,31 @@ export default function ParentDashboard() {
           <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-green-600" /><p className="text-sm">Montant payé</p></div>
           <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
         </div>
-        {/* CANTINE - Total des frais de cantine pour tous les enfants */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900"><Utensils className="w-5 h-5 text-orange-600" /><p className="text-sm">Cantine</p></div>
           <p className="text-lg font-bold text-orange-600">{statsGlobales.totalCantine.toLocaleString()} GNF</p>
         </div>
-        {/* TRANSPORT - Total des frais de transport pour tous les enfants */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900"><Bus className="w-5 h-5 text-blue-600" /><p className="text-sm">Transport</p></div>
           <p className="text-lg font-bold text-blue-600">{statsGlobales.totalTransport.toLocaleString()} GNF</p>
         </div>
-        {/* FOURNITURES - Total des frais de fournitures pour tous les enfants */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900"><ShoppingCart className="w-5 h-5 text-purple-600" /><p className="text-sm">Fournitures</p></div>
           <p className="text-lg font-bold text-purple-600">{statsGlobales.totalFournitures.toLocaleString()} GNF</p>
         </div>
-        {/* SOLDE RESTANT = Montant à payer - Montant payé */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-red-600" /><p className="text-sm">Solde restant</p></div>
           <p className="text-lg font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
         </div>
       </div>
+
       {/* Section Pré-inscriptions */}
       {preinscriptions.length > 0 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <FileText className="w-5 h-5 text-purple-600" />
-              Mes pinscriptions
+              Mes pré-inscriptions
             </h2>
             <Link
               href="/register"
@@ -549,7 +493,8 @@ export default function ParentDashboard() {
                               }}
                               className="flex-1 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 min-w-[100px]"
                             >
-                              Payer l'inscription
+                              <CreditCard className="w-4 h-4" />
+                              Paiement
                             </button>
                             <button
                               onClick={() => {
@@ -733,7 +678,6 @@ export default function ParentDashboard() {
                   <FileText className="w-5 h-5 text-purple-600" /> Documents joints
                 </h3>
                 <div className="grid md:grid-cols-3 gap-4">
-                  {/* Acte de naissance */}
                   <div className="border rounded-lg p-4 hover:shadow-md transition">
                     <div className="flex items-center gap-2 mb-2">
                       <File className="w-5 h-5 text-blue-600" />
@@ -742,12 +686,7 @@ export default function ParentDashboard() {
                     {(() => {
                       const acteUrl = preinscriptionDetail?.acte_naissance_url || selectedPreinscriptionDetail?.acte_naissance_url;
                       return acteUrl ? (
-                        <a
-                          href={acteUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 text-sm hover:underline flex items-center gap-1"
-                        >
+                        <a href={acteUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
                           Voir le document <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
@@ -755,8 +694,6 @@ export default function ParentDashboard() {
                       );
                     })()}
                   </div>
-
-                  {/* Photo d'identité */}
                   <div className="border rounded-lg p-4 hover:shadow-md transition">
                     <div className="flex items-center gap-2 mb-2">
                       <Image className="w-5 h-5 text-green-600" />
@@ -765,12 +702,7 @@ export default function ParentDashboard() {
                     {(() => {
                       const photoUrl = preinscriptionDetail?.photo_url || selectedPreinscriptionDetail?.photo_url;
                       return photoUrl ? (
-                        <a
-                          href={photoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 text-sm hover:underline flex items-center gap-1"
-                        >
+                        <a href={photoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
                           Voir la photo <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
@@ -778,8 +710,6 @@ export default function ParentDashboard() {
                       );
                     })()}
                   </div>
-
-                  {/* Bulletin scolaire */}
                   <div className="border rounded-lg p-4 hover:shadow-md transition">
                     <div className="flex items-center gap-2 mb-2">
                       <FileText className="w-5 h-5 text-orange-600" />
@@ -788,12 +718,7 @@ export default function ParentDashboard() {
                     {(() => {
                       const bulletinUrl = preinscriptionDetail?.bulletin_url || selectedPreinscriptionDetail?.bulletin_url;
                       return bulletinUrl ? (
-                        <a
-                          href={bulletinUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 text-sm hover:underline flex items-center gap-1"
-                        >
+                        <a href={bulletinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
                           Voir le bulletin <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
@@ -810,7 +735,6 @@ export default function ParentDashboard() {
                   <CreditCard className="w-5 h-5 text-purple-600" />
                   Détail des frais
                 </h3>
-
                 {loadingDetail ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -818,15 +742,12 @@ export default function ParentDashboard() {
                 ) : preinscriptionDetail?.details_frais ? (
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-                      {/* Inscription - TOUJOURS affiché */}
                       <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                         <p className="text-xs text-gray-600">Inscription</p>
                         <p className="font-bold text-blue-600">
                           {preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF
                         </p>
                       </div>
-
-                      {/* ⭐ Cantine - UNIQUEMENT si sélectionnée (montant > 0) */}
                       {preinscriptionDetail.details_frais.cantine > 0 && (
                         <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
                           <p className="text-xs text-gray-600">Cantine</p>
@@ -835,8 +756,6 @@ export default function ParentDashboard() {
                           </p>
                         </div>
                       )}
-
-                      {/* Transport - UNIQUEMENT si sélectionné (montant > 0) */}
                       {preinscriptionDetail.details_frais.transport > 0 && (
                         <div className="bg-green-50 p-3 rounded-lg border border-green-200">
                           <p className="text-xs text-gray-600">Transport</p>
@@ -845,8 +764,6 @@ export default function ParentDashboard() {
                           </p>
                         </div>
                       )}
-
-                      {/* Fournitures - UNIQUEMENT si sélectionnées (montant > 0) */}
                       {preinscriptionDetail.details_frais.librairie > 0 && (
                         <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
                           <p className="text-xs text-gray-600">Fournitures</p>
@@ -855,8 +772,6 @@ export default function ParentDashboard() {
                           </p>
                         </div>
                       )}
-
-                      {/* Scolarité - UNIQUEMENT si > 0 (normalement 0 car déjà incluse) */}
                       {preinscriptionDetail.details_frais.scolarite > 0 && (
                         <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
                           <p className="text-xs text-gray-600">Scolarité</p>
@@ -865,8 +780,6 @@ export default function ParentDashboard() {
                           </p>
                         </div>
                       )}
-
-                      {/* Total - TOUJOURS affiché */}
                       <div className={`bg-gray-100 p-3 rounded-lg border border-gray-300 ${preinscriptionDetail.details_frais.cantine === 0 &&
                         preinscriptionDetail.details_frais.transport === 0 &&
                         preinscriptionDetail.details_frais.librairie === 0 &&
@@ -880,39 +793,32 @@ export default function ParentDashboard() {
                       </div>
                     </div>
 
-                    {/* Message récapitulatif des services sélectionnés */}
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                       <p className="text-sm font-medium text-gray-900 mb-1">Services sélectionnés :</p>
                       <div className="flex flex-wrap gap-3 text-sm">
                         <span className="flex items-center gap-1 text-gray-900">
-                          <CheckCircle className="w-4 h-4 text-blue-600" />
-                          Inscription
+                          <CheckCircle className="w-4 h-4 text-blue-600" /> Inscription
                         </span>
                         {preinscriptionDetail.details_frais.cantine > 0 && (
                           <span className="flex items-center gap-1 text-gray-900">
-                            <CheckCircle className="w-4 h-4 text-pink-600" />
-                            Cantine
+                            <CheckCircle className="w-4 h-4 text-pink-600" /> Cantine
                           </span>
                         )}
                         {preinscriptionDetail.details_frais.transport > 0 && (
                           <span className="flex items-center gap-1 text-gray-900">
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                            Transport
+                            <CheckCircle className="w-4 h-4 text-green-600" /> Transport
                           </span>
                         )}
                         {preinscriptionDetail.details_frais.librairie > 0 && (
                           <span className="flex items-center gap-1 text-gray-900">
-                            <CheckCircle className="w-4 h-4 text-purple-600" />
-                            Fournitures
+                            <CheckCircle className="w-4 h-4 text-purple-600" /> Fournitures
                           </span>
                         )}
                         {preinscriptionDetail.details_frais.scolarite > 0 && (
                           <span className="flex items-center gap-1 text-gray-900">
-                            <CheckCircle className="w-4 h-4 text-orange-600" />
-                            Scolarité
+                            <CheckCircle className="w-4 h-4 text-orange-600" /> Scolarité
                           </span>
                         )}
-                        {/* Si aucun service optionnel n'est sélectionné */}
                         {preinscriptionDetail.details_frais.cantine === 0 &&
                           preinscriptionDetail.details_frais.transport === 0 &&
                           preinscriptionDetail.details_frais.librairie === 0 &&
@@ -922,7 +828,6 @@ export default function ParentDashboard() {
                       </div>
                     </div>
 
-                    {/* Résumé des paiements */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
                       <div>
                         <p className="text-xs text-gray-600">Déjà payé</p>
@@ -954,7 +859,6 @@ export default function ParentDashboard() {
                       </div>
                     </div>
 
-                    {/* Barre de progression */}
                     {preinscriptionDetail.details_frais.total > 0 && (
                       <div className="mt-3">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
@@ -981,7 +885,6 @@ export default function ParentDashboard() {
                 )}
               </div>
 
-              {/* Fermer */}
               <div className="flex justify-end">
                 <button
                   onClick={() => setShowDetailModal(false)}
@@ -1054,7 +957,7 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {/* Modal Paiement */}
+      {/* ⭐ MODAL PAIEMENT AVEC onPaymentComplete */}
       {showPaiementModal && selectedPreinscription && (
         <PaiementPlanModal
           isOpen={showPaiementModal}
@@ -1063,9 +966,10 @@ export default function ParentDashboard() {
             setSelectedPreinscription(null);
           }}
           onSuccess={() => {
-            fetchData();
+            triggerRefresh(); // ⭐ RAFRAÎCHIR
             addNotification("success", "Paiement effectué avec succès !");
           }}
+          onPaymentComplete={triggerRefresh} // ⭐ PROP SUPPLEMENTAIRE
           preinscriptionId={selectedPreinscription.id}
           enfantNom={`${selectedPreinscription.enfant_prenom} ${selectedPreinscription.enfant_nom}`}
           niveau={selectedPreinscription.niveau}

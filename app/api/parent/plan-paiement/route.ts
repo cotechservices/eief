@@ -60,7 +60,7 @@ export async function GET(request: Request) {
         type_inscription: data.type_inscription || 'inscription'
       };
 
-      console.log(` Plan pour la pré-inscription ${preinscriptionId}:`, plan);
+      console.log(`📊 Plan pour la pré-inscription ${preinscriptionId}:`, plan);
 
       // ⭐ Récupérer les services optionnels
       const transport = await query(`
@@ -125,7 +125,7 @@ export async function GET(request: Request) {
       const totalFournitures = Number(fournitures.rows[0]?.total_fournitures) || 0;
       const totalServices = totalTransport + totalCantine + totalFournitures;
 
-      // ⭐ Récupérer les échéances existantes (qui ont maintenant les bons montants)
+      // ⭐ Récupérer les échéances existantes
       const echeancesResult = await query(`
         SELECT 
           id,
@@ -150,17 +150,27 @@ export async function GET(request: Request) {
           END
       `, [preinscriptionId]);
 
-      console.log(` Échéances pour ${preinscriptionId}:`, echeancesResult.rows);
+      console.log(`📋 Échéances pour ${preinscriptionId}:`, echeancesResult.rows);
 
       // ⭐ Filtrer les échéances d'inscription
       const echeancesInscription = echeancesResult.rows.filter(
         (e: any) => e.type === 'inscription'
       );
 
-      // ⭐ Recalculer le montant restant
-      const restantCalcul = echeancesResult.rows
-        .filter((e: any) => e.statut === 'en_attente')
-        .reduce((sum: number, e: any) => sum + Number(e.montant), 0);
+      // ⭐ UNIQUE SOURCE : Calculer le montant restant à partir des paiements UNIQUEMENT
+      const paiementsResult = await query(`
+        SELECT 
+          COALESCE(SUM(montant), 0) as total_paye
+        FROM paiements
+        WHERE preinscription_id = $1 AND statut = 'valide'
+      `, [preinscriptionId]);
+
+      const totalPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
+      const totalInscription = Number(plan.total) || 0;
+      const totalGeneral = totalInscription + totalServices;
+      const restantCalcul = Math.max(0, totalGeneral - totalPaye);
+
+      console.log(`💰 Calcul restant: total=${totalGeneral}, paye=${totalPaye}, restant=${restantCalcul}`);
 
       // ⭐ Mettre à jour le montant restant
       await query(`
@@ -168,6 +178,25 @@ export async function GET(request: Request) {
         SET montant_restant_plan = $1
         WHERE id = $2
       `, [restantCalcul, preinscriptionId]);
+
+      // ⭐ Mettre à jour le statut si nécessaire
+      let nouveauStatut = data.frais_statut || 'non_paye';
+      if (totalGeneral > 0) {
+        if (restantCalcul === 0) {
+          nouveauStatut = 'paye';
+        } else if (totalPaye > 0) {
+          nouveauStatut = 'partiel';
+        }
+      }
+      
+      if (nouveauStatut !== data.frais_statut) {
+        await query(`
+          UPDATE preinscriptions 
+          SET frais_statut = $1
+          WHERE id = $2
+        `, [nouveauStatut, preinscriptionId]);
+        console.log(`✅ Statut mis à jour: ${nouveauStatut}`);
+      }
 
       // ⭐ Construire la réponse
       const response = {
@@ -191,9 +220,11 @@ export async function GET(request: Request) {
           total_services: totalServices
         },
         est_reinscription: data.type_inscription === 'reinscription',
-        est_paye: data.frais_statut === 'paye',
+        est_paye: nouveauStatut === 'paye',
         frais_inscription: Number(data.frais_inscription) || 0,
-        restant_calcule: restantCalcul
+        restant_calcule: restantCalcul,
+        total_paye: totalPaye,
+        total_general: totalGeneral
       };
 
       return NextResponse.json(response);

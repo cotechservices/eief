@@ -1,4 +1,5 @@
 // app/dashboard/admin/preinscriptions/page.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -30,7 +31,6 @@ import {
   Bus,
   Utensils
 } from "lucide-react";
-// ⭐ Remplacer PaiementModal par PaiementPlanModal
 import PaiementPlanModal from "@/components/PaiementPlanModal";
 import * as XLSX from 'xlsx';
 import Link from "next/link";
@@ -112,13 +112,14 @@ export default function GestionPreinscriptionsPage() {
   const [preinscriptionDetail, setPreinscriptionDetail] = useState<PreinscriptionDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  // États pour le modal de confirmation
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [preinscriptionToDelete, setPreinscriptionToDelete] = useState<{ id: number; nom: string; prenom: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // État pour les notifications
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  
+  // ⭐ AJOUTER CET ÉTAT POUR LE RAFRAÎCHISSEMENT
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const itemsPerPage = 10;
 
@@ -134,9 +135,10 @@ export default function GestionPreinscriptionsPage() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  // ⭐ MODIFIER useEffect pour dépendre de refreshTrigger
   useEffect(() => {
     fetchPreinscriptions();
-  }, [selectedStatut]);
+  }, [refreshTrigger, selectedStatut]);
 
   const fetchPreinscriptions = async () => {
     setLoading(true);
@@ -160,6 +162,11 @@ export default function GestionPreinscriptionsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ⭐ FONCTION POUR FORCER LE RAFRAÎCHISSEMENT
+  const triggerRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const loadPreinscriptionDetail = async (id: number) => {
@@ -232,7 +239,7 @@ export default function GestionPreinscriptionsPage() {
       });
       const data = await response.json();
       if (response.ok) {
-        fetchPreinscriptions();
+        triggerRefresh(); // ⭐ RAFRAÎCHIR
         setShowDetailModal(false);
         const message = statut === "valide"
           ? "Inscription validée avec succès"
@@ -252,8 +259,24 @@ export default function GestionPreinscriptionsPage() {
     setShowPaiementModal(true);
   };
 
+  // ⭐ MODIFIER handlePaiementSuccess
   const handlePaiementSuccess = () => {
-    fetchPreinscriptions();
+    // Mise à jour locale immédiate
+    if (paiementPreinscription) {
+      setPreinscriptions(prev => 
+        prev.map(p => 
+          p.id === paiementPreinscription.id 
+            ? { ...p, frais_statut: 'paye' } 
+            : p
+        )
+      );
+    }
+    
+    // ⭐ Rafraîchissement complet après un court délai
+    setTimeout(() => {
+      triggerRefresh();
+    }, 300);
+    
     addNotification("success", "Paiement enregistré avec succès");
   };
 
@@ -625,7 +648,6 @@ export default function GestionPreinscriptionsPage() {
         </div>
       )}
 
-      {/* Modal Détail -*/}
       {/* Modal Détail */}
       {showDetailModal && selectedPreinscription && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -667,7 +689,7 @@ export default function GestionPreinscriptionsPage() {
                 </div>
               </div>
 
-              {/* === SECTION DÉTAIL DES FRAIS AVEC PLAN DE PAIEMENT === */}
+              {/* SECTION DÉTAIL DES FRAIS */}
               <div>
                 <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-purple-600" />
@@ -680,71 +702,9 @@ export default function GestionPreinscriptionsPage() {
                   </div>
                 ) : preinscriptionDetail?.details_frais ? (
                   <>
-                    {/* ⭐ AFFICHAGE DU PLAN DE PAIEMENT */}
-                    {preinscriptionDetail?.plan_paiement && (
-                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
-                        <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                          <Wallet className="w-4 h-4" />
-                          Plan de paiement échelonné ({preinscriptionDetail.plan_paiement.type_inscription || 'inscription'})
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
-                            <p className="text-xs text-gray-500">1er versement</p>
-                            <p className="font-bold text-blue-600 text-lg">
-                              {preinscriptionDetail.plan_paiement.premier_versement.toLocaleString()} GNF
-                            </p>
-                            {preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '1er_versement')?.statut === 'paye' ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
-                                <CheckCircle className="w-3 h-3" /> Payé
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
-                                <Clock className="w-3 h-3" /> En attente
-                              </span>
-                            )}
-                          </div>
-                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
-                            <p className="text-xs text-gray-500">2ème versement</p>
-                            <p className="font-bold text-blue-600 text-lg">
-                              {preinscriptionDetail.plan_paiement.deuxieme_versement.toLocaleString()} GNF
-                            </p>
-                            {preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '2eme_versement')?.statut === 'paye' ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
-                                <CheckCircle className="w-3 h-3" /> Payé
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
-                                <Clock className="w-3 h-3" /> En attente
-                              </span>
-                            )}
-                          </div>
-                          <div className={`bg-white p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
-                            <p className="text-xs text-gray-500">3ème versement</p>
-                            <p className="font-bold text-blue-600 text-lg">
-                              {preinscriptionDetail.plan_paiement.troisieme_versement.toLocaleString()} GNF
-                            </p>
-                            {preinscriptionDetail.echeances_paiement?.find((e: any) => e.echeance === '3eme_versement')?.statut === 'paye' ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-xs mt-1 bg-green-50 px-2 py-0.5 rounded">
-                                <CheckCircle className="w-3 h-3" /> Payé
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-yellow-600 text-xs mt-1 bg-yellow-50 px-2 py-0.5 rounded">
-                                <Clock className="w-3 h-3" /> En attente
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="mt-3 text-center">
-                          <p className="text-sm text-gray-600">
-                            Total du plan: <span className="font-bold text-gray-800">{preinscriptionDetail.plan_paiement.total.toLocaleString()} GNF</span>
-                          </p>
-                        </div>
-                      </div>
-                    )}
 
-                    {/* ⭐ RÉCAPITULATIF DES FRAIS - AVEC STATUT POUR CHAQUE SERVICE */}
+                    {/* RÉCAPITULATIF DES FRAIS */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-                      {/* Inscription */}
                       <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'inscription' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-blue-50'}`}>
                         <p className="text-xs text-gray-600">Inscription</p>
                         <p className="font-bold text-blue-600">
@@ -761,7 +721,6 @@ export default function GestionPreinscriptionsPage() {
                         )}
                       </div>
 
-                      {/* Cantine */}
                       {preinscriptionDetail.details_frais.cantine > 0 && (
                         <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-pink-50'}`}>
                           <p className="text-xs text-gray-600">Cantine</p>
@@ -780,7 +739,6 @@ export default function GestionPreinscriptionsPage() {
                         </div>
                       )}
 
-                      {/* Transport */}
                       {preinscriptionDetail.details_frais.transport > 0 && (
                         <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-green-50'}`}>
                           <p className="text-xs text-gray-600">Transport</p>
@@ -799,7 +757,6 @@ export default function GestionPreinscriptionsPage() {
                         </div>
                       )}
 
-                      {/* Fournitures */}
                       {preinscriptionDetail.details_frais.librairie > 0 && (
                         <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-purple-50'}`}>
                           <p className="text-xs text-gray-600">Fournitures</p>
@@ -818,7 +775,6 @@ export default function GestionPreinscriptionsPage() {
                         </div>
                       )}
 
-                      {/* Scolarité */}
                       {preinscriptionDetail.details_frais.scolarite > 0 && (
                         <div className={`p-3 rounded-lg border ${preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'scolarite' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-orange-50'}`}>
                           <p className="text-xs text-gray-600">Scolarité</p>
@@ -837,7 +793,6 @@ export default function GestionPreinscriptionsPage() {
                         </div>
                       )}
 
-                      {/* Total */}
                       <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
                         <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
                         <p className="font-bold text-gray-800 text-lg">
@@ -846,68 +801,7 @@ export default function GestionPreinscriptionsPage() {
                       </div>
                     </div>
 
-                    {/* ⭐ MESSAGE RÉCAPITULATIF DES SERVICES SÉLECTIONNÉS AVEC STATUT */}
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-sm font-medium text-gray-700 mb-1">Services sélectionnés :</p>
-                      <div className="flex flex-wrap gap-3 text-sm">
-                        <span className="flex items-center gap-1">
-                          {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'inscription' && e.statut === 'paye') ? (
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                          ) : (
-                            <Clock className="w-4 h-4 text-yellow-600" />
-                          )}
-                          Inscription
-                        </span>
-                        {preinscriptionDetail.details_frais.cantine > 0 && (
-                          <span className="flex items-center gap-1">
-                            {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? (
-                              <CheckCircle className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <Clock className="w-4 h-4 text-yellow-600" />
-                            )}
-                            Cantine
-                          </span>
-                        )}
-                        {preinscriptionDetail.details_frais.transport > 0 && (
-                          <span className="flex items-center gap-1">
-                            {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? (
-                              <CheckCircle className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <Clock className="w-4 h-4 text-yellow-600" />
-                            )}
-                            Transport
-                          </span>
-                        )}
-                        {preinscriptionDetail.details_frais.librairie > 0 && (
-                          <span className="flex items-center gap-1">
-                            {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? (
-                              <CheckCircle className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <Clock className="w-4 h-4 text-yellow-600" />
-                            )}
-                            Fournitures
-                          </span>
-                        )}
-                        {preinscriptionDetail.details_frais.scolarite > 0 && (
-                          <span className="flex items-center gap-1">
-                            {preinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'scolarite' && e.statut === 'paye') ? (
-                              <CheckCircle className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <Clock className="w-4 h-4 text-yellow-600" />
-                            )}
-                            Scolarité
-                          </span>
-                        )}
-                        {preinscriptionDetail.details_frais.cantine === 0 && 
-                        preinscriptionDetail.details_frais.transport === 0 && 
-                        preinscriptionDetail.details_frais.librairie === 0 && 
-                        preinscriptionDetail.details_frais.scolarite === 0 && (
-                          <span className="text-gray-500 text-xs italic">Aucun service optionnel</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* SUIVI DES PAIEMENTS - inchangé */}
+                    {/* SUIVI DES PAIEMENTS */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
                       <div>
                         <p className="text-xs text-gray-600">Déjà payé</p>
@@ -939,7 +833,7 @@ export default function GestionPreinscriptionsPage() {
                       </div>
                     </div>
 
-                    {/* BARRE DE PROGRESSION - inchangé */}
+                    {/* BARRE DE PROGRESSION */}
                     {preinscriptionDetail.details_frais.total > 0 && (
                       <div className="mt-3">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
@@ -974,7 +868,7 @@ export default function GestionPreinscriptionsPage() {
             </div>
 
             <div className="p-6 border-t bg-gray-50 flex justify-between gap-3">
-             {selectedPreinscription.statut === "en_attente" && (
+              {selectedPreinscription.statut === "en_attente" && (
                 <div className="flex gap-3">
                   <button onClick={() => handleUpdateStatut(selectedPreinscription.id, "rejete")} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Rejeter</button>
                   {(() => {
@@ -1006,7 +900,8 @@ export default function GestionPreinscriptionsPage() {
           </div>
         </div>
       )}
-      {/* ⭐ MODAL PAIEMENT AVEC PaiementPlanModal */}
+
+      {/* ⭐ MODAL PAIEMENT AVEC PaiementPlanModal ET onPaymentComplete */}
       {showPaiementModal && paiementPreinscription && (
         <PaiementPlanModal
           isOpen={showPaiementModal}
@@ -1017,6 +912,10 @@ export default function GestionPreinscriptionsPage() {
           onSuccess={() => {
             handlePaiementSuccess();
             setShowPaiementModal(false);
+            triggerRefresh(); // ⭐ RAFRAÎCHIR APRÈS PAIEMENT
+          }}
+          onPaymentComplete={() => {
+            triggerRefresh(); // ⭐ PROP SUPPLEMENTAIRE
           }}
           preinscriptionId={paiementPreinscription.id}
           enfantNom={`${paiementPreinscription.enfant_prenom} ${paiementPreinscription.enfant_nom}`}

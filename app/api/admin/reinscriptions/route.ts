@@ -1,9 +1,8 @@
-// app/api/admin/reinscriptions/route.ts - Version complète avec DELETE corrigé
+// app/api/admin/reinscriptions/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import bcrypt from "bcryptjs";
 
 // GET - Récupérer les demandes de réinscription
 export async function GET(request: NextRequest) {
@@ -42,7 +41,7 @@ export async function GET(request: NextRequest) {
             LIMIT 1),
             NULL
           ) as plan_paiement,
-          -- ⭐ Récupérer les échéances de paiement
+          -- ⭐ Récupérer les échéances de paiement (pour affichage uniquement)
           COALESCE(
             (SELECT JSON_AGG(
               JSON_BUILD_OBJECT(
@@ -108,42 +107,50 @@ export async function GET(request: NextRequest) {
         if (service.type === 'fournitures') totalFournitures += Number(service.montant) || 0;
       }
 
-      // ⭐ Calculer les paiements effectués
+      // ⭐ UNIQUE SOURCE : Calculer le total payé UNIQUEMENT depuis paiements
       const paiementsResult = await query(`
         SELECT COALESCE(SUM(montant), 0) as total_paye
-        FROM echeances_paiement
-        WHERE reinscription_id = $1 AND statut = 'paye'
+        FROM paiements
+        WHERE reinscription_id = $1 AND statut = 'valide'
       `, [id]);
-      const fraisPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
-
-      console.log(` Montant payé (via échéances) pour la réinscription ${id}: ${fraisPaye} GNF`);
-
-      // ⭐ Vérifier les échéances payées
-      const echeancesInscription = echeances.filter((e: any) => e.type === 'reinscription');
-      const toutesPayees = echeancesInscription.length > 0 && echeancesInscription.every((e: any) => e.statut === 'paye');
-
-      let fraisStatut = data.frais_statut;
-      if (toutesPayees && fraisStatut !== 'paye') {
-        await query(`
-          UPDATE reinscriptions SET frais_statut = 'paye' WHERE id = $1
-        `, [id]);
-        fraisStatut = 'paye';
-      }
+      const totalPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
 
       // ⭐ Calculer le montant total
       const montantFrais = Number(data.montant_frais) || 0;
       const totalServices = totalTransport + totalCantine + totalFournitures;
       const totalGeneral = montantFrais + totalServices;
-      const reste = Math.max(0, totalGeneral - fraisPaye);
+      const reste = Math.max(0, totalGeneral - totalPaye);
 
-      console.log(" Détails des frais pour réinscription:", {
+      // ⭐ Déterminer le statut de paiement UNIQUEMENT à partir des paiements
+      let fraisStatut = 'non_paye';
+      if (totalGeneral > 0) {
+        if (reste === 0) {
+          fraisStatut = 'paye';
+        } else if (totalPaye > 0) {
+          fraisStatut = 'partiel';
+        }
+      }
+
+      // ⭐ Mettre à jour le statut et le restant dans la base si différent
+      if (fraisStatut !== data.frais_statut || reste !== Number(data.montant_restant_plan)) {
+        await query(`
+          UPDATE reinscriptions 
+          SET frais_statut = $1,
+              montant_restant_plan = $2
+          WHERE id = $3
+        `, [fraisStatut, reste, id]);
+        console.log(`✅ Statut mis à jour: ${fraisStatut}, restant: ${reste} pour la réinscription ${id}`);
+      }
+
+      console.log("📊 Détails des frais pour réinscription (UNIQUEMENT paiements):", {
         inscription: montantFrais,
         transport: totalTransport,
         cantine: totalCantine,
         fournitures: totalFournitures,
         total: totalGeneral,
-        paye: fraisPaye,
-        reste: reste
+        paye: totalPaye,
+        reste: reste,
+        statut: fraisStatut
       });
 
       return NextResponse.json({
@@ -163,7 +170,7 @@ export async function GET(request: NextRequest) {
           librairie: totalFournitures,
           scolarite: 0,
           total: totalGeneral,
-          paye: fraisPaye,
+          paye: totalPaye,
           reste: reste
         }
       });
@@ -197,7 +204,14 @@ export async function GET(request: NextRequest) {
         r.parent_email,
         r.parent_telephone,
         r.montant_total_plan,
-        r.montant_restant_plan
+        r.montant_restant_plan,
+        -- ⭐ UNIQUE SOURCE : Calculer le total payé via paiements UNIQUEMENT
+        COALESCE(
+          (SELECT SUM(montant) 
+           FROM paiements 
+           WHERE reinscription_id = r.id AND statut = 'valide'),
+          0
+        ) as frais_paye_calcule
       FROM reinscriptions r
       WHERE 1=1
     `;
@@ -216,9 +230,265 @@ export async function GET(request: NextRequest) {
     sql += ` ORDER BY r.date_reinscription DESC`;
 
     const result = await query(sql, params);
-    return NextResponse.json(result.rows);
+
+    // ⭐ Mapper les résultats avec le bon statut UNIQUEMENT à partir des paiements
+    const rows = result.rows.map(row => {
+      const montantTotal = Number(row.montant_total_plan) || Number(row.montant_frais) || 0;
+      const totalPaye = Number(row.frais_paye_calcule) || 0;
+      const restant = Math.max(0, montantTotal - totalPaye);
+      
+      let finalStatut = row.frais_statut || 'non_paye';
+      
+      if (restant === 0 && montantTotal > 0) {
+        finalStatut = 'paye';
+      } else if (totalPaye > 0 && restant > 0) {
+        finalStatut = 'partiel';
+      } else if (montantTotal === 0) {
+        finalStatut = 'paye';
+      }
+
+      return {
+        ...row,
+        frais_statut: finalStatut,
+        frais_paye: totalPaye,
+        frais_restant: restant,
+        frais_montant: montantTotal
+      };
+    });
+
+    return NextResponse.json(rows);
   } catch (error) {
     console.error("Erreur API Réinscriptions (GET):", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
+// ⭐ POST - Créer une réinscription par l'admin
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || ((session.user as any).role !== "SUPER_ADMIN" && (session.user as any).role !== "COMPTABLE")) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { 
+      eleveId, 
+      classeId, 
+      montantFrais,
+      transport,
+      cantine,
+      fournitures,
+      montantTransport,
+      montantCantine,
+      montantFournitures
+    } = body;
+
+    if (!eleveId || !classeId) {
+      return NextResponse.json({ error: "ID élève et classe requis" }, { status: 400 });
+    }
+
+    // Récupérer l'ID du parent de l'élève
+    const parentResult = await query(`
+      SELECT lpe.parent_id
+      FROM lien_parent_eleve lpe
+      WHERE lpe.eleve_id = $1
+      LIMIT 1
+    `, [eleveId]);
+
+    if (parentResult.rows.length === 0) {
+      return NextResponse.json({ error: "Aucun parent trouvé pour cet élève" }, { status: 404 });
+    }
+
+    const parentId = parentResult.rows[0].parent_id;
+
+    // Récupérer l'année scolaire active
+    const anneeScolaire = await query(`
+      SELECT id FROM annees_scolaires WHERE est_active = true
+    `);
+
+    // Récupérer les informations de l'élève
+    const eleveInfo = await query(`
+      SELECT 
+        e.id,
+        u.nom as enfant_nom,
+        u.prenom as enfant_prenom,
+        pre.photo_url as photo_url,
+        c.nom as classe_actuelle_nom,
+        c.niveau
+      FROM eleves e
+      JOIN utilisateurs u ON e.utilisateur_id = u.id
+      LEFT JOIN classes c ON e.classe_id = c.id
+      LEFT JOIN inscriptions ins ON e.id = ins.eleve_id
+      LEFT JOIN preinscriptions pre ON ins.preinscription_id = pre.id
+      WHERE e.id = $1
+      ORDER BY ins.id DESC
+      LIMIT 1
+    `, [eleveId]);
+
+    if (eleveInfo.rows.length === 0) {
+      return NextResponse.json({ error: "Élève non trouvé" }, { status: 404 });
+    }
+
+    const info = eleveInfo.rows[0];
+
+    // Récupérer la classe choisie
+    const classeInfo = await query(`
+      SELECT 
+        nom,
+        niveau,
+        reinscription_premier_versement,
+        reinscription_deuxieme_versement,
+        reinscription_troisieme_versement,
+        reinscription_total_versement,
+        total_versement
+      FROM classes 
+      WHERE id = $1
+    `, [classeId]);
+
+    if (classeInfo.rows.length === 0) {
+      return NextResponse.json({ error: "Classe non trouvée" }, { status: 404 });
+    }
+
+    const classe = classeInfo.rows[0];
+    const classeNom = classe.nom;
+
+    // Calculer les frais de réinscription
+    let fraisReinscription = Number(classe.reinscription_total_versement) || Number(classe.total_versement) || montantFrais || 500000;
+
+    // Calculer le total des services
+    const totalServices = (montantTransport || 0) + (montantCantine || 0) + (montantFournitures || 0);
+    const totalGeneral = fraisReinscription + totalServices;
+
+    // Générer un numéro de dossier
+    const currentYear = new Date().getFullYear();
+    const countResult = await query(`
+      SELECT COUNT(*) as count FROM reinscriptions WHERE EXTRACT(YEAR FROM date_reinscription) = $1
+    `, [currentYear]);
+    const count = parseInt(countResult.rows[0].count) + 1;
+    const numeroDossier = `R${currentYear}-${count.toString().padStart(4, '0')}`;
+
+    // Démarrer une transaction
+    await query('BEGIN');
+
+    try {
+      // Créer la réinscription
+      const result = await query(`
+        INSERT INTO reinscriptions (
+          eleve_id, 
+          parent_id, 
+          annee_scolaire_id, 
+          classe_id, 
+          montant_frais, 
+          statut,
+          numero_dossier,
+          enfant_nom,
+          enfant_prenom,
+          classe_nom,
+          photo_url,
+          montant_total_plan,
+          montant_restant_plan,
+          niveau
+        )
+        VALUES ($1, $2, $3, $4, $5, 'en_attente', $6, $7, $8, $9, $10, $11, $12, $13)
+        RETURNING id
+      `, [
+        eleveId,
+        parentId,
+        anneeScolaire.rows[0]?.id || null,
+        classeId,
+        fraisReinscription,
+        numeroDossier,
+        info.enfant_nom,
+        info.enfant_prenom,
+        classeNom,
+        info.photo_url,
+        totalGeneral,
+        totalGeneral,
+        info.niveau || classe.niveau
+      ]);
+
+      const reinscriptionId = result.rows[0].id;
+
+      // Créer les échéances pour la réinscription (3 versements)
+      const premier = Number(classe.reinscription_premier_versement) || Number(classe.premier_versement) || 0;
+      const deuxieme = Number(classe.reinscription_deuxieme_versement) || Number(classe.deuxieme_versement) || 0;
+      const troisieme = Number(classe.reinscription_troisieme_versement) || Number(classe.troisieme_versement) || 0;
+
+      if (premier > 0) {
+        await query(`
+          INSERT INTO echeances_paiement (
+            reinscription_id, type, echeance, montant, date_echeance, statut
+          ) VALUES ($1, 'reinscription', '1er_versement', $2, CURRENT_DATE, 'en_attente')
+        `, [reinscriptionId, premier]);
+      }
+
+      if (deuxieme > 0) {
+        await query(`
+          INSERT INTO echeances_paiement (
+            reinscription_id, type, echeance, montant, date_echeance, statut
+          ) VALUES ($1, 'reinscription', '2eme_versement', $2, DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '6 months', 'en_attente')
+        `, [reinscriptionId, deuxieme]);
+      }
+
+      if (troisieme > 0) {
+        await query(`
+          INSERT INTO echeances_paiement (
+            reinscription_id, type, echeance, montant, date_echeance, statut
+          ) VALUES ($1, 'reinscription', '3eme_versement', $2, DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '8 months', 'en_attente')
+        `, [reinscriptionId, troisieme]);
+      }
+
+      // Créer les échéances pour le transport
+      if (transport && transport.length > 0) {
+        for (const t of transport) {
+          await query(`
+            INSERT INTO echeances_paiement (
+              reinscription_id, type, echeance, montant, date_echeance, statut
+            ) VALUES ($1, 'transport', $2, $3, CURRENT_DATE, 'en_attente')
+          `, [reinscriptionId, t.nom || 'transport', t.prix || 0]);
+        }
+      }
+
+      // Créer les échéances pour la cantine
+      if (cantine && cantine.length > 0) {
+        for (const c of cantine) {
+          await query(`
+            INSERT INTO echeances_paiement (
+              reinscription_id, type, echeance, montant, date_echeance, statut
+            ) VALUES ($1, 'cantine', $2, $3, CURRENT_DATE, 'en_attente')
+          `, [reinscriptionId, c.nom || 'cantine', c.prix || 0]);
+        }
+      }
+
+      // Créer les échéances pour les fournitures
+      if (fournitures && fournitures.length > 0) {
+        for (const f of fournitures) {
+          const montantTotal = (f.quantite || 1) * (f.prix_unitaire || 0);
+          if (montantTotal > 0) {
+            await query(`
+              INSERT INTO echeances_paiement (
+                reinscription_id, type, echeance, montant, date_echeance, statut
+              ) VALUES ($1, 'fournitures', $2, $3, CURRENT_DATE, 'en_attente')
+            `, [reinscriptionId, f.nom || 'fournitures', montantTotal]);
+          }
+        }
+      }
+
+      await query('COMMIT');
+
+      return NextResponse.json({
+        success: true,
+        data: { id: reinscriptionId },
+        message: "Réinscription créée avec succès"
+      });
+
+    } catch (error) {
+      await query('ROLLBACK');
+      throw error;
+    }
+  } catch (error) {
+    console.error("Erreur API Admin Réinscriptions (POST):", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
@@ -234,6 +504,38 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, statut, observations } = body;
 
+    if (statut === "valide") {
+      const checkResult = await query(`
+        SELECT 
+          r.frais_statut,
+          r.montant_total_plan,
+          r.montant_restant_plan,
+          COALESCE(
+            (SELECT SUM(montant) 
+             FROM paiements 
+             WHERE reinscription_id = r.id AND statut = 'valide'),
+            0
+          ) as total_paye
+        FROM reinscriptions r
+        WHERE r.id = $1
+      `, [id]);
+
+      if (checkResult.rows.length === 0) {
+        return NextResponse.json({ error: "Réinscription non trouvée" }, { status: 404 });
+      }
+
+      const check = checkResult.rows[0];
+      const totalPaye = Number(check.total_paye) || 0;
+      const montantTotal = Number(check.montant_total_plan) || Number(check.montant_frais) || 0;
+
+      if (totalPaye === 0 && montantTotal > 0) {
+        return NextResponse.json(
+          { error: "❌ Aucun paiement n'a été effectué. Veuillez d'abord enregistrer le paiement." },
+          { status: 400 }
+        );
+      }
+    }
+
     const result = await query(`
       UPDATE reinscriptions 
       SET statut = $1, observations = $2, date_traitement = NOW()
@@ -245,7 +547,6 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Réinscription non trouvée" }, { status: 404 });
     }
 
-    // Si validé, mettre à jour la classe de l'élève
     if (statut === "valide") {
       const reinscription = result.rows[0];
       if (reinscription.classe_id) {
@@ -264,7 +565,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// ⭐ DELETE - Supprimer une réinscription (avec suppression en cascade)
+// DELETE - Supprimer une réinscription
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -279,7 +580,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID manquant" }, { status: 400 });
     }
 
-    // Vérifier si la réinscription existe
     const checkResult = await query(`
       SELECT r.id, r.enfant_nom, r.enfant_prenom, r.statut
       FROM reinscriptions r
@@ -292,23 +592,19 @@ export async function DELETE(request: NextRequest) {
 
     const reinscription = checkResult.rows[0];
 
-    // Démarrer une transaction
     await query('BEGIN');
 
     try {
-      // 1. Supprimer les paiements associés (via preinscription_id = id)
       await query(`
         DELETE FROM paiements 
-        WHERE preinscription_id = $1
+        WHERE reinscription_id = $1
       `, [id]);
 
-      // 2. Supprimer les échéances de paiement
       await query(`
         DELETE FROM echeances_paiement 
         WHERE reinscription_id = $1
       `, [id]);
 
-      // 3. Supprimer la réinscription
       await query(`
         DELETE FROM reinscriptions 
         WHERE id = $1
