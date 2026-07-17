@@ -956,16 +956,16 @@ export default function ReinscriptionParentPage() {
                         {r.montant_total > 0 && (
                           <div className="text-right mt-1 space-y-0.5">
                             <div className="text-xl text-gray-900">
-                              Total: <span className="font-semibold text-blue-600">{r.montant_total.toLocaleString()} GNF</span>
+                              Total : <span className="font-semibold text-blue-600">{r.montant_total.toLocaleString()} GNF</span>
                             </div>
                             {r.montant_paye > 0 && (
                               <div className="text-xl text-gray-900">
-                                Payé: <span className="font-semibold text-green-600">{r.montant_paye.toLocaleString()} GNF</span>
+                                Payé : <span className="font-semibold text-green-600">{r.montant_paye.toLocaleString()} GNF</span>
                               </div>
                             )}
                             {r.montant_restant > 0 && (
                               <div className="text-xl text-gray-900">
-                                Restant: <span className="font-semibold text-red-600">{r.montant_restant.toLocaleString()} GNF</span>
+                                Restant : <span className="font-semibold text-red-600">{r.montant_restant.toLocaleString()} GNF</span>
                               </div>
                             )}
                             {r.montant_restant === 0 && r.montant_total > 0 && (
