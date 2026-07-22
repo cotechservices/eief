@@ -732,6 +732,9 @@ model personnels {
   date_embauche         DateTime?            @default(dbgenerated("CURRENT_DATE")) @db.Date
   salaire_base          Int?
   carte_personnel_url   String?
+  carte_id_url          String?
+  cv_url                String?
+  certificat_residence_url String?
   statut                String?              @default("actif") @db.VarChar(20)
   departement           String?              @db.VarChar(100)
   prime_mensuelle       Int?                 @default(0)

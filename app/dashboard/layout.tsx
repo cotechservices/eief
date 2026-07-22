@@ -85,7 +85,7 @@ const menuItems = {
     { name: "Leçons", href: "/dashboard/enseignant/lecons", icon: BookOpen },
     { name: "Devoirs", href: "/dashboard/enseignant/devoirs", icon: BookMarked },
     { name: "Évaluations", href: "/dashboard/enseignant/evaluations", icon: GraduationCap },
-    { name: "Emploi", href: "/dashboard/enseignant/emploi", icon: Calendar },
+    // { name: "Emploi", href: "/dashboard/enseignant/emploi", icon: Calendar },
     { name: "Salaire", href: "/dashboard/enseignant/salaire", icon: CreditCard },
     { name: "Messages", href: "/dashboard/enseignant/messages", icon: MessageSquare },
   ],
@@ -105,7 +105,7 @@ const menuItems = {
     { name: "Mes évaluations", href: "/dashboard/eleve/examens", icon: BookOpen },
     { name: "Mes notes", href: "/dashboard/eleve/notes", icon: GraduationCap },
     { name: "Mes bulletins", href: "/dashboard/eleve/bulletins", icon: Calendar },
-    { name: "Emploi", href: "/dashboard/eleve/emploi", icon: Calendar },
+    // { name: "Emploi", href: "/dashboard/eleve/emploi", icon: Calendar },
     { name: "Quiz", href: "/dashboard/eleve/quiz", icon: FileQuestionMark },
   ],
   ADMIN_CANTINE: [

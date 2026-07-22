@@ -28,7 +28,11 @@ export async function GET() {
         COALESCE(p.statut, CASE WHEN u.est_actif THEN 'actif' ELSE 'inactif' END) as statut,
         p.date_embauche as "dateEmbauche",
         p.salaire_base as salaire,
-        COALESCE(p.prime_mensuelle, 0) as prime_mensuelle
+        COALESCE(p.prime_mensuelle, 0) as prime_mensuelle,
+        u.photo_url,
+        p.carte_id_url,
+        p.cv_url,
+        p.certificat_residence_url
       FROM personnels p
       JOIN utilisateurs u ON p.utilisateur_id = u.id
       ORDER BY u.nom ASC, u.prenom ASC
@@ -52,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nom, prenom, email, telephone, adresse, poste, departement, dateEmbauche, salaire, prime_mensuelle, statut } = body;
+    const { nom, prenom, email, telephone, adresse, poste, departement, dateEmbauche, salaire, prime_mensuelle, statut, photo_url, carte_id_url, cv_url, certificat_residence_url } = body;
 
     if (!nom || !prenom || !email) {
       return NextResponse.json({ error: "Champs obligatoires manquants" }, { status: 400 });
@@ -78,10 +82,10 @@ export async function POST(request: NextRequest) {
 
     // 1. Créer l'utilisateur
     const newUser = await query(`
-      INSERT INTO utilisateurs (email, password, prenom, nom, telephone, adresse, role, est_actif)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO utilisateurs (email, password, prenom, nom, telephone, adresse, role, est_actif, photo_url)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id
-    `, [email, hashedPassword, prenom, nom, telephone || null, adresse || null, role, statut === "actif"]);
+    `, [email, hashedPassword, prenom, nom, telephone || null, adresse || null, role, statut === "actif", photo_url || null]);
 
     const userId = newUser.rows[0].id;
 
@@ -91,9 +95,9 @@ export async function POST(request: NextRequest) {
 
     // 2. Créer le personnel (avec statut, departement, prime)
     await query(`
-      INSERT INTO personnels (utilisateur_id, matricule_personnel, type, departement, date_embauche, salaire_base, prime_mensuelle, statut)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    `, [userId, matricule, poste, departement || null, dateEmbauche || new Date().toISOString().split('T')[0], salaire || null, prime_mensuelle || 0, statut || 'actif']);
+      INSERT INTO personnels (utilisateur_id, matricule_personnel, type, departement, date_embauche, salaire_base, prime_mensuelle, statut, carte_id_url, cv_url, certificat_residence_url)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    `, [userId, matricule, poste, departement || null, dateEmbauche || new Date().toISOString().split('T')[0], salaire || null, prime_mensuelle || 0, statut || 'actif', carte_id_url || null, cv_url || null, certificat_residence_url || null]);
 
     return NextResponse.json({ success: true, message: "Agent créé avec succès", matricule });
   } catch (error) {
@@ -111,7 +115,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, nom, prenom, email, telephone, adresse, poste, departement, dateEmbauche, salaire, prime_mensuelle, statut } = body;
+    const { id, nom, prenom, email, telephone, adresse, poste, departement, dateEmbauche, salaire, prime_mensuelle, statut, photo_url, carte_id_url, cv_url, certificat_residence_url } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID requis" }, { status: 400 });
@@ -136,16 +140,16 @@ export async function PUT(request: NextRequest) {
     // Mettre à jour l'utilisateur
     await query(`
       UPDATE utilisateurs 
-      SET email = $1, prenom = $2, nom = $3, telephone = $4, adresse = $5, role = $6, est_actif = $7
+      SET email = $1, prenom = $2, nom = $3, telephone = $4, adresse = $5, role = $6, est_actif = $7, photo_url = $9
       WHERE id = $8
-    `, [email, prenom, nom, telephone || null, adresse || null, role, statut === "actif", utilisateurId]);
+    `, [email, prenom, nom, telephone || null, adresse || null, role, statut === "actif", utilisateurId, photo_url || null]);
 
     // Mettre à jour le personnel (avec departement, prime, statut)
     await query(`
       UPDATE personnels 
-      SET type = $1, departement = $2, date_embauche = $3, salaire_base = $4, prime_mensuelle = $5, statut = $6
+      SET type = $1, departement = $2, date_embauche = $3, salaire_base = $4, prime_mensuelle = $5, statut = $6, carte_id_url = $8, cv_url = $9, certificat_residence_url = $10
       WHERE id = $7
-    `, [poste, departement || null, dateEmbauche || null, salaire || null, prime_mensuelle || 0, statut || 'actif', id]);
+    `, [poste, departement || null, dateEmbauche || null, salaire || null, prime_mensuelle || 0, statut || 'actif', id, carte_id_url || null, cv_url || null, certificat_residence_url || null]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

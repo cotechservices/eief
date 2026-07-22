@@ -33,6 +33,10 @@ interface Personnel {
   prime_mensuelle?: number;
   statut: "actif" | "inactif" | "conge";
   classes_assigned?: ClasseAssignee[];
+  photo_url?: string;
+  carte_id_url?: string;
+  cv_url?: string;
+  certificat_residence_url?: string;
 }
 
 interface Notification {
@@ -90,7 +94,8 @@ export default function GestionPersonnelPage() {
     nom: "", prenom: "", email: "", telephone: "", adresse: "",
     poste: "ENSEIGNANT", departement: "Pédagogie",
     dateEmbauche: new Date().toISOString().split('T')[0],
-    salaire: 0, prime_mensuelle: 0, statut: "actif"
+    salaire: 0, prime_mensuelle: 0, statut: "actif",
+    photo_url: "", carte_id_url: "", cv_url: "", certificat_residence_url: ""
   });
 
   const itemsPerPage = 10;
@@ -131,6 +136,31 @@ export default function GestionPersonnelPage() {
     } catch (error) {
       console.error("Erreur récupération classes assignées:", error);
       return [];
+    }
+  };
+
+  const handleFileUpload = async (file: File, field: string) => {
+    try {
+      showNotification("Téléchargement en cours...", "info");
+      const data = new FormData();
+      data.append("file", file);
+      data.append("enfantId", "personnel_" + (formData.nom || "nouveau"));
+      data.append("type", field);
+      
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: data,
+      });
+      
+      if (res.ok) {
+        const result = await res.json();
+        setFormData(prev => ({ ...prev, [field]: result.url }));
+        showNotification("Fichier uploadé avec succès");
+      } else {
+        showNotification("Erreur lors de l'upload", "error");
+      }
+    } catch (error) {
+      showNotification("Erreur lors de l'upload", "error");
     }
   };
 
@@ -213,7 +243,8 @@ export default function GestionPersonnelPage() {
     nom: "", prenom: "", email: "", telephone: "", adresse: "",
     poste: "ENSEIGNANT", departement: "Pédagogie",
     dateEmbauche: new Date().toISOString().split('T')[0],
-    salaire: 0, prime_mensuelle: 0, statut: "actif"
+    salaire: 0, prime_mensuelle: 0, statut: "actif",
+    photo_url: "", carte_id_url: "", cv_url: "", certificat_residence_url: ""
   });
 
   const openForm = (p: Personnel | null) => {
@@ -227,7 +258,11 @@ export default function GestionPersonnelPage() {
         dateEmbauche: p.dateEmbauche?.split('T')[0] || new Date().toISOString().split('T')[0],
         salaire: p.salaire || 0,
         prime_mensuelle: p.prime_mensuelle || 0,
-        statut: p.statut || "actif"
+        statut: p.statut || "actif",
+        photo_url: p.photo_url || "",
+        carte_id_url: p.carte_id_url || "",
+        cv_url: p.cv_url || "",
+        certificat_residence_url: p.certificat_residence_url || ""
       });
     } else { resetForm(); }
     setShowForm(true);
@@ -723,6 +758,59 @@ export default function GestionPersonnelPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Documents */}
+              <div>
+                <h4 className="font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                  <Download className="w-4 h-4" /> Documents
+                </h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {selectedPersonnel.photo_url ? (
+                    <a href={selectedPersonnel.photo_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition">
+                      <Download className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm font-medium text-blue-600">Photo</span>
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 opacity-50">
+                      <XCircle className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-500">Photo non fournie</span>
+                    </div>
+                  )}
+                  {selectedPersonnel.carte_id_url ? (
+                    <a href={selectedPersonnel.carte_id_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition">
+                      <Download className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm font-medium text-blue-600">Carte d'identité</span>
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 opacity-50">
+                      <XCircle className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-500">Carte d'identité non fournie</span>
+                    </div>
+                  )}
+                  {selectedPersonnel.cv_url ? (
+                    <a href={selectedPersonnel.cv_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition">
+                      <Download className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm font-medium text-blue-600">CV</span>
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 opacity-50">
+                      <XCircle className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-500">CV non fourni</span>
+                    </div>
+                  )}
+                  {selectedPersonnel.certificat_residence_url ? (
+                    <a href={selectedPersonnel.certificat_residence_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition">
+                      <Download className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm font-medium text-blue-600">Certificat de résidence</span>
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 opacity-50">
+                      <XCircle className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-500">Certificat de résidence non fourni</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             
             <div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-end gap-3 sticky bottom-0">
@@ -788,16 +876,34 @@ export default function GestionPersonnelPage() {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Salaire de base (GNF)</label>
-                  <input type="number" min="0" value={formData.salaire} onChange={e => setFormData({ ...formData, salaire: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prime mensuelle (GNF)</label>
-                  <input type="number" min="0" value={formData.prime_mensuelle} onChange={e => setFormData({ ...formData, prime_mensuelle: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Salaire de base (GNF)</label>
+                <div className="relative">
+                  <input 
+                    type="number" 
+                    min="0"
+                    step="1000"
+                    placeholder="Saisir le salaire"
+                    value={formData.salaire || ''} 
+                    onChange={e => {
+                      const value = e.target.value;
+                      setFormData({ 
+                        ...formData, 
+                        salaire: value === '' ? 0 : parseInt(value) || 0 
+                      });
+                    }}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {formData.salaire === 0 && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
+                    </span>
+                  )}
                 </div>
               </div>
+                {/*<div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prime mensuelle (GNF)</label>
+                  <input type="number" min="0" value={formData.prime_mensuelle} onChange={e => setFormData({ ...formData, prime_mensuelle: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>*/}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Date d'embauche</label>
@@ -816,6 +922,57 @@ export default function GestionPersonnelPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
                 <input type="text" value={formData.adresse} onChange={e => setFormData({ ...formData, adresse: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
+
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-medium text-gray-900 mb-4">Documents (Fichiers)</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Photo ID</label>
+                    {formData.photo_url ? (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
+                        <button type="button" onClick={() => setFormData({...formData, photo_url: ""})} className="text-red-500 text-xs hover:underline">Supprimer</button>
+                      </div>
+                    ) : (
+                      <input type="file" accept="image/*" onChange={e => e.target.files && handleFileUpload(e.target.files[0], 'photo_url')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Carte ID / Passeport</label>
+                    {formData.carte_id_url ? (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
+                        <button type="button" onClick={() => setFormData({...formData, carte_id_url: ""})} className="text-red-500 text-xs hover:underline">Supprimer</button>
+                      </div>
+                    ) : (
+                      <input type="file" accept="image/*,.pdf" onChange={e => e.target.files && handleFileUpload(e.target.files[0], 'carte_id_url')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">CV</label>
+                    {formData.cv_url ? (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
+                        <button type="button" onClick={() => setFormData({...formData, cv_url: ""})} className="text-red-500 text-xs hover:underline">Supprimer</button>
+                      </div>
+                    ) : (
+                      <input type="file" accept=".pdf,.doc,.docx" onChange={e => e.target.files && handleFileUpload(e.target.files[0], 'cv_url')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Certificat de résidence (Optionnel)</label>
+                    {formData.certificat_residence_url ? (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
+                        <button type="button" onClick={() => setFormData({...formData, certificat_residence_url: ""})} className="text-red-500 text-xs hover:underline">Supprimer</button>
+                      </div>
+                    ) : (
+                      <input type="file" accept="image/*,.pdf" onChange={e => e.target.files && handleFileUpload(e.target.files[0], 'certificat_residence_url')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {!editingPersonnel && (
                 <div className="bg-blue-50 rounded-lg p-3 text-sm text-blue-700">
                   <strong>Note :</strong> Le mot de passe par défaut sera <code className="bg-blue-100 px-1 rounded">personnel123</code>

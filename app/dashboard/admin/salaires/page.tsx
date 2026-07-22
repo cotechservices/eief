@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import {
   Search, CheckCircle, Clock, CreditCard,
   TrendingUp, Loader2, Printer, AlertCircle,
-  User, Download, ChevronDown, ChevronUp, X,
+  User, Download, X,
   Calendar, Banknote
 } from "lucide-react";
 
@@ -27,9 +27,14 @@ interface Salaire {
   reference_transaction: string | null;
 }
 
+interface Toast {
+  id: number;
+  message: string;
+  type: "success" | "error" | "info";
+}
+
 const MOIS = [
-  "Janvier","Février","Mars","Avril","Mai","Juin",
-  "Juillet","Août","Septembre","Octobre","Novembre","Décembre"
+  "Octobre","Novembre","Décembre","Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre"
 ];
 
 export default function SalairesPage() {
@@ -42,8 +47,236 @@ export default function SalairesPage() {
   const [selectedAgent, setSelectedAgent] = useState<Salaire | null>(null);
   const [modePaiement, setModePaiement] = useState("virement");
   const [submitting, setSubmitting] = useState(false);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  // ⭐ IMPRESSION BULLETIN DE PAIE
+  const printBulletin = (agent: Salaire, mois: string, annee: string) => {
+    const moisLabel = MOIS[parseInt(mois) - 1];
+    const salaireBase = Number(agent.salaire_base || 0);
+    const prime = Number(agent.prime_mensuelle || 0);
+    const total = salaireBase + prime;
+    const datePaiement = agent.date_paiement || new Date().toISOString().split('T')[0];
+    const reference = agent.reference_transaction || `SAL-${annee}${String(mois).padStart(2,'0')}-${agent.matricule}`;
+
+    const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bulletin de Paie - ${agent.employe} - ${moisLabel} ${annee}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #111; background: white; padding: 20px; }
+    .page { max-width: 800px; margin: 0 auto; }
+
+    /* EN-TÊTE */
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1a3c6e; padding-bottom: 14px; margin-bottom: 16px; }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-area img { height: 70px; object-fit: contain; }
+    .school-info h1 { font-size: 17px; font-weight: bold; color: #1a3c6e; }
+    .school-info p { font-size: 10px; color: #555; line-height: 1.5; }
+    .bulletin-title { text-align: right; }
+    .bulletin-title h2 { font-size: 16px; font-weight: bold; color: #1a3c6e; text-transform: uppercase; letter-spacing: 1px; }
+    .bulletin-title .period { font-size: 13px; color: #e05c00; font-weight: bold; margin-top: 4px; }
+    .bulletin-title .ref { font-size: 9px; color: #888; margin-top: 3px; }
+
+    /* INFOS EMPLOYÉ */
+    .employee-section { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .info-box { border: 1px solid #ddd; border-radius: 6px; padding: 10px 14px; }
+    .info-box h3 { font-size: 10px; text-transform: uppercase; color: #1a3c6e; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 8px; letter-spacing: 0.5px; }
+    .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .info-label { color: #666; font-size: 10px; }
+    .info-value { font-weight: bold; font-size: 10px; color: #111; }
+
+    /* TABLEAU SALAIRE */
+    .salary-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    .salary-table thead tr { background-color: #1a3c6e; color: white; }
+    .salary-table thead th { padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .salary-table thead th:last-child, .salary-table thead th:nth-last-child(2) { text-align: right; }
+    .salary-table tbody tr:nth-child(even) { background-color: #f7f9fc; }
+    .salary-table tbody tr:hover { background-color: #edf2ff; }
+    .salary-table tbody td { padding: 7px 10px; border-bottom: 1px solid #e8e8e8; font-size: 10px; }
+    .salary-table tbody td:last-child, .salary-table tbody td:nth-last-child(2) { text-align: right; }
+    .salary-table .cat { color: #1a3c6e; font-style: italic; font-size: 9px; background: #f0f4ff !important; font-weight: bold; }
+    .salary-table tfoot tr { background-color: #1a3c6e; color: white; }
+    .salary-table tfoot td { padding: 9px 10px; font-weight: bold; font-size: 11px; }
+    .salary-table tfoot td:last-child { text-align: right; font-size: 14px; }
+
+    /* NET À PAYER */
+    .net-box { background: linear-gradient(135deg, #1a3c6e, #2563b0); color: white; border-radius: 8px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .net-box .label { font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    .net-box .amount { font-size: 22px; font-weight: bold; }
+    .net-box .currency { font-size: 12px; opacity: 0.8; margin-left: 6px; }
+    .net-box .mode { font-size: 10px; opacity: 0.75; margin-top: 3px; }
+
+    /* SIGNATURES */
+    .signatures { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 10px; }
+    .sig-box { border: 1px solid #ddd; border-radius: 6px; padding: 10px; text-align: center; }
+    .sig-box .sig-title { font-size: 9px; text-transform: uppercase; color: #1a3c6e; font-weight: bold; margin-bottom: 40px; }
+    .sig-box .sig-name { font-size: 9px; color: #555; border-top: 1px solid #ccc; padding-top: 4px; margin-top: 4px; }
+
+    /* FOOTER */
+    .footer { margin-top: 16px; text-align: center; font-size: 9px; color: #999; border-top: 1px solid #eee; padding-top: 8px; }
+    .footer span { color: #1a3c6e; }
+
+    /* WATERMARK si non payé */
+    .unpaid-watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); font-size: 80px; color: rgba(255,0,0,0.07); font-weight: bold; text-transform: uppercase; pointer-events: none; white-space: nowrap; }
+
+    @media print {
+      body { padding: 10px; }
+      .page { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    ${agent.statut !== 'paye' ? '<div class="unpaid-watermark">Brouillon</div>' : ''}
+
+    <!-- EN-TÊTE -->
+    <div class="header">
+      <div class="logo-area">
+        <img src="/img/logo.jpg" alt="Logo EIEF" onerror="this.style.display='none'" />
+        <div class="school-info">
+          <h1>E.I.E.F</h1>
+          <p>École Internationale d'Enseignement Francophone<br>
+          Conakry, République de Guinée<br>
+          Tél: +224 000 000 000</p>
+        </div>
+      </div>
+      <div class="bulletin-title">
+        <h2>Bulletin de Paie</h2>
+        <div class="period">${moisLabel} ${annee}</div>
+        <div class="ref">Réf: ${reference}</div>
+      </div>
+    </div>
+
+    <!-- INFOS EMPLOYÉ & EMPLOYEUR -->
+    <div class="employee-section">
+      <div class="info-box">
+        <h3>🏢 Employeur</h3>
+        <div class="info-row"><span class="info-label">Établissement</span><span class="info-value">E.I.E.F</span></div>
+        <div class="info-row"><span class="info-label">Adresse</span><span class="info-value">Conakry, Guinée</span></div>
+        <div class="info-row"><span class="info-label">N° RCCM</span><span class="info-value">GN-CNK-2024-001</span></div>
+        <div class="info-row"><span class="info-label">Période</span><span class="info-value">${moisLabel} ${annee}</span></div>
+        <div class="info-row"><span class="info-label">Date émission</span><span class="info-value">${new Date().toLocaleDateString('fr-FR')}</span></div>
+      </div>
+      <div class="info-box">
+        <h3>👤 Salarié</h3>
+        <div class="info-row"><span class="info-label">Nom & Prénom</span><span class="info-value">${agent.employe}</span></div>
+        <div class="info-row"><span class="info-label">Matricule</span><span class="info-value">${agent.matricule}</span></div>
+        <div class="info-row"><span class="info-label">Poste</span><span class="info-value">${agent.poste}</span></div>
+        <div class="info-row"><span class="info-label">Département</span><span class="info-value">${agent.departement || '-'}</span></div>
+        <div class="info-row"><span class="info-label">Statut</span><span class="info-value">${agent.statut_agent || 'Actif'}</span></div>
+      </div>
+    </div>
+
+    <!-- TABLEAU DES ÉLÉMENTS DE SALAIRE -->
+    <table class="salary-table">
+      <thead>
+        <tr>
+          <th style="width:50%">Désignation</th>
+          <th>Base / Unité</th>
+          <th>Taux</th>
+          <th>Gains (GNF)</th>
+          <th>Retenues (GNF)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="cat"><td colspan="5">RÉMUNÉRATION DE BASE</td></tr>
+        <tr>
+          <td>Salaire de base</td>
+          <td>Mensuel</td>
+          <td>100%</td>
+          <td>${salaireBase.toLocaleString('fr-FR')}</td>
+          <td>-</td>
+        </tr>
+        ${prime > 0 ? `
+        <tr class="cat"><td colspan="5">PRIMES &amp; AVANTAGES</td></tr>
+        <tr>
+          <td>Prime mensuelle</td>
+          <td>Forfait</td>
+          <td>-</td>
+          <td>${prime.toLocaleString('fr-FR')}</td>
+          <td>-</td>
+        </tr>` : ''}
+        <tr class="cat"><td colspan="5">COTISATIONS &amp; RETENUES</td></tr>
+        <tr>
+          <td>Cotisation CNSS (employé)</td>
+          <td>Salaire brut</td>
+          <td>3.6%</td>
+          <td>-</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <td>Impôt sur le revenu (IR)</td>
+          <td>Salaire imposable</td>
+          <td>-</td>
+          <td>-</td>
+          <td>0</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">TOTAL NET À PAYER</td>
+          <td>${total.toLocaleString('fr-FR')}</td>
+          <td>0</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- NET À PAYER -->
+    <div class="net-box">
+      <div>
+        <div class="label">💰 Net à payer</div>
+        <div class="mode">Mode: ${agent.mode_paiement || 'Virement bancaire'} • ${agent.statut === 'paye' ? '✅ Payé le ' + datePaiement : '⏳ En attente'}</div>
+      </div>
+      <div>
+        <span class="amount">${total.toLocaleString('fr-FR')}</span>
+        <span class="currency">GNF</span>
+      </div>
+    </div>
+
+    <!-- SIGNATURES -->
+    <div class="signatures">
+      <div class="sig-box">
+        <div class="sig-title">Le Salarié</div>
+        <div class="sig-name">${agent.employe}</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-title">Le Comptable</div>
+        <div class="sig-name">Signature &amp; Cachet</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-title">Direction Générale</div>
+        <div class="sig-name">Signature &amp; Cachet</div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <p>Ce bulletin de paie doit être conservé sans limitation de durée — <span>E.I.E.F © ${annee}</span> — Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
+    </div>
+  </div>
+
+  <script>window.onload = function(){ window.print(); }<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    }
+  };
 
   const annees = ["2024", "2025", "2026", "2027"];
+
+  const addToast = (message: string, type: Toast["type"] = "success") => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  };
+
+  const removeToast = (id: number) => setToasts(prev => prev.filter(t => t.id !== id));
 
   const fetchSalaires = async () => {
     setLoading(true);
@@ -78,24 +311,47 @@ export default function SalairesPage() {
           reference_transaction: `SAL-${selectedAnnee}${String(selectedMois).padStart(2,'0')}-${selectedAgent.matricule}`
         })
       });
+
       if (res.ok) {
+        // ✅ Mise à jour optimiste immédiate du statut dans la liste
+        const today = new Date().toISOString().split('T')[0];
+        setSalaires(prev =>
+          prev.map(s =>
+            s.personnel_id === selectedAgent.personnel_id
+              ? { ...s, statut: "paye", date_paiement: today, mode_paiement: modePaiement }
+              : s
+          )
+        );
         setShowModal(false);
+        addToast(`✅ Salaire de ${selectedAgent.employe} payé avec succès ! (${Number(selectedAgent.salaire_total).toLocaleString()} GNF)`, "success");
+        // Rafraîchir les données en arrière-plan
         fetchSalaires();
       } else {
         const data = await res.json();
-        alert(data.error || "Erreur de paiement");
+        addToast(data.error || "❌ Erreur lors du paiement", "error");
       }
-    } catch (e) { console.error(e); }
-    finally { setSubmitting(false); }
+    } catch (e) {
+      console.error(e);
+      addToast("❌ Erreur réseau lors du paiement", "error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handlePayerTous = async () => {
     const nonPayes = filteredSalaires.filter(s => s.statut !== "paye");
-    if (nonPayes.length === 0) { alert("Tous les salaires sont déjà payés ce mois."); return; }
+    if (nonPayes.length === 0) {
+      addToast("ℹ️ Tous les salaires sont déjà payés ce mois.", "info");
+      return;
+    }
     if (!confirm(`Confirmer le paiement en masse de ${nonPayes.length} salaires pour ${MOIS[parseInt(selectedMois)-1]} ${selectedAnnee} ?`)) return;
 
+    addToast(`⏳ Traitement de ${nonPayes.length} paiements en cours...`, "info");
+    let success = 0;
+    let errors = 0;
+
     for (const agent of nonPayes) {
-      await fetch('/api/admin/salaires', {
+      const res = await fetch('/api/admin/salaires', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -107,7 +363,24 @@ export default function SalairesPage() {
           reference_transaction: `SAL-${selectedAnnee}${String(selectedMois).padStart(2,'0')}-${agent.matricule}`
         })
       });
+      if (res.ok) {
+        success++;
+        // Mise à jour optimiste immédiate
+        const today = new Date().toISOString().split('T')[0];
+        setSalaires(prev =>
+          prev.map(s =>
+            s.personnel_id === agent.personnel_id
+              ? { ...s, statut: "paye", date_paiement: today, mode_paiement: 'virement' }
+              : s
+          )
+        );
+      } else {
+        errors++;
+      }
     }
+
+    if (success > 0) addToast(`✅ ${success} salaire(s) payé(s) avec succès !`, "success");
+    if (errors > 0) addToast(`❌ ${errors} paiement(s) ont échoué`, "error");
     fetchSalaires();
   };
 
@@ -126,6 +399,31 @@ export default function SalairesPage() {
 
   return (
     <div className="space-y-6">
+
+      {/* ✅ TOASTS NOTIFICATIONS */}
+      <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
+        {toasts.map(toast => (
+          <div
+            key={toast.id}
+            className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-lg border-l-4 max-w-sm animate-slide-in ${
+              toast.type === "success" ? "bg-green-50 border-green-500 text-green-800" :
+              toast.type === "error"   ? "bg-red-50 border-red-500 text-red-800" :
+              "bg-blue-50 border-blue-500 text-blue-800"
+            }`}
+          >
+            <div className="flex-shrink-0 mt-0.5">
+              {toast.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
+              {toast.type === "error"   && <AlertCircle className="w-5 h-5 text-red-500" />}
+              {toast.type === "info"    && <Clock className="w-5 h-5 text-blue-500" />}
+            </div>
+            <p className="text-sm font-medium flex-1">{toast.message}</p>
+            <button onClick={() => removeToast(toast.id)} className="flex-shrink-0 text-gray-400 hover:text-gray-600">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+
       {/* En-tête */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
@@ -261,9 +559,13 @@ export default function SalairesPage() {
                     </td>
                     <td className="px-6 py-4">
                       {agent.statut === "paye" ? (
-                        <span className="flex items-center gap-1 text-green-600 text-sm"><CheckCircle className="w-4 h-4" /> Payé</span>
+                        <span className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-medium">
+                          <CheckCircle className="w-3.5 h-3.5" /> Payé
+                        </span>
                       ) : (
-                        <span className="flex items-center gap-1 text-yellow-600 text-sm"><Clock className="w-4 h-4" /> Non payé</span>
+                        <span className="inline-flex items-center gap-1.5 bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-medium">
+                          <Clock className="w-3.5 h-3.5" /> Non payé
+                        </span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">{agent.date_paiement || '-'}</td>
@@ -277,7 +579,11 @@ export default function SalairesPage() {
                             Payer
                           </button>
                         )}
-                        <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition" title="Imprimer fiche">
+                        <button
+                          onClick={() => printBulletin(agent, selectedMois, selectedAnnee)}
+                          className="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition"
+                          title="Imprimer bulletin de paie"
+                        >
                           <Printer className="w-4 h-4" />
                         </button>
                       </div>

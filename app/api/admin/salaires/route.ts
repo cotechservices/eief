@@ -102,9 +102,9 @@ export async function POST(request: NextRequest) {
     }
 
     await query(`
-      INSERT INTO paiements_salaires (personnel_id, mois, annee, montant, statut, mode_paiement, reference_transaction, saisi_par)
-      VALUES ($1, $2, $3, $4, 'paye', $5, $6, $7)
-    `, [personnel_id, mois, annee, montant, mode_paiement || 'virement', reference_transaction || null, userId || null]);
+      INSERT INTO paiements_salaires (personnel_id, mois, annee, montant, statut, mode_paiement, reference_transaction)
+      VALUES ($1, $2, $3, $4, 'paye', $5, $6)
+    `, [personnel_id, mois, annee, montant, mode_paiement || 'virement', reference_transaction || null]);
 
     return NextResponse.json({ success: true, message: "Salaire enregistré avec succès" });
   } catch (error) {
