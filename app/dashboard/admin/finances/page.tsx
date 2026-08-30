@@ -47,7 +47,7 @@ export default function FinancesPage() {
   const [searchDepense, setSearchDepense] = useState("");
   const [filterMois, setFilterMois] = useState("");
   const [filterAnnee, setFilterAnnee] = useState(new Date().getFullYear().toString());
-  
+
   // ⭐ États pour les remises familles nombreuses
   const [remisesParents, setRemisesParents] = useState<any[]>([]);
   const [loadingRemises, setLoadingRemises] = useState(false);
@@ -76,7 +76,7 @@ export default function FinancesPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => { fetchDashboard(); }, []);
-  useEffect(() => { 
+  useEffect(() => {
     if (activeTab === "depenses") fetchDepenses();
     if (activeTab === "remises") fetchRemises();
     if (activeTab === "recus") fetchRecusAdmin();
@@ -213,11 +213,11 @@ export default function FinancesPage() {
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Comptabilité & Finances</h1>
-          <p className="text-gray-500 text-sm mt-1">Rentrées et sorties de caisse • Gestion financière</p>
+          <p className="text-gray-900 text-sm mt-1">Rentrées et sorties de caisse • Gestion financière</p>
         </div>
         <div className="flex gap-3">
           <button onClick={fetchDashboard} className="p-2 border rounded-lg hover:bg-gray-50 transition" title="Rafraîchir">
-            <RefreshCw className="w-4 h-4 text-gray-500" />
+            <RefreshCw className="w-4 h-4 text-gray-900" />
           </button>
           <button
             onClick={() => setShowDepenseForm(true)}
@@ -289,7 +289,7 @@ export default function FinancesPage() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition ${activeTab === tab.id
                   ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-gray-900 hover:text-gray-700'
                   }`}
               >
                 {tab.label}
@@ -312,7 +312,7 @@ export default function FinancesPage() {
                     return (
                       <div key={idx}>
                         <div className="flex items-center gap-3 mb-1">
-                          <span className="text-xs text-gray-500 w-16 shrink-0">{item.mois}</span>
+                          <span className="text-xs text-gray-900 w-16 shrink-0">{item.mois}</span>
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2">
                               <div className="w-full bg-gray-100 rounded-full h-3 relative overflow-hidden">
@@ -337,9 +337,9 @@ export default function FinancesPage() {
                       </div>
                     );
                   })}
-                  <div className="flex gap-4 text-xs mt-2">
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-400 inline-block"></span> Recettes</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-400 inline-block"></span> Dépenses</span>
+                  <div className="flex gap-4 text-xs mt-2 text-gray-900">
+                    <span className="flex items-center gap-1"><span className="text-gray-900 w-3 h-3 rounded-full bg-green-400 inline-block"></span> Recettes</span>
+                    <span className="flex items-center gap-1"><span className="text-gray-900 w-3 h-3 rounded-full bg-red-400 inline-block"></span> Dépenses</span>
                   </div>
                 </div>
               </div>
@@ -347,15 +347,15 @@ export default function FinancesPage() {
               {/* Mois en cours */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-green-50 rounded-xl p-4 border border-green-100">
-                  <p className="text-xs text-green-700 font-medium">Recettes ce mois</p>
+                  <p className="text-xs text-green-700 font-medium">Recettes de ce mois</p>
                   <p className="text-xl font-bold text-green-800 mt-1">{stats.recettesMois?.toLocaleString() || 0} GNF</p>
                 </div>
                 <div className="bg-red-50 rounded-xl p-4 border border-red-100">
-                  <p className="text-xs text-red-700 font-medium">Dépenses ce mois</p>
+                  <p className="text-xs text-red-700 font-medium">Dépenses de ce mois</p>
                   <p className="text-xl font-bold text-red-800 mt-1">{stats.depensesMois?.toLocaleString() || 0} GNF</p>
                 </div>
                 <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
-                  <p className="text-xs text-orange-700 font-medium">Masse salariale ce mois</p>
+                  <p className="text-xs text-orange-700 font-medium">Masse salariale de ce mois</p>
                   <p className="text-xl font-bold text-orange-800 mt-1">{stats.masseSalarialeMois?.toLocaleString() || 0} GNF</p>
                 </div>
               </div>
@@ -368,7 +368,7 @@ export default function FinancesPage() {
               <h3 className="font-semibold text-gray-700">Répartition des recettes par catégorie</h3>
               <div className="space-y-3">
                 {categoriesRecettes?.length === 0 ? (
-                  <p className="text-gray-400 text-sm">Aucune recette enregistrée.</p>
+                  <p className="text-gray-900 text-sm">Aucune recette enregistrée.</p>
                 ) : categoriesRecettes?.map((cat: any, idx: number) => {
                   const Icon = getIconForCategory(cat.name);
                   return (
@@ -397,22 +397,22 @@ export default function FinancesPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 border-b">
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Élève</th>
-                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Classe</th>
-                        <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Montant</th>
-                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Type</th>
-                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
-                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Statut</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Élève</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Classe</th>
+                        <th className="px-4 py-2 text-right text-xs font-semibold text-gray-900 uppercase">Montant</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Type</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Date</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Statut</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {derniersPaiements?.map((p: any) => (
-                        <tr key={p.id} className="hover:bg-gray-50">
+                        <tr key={p.id} className="hover:bg-gray-50 text-gray-900">
                           <td className="px-4 py-3 font-medium">{p.eleve}</td>
-                          <td className="px-4 py-3 text-gray-500">{p.classe}</td>
+                          <td className="px-4 py-3 text-gray-900">{p.classe}</td>
                           <td className="px-4 py-3 text-right font-semibold">{p.montant?.toLocaleString()} GNF</td>
                           <td className="px-4 py-3"><span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">{p.type}</span></td>
-                          <td className="px-4 py-3 text-gray-500">{p.date}</td>
+                          <td className="px-4 py-3 text-gray-900">{p.date}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs flex items-center gap-1 ${p.statut === 'valide' ? 'text-green-600' : 'text-yellow-600'}`}>
                               {p.statut === 'valide' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
@@ -422,7 +422,7 @@ export default function FinancesPage() {
                         </tr>
                       ))}
                       {!derniersPaiements?.length && (
-                        <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Aucun paiement récent</td></tr>
+                        <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-900">Aucun paiement récent</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -439,7 +439,7 @@ export default function FinancesPage() {
                   <select
                     value={filterMois}
                     onChange={e => setFilterMois(e.target.value)}
-                    className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="text-gray-900 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Tous les mois</option>
                     {MOIS_NOMS.map((m, i) => <option key={i + 1} value={String(i + 1)}>{m}</option>)}
@@ -447,18 +447,18 @@ export default function FinancesPage() {
                   <select
                     value={filterAnnee}
                     onChange={e => setFilterAnnee(e.target.value)}
-                    className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="text-gray-900 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {["2024", "2025", "2026", "2027"].map(a => <option key={a} value={a}>{a}</option>)}
                   </select>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Search className="text-gray-900 absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
                     <input
                       type="text"
                       placeholder="Rechercher..."
                       value={searchDepense}
                       onChange={e => setSearchDepense(e.target.value)}
-                      className="pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="text-gray-900 pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -483,7 +483,7 @@ export default function FinancesPage() {
                         <div className="bg-red-500 h-1.5 rounded-full" style={{ width: `${cat.pourcentage}%` }} />
                       </div>
                     </div>
-                    <span className="text-xs text-gray-400 shrink-0">{cat.pourcentage}%</span>
+                    <span className="text-xs text-gray-900 shrink-0">{cat.pourcentage}%</span>
                   </div>
                 ))}
               </div>
@@ -493,11 +493,11 @@ export default function FinancesPage() {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Catégorie</th>
-                      <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Montant</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Description</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Saisi par</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Catégorie</th>
+                      <th className="px-4 py-2 text-right text-xs font-semibold text-gray-900 uppercase">Montant</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Description</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Date</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Saisi par</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -507,15 +507,15 @@ export default function FinancesPage() {
                           <span className="text-xs bg-red-50 text-red-700 px-2 py-1 rounded-full">{d.categorie}</span>
                         </td>
                         <td className="px-4 py-3 text-right font-semibold text-red-600">{Number(d.montant).toLocaleString()} GNF</td>
-                        <td className="px-4 py-3 text-gray-500">{d.description || '-'}</td>
-                        <td className="px-4 py-3 text-gray-500">
+                        <td className="px-4 py-3 text-gray-900">{d.description || '-'}</td>
+                        <td className="px-4 py-3 text-gray-900">
                           {d.date_depense ? new Date(d.date_depense).toLocaleDateString('fr-FR') : '-'}
                         </td>
-                        <td className="px-4 py-3 text-gray-500">{d.saisi_par_nom}</td>
+                        <td className="px-4 py-3 text-gray-900">{d.saisi_par_nom}</td>
                       </tr>
                     ))}
                     {filteredDepenses.length === 0 && (
-                      <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Aucune dépense trouvée</td></tr>
+                      <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-900">Aucune dépense trouvée</td></tr>
                     )}
                   </tbody>
                   {filteredDepenses.length > 0 && (
@@ -535,52 +535,52 @@ export default function FinancesPage() {
           )}
           {/* === JOURNAL === */}
           {activeTab === "journal" && (
-              <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-700">Journal de caisse (Recettes + Dépenses)</h3>
-                  <p className="text-sm text-gray-500">Résumé de tous les mouvements de caisse.</p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-green-50 border border-green-100 rounded-xl p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                              <ArrowUpCircle className="w-5 h-5 text-green-600" />
-                              <span className="font-medium text-green-700">Total entrées</span>
-                          </div>
-                          <p className="text-2xl font-bold text-green-800">{stats.totalRecettes?.toLocaleString()} GNF</p>
-                      </div>
-                      <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                              <ArrowDownCircle className="w-5 h-5 text-red-600" />
-                              <span className="font-medium text-red-700">Total sorties</span>
-                          </div>
-                          <p className="text-2xl font-bold text-red-800">{stats.totalDepenses?.toLocaleString()} GNF</p>
-                      </div>
-                      <div className={`${stats.solde >= 0 ? 'bg-blue-50 border-blue-100' : 'bg-gray-50 border-gray-100'} border rounded-xl p-4`}>
-                          <div className="flex items-center gap-2 mb-2">
-                              <Wallet className={`w-5 h-5 ${stats.solde >= 0 ? 'text-blue-600' : 'text-gray-600'}`} />
-                              <span className={`font-medium ${stats.solde >= 0 ? 'text-blue-700' : 'text-gray-700'}`}>Solde net</span>
-                          </div>
-                          <p className={`text-2xl font-bold ${stats.solde >= 0 ? 'text-blue-800' : 'text-gray-800'}`}>{stats.solde?.toLocaleString()} GNF</p>
-                      </div>
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-700">Journal de caisse (Recettes + Dépenses)</h3>
+              <p className="text-sm text-gray-900">Résumé de tous les mouvements de caisse.</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ArrowUpCircle className="w-5 h-5 text-green-600" />
+                    <span className="font-medium text-green-700">Total entrées</span>
                   </div>
-                  <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-100">
-                      <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-yellow-600" />
-                          <span className="text-sm font-medium text-yellow-700">Encours impayés : {stats.encours?.toLocaleString()} GNF</span>
-                      </div>
-                      <p className="text-xs text-yellow-600 mt-1">Paiements en attente de validation</p>
+                  <p className="text-2xl font-bold text-green-800">{stats.totalRecettes?.toLocaleString()} GNF</p>
+                </div>
+                <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ArrowDownCircle className="w-5 h-5 text-red-600" />
+                    <span className="font-medium text-red-700">Total sorties</span>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                      <div className="rounded-lg border p-4">
-                          <h4 className="font-semibold text-sm text-gray-700 mb-3">Personnel actif</h4>
-                          <p className="text-3xl font-bold text-gray-900">{stats.nombrePersonnel}</p>
-                          <p className="text-xs text-gray-400">agents</p>
-                      </div>
-                      <div className="rounded-lg border p-4">
-                          <h4 className="font-semibold text-sm text-gray-700 mb-3">Élèves inscrits</h4>
-                          <p className="text-3xl font-bold text-gray-900">{stats.nombreEleves}</p>
-                          <p className="text-xs text-gray-400">élèves</p>
-                      </div>
+                  <p className="text-2xl font-bold text-red-800">{stats.totalDepenses?.toLocaleString()} GNF</p>
+                </div>
+                <div className={`${stats.solde >= 0 ? 'bg-blue-50 border-blue-100' : 'bg-gray-50 border-gray-100'} border rounded-xl p-4`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Wallet className={`w-5 h-5 ${stats.solde >= 0 ? 'text-blue-600' : 'text-gray-600'}`} />
+                    <span className={`font-medium ${stats.solde >= 0 ? 'text-blue-700' : 'text-gray-700'}`}>Solde net</span>
                   </div>
+                  <p className={`text-2xl font-bold ${stats.solde >= 0 ? 'text-blue-800' : 'text-gray-800'}`}>{stats.solde?.toLocaleString()} GNF</p>
+                </div>
               </div>
+              <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-100">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-700">Encours impayés : {stats.encours?.toLocaleString()} GNF</span>
+                </div>
+                <p className="text-xs text-yellow-600 mt-1">Paiements en attente de validation</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="rounded-lg border p-4">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-3">Personnel actif</h4>
+                  <p className="text-3xl font-bold text-gray-900">{stats.nombrePersonnel}</p>
+                  <p className="text-xs text-gray-900">agents</p>
+                </div>
+                <div className="rounded-lg border p-4">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-3">Élèves inscrits</h4>
+                  <p className="text-3xl font-bold text-gray-900">{stats.nombreEleves}</p>
+                  <p className="text-xs text-gray-900">élèves</p>
+                </div>
+              </div>
+            </div>
           )}
           {/* === REMISES FAMILLES NOMBREUSES === */}
           {activeTab === "remises" && (
@@ -618,18 +618,17 @@ export default function FinancesPage() {
                     <button
                       key={f.count}
                       onClick={() => setFilterMinEnfants(f.count)}
-                      className={`px-3 py-1.5 rounded-lg border transition ${
-                        filterMinEnfants === f.count
-                          ? "bg-indigo-600 text-white border-indigo-600 font-bold shadow-sm"
-                          : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg border transition ${filterMinEnfants === f.count
+                        ? "bg-indigo-600 text-white border-indigo-600 font-bold shadow-sm"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                        }`}
                     >
                       {f.label}
                     </button>
                   ))}
                 </div>
                 <div className="relative flex-1 min-w-[240px]">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
                     type="text"
                     placeholder="Rechercher un parent par nom, prénom ou email..."
@@ -648,7 +647,7 @@ export default function FinancesPage() {
                 <div className="border rounded-xl overflow-hidden shadow-sm">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <tr className="bg-gray-50 border-b text-xs font-semibold text-gray-900 uppercase tracking-wider">
                         <th className="p-4">Parent</th>
                         <th className="p-4">Contact</th>
                         <th className="p-4 text-center">Enfants inscrits</th>
@@ -668,16 +667,15 @@ export default function FinancesPage() {
                             </td>
                             <td className="p-4 text-xs text-gray-600">
                               <div>{p.email}</div>
-                              <div className="text-gray-400">{p.telephone}</div>
+                              <div className="text-gray-900">{p.telephone}</div>
                             </td>
                             <td className="p-4 text-center">
-                              <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                                p.nb_enfants >= 3 
-                                  ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                                  : p.nb_enfants === 2
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${p.nb_enfants >= 3
+                                ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                                : p.nb_enfants === 2
                                   ? 'bg-blue-100 text-blue-700'
                                   : 'bg-gray-100 text-gray-600'
-                              }`}>
+                                }`}>
                                 {p.nb_enfants} {p.nb_enfants > 1 ? 'enfants' : 'enfant'}
                               </span>
                             </td>
@@ -709,7 +707,7 @@ export default function FinancesPage() {
                     </tbody>
                   </table>
                   {remisesParents.length === 0 && (
-                    <div className="p-8 text-center text-gray-500 text-sm">
+                    <div className="p-8 text-center text-gray-900 text-sm">
                       Aucun parent trouvé.
                     </div>
                   )}
@@ -718,114 +716,114 @@ export default function FinancesPage() {
             </div>
           )}
           {/* === REÇUS === */}
-        {activeTab === "recus" && (
-          <div className="space-y-6">
-            {/* En-tête avec lien vers la nouvelle vue */}
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                  <Receipt className="w-5 h-5 text-blue-600" />
-                  Reçus par Parent
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Consultez tous les reçus regroupés par famille
-                </p>
-              </div>
-              <Link
-                href="/dashboard/admin/finances/recus"
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm"
-              >
-                <Eye className="w-4 h-4" />
-                Voir tous les parents
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Mini résumé avec accès rapide */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Nouvelle vue disponible</p>
-                    <p className="font-semibold text-gray-800">
-                      Consultez tous les reçus regroupés par parent/famille
-                    </p>
-                  </div>
+          {activeTab === "recus" && (
+            <div className="space-y-6">
+              {/* En-tête avec lien vers la nouvelle vue */}
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                    <Receipt className="w-5 h-5 text-blue-600" />
+                    Reçus par Parent
+                  </h3>
+                  <p className="text-sm text-gray-900 mt-1">
+                    Consultez tous les reçus regroupés par famille
+                  </p>
                 </div>
                 <Link
                   href="/dashboard/admin/finances/recus"
-                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium text-sm whitespace-nowrap shadow-md"
+                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm"
                 >
-                  <Receipt className="w-4 h-4" />
-                  Accéder aux reçus par parent
+                  <Eye className="w-4 h-4" />
+                  Voir tous les parents
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
-            </div>
 
-            {/* Derniers reçus (aperçu) */}
-            <div>
-              <h4 className="font-semibold text-gray-700 mb-3">📋 Derniers reçus émis</h4>
-              <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">N° Reçu</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Parent</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Élève</th>
-                      <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Montant</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
-                      <th className="px-4 py-2 text-center text-xs font-semibold text-gray-500 uppercase">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {recusAdmin.slice(0, 5).map((recu, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                            {recu.numero_recu}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-medium">{recu.parent_nom || '—'}</td>
-                        <td className="px-4 py-3">{recu.enfant}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-green-600">
-                          {Number(recu.montant).toLocaleString()} GNF
-                        </td>
-                        <td className="px-4 py-3 text-gray-500">
-                          {recu.date_paiement ? new Date(recu.date_paiement).toLocaleDateString('fr-FR') : '-'}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => {
-                              setSelectedRecu({
-                                ...recu,
-                                source: recu.source || 'paiement'
-                              });
-                            }}
-                            className="text-blue-600 hover:text-blue-800 text-xs font-medium"
-                          >
-                            <Printer className="w-4 h-4 inline mr-1" />
-                            Imprimer
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {recusAdmin.length === 0 && (
+              {/* Mini résumé avec accès rapide */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Nouvelle vue disponible</p>
+                      <p className="font-semibold text-gray-800">
+                        Consultez tous les reçus regroupés par parent/famille
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/dashboard/admin/finances/recus"
+                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium text-sm whitespace-nowrap shadow-md"
+                  >
+                    <Receipt className="w-4 h-4" />
+                    Accéder aux reçus par parent
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Derniers reçus (aperçu) */}
+              <div>
+                <h4 className="font-semibold text-gray-700 mb-3">📋 Derniers reçus émis</h4>
+                <div className="overflow-x-auto rounded-lg border">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b">
                       <tr>
-                        <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                          Aucun reçu disponible
-                        </td>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">N° Reçu</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Parent</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Élève</th>
+                        <th className="px-4 py-2 text-right text-xs font-semibold text-gray-900 uppercase">Montant</th>
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-900 uppercase">Date</th>
+                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-900 uppercase">Action</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {recusAdmin.slice(0, 5).map((recu, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-gray-900">
+                            <span className="font-mono text-xs px-2 py-1 rounded">
+                              {recu.numero_recu}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-900">{recu.parent_nom || '—'}</td>
+                          <td className="px-4 py-3 text-gray-900">{recu.enfant}</td>
+                          <td className="px-4 py-3 text-right font-semibold text-green-600">
+                            {Number(recu.montant).toLocaleString()} GNF
+                          </td>
+                          <td className="px-4 py-3 text-gray-900">
+                            {recu.date_paiement ? new Date(recu.date_paiement).toLocaleDateString('fr-FR') : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-center text-gray-900">
+                            <button
+                              onClick={() => {
+                                setSelectedRecu({
+                                  ...recu,
+                                  source: recu.source || 'paiement'
+                                });
+                              }}
+                              className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                            >
+                              <Printer className="w-4 h-4 inline mr-1" />
+                              Imprimer
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {recusAdmin.length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-8 text-center text-gray-900">
+                            Aucun reçu disponible
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
         </div>
       </div>
 
@@ -843,46 +841,46 @@ export default function FinancesPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-900">Enregistrer une sortie de caisse</h2>
-              <button onClick={() => setShowDepenseForm(false)} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+              <button onClick={() => setShowDepenseForm(false)} className="text-gray-900 hover:text-gray-600 text-2xl">&times;</button>
             </div>
             <form onSubmit={handleAjoutDepense} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Catégorie *</label>
                 <select
                   value={newDepense.categorie}
                   onChange={e => setNewDepense({ ...newDepense, categorie: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="text-gray-900 w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   {CATEGORIES_DEPENSES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Montant (GNF) *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Montant (GNF) *</label>
                 <input
                   type="number"
                   required
                   min="1"
                   value={newDepense.montant}
                   onChange={e => setNewDepense({ ...newDepense, montant: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="text-gray-900 w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   placeholder="Ex: 500000"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Date</label>
                 <input
                   type="date"
                   value={newDepense.dateDepense}
                   onChange={e => setNewDepense({ ...newDepense, dateDepense: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="text-gray-900 w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description / Motif</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Description / Motif</label>
                 <textarea
                   value={newDepense.description}
                   onChange={e => setNewDepense({ ...newDepense, description: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="text-gray-900 w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   rows={3}
                   placeholder="Détails de la dépense..."
                 />
@@ -892,7 +890,7 @@ export default function FinancesPage() {
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   Enregistrer la dépense
                 </button>
-                <button type="button" onClick={() => setShowDepenseForm(false)} className="flex-1 border py-2 rounded-lg text-sm hover:bg-gray-50 transition">
+                <button type="button" onClick={() => setShowDepenseForm(false)} className="text-gray-900 flex-1 border py-2 rounded-lg text-sm hover:bg-gray-50 transition">
                   Annuler
                 </button>
               </div>
@@ -912,7 +910,7 @@ export default function FinancesPage() {
                   Parent: <span className="font-semibold">{selectedParentRemise.prenom} {selectedParentRemise.nom}</span> ({selectedParentRemise.nb_enfants} enfants)
                 </p>
               </div>
-              <button onClick={() => setShowRemiseModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+              <button onClick={() => setShowRemiseModal(false)} className="text-gray-900 hover:text-gray-600 text-2xl">&times;</button>
             </div>
             <form onSubmit={handleApplyRemise} className="p-6 space-y-4">
               <div className="bg-gray-50 p-3 rounded-lg text-xs space-y-1 text-gray-600">

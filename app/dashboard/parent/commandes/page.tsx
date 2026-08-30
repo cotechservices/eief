@@ -165,15 +165,14 @@ export default function ParentCommandesPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
-              notification.type === "success"
-                ? "bg-green-50 border-l-4 border-green-500 text-green-800"
-                : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -184,7 +183,7 @@ export default function ParentCommandesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-500 hover:text-gray-700 transition"
+              className="ml-4 text-gray-900 hover:text-gray-700 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -215,7 +214,7 @@ export default function ParentCommandesPage() {
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total commandes</p>
+              <p className="text-gray-900 text-sm">Total commandes</p>
               <p className="text-2xl font-bold text-blue-600">{commandes.length}</p>
             </div>
             <ShoppingBag className="w-8 h-8 text-blue-200" />
@@ -224,7 +223,7 @@ export default function ParentCommandesPage() {
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">En attente</p>
+              <p className="text-gray-900 text-sm">En attente</p>
               <p className="text-2xl font-bold text-yellow-600">
                 {commandes.filter(c => c.statut === "en_attente").length}
               </p>
@@ -235,7 +234,7 @@ export default function ParentCommandesPage() {
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Validées</p>
+              <p className="text-gray-900 text-sm">Validées</p>
               <p className="text-2xl font-bold text-green-600">
                 {commandes.filter(c => c.statut === "valide").length}
               </p>
@@ -246,7 +245,7 @@ export default function ParentCommandesPage() {
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Rejetées</p>
+              <p className="text-gray-900 text-sm">Rejetées</p>
               <p className="text-2xl font-bold text-red-600">
                 {commandes.filter(c => c.statut === "rejete").length}
               </p>
@@ -260,7 +259,7 @@ export default function ParentCommandesPage() {
       <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
             <input
               type="text"
               placeholder="Rechercher par numéro de commande ou article..."
@@ -287,7 +286,7 @@ export default function ParentCommandesPage() {
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900">Aucune commande</h3>
-          <p className="text-gray-500 mt-2">
+          <p className="text-gray-900 mt-2">
             Vous n'avez pas encore passé de commande de fournitures.
           </p>
           <Link
@@ -344,7 +343,7 @@ export default function ParentCommandesPage() {
                         </span>
                       ))}
                       {commande.articles.length > 3 && (
-                        <span className="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded-full">
+                        <span className="bg-gray-100 text-gray-900 text-xs px-2 py-1 rounded-full">
                           +{commande.articles.length - 3} autres
                         </span>
                       )}
@@ -378,7 +377,7 @@ export default function ParentCommandesPage() {
                 </div>
                 <button
                   onClick={() => setShowDetailModal(false)}
-                  className="text-gray-500 hover:text-gray-700 transition"
+                  className="text-gray-900 hover:text-gray-700 transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -406,7 +405,7 @@ export default function ParentCommandesPage() {
                     >
                       <div>
                         <p className="font-medium text-black">{article.nom}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-900">
                           Quantité: {article.quantite} × {article.prix_unitaire.toLocaleString()} GNF
                         </p>
                       </div>
@@ -433,7 +432,7 @@ export default function ParentCommandesPage() {
               )}
 
               {/* Date */}
-              <div className="text-sm text-gray-500 border-t pt-4">
+              <div className="text-sm text-gray-900 border-t pt-4">
                 <p>
                   Commandé le{" "}
                   {new Date(selectedCommande.date_commande).toLocaleDateString("fr-FR", {

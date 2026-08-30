@@ -194,7 +194,7 @@ export default function BibliothequeRapportsPage() {
             <FileText className="w-7 h-7 text-purple-600" />
             Rapports Bibliothèque
           </h1>
-          <p className="text-gray-500 mt-1">Consultez les statistiques de la bibliothèque</p>
+          <p className="text-gray-900 mt-1">Consultez les statistiques de la bibliothèque</p>
         </div>
         <div className="flex gap-2 print:hidden">
           <button
@@ -231,32 +231,32 @@ export default function BibliothequeRapportsPage() {
       {/* Statistiques */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Total livres</p>
+          <p className="text-gray-900 text-xs">Total livres</p>
           <p className="text-2xl font-bold text-blue-600">{stats.totalLivres}</p>
           <BookOpen className="w-4 h-4 text-blue-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Disponibles</p>
+          <p className="text-gray-900 text-xs">Disponibles</p>
           <p className="text-2xl font-bold text-green-600">{stats.livresDispos}</p>
           <CheckCircle className="w-4 h-4 text-green-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Emprunts en cours</p>
+          <p className="text-gray-900 text-xs">Emprunts en cours</p>
           <p className="text-2xl font-bold text-orange-600">{stats.empruntsActifs}</p>
           <BookMarked className="w-4 h-4 text-orange-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">En retard</p>
+          <p className="text-gray-900 text-xs">En retard</p>
           <p className="text-2xl font-bold text-red-600">{stats.empruntsRetard}</p>
           <AlertCircle className="w-4 h-4 text-red-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Taux occupation</p>
+          <p className="text-gray-900 text-xs">Taux occupation</p>
           <p className="text-2xl font-bold text-purple-600">{stats.tauxOccupation}%</p>
           <TrendingUp className="w-4 h-4 text-purple-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Catégories</p>
+          <p className="text-gray-900 text-xs">Catégories</p>
           <p className="text-2xl font-bold text-indigo-600">{stats.categories}</p>
           <Library className="w-4 h-4 text-indigo-200 mt-1" />
         </div>
@@ -267,8 +267,8 @@ export default function BibliothequeRapportsPage() {
         <button
           onClick={() => setViewType('global')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'global'
-              ? 'bg-purple-100 text-purple-700'
-              : 'text-gray-600 hover:bg-gray-100'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
             }`}
         >
           <PieChart className="w-4 h-4 inline mr-2" />
@@ -277,8 +277,8 @@ export default function BibliothequeRapportsPage() {
         <button
           onClick={() => setViewType('livres')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'livres'
-              ? 'bg-purple-100 text-purple-700'
-              : 'text-gray-600 hover:bg-gray-100'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
             }`}
         >
           <BookOpen className="w-4 h-4 inline mr-2" />
@@ -287,8 +287,8 @@ export default function BibliothequeRapportsPage() {
         <button
           onClick={() => setViewType('emprunts')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'emprunts'
-              ? 'bg-purple-100 text-purple-700'
-              : 'text-gray-600 hover:bg-gray-100'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
             }`}
         >
           <BookMarked className="w-4 h-4 inline mr-2" />
@@ -338,10 +338,10 @@ export default function BibliothequeRapportsPage() {
               {emprunts.slice(0, 5).map((e) => (
                 <div key={e.id} className="flex justify-between items-center border-b border-gray-100 pb-2 text-sm">
                   <span className="text-gray-600">{e.livre_titre}</span>
-                  <span className="text-gray-500 text-xs">{e.eleve_nom}</span>
+                  <span className="text-gray-900 text-xs">{e.eleve_nom}</span>
                   <span className={`text-xs ${e.statut === 'retourne' ? 'text-green-600' :
-                      e.statut === 'en_retard' ? 'text-red-600' :
-                        'text-orange-600'
+                    e.statut === 'en_retard' ? 'text-red-600' :
+                      'text-orange-600'
                     }`}>
                     {e.statut === 'retourne' ? '✅' :
                       e.statut === 'en_retard' ? '⚠️' :
@@ -350,7 +350,7 @@ export default function BibliothequeRapportsPage() {
                 </div>
               ))}
               {emprunts.length === 0 && (
-                <p className="text-gray-500 text-sm">Aucun emprunt récent</p>
+                <p className="text-gray-900 text-sm">Aucun emprunt récent</p>
               )}
             </div>
           </div>
@@ -383,7 +383,7 @@ export default function BibliothequeRapportsPage() {
                     <td className="px-4 py-3 text-center">{l.quantite}</td>
                     <td className="px-4 py-3 text-center font-medium text-green-600">{l.disponible}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`font-medium ${l.quantite > 0 ? (l.disponible / l.quantite) * 100 < 30 ? 'text-red-600' : 'text-green-600' : 'text-gray-400'
+                      <span className={`font-medium ${l.quantite > 0 ? (l.disponible / l.quantite) * 100 < 30 ? 'text-red-600' : 'text-green-600' : 'text-gray-900'
                         }`}>
                         {l.quantite > 0 ? Math.round(((l.quantite - l.disponible) / l.quantite) * 100) : 0}%
                       </span>
@@ -392,7 +392,7 @@ export default function BibliothequeRapportsPage() {
                 ))}
                 {livres.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-900">
                       <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                       <p className="font-medium">Aucun livre</p>
                     </td>
@@ -424,10 +424,10 @@ export default function BibliothequeRapportsPage() {
                     <td className="px-4 py-3 font-medium text-gray-900">{e.livre_titre}</td>
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-900">{e.eleve_nom}</div>
-                      <div className="text-xs text-gray-400">{e.classe_nom}</div>
+                      <div className="text-xs text-gray-900">{e.classe_nom}</div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(e.date_emprunt)}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(e.date_retour_prevue)}</td>
+                    <td className="px-4 py-3 text-gray-900 text-xs">{formatDate(e.date_emprunt)}</td>
+                    <td className="px-4 py-3 text-gray-900 text-xs">{formatDate(e.date_retour_prevue)}</td>
                     <td className="px-4 py-3 text-center">
                       {e.statut === 'en_cours' && (
                         <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium"> En cours</span>
@@ -443,7 +443,7 @@ export default function BibliothequeRapportsPage() {
                 ))}
                 {emprunts.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-gray-900">
                       <BookMarked className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                       <p className="font-medium">Aucun emprunt</p>
                     </td>
@@ -456,7 +456,7 @@ export default function BibliothequeRapportsPage() {
       )}
 
       {/* Pied de page */}
-      <div className="text-center text-xs text-gray-400 pt-4 border-t border-gray-100 print:hidden">
+      <div className="text-center text-xs text-gray-900 pt-4 border-t border-gray-100 print:hidden">
         <p>Rapport généré le {new Date().toLocaleString()}</p>
         <p>© {new Date().getFullYear()} E.I.E.F - Module Bibliothèque</p>
       </div>

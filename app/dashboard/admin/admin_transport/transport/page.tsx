@@ -241,7 +241,7 @@ export default function TransportPage() {
             <Bus className="w-7 h-7 text-purple-600" />
             Gestion des Transports
           </h1>
-          <p className="text-gray-500 mt-1">Gérez les bus, trajets et inscriptions</p>
+          <p className="text-gray-900 mt-1">Gérez les bus, trajets et inscriptions</p>
         </div>
         <Link
           href="/dashboard/admin_transport/presences"
@@ -272,7 +272,7 @@ export default function TransportPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
             <div>
-              <p className="text-gray-500 text-sm">Bus en service</p>
+              <p className="text-gray-900 text-sm">Bus en service</p>
               <p className="text-2xl font-bold text-blue-600">{stats.totalBus}</p>
             </div>
             <Bus className="w-8 h-8 text-blue-200" />
@@ -284,7 +284,7 @@ export default function TransportPage() {
             onClick={fetchElevesInscrits}
           >
             <div>
-              <p className="text-gray-500 text-sm">Élèves inscrits</p>
+              <p className="text-gray-900 text-sm">Élèves inscrits</p>
               <p className="text-2xl font-bold text-green-600">{stats.totalInscrits}</p>
             </div>
             <Users className="w-8 h-8 text-green-200" />
@@ -292,7 +292,7 @@ export default function TransportPage() {
 
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
             <div>
-              <p className="text-gray-500 text-sm">Taux remplissage</p>
+              <p className="text-gray-900 text-sm">Taux remplissage</p>
               <p className="text-2xl font-bold text-orange-600">{stats.tauxRemplissage}%</p>
             </div>
             <Route className="w-8 h-8 text-orange-200" />
@@ -311,13 +311,13 @@ export default function TransportPage() {
                   <Users className="w-6 h-6 text-green-600" />
                   Élèves inscrits au transport
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-900 mt-1">
                   Total : {elevesInscrits.length} élèves
                 </p>
               </div>
               <button
                 onClick={() => setShowElevesList(false)}
-                className="text-gray-400 hover:text-gray-600 transition p-2 hover:bg-gray-100 rounded-lg"
+                className="text-gray-900 hover:text-gray-600 transition p-2 hover:bg-gray-100 rounded-lg"
               >
                 ✕
               </button>
@@ -330,7 +330,7 @@ export default function TransportPage() {
                   <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : elevesInscrits.length === 0 ? (
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-gray-900">
                   <UserX className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p className="font-medium text-gray-600">Aucun élève inscrit au transport</p>
                   <p className="text-sm mt-1">Les inscriptions au transport apparaîtront ici</p>
@@ -359,7 +359,7 @@ export default function TransportPage() {
                           <td className="px-4 py-3 text-gray-600">
                             {eleve.classe}
                           </td>
-                          <td className="px-4 py-3 text-gray-500 text-xs">
+                          <td className="px-4 py-3 text-gray-900 text-xs">
                             {new Date(eleve.date_inscription).toLocaleDateString('fr-FR')}
                           </td>
                           <td className="px-4 py-3 text-center">
@@ -378,7 +378,7 @@ export default function TransportPage() {
 
             {/* Pied du modal */}
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-900">
                 {elevesInscrits.length} élève{elevesInscrits.length > 1 ? 's' : ''} inscrit{elevesInscrits.length > 1 ? 's' : ''}
               </span>
               <button
@@ -398,7 +398,7 @@ export default function TransportPage() {
           <h3 className="font-semibold text-gray-700">Liste des bus et trajets</h3>
           <div className="flex gap-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
               <input
                 type="text"
                 placeholder="Rechercher..."
@@ -432,7 +432,7 @@ export default function TransportPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-gray-900 font-medium">{b.chauffeur}</div>
-                      {b.chauffeur_tel && <div className="text-gray-500 text-xs">{b.chauffeur_tel}</div>}
+                      {b.chauffeur_tel && <div className="text-gray-900 text-xs">{b.chauffeur_tel}</div>}
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs font-medium">
@@ -445,7 +445,7 @@ export default function TransportPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-gray-900">{b.inscrits}</span>
-                      <span className="text-gray-500"> / {b.capacite} places</span>
+                      <span className="text-gray-900"> / {b.capacite} places</span>
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900">
                       {(b.prix_abonnement || 0).toLocaleString()} GNF
@@ -484,7 +484,7 @@ export default function TransportPage() {
               })}
               {bus.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-900">
                     <Bus className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p className="font-medium">Aucun bus disponible</p>
                     <p className="text-sm mt-1">Cliquez sur "Ajouter un bus" pour commencer</p>
@@ -506,7 +506,7 @@ export default function TransportPage() {
               </h2>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-gray-900 hover:text-gray-600 transition"
               >
                 <span className="sr-only">Fermer</span>
                 ✕

@@ -59,8 +59,8 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
   const notesData = enfants.map(enfant => {
     const stats = statsEnfant[enfant.eleve_id] || { notes: [] };
     const notes = stats.notes || [];
-    const moyenne = notes.length > 0 
-      ? notes.reduce((acc, n) => acc + Number(n.moyenne || 0), 0) / notes.length 
+    const moyenne = notes.length > 0
+      ? notes.reduce((acc, n) => acc + Number(n.moyenne || 0), 0) / notes.length
       : 0;
     return {
       nom: `${enfant.prenom} ${enfant.nom}`,
@@ -119,7 +119,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-500">
+            <div className="h-64 flex items-center justify-center text-gray-900">
               <p>Aucune pré-inscription disponible</p>
             </div>
           )}
@@ -145,7 +145,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-500">
+            <div className="h-64 flex items-center justify-center text-gray-900">
               <p>Aucune donnée de frais disponible</p>
             </div>
           )}
@@ -174,7 +174,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-500">
+            <div className="h-64 flex items-center justify-center text-gray-900">
               <p>Aucune donnée de paiement disponible</p>
             </div>
           )}
@@ -202,7 +202,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-500">
+            <div className="h-64 flex items-center justify-center text-gray-900">
               <p>Aucune donnée d'évolution disponible</p>
             </div>
           )}
@@ -231,7 +231,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-500">
+            <div className="h-64 flex items-center justify-center text-gray-900">
               <p>Aucune donnée de notes disponible</p>
             </div>
           )}
@@ -259,7 +259,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-500">
+            <div className="h-64 flex items-center justify-center text-gray-900">
               <p>Aucune donnée de présence disponible</p>
             </div>
           )}
@@ -293,7 +293,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
           <div className="bg-purple-50 rounded-lg p-4 text-center">
             <TrendingUp className="w-6 h-6 text-purple-600 mx-auto mb-2" />
             <p className="text-lg font-bold text-purple-600">
-              {statsGlobales.totalAPayer > 0 
+              {statsGlobales.totalAPayer > 0
                 ? `${Math.round((statsGlobales.totalPaye / statsGlobales.totalAPayer) * 100)}%`
                 : '0%'}
             </p>

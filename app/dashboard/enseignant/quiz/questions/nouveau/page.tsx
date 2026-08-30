@@ -4,9 +4,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  ArrowLeft, Save, Plus, Trash2, BookOpen, 
-  CheckCircle, XCircle, HelpCircle 
+import {
+  ArrowLeft, Save, Plus, Trash2, BookOpen,
+  CheckCircle, XCircle, HelpCircle
 } from "lucide-react";
 
 interface Category {
@@ -161,7 +161,7 @@ export default function NouvelleQuestionPage() {
       <div className="flex items-center justify-between">
         <Link
           href="/dashboard/enseignant/quiz"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-purple-600 text-sm font-medium transition"
+          className="inline-flex items-center gap-2 text-gray-900 hover:text-purple-600 text-sm font-medium transition"
         >
           <ArrowLeft className="w-4 h-4" /> Retour
         </Link>
@@ -281,11 +281,10 @@ export default function NouvelleQuestionPage() {
                     <button
                       type="button"
                       onClick={() => setCorrectOption(opt.id)}
-                      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 flex-shrink-0 transition ${
-                        opt.est_correcte
-                          ? "bg-green-500 border-green-500 text-white"
-                          : "border-gray-300 hover:border-green-300"
-                      }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 flex-shrink-0 transition ${opt.est_correcte
+                        ? "bg-green-500 border-green-500 text-white"
+                        : "border-gray-300 hover:border-green-300"
+                        }`}
                     >
                       {opt.est_correcte && <CheckCircle className="w-4 h-4" />}
                     </button>
@@ -294,17 +293,16 @@ export default function NouvelleQuestionPage() {
                       value={opt.texte}
                       onChange={(e) => updateOption(opt.id, "texte", e.target.value)}
                       placeholder={`Option ${index + 1}`}
-                      className={`flex-1 px-4 py-2.5 rounded-xl border text-sm focus:ring-2 focus:outline-none transition ${
-                        opt.est_correcte
-                          ? "border-green-300 bg-green-50 focus:ring-green-500"
-                          : "border-gray-200 focus:ring-purple-500"
-                      }`}
+                      className={`flex-1 px-4 py-2.5 rounded-xl border text-sm focus:ring-2 focus:outline-none transition ${opt.est_correcte
+                        ? "border-green-300 bg-green-50 focus:ring-green-500"
+                        : "border-gray-200 focus:ring-purple-500"
+                        }`}
                     />
                     {options.length > 2 && (
                       <button
                         type="button"
                         onClick={() => removeOption(opt.id)}
-                        className="text-gray-400 hover:text-red-500 p-1.5 transition"
+                        className="text-gray-900 hover:text-red-500 p-1.5 transition"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -312,7 +310,7 @@ export default function NouvelleQuestionPage() {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-900 mt-2">
                 Cliquez sur le cercle pour marquer la bonne réponse
               </p>
             </div>

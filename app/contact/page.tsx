@@ -26,7 +26,7 @@ export default function ContactPage() {
   const infos = [
     { icon: MapPin, title: "Adresse", text: "Conakry, Guinée, CU Coyah Sanoyah", link: null },
     { icon: Phone, title: "Téléphone", text: "+224 628 84 84 37", link: "tel:+224628848437" },
-    { icon: Mail, title: "Email", text: "mohamedkc237@gmail.com", link: "mailto:mohamedkc237@gmail.com" },
+    { icon: Mail, title: "Email", text: "farabasilouendeno@gmail.com", link: "mailto:mohamedkc237@gmail.com" },
     { icon: Clock, title: "Horaires", text: "Lun-Ven: 8h00 - 17h00 | Sam: 8h00 - 12h00", link: null },
   ];
 
@@ -41,7 +41,7 @@ export default function ContactPage() {
         <div className="absolute inset-0 z-0">
           <Image
             src="/img/contact.png"
-            alt="École Internationale des Enfants Futur"
+            alt="École Internationale les Enfants du Futur"
             fill
             className="object-cover"
             priority

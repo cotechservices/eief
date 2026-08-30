@@ -50,7 +50,7 @@ export async function GET(request: Request) {
       });
     }
 
-    // Récupérer les menus de la semaine
+    // Récupérer les CANTINE 
     const menusResult = await query(`
       SELECT 
         id,
@@ -70,7 +70,7 @@ export async function GET(request: Request) {
     // Récupérer les réservations existantes
     const enfantIds = enfantsResult.rows.map((e: any) => e.id);
     let reservationsResult = { rows: [] };
-    
+
     if (enfantIds.length > 0) {
       reservationsResult = await query(`
         SELECT 
@@ -127,11 +127,11 @@ export async function GET(request: Request) {
       menus: menusData,
       reservations: reservationsData
     });
-    
+
   } catch (error) {
     console.error("Erreur GET cantine:", error);
-    return NextResponse.json({ 
-      error: "Erreur serveur: " + (error instanceof Error ? error.message : "Erreur inconnue") 
+    return NextResponse.json({
+      error: "Erreur serveur: " + (error instanceof Error ? error.message : "Erreur inconnue")
     }, { status: 500 });
   }
 }
@@ -161,10 +161,10 @@ export async function POST(request: Request) {
     }
 
     const soldeActuel = parseFloat(soldeResult.rows[0].solde);
-    
+
     if (soldeActuel < total) {
-      return NextResponse.json({ 
-        error: `Solde insuffisant. Solde actuel: ${soldeActuel.toLocaleString()} GNF` 
+      return NextResponse.json({
+        error: `Solde insuffisant. Solde actuel: ${soldeActuel.toLocaleString()} GNF`
       }, { status: 400 });
     }
 
@@ -173,24 +173,24 @@ export async function POST(request: Request) {
     for (const menuId of menuIds) {
       const qty = quantities[menuId];
       if (!qty) continue;
-      
+
       // Récupérer la date du menu
       const menuResult = await query(`
         SELECT date, prix FROM menus_cantine WHERE id = $1
       `, [parseInt(menuId)]);
-      
+
       if (menuResult.rows.length === 0) continue;
-      
+
       const menuDate = menuResult.rows[0].date;
       const menuPrix = parseFloat(menuResult.rows[0].prix);
-      
+
       for (let i = 0; i < qty; i++) {
         const result = await query(`
           INSERT INTO reservations_cantine (eleve_id, menu_id, date, statut, paye)
           VALUES ($1, $2, $3, 'confirmee', false)
           RETURNING id, eleve_id as enfant_id, menu_id as menu_id, date, statut, paye
         `, [enfantId, parseInt(menuId), menuDate]);
-        
+
         reservations.push({
           id: result.rows[0].id,
           enfantId: result.rows[0].enfant_id,
@@ -217,16 +217,16 @@ export async function POST(request: Request) {
 
     const nouveauSolde = soldeActuel - total;
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       reservations,
       nouveauSolde
     });
-    
+
   } catch (error) {
     console.error("Erreur POST cantine:", error);
-    return NextResponse.json({ 
-      error: "Erreur serveur: " + (error instanceof Error ? error.message : "Erreur inconnue") 
+    return NextResponse.json({
+      error: "Erreur serveur: " + (error instanceof Error ? error.message : "Erreur inconnue")
     }, { status: 500 });
   }
 }
@@ -279,11 +279,11 @@ export async function DELETE(request: Request) {
     `, [enfantId, prix]);
 
     return NextResponse.json({ success: true });
-    
+
   } catch (error) {
     console.error("Erreur DELETE cantine:", error);
-    return NextResponse.json({ 
-      error: "Erreur serveur: " + (error instanceof Error ? error.message : "Erreur inconnue") 
+    return NextResponse.json({
+      error: "Erreur serveur: " + (error instanceof Error ? error.message : "Erreur inconnue")
     }, { status: 500 });
   }
 }

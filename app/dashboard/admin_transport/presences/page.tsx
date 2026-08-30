@@ -4,8 +4,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { fetchWithOffline } from "@/utils/fetchWithOffline";
-import { 
-  Bus, Users, Calendar, Check, X, Clock, Search, 
+import {
+  Bus, Users, Calendar, Check, X, Clock, Search,
   Filter, ChevronLeft, ChevronRight, UserCheck, UserX,
   AlertCircle, Download, Printer
 } from "lucide-react";
@@ -52,11 +52,11 @@ export default function PresencesTransportPage() {
     try {
       const data = await fetchWithOffline('/api/admin/transport/eleves-inscrits', 'eleves');
       setEleves(data.eleves || []);
-      
+
       // Extraire les lignes uniques pour le filtre
       const uniqueLignes = [...new Set(data.eleves.map((e: any) => e.ligne || 'Sans ligne'))];
       setLignes(uniqueLignes);
-      
+
       // Initialiser les présences
       const initialPresences = (data.eleves || []).map((e: any) => ({
         eleve_id: e.id,
@@ -65,7 +65,7 @@ export default function PresencesTransportPage() {
         heure_arrivee: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
       }));
       setPresences(initialPresences);
-      
+
     } catch (error) {
       console.error("Erreur chargement élèves:", error);
       setError("Impossible de charger la liste des élèves");
@@ -79,12 +79,12 @@ export default function PresencesTransportPage() {
     try {
       const data = await fetchWithOffline(`/api/admin/transport/presences?date=${selectedDate}`, 'presences');
       if (data.presences && data.presences.length > 0) {
-          // Mettre à jour les présences existantes
-          const updatedPresences = presences.map(p => {
-            const existing = data.presences.find((ep: any) => ep.eleve_id === p.eleve_id);
-            return existing || p;
-          });
-          setPresences(updatedPresences);
+        // Mettre à jour les présences existantes
+        const updatedPresences = presences.map(p => {
+          const existing = data.presences.find((ep: any) => ep.eleve_id === p.eleve_id);
+          return existing || p;
+        });
+        setPresences(updatedPresences);
       }
     } catch (error) {
       console.error("Erreur chargement présences existantes:", error);
@@ -111,9 +111,9 @@ export default function PresencesTransportPage() {
 
   // ⭐ Changer le statut d'un élève
   const toggleStatut = (eleveId: number, statut: 'present' | 'absent' | 'retard') => {
-    setPresences(prev => 
-      prev.map(p => 
-        p.eleve_id === eleveId 
+    setPresences(prev =>
+      prev.map(p =>
+        p.eleve_id === eleveId
           ? { ...p, statut, heure_arrivee: statut !== 'absent' ? new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : undefined }
           : p
       )
@@ -122,9 +122,9 @@ export default function PresencesTransportPage() {
 
   // ⭐ Marquer tous comme présents
   const marquerTousPresents = () => {
-    setPresences(prev => 
-      prev.map(p => ({ 
-        ...p, 
+    setPresences(prev =>
+      prev.map(p => ({
+        ...p,
         statut: 'present',
         heure_arrivee: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
       }))
@@ -167,7 +167,7 @@ export default function PresencesTransportPage() {
 
   // Filtrage des élèves
   const elevesFiltres = eleves.filter(e => {
-    const matchSearch = 
+    const matchSearch =
       e.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
       e.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
       e.matricule.toLowerCase().includes(searchTerm.toLowerCase());
@@ -192,7 +192,7 @@ export default function PresencesTransportPage() {
             <Bus className="w-7 h-7 text-purple-600" />
             Gestion des Présences - Transport
           </h1>
-          <p className="text-gray-500 mt-1">Gérez les présences des élèves dans les bus</p>
+          <p className="text-gray-900 mt-1">Gérez les présences des élèves dans les bus</p>
         </div>
         <div className="flex items-center gap-3">
           <input
@@ -226,7 +226,7 @@ export default function PresencesTransportPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-500 text-sm">Total élèves</p>
+              <p className="text-gray-900 text-sm">Total élèves</p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
             <Users className="w-8 h-8 text-blue-200" />
@@ -235,7 +235,7 @@ export default function PresencesTransportPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-500 text-sm">Présents</p>
+              <p className="text-gray-900 text-sm">Présents</p>
               <p className="text-2xl font-bold text-green-600">{stats.presents}</p>
             </div>
             <UserCheck className="w-8 h-8 text-green-200" />
@@ -244,7 +244,7 @@ export default function PresencesTransportPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-500 text-sm">Absents</p>
+              <p className="text-gray-900 text-sm">Absents</p>
               <p className="text-2xl font-bold text-red-600">{stats.absents}</p>
             </div>
             <UserX className="w-8 h-8 text-red-200" />
@@ -253,7 +253,7 @@ export default function PresencesTransportPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-500 text-sm">Retards</p>
+              <p className="text-gray-900 text-sm">Retards</p>
               <p className="text-2xl font-bold text-orange-600">{stats.retards}</p>
             </div>
             <Clock className="w-8 h-8 text-orange-200" />
@@ -265,7 +265,7 @@ export default function PresencesTransportPage() {
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
             <input
               type="text"
               placeholder="Rechercher un élève..."
@@ -314,7 +314,7 @@ export default function PresencesTransportPage() {
                 const presence = presences.find(p => p.eleve_id === eleve.id);
                 const statut = presence?.statut || 'present';
                 const heure = presence?.heure_arrivee || '-';
-                
+
                 return (
                   <tr key={eleve.id} className="hover:bg-gray-50 transition">
                     <td className="px-4 py-3 font-mono text-xs text-gray-600">
@@ -328,7 +328,7 @@ export default function PresencesTransportPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-600 text-xs">
                       <div>{eleve.ligne || 'Sans ligne'}</div>
-                      <div className="text-gray-400">{eleve.bus || 'Sans bus'}</div>
+                      <div className="text-gray-900">{eleve.bus || 'Sans bus'}</div>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium
@@ -342,40 +342,37 @@ export default function PresencesTransportPage() {
                         {statut === 'present' ? 'Présent' : statut === 'absent' ? 'Absent' : 'Retard'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-center text-gray-900 text-xs">
                       {heure}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => toggleStatut(eleve.id, 'present')}
-                          className={`p-1.5 rounded-lg transition ${
-                            statut === 'present' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'hover:bg-green-50 text-gray-400 hover:text-green-600'
-                          }`}
+                          className={`p-1.5 rounded-lg transition ${statut === 'present'
+                            ? 'bg-green-100 text-green-700'
+                            : 'hover:bg-green-50 text-gray-900 hover:text-green-600'
+                            }`}
                           title="Présent"
                         >
                           <Check className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => toggleStatut(eleve.id, 'retard')}
-                          className={`p-1.5 rounded-lg transition ${
-                            statut === 'retard' 
-                              ? 'bg-orange-100 text-orange-700' 
-                              : 'hover:bg-orange-50 text-gray-400 hover:text-orange-600'
-                          }`}
+                          className={`p-1.5 rounded-lg transition ${statut === 'retard'
+                            ? 'bg-orange-100 text-orange-700'
+                            : 'hover:bg-orange-50 text-gray-900 hover:text-orange-600'
+                            }`}
                           title="Retard"
                         >
                           <Clock className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => toggleStatut(eleve.id, 'absent')}
-                          className={`p-1.5 rounded-lg transition ${
-                            statut === 'absent' 
-                              ? 'bg-red-100 text-red-700' 
-                              : 'hover:bg-red-50 text-gray-400 hover:text-red-600'
-                          }`}
+                          className={`p-1.5 rounded-lg transition ${statut === 'absent'
+                            ? 'bg-red-100 text-red-700'
+                            : 'hover:bg-red-50 text-gray-900 hover:text-red-600'
+                            }`}
                           title="Absent"
                         >
                           <X className="w-4 h-4" />
@@ -387,7 +384,7 @@ export default function PresencesTransportPage() {
               })}
               {elevesFiltres.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-gray-900">
                     <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p className="font-medium">Aucun élève trouvé</p>
                     <p className="text-sm mt-1">Aucun élève ne correspond à vos critères</p>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import {
-  BookOpen, Video, FileText, Download, Calendar, 
+  BookOpen, Video, FileText, Download, Calendar,
   BookMarked, ExternalLink, Loader2
 } from "lucide-react";
 
@@ -74,14 +74,14 @@ export default function CoursElevePage() {
           <BookMarked className="w-6 h-6 text-blue-600" />
           Mes Cours & Leçons
         </h1>
-        <p className="text-gray-500 mt-1">Consultez les supports de cours partagés par vos professeurs.</p>
+        <p className="text-gray-900 mt-1">Consultez les supports de cours partagés par vos professeurs.</p>
       </div>
 
       {toutesLesLecons.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
           <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun cours disponible</h3>
-          <p className="text-gray-500">Vos professeurs n'ont pas encore publié de leçons pour votre classe.</p>
+          <p className="text-gray-900">Vos professeurs n'ont pas encore publié de leçons pour votre classe.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -91,12 +91,12 @@ export default function CoursElevePage() {
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">{lecon.titre}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-900 mt-1">
                       Professeur: {lecon.enseignant}
                       {lecon.matiere && lecon.matiere !== 'Général' && ` • Matière: ${lecon.matiere}`}
                     </p>
                   </div>
-                  <div className="flex items-center text-xs text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full whitespace-nowrap">
+                  <div className="flex items-center text-xs text-gray-900 bg-gray-50 px-2.5 py-1 rounded-full whitespace-nowrap">
                     <Calendar className="w-3.5 h-3.5 mr-1.5" />
                     {new Date(lecon.date_publication).toLocaleDateString()}
                   </div>
@@ -115,9 +115,9 @@ export default function CoursElevePage() {
               {(lecon.fichier_url || lecon.video_url) && (
                 <div className="bg-gray-50/50 p-4 px-6 flex flex-wrap gap-3">
                   {lecon.fichier_url && (
-                    <a 
-                      href={lecon.fichier_url} 
-                      target="_blank" 
+                    <a
+                      href={lecon.fichier_url}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 text-sm font-medium rounded-lg text-gray-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition"
                     >
@@ -127,9 +127,9 @@ export default function CoursElevePage() {
                     </a>
                   )}
                   {lecon.video_url && (
-                    <a 
-                      href={lecon.video_url} 
-                      target="_blank" 
+                    <a
+                      href={lecon.video_url}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 text-sm font-medium rounded-lg text-gray-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition"
                     >

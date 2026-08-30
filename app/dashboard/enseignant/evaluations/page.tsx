@@ -46,7 +46,7 @@ export default function EnseignantEvaluationsPage() {
             <Award className="w-6 h-6 text-purple-500" />
             Évaluations
           </h1>
-          <p className="text-gray-500 mt-1">Vos examens interactifs en ligne</p>
+          <p className="text-gray-900 mt-1">Vos examens interactifs en ligne</p>
         </div>
         <Link
           href="/dashboard/enseignant/evaluations/nouveau"
@@ -58,7 +58,7 @@ export default function EnseignantEvaluationsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {examens.length === 0 ? (
-          <div className="col-span-full bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-400">
+          <div className="col-span-full bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-900">
             <Award className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="font-medium text-gray-600">Aucune évaluation créée</p>
             <p className="text-sm mt-1">Cliquez sur "Créer une évaluation" pour générer votre première évaluation interactive.</p>
@@ -76,7 +76,7 @@ export default function EnseignantEvaluationsPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Actif
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-gray-900 bg-gray-100 px-2.5 py-1 rounded-full">
                       Clôturé
                     </span>
                   )}
@@ -88,22 +88,22 @@ export default function EnseignantEvaluationsPage() {
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500 flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-400" /> Durée
+                    <span className="text-gray-900 flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-900" /> Durée
                     </span>
                     <span className="font-medium text-gray-900">{examen.duree_minutes} min</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500 flex items-center gap-2">
-                      <Award className="w-4 h-4 text-gray-400" /> Questions
+                    <span className="text-gray-900 flex items-center gap-2">
+                      <Award className="w-4 h-4 text-gray-900" /> Questions
                     </span>
                     <span className="font-medium text-gray-900">
                       {examen.nb_questions} ({examen.total_points} pts)
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500 flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-400" /> Participants
+                    <span className="text-gray-900 flex items-center gap-2">
+                      <Users className="w-4 h-4 text-gray-900" /> Participants
                     </span>
                     <span className="font-medium text-gray-900">{examen.nb_eleves_passes} élèves</span>
                   </div>

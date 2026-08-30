@@ -46,20 +46,20 @@ interface Notification {
 }
 
 const POSTES = [
-  { value: "ENSEIGNANT",         label: "Enseignant" },
-  { value: "COMPTABLE",          label: "Comptable" },
-  { value: "SECRETARIAT",        label: "Secrétariat" },
-  { value: "DIRECTEUR_ETUDES",   label: "Directeur des études" },
-  { value: "DIRECTEUR_GENERAL",  label: "Directeur Général" },
-  { value: "SURVEILLANT",        label: "Surveillant général" },
-  { value: "admin_cantine",      label: "Responsable Cantine" },
-  { value: "admin_transport",    label: "Responsable Transport" },
+  { value: "ENSEIGNANT", label: "Enseignant" },
+  { value: "COMPTABLE", label: "Comptable" },
+  { value: "SECRETARIAT", label: "Secrétariat" },
+  { value: "DIRECTEUR_ETUDES", label: "Directeur des études" },
+  { value: "DIRECTEUR_GENERAL", label: "Directeur Général" },
+  { value: "SURVEILLANT", label: "Surveillant général" },
+  { value: "admin_cantine", label: "Responsable Cantine" },
+  { value: "admin_transport", label: "Responsable Transport" },
   { value: "admin_bibliotheque", label: "Bibliothécaire" },
-  { value: "admin_librairie",    label: "Responsable Librairie" },
-  { value: "technicien",         label: "Technicien" },
-  { value: "agent_securite",     label: "Agent de sécurité" },
-  { value: "chauffeur",          label: "Chauffeur" },
-  { value: "autre",              label: "Autre" },
+  { value: "admin_librairie", label: "Responsable Librairie" },
+  { value: "technicien", label: "Technicien" },
+  { value: "agent_securite", label: "Agent de sécurité" },
+  { value: "chauffeur", label: "Chauffeur" },
+  { value: "autre", label: "Autre" },
 ];
 
 const DEPARTEMENTS = [
@@ -86,7 +86,7 @@ export default function GestionPersonnelPage() {
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClasses, setSelectedClasses] = useState<number[]>([]);
   const [currentPersonnelId, setCurrentPersonnelId] = useState<number | null>(null);
-  
+
   const [notification, setNotification] = useState<Notification>({
     message: '',
     type: 'success',
@@ -103,7 +103,7 @@ export default function GestionPersonnelPage() {
 
   const itemsPerPage = 10;
 
-  useEffect(() => { 
+  useEffect(() => {
     fetchPersonnel();
     fetchClasses();
   }, []);
@@ -149,12 +149,12 @@ export default function GestionPersonnelPage() {
       data.append("file", file);
       data.append("enfantId", "personnel_" + (formData.nom || "nouveau"));
       data.append("type", field);
-      
+
       const res = await fetch("/api/upload", {
         method: "POST",
         body: data,
       });
-      
+
       if (res.ok) {
         const result = await res.json();
         setFormData(prev => ({ ...prev, [field]: result.url }));
@@ -211,7 +211,7 @@ export default function GestionPersonnelPage() {
         const data = await res.json();
         showNotification(data.error || "Erreur lors de la suppression ❌", "error");
       }
-    } catch (e) { 
+    } catch (e) {
       console.error(e);
       showNotification("Erreur lors de la suppression ❌", "error");
     } finally {
@@ -245,7 +245,7 @@ export default function GestionPersonnelPage() {
         const data = await res.json();
         showNotification(data.error || "Erreur lors de l'enregistrement ❌", "error");
       }
-    } catch (e) { 
+    } catch (e) {
       console.error(e);
       showNotification("Erreur lors de l'enregistrement ❌", "error");
     }
@@ -284,7 +284,7 @@ export default function GestionPersonnelPage() {
   // ⭐ OUVERTURE DE LA MODALE - Récupération depuis la BD
   const openAssignModal = async (personnelId: number, assignedClasses: ClasseAssignee[]) => {
     setCurrentPersonnelId(personnelId);
-    
+
     // ⭐ Récupérer les classes assignées à jour depuis la base de données
     const freshClasses = await fetchAssignedClasses(personnelId);
     const assignedIds = freshClasses.map(c => Number(c.id));
@@ -300,7 +300,7 @@ export default function GestionPersonnelPage() {
       const response = await fetch(`/api/admin/enseignants/${currentPersonnelId}/assignations/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           classeIds: selectedClasses
         })
       });
@@ -310,21 +310,21 @@ export default function GestionPersonnelPage() {
       if (response.ok) {
         const message = data.message || "✅ Classes assignées avec succès !";
         showNotification(message, "success");
-        
+
         // ⭐ Récupérer les classes assignées à jour depuis la BD
         const freshClasses = await fetchAssignedClasses(currentPersonnelId);
         const assignedIds = freshClasses.map(c => Number(c.id));
         setSelectedClasses(assignedIds);
-        
+
         // Mettre à jour le personnel dans l'état
-        setPersonnel(prev => 
-          prev.map(p => 
-            p.id === currentPersonnelId 
+        setPersonnel(prev =>
+          prev.map(p =>
+            p.id === currentPersonnelId
               ? { ...p, classes_assigned: freshClasses }
               : p
           )
         );
-        
+
         setShowAssignModal(false);
         await fetchPersonnel();
       } else {
@@ -363,10 +363,10 @@ export default function GestionPersonnelPage() {
 
   const getStatutBadge = (statut: string) => {
     switch (statut) {
-      case "actif":   return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1 w-fit"><CheckCircle className="w-3 h-3" /> Actif</span>;
+      case "actif": return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1 w-fit"><CheckCircle className="w-3 h-3" /> Actif</span>;
       case "inactif": return <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1 w-fit"><XCircle className="w-3 h-3" /> Inactif</span>;
-      case "conge":   return <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs flex items-center gap-1 w-fit"><Clock className="w-3 h-3" /> Congé</span>;
-      default:        return <span className="text-xs text-gray-500">{statut}</span>;
+      case "conge": return <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs flex items-center gap-1 w-fit"><Clock className="w-3 h-3" /> Congé</span>;
+      default: return <span className="text-xs text-gray-900">{statut}</span>;
     }
   };
 
@@ -415,11 +415,10 @@ export default function GestionPersonnelPage() {
     <div className="space-y-6">
       {/* NOTIFICATION */}
       {notification.visible && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-xl border-l-4 shadow-lg max-w-sm animate-slide-in ${
-          notification.type === 'success' ? 'bg-green-50 border-green-500 text-green-700' :
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-xl border-l-4 shadow-lg max-w-sm animate-slide-in ${notification.type === 'success' ? 'bg-green-50 border-green-500 text-green-700' :
           notification.type === 'error' ? 'bg-red-50 border-red-500 text-red-700' :
-          'bg-blue-50 border-blue-500 text-blue-700'
-        }`}>
+            'bg-blue-50 border-blue-500 text-blue-700'
+          }`}>
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
               {notification.type === 'success' && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -431,7 +430,7 @@ export default function GestionPersonnelPage() {
             </div>
             <button
               onClick={() => setNotification(prev => ({ ...prev, visible: false }))}
-              className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+              className="flex-shrink-0 text-gray-900 hover:text-gray-600"
             >
               <X className="w-4 h-4" />
             </button>
@@ -497,7 +496,7 @@ export default function GestionPersonnelPage() {
       <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 min-w-[200px] relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
             <input
               type="text"
               placeholder="Rechercher par nom, matricule, email..."
@@ -524,7 +523,7 @@ export default function GestionPersonnelPage() {
             <option value="tous">Tous les postes</option>
             {POSTES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
           </select>
-          <span className="text-sm text-gray-500 self-center">{filteredPersonnel.length} résultat(s)</span>
+          <span className="text-sm text-gray-900 self-center">{filteredPersonnel.length} résultat(s)</span>
         </div>
       </div>
 
@@ -557,7 +556,7 @@ export default function GestionPersonnelPage() {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">{agent.prenom} {agent.nom}</p>
-                        <p className="text-xs text-gray-400">{agent.email}</p>
+                        <p className="text-xs text-gray-900">{agent.email}</p>
                       </div>
                     </div>
                   </td>
@@ -578,7 +577,7 @@ export default function GestionPersonnelPage() {
                               </span>
                             ))}
                             {agent.classes_assigned.length > 2 && (
-                              <span className="text-xs text-gray-400">+{agent.classes_assigned.length - 2}</span>
+                              <span className="text-xs text-gray-900">+{agent.classes_assigned.length - 2}</span>
                             )}
                             <button
                               onClick={() => openAssignModal(agent.id, agent.classes_assigned || [])}
@@ -597,7 +596,7 @@ export default function GestionPersonnelPage() {
                         )}
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-400">—</span>
+                      <span className="text-xs text-gray-900">—</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -605,28 +604,28 @@ export default function GestionPersonnelPage() {
                     {Number(agent.prime_mensuelle) > 0 && (
                       <p className="text-xs text-green-600">+{Number(agent.prime_mensuelle).toLocaleString()} prime</p>
                     )}
-                    <p className="text-xs text-gray-400">GNF</p>
+                    <p className="text-xs text-gray-900">GNF</p>
                   </td>
                   <td className="px-6 py-4">{getStatutBadge(agent.statut)}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
-                      <button 
-                        onClick={() => openDetailModal(agent)} 
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" 
+                      <button
+                        onClick={() => openDetailModal(agent)}
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"
                         title="Voir détails"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button 
-                        onClick={() => openForm(agent)} 
-                        className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition" 
+                      <button
+                        onClick={() => openForm(agent)}
+                        className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition"
                         title="Modifier"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button 
-                        onClick={() => openDeleteModal(agent)} 
-                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition" 
+                      <button
+                        onClick={() => openDeleteModal(agent)}
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition"
                         title="Supprimer"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -642,7 +641,7 @@ export default function GestionPersonnelPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t flex justify-between items-center bg-gray-50">
-            <p className="text-sm text-gray-500">{filteredPersonnel.length} agents • Page {currentPage}/{totalPages}</p>
+            <p className="text-sm text-gray-900">{filteredPersonnel.length} agents • Page {currentPage}/{totalPages}</p>
             <div className="flex gap-2">
               <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 border rounded-lg disabled:opacity-40 hover:bg-white transition">
                 <ChevronLeft className="w-4 h-4" />
@@ -662,12 +661,12 @@ export default function GestionPersonnelPage() {
             <div className="p-6 border-b sticky top-0 bg-white rounded-t-2xl z-10">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-900">Fiche de l'agent</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600 text-2xl leading-none">
                   &times;
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 space-y-6">
               {/* Avatar & Identité */}
               <div className="flex items-center gap-5">
@@ -676,7 +675,7 @@ export default function GestionPersonnelPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold text-gray-900">{selectedPersonnel.prenom} {selectedPersonnel.nom}</h3>
-                  <p className="text-gray-500 text-sm">Matricule : <span className="font-mono">{selectedPersonnel.matricule}</span></p>
+                  <p className="text-gray-900 text-sm">Matricule : <span className="font-mono">{selectedPersonnel.matricule}</span></p>
                   <div className="mt-1">{getStatutBadge(selectedPersonnel.statut)}</div>
                 </div>
               </div>
@@ -688,19 +687,19 @@ export default function GestionPersonnelPage() {
                 </h4>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-400">Poste</p>
+                    <p className="text-xs text-gray-900">Poste</p>
                     <p className="font-medium text-gray-900">{getPosteLabel(selectedPersonnel.type)}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-400">Département</p>
+                    <p className="text-xs text-gray-900">Département</p>
                     <p className="font-medium text-gray-900">{selectedPersonnel.departement || "-"}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-400">Date d'embauche</p>
+                    <p className="text-xs text-gray-900">Date d'embauche</p>
                     <p className="font-medium text-gray-900">{selectedPersonnel.dateEmbauche?.split('T')[0] || "-"}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-400">Statut</p>
+                    <p className="text-xs text-gray-900">Statut</p>
                     <div>{getStatutBadge(selectedPersonnel.statut)}</div>
                   </div>
                 </div>
@@ -721,7 +720,7 @@ export default function GestionPersonnelPage() {
                         </span>
                       ))
                     ) : (
-                      <span className="text-sm text-gray-400 bg-gray-50 px-4 py-2 rounded-lg">Aucune classe assignée</span>
+                      <span className="text-sm text-gray-900 bg-gray-50 px-4 py-2 rounded-lg">Aucune classe assignée</span>
                     )}
                   </div>
                 </div>
@@ -734,19 +733,19 @@ export default function GestionPersonnelPage() {
                 </h4>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="bg-blue-50 rounded-xl p-4 text-center">
-                    <p className="text-xs text-gray-500">Salaire de base</p>
+                    <p className="text-xs text-gray-900">Salaire de base</p>
                     <p className="font-bold text-blue-700 text-lg">{Number(selectedPersonnel.salaire || 0).toLocaleString()}</p>
-                    <p className="text-xs text-gray-400">GNF</p>
+                    <p className="text-xs text-gray-900">GNF</p>
                   </div>
                   <div className="bg-green-50 rounded-xl p-4 text-center">
-                    <p className="text-xs text-gray-500">Prime mensuelle</p>
+                    <p className="text-xs text-gray-900">Prime mensuelle</p>
                     <p className="font-bold text-green-700 text-lg">{Number(selectedPersonnel.prime_mensuelle || 0).toLocaleString()}</p>
-                    <p className="text-xs text-gray-400">GNF</p>
+                    <p className="text-xs text-gray-900">GNF</p>
                   </div>
                   <div className="bg-orange-50 rounded-xl p-4 text-center">
-                    <p className="text-xs text-gray-500">Salaire total</p>
+                    <p className="text-xs text-gray-900">Salaire total</p>
                     <p className="font-bold text-orange-700 text-lg">{(Number(selectedPersonnel.salaire || 0) + Number(selectedPersonnel.prime_mensuelle || 0)).toLocaleString()}</p>
-                    <p className="text-xs text-gray-400">GNF</p>
+                    <p className="text-xs text-gray-900">GNF</p>
                   </div>
                 </div>
               </div>
@@ -758,15 +757,15 @@ export default function GestionPersonnelPage() {
                 </h4>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3">
-                    <Mail className="w-4 h-4 text-gray-400" />
+                    <Mail className="w-4 h-4 text-gray-900" />
                     <span className="text-sm">{selectedPersonnel.email || "-"}</span>
                   </div>
                   <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3">
-                    <Phone className="w-4 h-4 text-gray-400" />
+                    <Phone className="w-4 h-4 text-gray-900" />
                     <span className="text-sm">{selectedPersonnel.telephone || "-"}</span>
                   </div>
                   <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 md:col-span-2">
-                    <MapPin className="w-4 h-4 text-gray-400" />
+                    <MapPin className="w-4 h-4 text-gray-900" />
                     <span className="text-sm">{selectedPersonnel.adresse || "-"}</span>
                   </div>
                 </div>
@@ -785,8 +784,8 @@ export default function GestionPersonnelPage() {
                     </a>
                   ) : (
                     <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 opacity-50">
-                      <XCircle className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-500">Photo non fournie</span>
+                      <XCircle className="w-4 h-4 text-gray-900" />
+                      <span className="text-sm text-gray-900">Photo non fournie</span>
                     </div>
                   )}
                   {selectedPersonnel.carte_id_url ? (
@@ -796,8 +795,8 @@ export default function GestionPersonnelPage() {
                     </a>
                   ) : (
                     <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 opacity-50">
-                      <XCircle className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-500">Carte d'identité non fournie</span>
+                      <XCircle className="w-4 h-4 text-gray-900" />
+                      <span className="text-sm text-gray-900">Carte d'identité non fournie</span>
                     </div>
                   )}
                   {selectedPersonnel.cv_url ? (
@@ -807,8 +806,8 @@ export default function GestionPersonnelPage() {
                     </a>
                   ) : (
                     <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 opacity-50">
-                      <XCircle className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-500">CV non fourni</span>
+                      <XCircle className="w-4 h-4 text-gray-900" />
+                      <span className="text-sm text-gray-900">CV non fourni</span>
                     </div>
                   )}
                   {selectedPersonnel.certificat_residence_url ? (
@@ -818,23 +817,23 @@ export default function GestionPersonnelPage() {
                     </a>
                   ) : (
                     <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 opacity-50">
-                      <XCircle className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-500">Certificat de résidence non fourni</span>
+                      <XCircle className="w-4 h-4 text-gray-900" />
+                      <span className="text-sm text-gray-900">Certificat de résidence non fourni</span>
                     </div>
                   )}
                 </div>
               </div>
             </div>
-            
+
             <div className="p-6 border-t bg-gray-50 rounded-b-2xl flex justify-end gap-3 sticky bottom-0">
-              <button 
-                onClick={() => { setShowDetailModal(false); openForm(selectedPersonnel); }} 
+              <button
+                onClick={() => { setShowDetailModal(false); openForm(selectedPersonnel); }}
                 className="px-4 py-2 border rounded-lg text-sm hover:bg-white transition flex items-center gap-2"
               >
                 <Edit className="w-4 h-4" /> Modifier
               </button>
-              <button 
-                onClick={() => setShowDetailModal(false)} 
+              <button
+                onClick={() => setShowDetailModal(false)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
               >
                 Fermer
@@ -851,7 +850,7 @@ export default function GestionPersonnelPage() {
             <div className="p-6 border-b sticky top-0 bg-white rounded-t-2xl">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-900">{editingPersonnel ? "Modifier l'agent" : "Ajouter un agent"}</h2>
-                <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-600 text-2xl leading-none">&times;</button>
               </div>
             </div>
             <div className="p-6 space-y-5">
@@ -892,28 +891,28 @@ export default function GestionPersonnelPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Salaire de base (GNF)</label>
                 <div className="relative">
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     min="0"
                     step="1000"
                     placeholder="Saisir le salaire"
-                    value={formData.salaire || ''} 
+                    value={formData.salaire || ''}
                     onChange={e => {
                       const value = e.target.value;
-                      setFormData({ 
-                        ...formData, 
-                        salaire: value === '' ? 0 : parseInt(value) || 0 
+                      setFormData({
+                        ...formData,
+                        salaire: value === '' ? 0 : parseInt(value) || 0
                       });
                     }}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   {formData.salaire === 0 && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-900 pointer-events-none">
                     </span>
                   )}
                 </div>
               </div>
-                {/*<div>
+              {/*<div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Prime mensuelle (GNF)</label>
                   <input type="number" min="0" value={formData.prime_mensuelle} onChange={e => setFormData({ ...formData, prime_mensuelle: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>*/}
@@ -944,7 +943,7 @@ export default function GestionPersonnelPage() {
                     {formData.photo_url ? (
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
-                        <button type="button" onClick={() => setFormData({...formData, photo_url: ""})} className="text-red-500 text-xs hover:underline">Supprimer</button>
+                        <button type="button" onClick={() => setFormData({ ...formData, photo_url: "" })} className="text-red-500 text-xs hover:underline">Supprimer</button>
                       </div>
                     ) : (
                       <input type="file" accept="image/*" onChange={e => e.target.files && handleFileUpload(e.target.files[0], 'photo_url')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -955,7 +954,7 @@ export default function GestionPersonnelPage() {
                     {formData.carte_id_url ? (
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
-                        <button type="button" onClick={() => setFormData({...formData, carte_id_url: ""})} className="text-red-500 text-xs hover:underline">Supprimer</button>
+                        <button type="button" onClick={() => setFormData({ ...formData, carte_id_url: "" })} className="text-red-500 text-xs hover:underline">Supprimer</button>
                       </div>
                     ) : (
                       <input type="file" accept="image/*,.pdf" onChange={e => e.target.files && handleFileUpload(e.target.files[0], 'carte_id_url')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -966,7 +965,7 @@ export default function GestionPersonnelPage() {
                     {formData.cv_url ? (
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
-                        <button type="button" onClick={() => setFormData({...formData, cv_url: ""})} className="text-red-500 text-xs hover:underline">Supprimer</button>
+                        <button type="button" onClick={() => setFormData({ ...formData, cv_url: "" })} className="text-red-500 text-xs hover:underline">Supprimer</button>
                       </div>
                     ) : (
                       <input type="file" accept=".pdf,.doc,.docx" onChange={e => e.target.files && handleFileUpload(e.target.files[0], 'cv_url')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -977,7 +976,7 @@ export default function GestionPersonnelPage() {
                     {formData.certificat_residence_url ? (
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
-                        <button type="button" onClick={() => setFormData({...formData, certificat_residence_url: ""})} className="text-red-500 text-xs hover:underline">Supprimer</button>
+                        <button type="button" onClick={() => setFormData({ ...formData, certificat_residence_url: "" })} className="text-red-500 text-xs hover:underline">Supprimer</button>
                       </div>
                     ) : (
                       <input type="file" accept="image/*,.pdf" onChange={e => e.target.files && handleFileUpload(e.target.files[0], 'certificat_residence_url')} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -1009,19 +1008,19 @@ export default function GestionPersonnelPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-900">Assigner des classes</h2>
-              <button onClick={() => setShowAssignModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowAssignModal(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-6 h-6" />
               </button>
             </div>
             <div className="p-6">
               <p className="text-sm text-gray-600 mb-4">Sélectionnez les classes que cet enseignant doit enseigner</p>
-              
+
               {/* ⭐ Affichage du nombre de classes assignées */}
               <div className={`mb-3 p-2 rounded-lg border ${selectedClasses.length > 0 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
-                <p className={`text-xs font-medium flex items-center gap-1 ${selectedClasses.length > 0 ? 'text-blue-700' : 'text-gray-500'}`}>
+                <p className={`text-xs font-medium flex items-center gap-1 ${selectedClasses.length > 0 ? 'text-blue-700' : 'text-gray-900'}`}>
                   <CheckCircle className="w-3 h-3" />
-                  {selectedClasses.length > 0 
-                    ? `${selectedClasses.length} classe(s) déjà assignée(s)` 
+                  {selectedClasses.length > 0
+                    ? `${selectedClasses.length} classe(s) déjà assignée(s)`
                     : 'Aucune classe assignée'}
                 </p>
                 {selectedClasses.length > 0 && (
@@ -1036,7 +1035,7 @@ export default function GestionPersonnelPage() {
                   </div>
                 )}
               </div>
-              
+
               {/* ⭐ Liste des classes avec "Assignée" en vert */}
               <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-2">
                 {classes.length > 0 ? (
@@ -1044,11 +1043,10 @@ export default function GestionPersonnelPage() {
                     const classId = Number(cls.id);
                     const isChecked = selectedClasses.includes(classId);
                     return (
-                      <label 
-                        key={cls.id} 
-                        className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition ${
-                          isChecked ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
-                        }`}
+                      <label
+                        key={cls.id}
+                        className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition ${isChecked ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
+                          }`}
                       >
                         <input
                           type="checkbox"
@@ -1066,7 +1064,7 @@ export default function GestionPersonnelPage() {
                           <p className={`text-sm font-medium ${isChecked ? 'text-blue-700' : 'text-gray-900'}`}>
                             {cls.nom}
                           </p>
-                          <p className="text-xs text-gray-500">{cls.niveau}</p>
+                          <p className="text-xs text-gray-900">{cls.niveau}</p>
                         </div>
                         {/* ⭐ BADGE "Assignée" EN VERT */}
                         {isChecked && (
@@ -1079,14 +1077,14 @@ export default function GestionPersonnelPage() {
                     );
                   })
                 ) : (
-                  <p className="text-center text-gray-400 py-4">Aucune classe disponible</p>
+                  <p className="text-center text-gray-900 py-4">Aucune classe disponible</p>
                 )}
               </div>
-              
+
               {/* Résumé des sélections */}
-              <div className="mt-3 text-xs text-gray-500">
-                {selectedClasses.length > 0 
-                  ? `${selectedClasses.length} classe(s) sélectionnée(s)` 
+              <div className="mt-3 text-xs text-gray-900">
+                {selectedClasses.length > 0
+                  ? `${selectedClasses.length} classe(s) sélectionnée(s)`
                   : 'Aucune classe sélectionnée'}
               </div>
             </div>
@@ -1114,14 +1112,14 @@ export default function GestionPersonnelPage() {
                 </div>
                 <h2 className="text-lg font-bold text-red-900">Confirmer la suppression</h2>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   if (!deleting) {
                     setShowDeleteModal(false);
                     setPersonnelToDelete(null);
                   }
                 }}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-gray-900 hover:text-gray-600 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1137,7 +1135,7 @@ export default function GestionPersonnelPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">{personnelToDelete.prenom} {personnelToDelete.nom}</p>
-                  <p className="text-xs text-gray-500">{personnelToDelete.matricule} • {getPosteLabel(personnelToDelete.type)}</p>
+                  <p className="text-xs text-gray-900">{personnelToDelete.matricule} • {getPosteLabel(personnelToDelete.type)}</p>
                 </div>
               </div>
               <p className="text-xs text-red-600 font-medium bg-red-50 p-3 rounded-lg flex items-center gap-2 border border-red-100">

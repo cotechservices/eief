@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
-  Store, ShoppingCart, Tag, Search, Plus, Trash2, Edit, 
+  Store, ShoppingCart, Tag, Search, Plus, Trash2, Edit,
   Box, Check, ImageIcon, X, Loader2, BookOpen, Package
 } from "lucide-react";
 
@@ -88,11 +88,11 @@ export default function TransportLibrairiePage() {
     const rawValue = e.target.value;
     const digitsOnly = rawValue.replace(/[^\d]/g, '');
     const numericValue = parseInt(digitsOnly) || 0;
-    
+
     setPrixFormate(formatPrix(numericValue));
-    setArticleData({ 
-      ...articleData, 
-      prix_unitaire: numericValue 
+    setArticleData({
+      ...articleData,
+      prix_unitaire: numericValue
     });
   };
 
@@ -136,7 +136,7 @@ export default function TransportLibrairiePage() {
     setUploading(true);
     try {
       let imageUrl = articleData.image_url;
-      
+
       if (selectedFile) {
         const uploadedUrl = await uploadImage(selectedFile);
         if (uploadedUrl) {
@@ -145,14 +145,14 @@ export default function TransportLibrairiePage() {
       }
 
       const method = editingArticle ? 'PUT' : 'POST';
-      const body = { 
-        ...articleData, 
+      const body = {
+        ...articleData,
         id: editingArticle?.id,
         image_url: imageUrl
       };
       const res = await fetch('/api/admin/librairie/articles', {
-        method, 
-        headers: { 'Content-Type': 'application/json' }, 
+        method,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
       if (res.ok) {
@@ -166,7 +166,7 @@ export default function TransportLibrairiePage() {
         const error = await res.json();
         alert(error.error || "Erreur lors de l'enregistrement");
       }
-    } catch (e) { 
+    } catch (e) {
       console.error(e);
       alert("Erreur lors de l'enregistrement");
     } finally {
@@ -196,8 +196,8 @@ export default function TransportLibrairiePage() {
     e.preventDefault();
     try {
       const res = await fetch('/api/admin/librairie/ventes', {
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(venteData)
       });
       if (res.ok) {
@@ -234,7 +234,7 @@ export default function TransportLibrairiePage() {
             <BookOpen className="w-7 h-7 text-purple-600" />
             Librairie
           </h1>
-          <p className="text-gray-500">Gestion des fournitures et uniformes</p>
+          <p className="text-gray-900">Gestion des fournitures et uniformes</p>
         </div>
         <Link
           href="/dashboard/admin_librairie/rapports"
@@ -249,21 +249,21 @@ export default function TransportLibrairiePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Articles en stock</p>
+            <p className="text-sm text-gray-900">Articles en stock</p>
             <p className="text-2xl font-bold text-blue-600">{stats.totalArticles}</p>
           </div>
           <Box className="text-blue-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500 flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Nombre de ventes</p>
+            <p className="text-sm text-gray-900">Nombre de ventes</p>
             <p className="text-2xl font-bold text-green-600">{stats.nombreVentes}</p>
           </div>
           <ShoppingCart className="text-green-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-orange-500 flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Articles vendus</p>
+            <p className="text-sm text-gray-900">Articles vendus</p>
             <p className="text-2xl font-bold text-orange-600">{stats.totalQuantiteVendue}</p>
           </div>
           <Package className="text-orange-200 w-10 h-10" />
@@ -272,24 +272,22 @@ export default function TransportLibrairiePage() {
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
         <div className="flex border-b flex-wrap">
-          <button 
-            onClick={() => setActiveTab("articles")} 
-            className={`px-6 py-4 font-medium transition-colors ${
-              activeTab === "articles" 
-                ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50" 
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
+          <button
+            onClick={() => setActiveTab("articles")}
+            className={`px-6 py-4 font-medium transition-colors ${activeTab === "articles"
+              ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
+              : "text-gray-600 hover:bg-gray-50"
+              }`}
           >
             <Package className="w-4 h-4 inline mr-2" />
             Inventaire
           </button>
-          <button 
-            onClick={() => setActiveTab("ventes")} 
-            className={`px-6 py-4 font-medium transition-colors ${
-              activeTab === "ventes" 
-                ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50" 
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
+          <button
+            onClick={() => setActiveTab("ventes")}
+            className={`px-6 py-4 font-medium transition-colors ${activeTab === "ventes"
+              ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
+              : "text-gray-600 hover:bg-gray-50"
+              }`}
           >
             <ShoppingCart className="w-4 h-4 inline mr-2" />
             Historique des ventes
@@ -298,32 +296,32 @@ export default function TransportLibrairiePage() {
 
         <div className="p-4 border-b flex flex-wrap justify-between gap-2 bg-gray-50/50">
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input 
-              type="text" 
-              placeholder="Rechercher..." 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-              className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500" 
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
           {activeTab === "articles" ? (
-            <button 
-              onClick={() => { 
-                setEditingArticle(null); 
-                setArticleData({ nom: "", description: "", prix_unitaire: 0, quantite_stock: 0, categorie: "fourniture", image_url: "" }); 
+            <button
+              onClick={() => {
+                setEditingArticle(null);
+                setArticleData({ nom: "", description: "", prix_unitaire: 0, quantite_stock: 0, categorie: "fourniture", image_url: "" });
                 setPrixFormate("");
-                setSelectedFile(null); 
-                setPreviewUrl(""); 
-                setShowArticleForm(true); 
-              }} 
+                setSelectedFile(null);
+                setPreviewUrl("");
+                setShowArticleForm(true);
+              }}
               className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-purple-700 transition whitespace-nowrap"
             >
               <Plus className="w-4 h-4" /> Ajouter un article
             </button>
           ) : (
-            <button 
-              onClick={() => setShowVenteForm(true)} 
+            <button
+              onClick={() => setShowVenteForm(true)}
               className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-green-700 transition whitespace-nowrap"
             >
               <ShoppingCart className="w-4 h-4" /> Nouvelle vente
@@ -355,12 +353,12 @@ export default function TransportLibrairiePage() {
                           </div>
                         ) : (
                           <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Box className="w-6 h-6 text-gray-400" />
+                            <Box className="w-6 h-6 text-gray-900" />
                           </div>
                         )}
                         <div>
                           <p className="font-bold text-gray-900">{a.nom}</p>
-                          <p className="text-sm text-gray-500">{a.description}</p>
+                          <p className="text-sm text-gray-900">{a.description}</p>
                         </div>
                       </div>
                     </td>
@@ -371,11 +369,10 @@ export default function TransportLibrairiePage() {
                       {formatPrix(a.prix_unitaire)} GNF
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                        a.quantite_stock > 10 ? "bg-green-100 text-green-700" : 
-                        a.quantite_stock > 0 ? "bg-orange-100 text-orange-700" : 
-                        "bg-red-100 text-red-700"
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${a.quantite_stock > 10 ? "bg-green-100 text-green-700" :
+                        a.quantite_stock > 0 ? "bg-orange-100 text-orange-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>
                         {a.quantite_stock}
                       </span>
                     </td>
@@ -394,7 +391,7 @@ export default function TransportLibrairiePage() {
               </tbody>
             </table>
             {filteredArticles.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-900">
                 <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium">Aucun article trouvé</p>
               </div>
@@ -430,7 +427,7 @@ export default function TransportLibrairiePage() {
               </tbody>
             </table>
             {filteredVentes.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-900">
                 <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium">Aucune vente trouvée</p>
               </div>
@@ -460,9 +457,9 @@ export default function TransportLibrairiePage() {
                   />
                   {previewUrl || articleData.image_url ? (
                     <div className="relative inline-block">
-                      <img 
-                        src={previewUrl || articleData.image_url || ""} 
-                        alt="Aperçu" 
+                      <img
+                        src={previewUrl || articleData.image_url || ""}
+                        alt="Aperçu"
                         className="w-32 h-32 object-cover rounded-lg mx-auto"
                       />
                       <button
@@ -475,9 +472,9 @@ export default function TransportLibrairiePage() {
                     </div>
                   ) : (
                     <div className="text-center">
-                      <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                      <ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" />
                       <p className="text-sm text-gray-600">Cliquez pour ajouter une image</p>
-                      <p className="text-xs text-gray-400">PNG, JPG, WEBP</p>
+                      <p className="text-xs text-gray-900">PNG, JPG, WEBP</p>
                     </div>
                   )}
                 </div>
@@ -485,48 +482,48 @@ export default function TransportLibrairiePage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'article *</label>
-                <input 
-                  required 
-                  type="text" 
-                  value={articleData.nom || ""} 
-                  onChange={e => setArticleData({ ...articleData, nom: e.target.value })} 
-                  className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                <input
+                  required
+                  type="text"
+                  value={articleData.nom || ""}
+                  onChange={e => setArticleData({ ...articleData, nom: e.target.value })}
+                  className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea 
-                  rows={2} 
-                  value={articleData.description || ""} 
-                  onChange={e => setArticleData({ ...articleData, description: e.target.value })} 
-                  className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                <textarea
+                  rows={2}
+                  value={articleData.description || ""}
+                  onChange={e => setArticleData({ ...articleData, description: e.target.value })}
+                  className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Prix Unitaire (GNF) *</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">GNF</span>
-                    <input 
-                      required 
-                      type="text" 
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 text-sm">GNF</span>
+                    <input
+                      required
+                      type="text"
                       inputMode="numeric"
-                      value={prixFormate || (articleData.prix_unitaire ? formatPrix(articleData.prix_unitaire) : "")} 
+                      value={prixFormate || (articleData.prix_unitaire ? formatPrix(articleData.prix_unitaire) : "")}
                       onChange={handlePrixChange}
                       placeholder="0"
-                      className="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                      className="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Saisissez uniquement des chiffres</p>
+                  <p className="text-xs text-gray-900 mt-1">Saisissez uniquement des chiffres</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Quantité en stock *</label>
-                  <input 
-                    required 
-                    type="number" 
+                  <input
+                    required
+                    type="number"
                     min="0"
                     placeholder="0"
-                    value={articleData.quantite_stock === 0 && !editingArticle ? "" : articleData.quantite_stock ?? 0} 
+                    value={articleData.quantite_stock === 0 && !editingArticle ? "" : articleData.quantite_stock ?? 0}
                     onChange={e => {
                       const value = e.target.value;
                       if (value === "") {
@@ -537,16 +534,16 @@ export default function TransportLibrairiePage() {
                           setArticleData({ ...articleData, quantite_stock: val });
                         }
                       }
-                    }} 
-                    className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                    }}
+                    className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-                <select 
-                  value={articleData.categorie || "fourniture"} 
-                  onChange={e => setArticleData({ ...articleData, categorie: e.target.value })} 
+                <select
+                  value={articleData.categorie || "fourniture"}
+                  onChange={e => setArticleData({ ...articleData, categorie: e.target.value })}
                   className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="fourniture">Fourniture scolaire</option>
@@ -575,10 +572,10 @@ export default function TransportLibrairiePage() {
             <form onSubmit={handleVenteSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Article</label>
-                <select 
-                  required 
-                  value={venteData.article_id} 
-                  onChange={e => setVenteData({ ...venteData, article_id: e.target.value })} 
+                <select
+                  required
+                  value={venteData.article_id}
+                  onChange={e => setVenteData({ ...venteData, article_id: e.target.value })}
                   className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">Sélectionner un article</option>
@@ -589,9 +586,9 @@ export default function TransportLibrairiePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Élève (Optionnel)</label>
-                <select 
-                  value={venteData.eleve_id} 
-                  onChange={e => setVenteData({ ...venteData, eleve_id: e.target.value })} 
+                <select
+                  value={venteData.eleve_id}
+                  onChange={e => setVenteData({ ...venteData, eleve_id: e.target.value })}
                   className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">Vente libre / Anonyme</option>
@@ -602,19 +599,19 @@ export default function TransportLibrairiePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Quantité</label>
-                <input 
-                  required 
-                  type="number" 
-                  min="1" 
-                  value={venteData.quantite || 1} 
+                <input
+                  required
+                  type="number"
+                  min="1"
+                  value={venteData.quantite || 1}
                   onChange={e => {
                     const val = parseInt(e.target.value);
-                    setVenteData({ 
-                      ...venteData, 
-                      quantite: isNaN(val) || val < 1 ? 1 : val 
+                    setVenteData({
+                      ...venteData,
+                      quantite: isNaN(val) || val < 1 ? 1 : val
                     });
-                  }} 
-                  className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                  }}
+                  className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
               <div className="flex justify-end gap-3 mt-6">

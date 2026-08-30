@@ -220,7 +220,7 @@ export default function PaiementsPage() {
           <div className="text-center py-12 text-red-600">
             <AlertCircle className="w-12 h-12 mx-auto mb-3" />
             <p>{error}</p>
-            <button 
+            <button
               onClick={fetchPaiements}
               className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
@@ -228,7 +228,7 @@ export default function PaiementsPage() {
             </button>
           </div>
         ) : paiements.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-900">
             <p>Aucun paiement trouvé</p>
           </div>
         ) : (
@@ -317,11 +317,10 @@ export default function PaiementsPage() {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`px-3 py-2 border rounded-lg ${
-                        currentPage === pageNum
+                      className={`px-3 py-2 border rounded-lg ${currentPage === pageNum
                           ? 'bg-blue-600 text-white'
                           : 'hover:bg-gray-50'
-                      }`}
+                        }`}
                     >
                       {pageNum}
                     </button>

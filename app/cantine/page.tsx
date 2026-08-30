@@ -116,7 +116,7 @@ export default function PublicCantinePage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Utensils className="text-green-600 w-6 h-6" /> Menus de la semaine
+                <Utensils className="text-green-600 w-6 h-6" /> CANTINE
               </h2>
               <p className="text-gray-900 text-sm mt-1">Découvrez la liste des plats équilibrés préparés par notre équipe</p>
             </div>
@@ -134,7 +134,7 @@ export default function PublicCantinePage() {
             <div className="text-center py-16 bg-gray-50/50 rounded-2xl border border-dashed">
               <Utensils className="w-12 h-12 text-gray-900 mx-auto mb-3" />
               <p className="text-gray-900 font-medium">Aucun menu publié pour le moment.</p>
-              <p className="text-gray-900 text-sm mt-1">Les menus de la semaine seront bientôt mis en ligne par l'administration.</p>
+              <p className="text-gray-900 text-sm mt-1">Les CANTINE  seront bientôt mis en ligne par l'administration.</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -172,8 +172,8 @@ export default function PublicCantinePage() {
                   </div>
 
                   <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-900">
-                    <span>Menu EIEF complet</span>
-                    <span className="font-bold text-green-600">5,000 GNF</span>
+                    <span>Abbonnement annuel</span>
+                    <span className="font-bold text-green-600">3 600 000 GNF</span>
                   </div>
                 </div>
               ))}

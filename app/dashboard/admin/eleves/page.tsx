@@ -193,7 +193,7 @@ export default function GestionElevesPage() {
         try {
           const error = await response.json();
           errorMessage = error.error || errorMessage;
-        } catch (e) {}
+        } catch (e) { }
         addNotification("error", errorMessage);
       }
     } catch (error) {
@@ -274,7 +274,7 @@ export default function GestionElevesPage() {
     // Non inscrit
     if (!inscrit || statut === 'non_inscrit') {
       return (
-        <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+        <span className="bg-gray-100 text-gray-900 px-2 py-1 rounded-full text-xs flex items-center gap-1">
           <XCircle className="w-3 h-3" />
           Non inscrit
         </span>
@@ -396,15 +396,14 @@ export default function GestionElevesPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
-              notification.type === "success"
-                ? "bg-green-50 border-l-4 border-green-500 text-green-800"
-                : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -415,7 +414,7 @@ export default function GestionElevesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-500 hover:text-gray-700 transition"
+              className="ml-4 text-gray-900 hover:text-gray-700 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -566,7 +565,7 @@ export default function GestionElevesPage() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-1">
-                          <Mail className="w-3 h-3 text-gray-400" />
+                          <Mail className="w-3 h-3 text-gray-900" />
                           <span className="text-sm text-blue-600">{e.enfant_email || '-'}</span>
                         </div>
                       </td>
@@ -587,11 +586,11 @@ export default function GestionElevesPage() {
                       <td className="px-4 py-4">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-1">
-                            <Bus className="w-3 h-3 text-gray-400" />
+                            <Bus className="w-3 h-3 text-gray-900" />
                             {getServiceBadge(e.transport_inscrit, e.transport_statut)}
                           </div>
                           {e.transport_inscrit && e.transport_montant > 0 && (
-                            <span className="text-xs text-gray-500 ml-5">
+                            <span className="text-xs text-gray-900 ml-5">
                               {e.transport_montant.toLocaleString()} GNF
                             </span>
                           )}
@@ -600,11 +599,11 @@ export default function GestionElevesPage() {
                       <td className="px-4 py-4">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-1">
-                            <Utensils className="w-3 h-3 text-gray-400" />
+                            <Utensils className="w-3 h-3 text-gray-900" />
                             {getServiceBadge(e.cantine_inscrit, e.cantine_statut)}
                           </div>
                           {e.cantine_inscrit && e.cantine_montant > 0 && (
-                            <span className="text-xs text-gray-500 ml-5">
+                            <span className="text-xs text-gray-900 ml-5">
                               {e.cantine_montant.toLocaleString()} GNF
                             </span>
                           )}
@@ -668,11 +667,10 @@ export default function GestionElevesPage() {
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page as number)}
-                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white'
-                              : 'text-gray-900 hover:bg-gray-100'
-                          }`}
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition ${currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'text-gray-900 hover:bg-gray-100'
+                            }`}
                         >
                           {page}
                         </button>
@@ -752,7 +750,7 @@ export default function GestionElevesPage() {
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-black">Fiche élève</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-700">✕</button>
               </div>
             </div>
             <div className="p-6 space-y-6">
@@ -763,7 +761,7 @@ export default function GestionElevesPage() {
                     <img src={selectedEleve.photo_url} alt="Photo" className="w-32 h-32 rounded-lg object-cover shadow-md" />
                   ) : (
                     <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Camera className="w-12 h-12 text-gray-400" />
+                      <Camera className="w-12 h-12 text-gray-900" />
                     </div>
                   )}
                 </div>
@@ -771,19 +769,19 @@ export default function GestionElevesPage() {
                   <h3 className="text-2xl font-bold text-black">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</h3>
                   <div className="grid grid-cols-2 gap-4 mt-2">
                     <div>
-                      <p className="text-sm text-gray-500">Matricule</p>
+                      <p className="text-sm text-gray-900">Matricule</p>
                       <p className="font-mono font-medium text-blue-600">{selectedEleve.matricule}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Numéro dossier</p>
+                      <p className="text-sm text-gray-900">Numéro dossier</p>
                       <p className="font-mono font-medium text-blue-600">{selectedEleve.numero_dossier || '-'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Email</p>
+                      <p className="text-sm text-gray-900">Email</p>
                       <p className="font-medium text-black">{selectedEleve.enfant_email || '-'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Statut</p>
+                      <p className="text-sm text-gray-900">Statut</p>
                       <div className="flex items-center gap-2 flex-wrap">
                         {getStatutBadge(selectedEleve.statut)}
                         <button
@@ -808,9 +806,9 @@ export default function GestionElevesPage() {
                   Informations du parent
                 </h3>
                 <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg text-black">
-                  <div><p className="text-sm text-gray-500">Nom complet</p><p className="font-medium">{selectedEleve.parent_prenom} {selectedEleve.parent_nom}</p></div>
-                  <div><p className="text-sm text-gray-500">Email</p><p>{selectedEleve.parent_email}</p></div>
-                  <div><p className="text-sm text-gray-500">Téléphone</p><p>{selectedEleve.parent_telephone}</p></div>
+                  <div><p className="text-sm text-gray-900">Nom complet</p><p className="font-medium">{selectedEleve.parent_prenom} {selectedEleve.parent_nom}</p></div>
+                  <div><p className="text-sm text-gray-900">Email</p><p>{selectedEleve.parent_email}</p></div>
+                  <div><p className="text-sm text-gray-900">Téléphone</p><p>{selectedEleve.parent_telephone}</p></div>
                 </div>
               </div>
 
@@ -821,12 +819,12 @@ export default function GestionElevesPage() {
                   Informations de l'enfant
                 </h3>
                 <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg text-black">
-                  <div><p className="text-sm text-gray-500">Nom complet</p><p className="font-medium">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</p></div>
-                  <div><p className="text-sm text-gray-500">Date de naissance</p><p>{new Date(selectedEleve.date_naissance).toLocaleDateString()}</p></div>
-                  <div><p className="text-sm text-gray-500">Lieu de naissance</p><p>{selectedEleve.lieu_naissance || "Non renseigné"}</p></div>
-                  <div><p className="text-sm text-gray-500">Sexe</p><p>{selectedEleve.sexe === "M" ? "Masculin" : "Féminin"}</p></div>
-                  <div><p className="text-sm text-gray-500">Niveau</p><p>{selectedEleve.niveau}</p></div>
-                  <div><p className="text-sm text-gray-500">Classe</p><p>{selectedEleve.classe_nom}</p></div>
+                  <div><p className="text-sm text-gray-900">Nom complet</p><p className="font-medium">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</p></div>
+                  <div><p className="text-sm text-gray-900">Date de naissance</p><p>{new Date(selectedEleve.date_naissance).toLocaleDateString()}</p></div>
+                  <div><p className="text-sm text-gray-900">Lieu de naissance</p><p>{selectedEleve.lieu_naissance || "Non renseigné"}</p></div>
+                  <div><p className="text-sm text-gray-900">Sexe</p><p>{selectedEleve.sexe === "M" ? "Masculin" : "Féminin"}</p></div>
+                  <div><p className="text-sm text-gray-900">Niveau</p><p>{selectedEleve.niveau}</p></div>
+                  <div><p className="text-sm text-gray-900">Classe</p><p>{selectedEleve.classe_nom}</p></div>
                 </div>
               </div>
 
@@ -845,7 +843,7 @@ export default function GestionElevesPage() {
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500">Statut:</span>
+                        <span className="text-sm text-gray-900">Statut:</span>
                         {getServiceBadge(selectedEleve.transport_inscrit, selectedEleve.transport_statut)}
                       </div>
                       {selectedEleve.transport_inscrit && selectedEleve.transport_montant > 0 && (
@@ -862,7 +860,7 @@ export default function GestionElevesPage() {
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500">Statut:</span>
+                        <span className="text-sm text-gray-900">Statut:</span>
                         {getServiceBadge(selectedEleve.cantine_inscrit, selectedEleve.cantine_statut)}
                       </div>
                       {selectedEleve.cantine_inscrit && selectedEleve.cantine_montant > 0 && (
@@ -884,7 +882,7 @@ export default function GestionElevesPage() {
                 </h3>
                 <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-500">Montant des frais</p>
+                    <p className="text-sm text-gray-900">Montant des frais</p>
                     <p className="font-bold text-lg text-black">
                       {(selectedEleve.frais_montant || 0).toLocaleString()} GNF
                     </p>
@@ -893,7 +891,7 @@ export default function GestionElevesPage() {
                   </div>
                   {selectedEleve.frais_mode_paiement && (
                     <div>
-                      <p className="text-sm text-gray-500">Mode de paiement</p>
+                      <p className="text-sm text-gray-900">Mode de paiement</p>
                       <p className="capitalize text-black">{selectedEleve.frais_mode_paiement.replace("_", " ")}</p>
                     </div>
                   )}
@@ -931,7 +929,7 @@ export default function GestionElevesPage() {
                 <h2 className="text-xl font-bold text-gray-900">Modifier le statut</h2>
                 <button
                   onClick={() => setShowStatutModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-900 hover:text-gray-700"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -940,9 +938,9 @@ export default function GestionElevesPage() {
 
             <div className="p-6">
               <div className="mb-6">
-                <p className="text-sm text-gray-500">Élève</p>
+                <p className="text-sm text-gray-900">Élève</p>
                 <p className="font-medium text-lg">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</p>
-                <p className="text-sm text-gray-500">Matricule: {selectedEleve.matricule}</p>
+                <p className="text-sm text-gray-900">Matricule: {selectedEleve.matricule}</p>
               </div>
 
               <div className="space-y-3">
@@ -957,22 +955,19 @@ export default function GestionElevesPage() {
                       key={value}
                       type="button"
                       onClick={() => setNewStatut(value as "actif" | "inactif" | "suspendu")}
-                      className={`p-3 border-2 rounded-lg text-center transition ${
-                        newStatut === value
-                          ? `border-${color}-500 bg-${color}-50`
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`p-3 border-2 rounded-lg text-center transition ${newStatut === value
+                        ? `border-${color}-500 bg-${color}-50`
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
                     >
-                      <div className={`w-3 h-3 rounded-full mx-auto mb-1 ${
-                        value === 'actif' ? 'bg-green-500' :
+                      <div className={`w-3 h-3 rounded-full mx-auto mb-1 ${value === 'actif' ? 'bg-green-500' :
                         value === 'suspendu' ? 'bg-orange-500' :
-                        'bg-red-500'
-                      }`} />
-                      <span className={`text-sm font-medium ${
-                        value === 'actif' ? 'text-green-700' :
+                          'bg-red-500'
+                        }`} />
+                      <span className={`text-sm font-medium ${value === 'actif' ? 'text-green-700' :
                         value === 'suspendu' ? 'text-orange-700' :
-                        'text-red-700'
-                      }`}>{label}</span>
+                          'text-red-700'
+                        }`}>{label}</span>
                     </button>
                   ))}
                 </div>
@@ -1002,11 +997,10 @@ export default function GestionElevesPage() {
               <button
                 onClick={() => handleUpdateStatut(selectedEleve.id, newStatut)}
                 disabled={updatingStatut || newStatut === selectedEleve.statut}
-                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
-                  updatingStatut || newStatut === selectedEleve.statut
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${updatingStatut || newStatut === selectedEleve.statut
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
               >
                 {updatingStatut ? (
                   <>

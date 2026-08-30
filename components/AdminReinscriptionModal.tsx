@@ -131,10 +131,10 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
     const nom = (getEleveNom(e) || '').toLowerCase();
     const prenom = (getElevePrenom(e) || '').toLowerCase();
     const matricule = (e.matricule || '').toLowerCase();
-    
+
     return nom.includes(searchLower) ||
-           prenom.includes(searchLower) ||
-           matricule.includes(searchLower);
+      prenom.includes(searchLower) ||
+      matricule.includes(searchLower);
   });
 
   const getTotalGeneral = () => {
@@ -205,7 +205,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
               <h2 className="text-xl font-bold text-black">Nouvelle réinscription</h2>
               <p className="text-sm text-gray-600">Créez une réinscription pour un élève</p>
             </div>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-700">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -217,11 +217,11 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
             <label className="block text-gray-700 font-medium mb-2">
               Élève à réinscrire *
             </label>
-            
+
             {!selectedEleve ? (
               <div className="border rounded-lg p-4">
                 <div className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
                     type="text"
                     placeholder="Rechercher un élève par nom, prénom ou matricule..."
@@ -230,13 +230,13 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                     className="w-full pl-9 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-black"
                   />
                 </div>
-                
+
                 {loadingEleves ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
                   </div>
                 ) : filteredEleves.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-900">
                     <User className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p>{searchEleve ? "Aucun élève trouvé" : "Aucun élève disponible"}</p>
                   </div>
@@ -254,15 +254,15 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                           <img src={eleve.photo_url} alt="photo" className="w-12 h-12 rounded-full object-cover" />
                         ) : (
                           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                            <User className="w-6 h-6 text-gray-400" />
+                            <User className="w-6 h-6 text-gray-900" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-black">{getEleveNomComplet(eleve)}</p>
-                          <p className="text-sm text-gray-500">Matricule: {eleve.matricule || 'N/A'}</p>
+                          <p className="text-sm text-gray-900">Matricule: {eleve.matricule || 'N/A'}</p>
                           <p className="text-xs text-purple-600">{eleve.classe_nom || 'Sans classe'}</p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                        <ChevronRight className="w-5 h-5 text-gray-900 flex-shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -275,7 +275,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                     <img src={selectedEleve.photo_url} alt="photo" className="w-14 h-14 rounded-full object-cover" />
                   ) : (
                     <div className="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-7 h-7 text-gray-400" />
+                      <User className="w-7 h-7 text-gray-900" />
                     </div>
                   )}
                   <div>
@@ -322,19 +322,19 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                   <h4 className="font-semibold text-purple-800 mb-3">Frais de réinscription</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="bg-white p-3 rounded-lg border border-gray-200 text-center">
-                      <p className="text-xs text-gray-500">1er versement</p>
+                      <p className="text-xs text-gray-900">1er versement</p>
                       <p className="font-bold text-purple-600">
                         {formatMontant(classes.find(c => c.id === selectedClasseId)?.reinscription_premier_versement || 0)} GNF
                       </p>
                     </div>
                     <div className="bg-white p-3 rounded-lg border border-gray-200 text-center">
-                      <p className="text-xs text-gray-500">2ème versement</p>
+                      <p className="text-xs text-gray-900">2ème versement</p>
                       <p className="font-bold text-purple-600">
                         {formatMontant(classes.find(c => c.id === selectedClasseId)?.reinscription_deuxieme_versement || 0)} GNF
                       </p>
                     </div>
                     <div className="bg-white p-3 rounded-lg border border-gray-200 text-center">
-                      <p className="text-xs text-gray-500">3ème versement</p>
+                      <p className="text-xs text-gray-900">3ème versement</p>
                       <p className="font-bold text-purple-600">
                         {formatMontant(classes.find(c => c.id === selectedClasseId)?.reinscription_troisieme_versement || 0)} GNF
                       </p>
@@ -375,7 +375,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                         className="w-32 px-2 py-1 border rounded text-right text-black disabled:bg-gray-100"
                         placeholder="Prix"
                       />
-                      <span className="text-gray-500 text-sm">GNF</span>
+                      <span className="text-gray-900 text-sm">GNF</span>
                     </div>
 
                     <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -399,7 +399,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                         className="w-32 px-2 py-1 border rounded text-right text-black disabled:bg-gray-100"
                         placeholder="Prix"
                       />
-                      <span className="text-gray-500 text-sm">GNF</span>
+                      <span className="text-gray-900 text-sm">GNF</span>
                     </div>
 
                     <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -423,7 +423,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                         className="w-32 px-2 py-1 border rounded text-right text-black disabled:bg-gray-100"
                         placeholder="Prix"
                       />
-                      <span className="text-gray-500 text-sm">GNF</span>
+                      <span className="text-gray-900 text-sm">GNF</span>
                     </div>
                   </div>
                 </div>
@@ -438,7 +438,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                       {formatMontant(getTotalGeneral())} GNF
                     </span>
                   </div>
-                  <div className="mt-2 text-sm text-gray-500 space-y-1">
+                  <div className="mt-2 text-sm text-gray-900 space-y-1">
                     <div className="flex justify-between">
                       <span>Frais de réinscription</span>
                       <span>{formatMontant(fraisReinscription)} GNF</span>
@@ -490,11 +490,10 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                 <button
                   onClick={handleSubmit}
                   disabled={loading || !selectedClasseId || success}
-                  className={`px-6 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${
-                    loading || !selectedClasseId || success
-                      ? 'bg-gray-300 cursor-not-allowed'
-                      : 'bg-purple-600 text-white hover:bg-purple-700'
-                  }`}
+                  className={`px-6 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${loading || !selectedClasseId || success
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                    }`}
                 >
                   {loading ? (
                     <>

@@ -206,10 +206,10 @@ export default function PublicTransportPage() {
               <span>Informations Importantes</span>
             </div>
             <ul className="text-xs text-blue-100 space-y-2 list-disc list-inside">
-              <li>Les élèves doivent se présenter à leur arrêt de bus 5 minutes avant l'heure prévue.</li>
+              <li>Les élèves doivent se présenter à leur arrêt de bus 10 minutes avant l'heure prévue.</li>
               <li>Chaque élève inscrit doit présenter sa carte de transport valide au chauffeur à chaque montée.</li>
               <li>Toute absence ou changement exceptionnel de trajet doit être signalé au chauffeur ou au surveillant de ligne le plus tôt possible.</li>
-              <li>Les abonnements sont mensuels et payables d'avance entre le 1er et le 5 de chaque mois.</li>
+              <li>Les abonnements sont mensuels ou annuels et payables d'avance à la scolarité.</li>
             </ul>
           </div>
         </div>

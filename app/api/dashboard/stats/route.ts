@@ -193,8 +193,13 @@ export async function GET() {
     const derniersPaiements = await query(`
       SELECT
         pa.id,
-        COALESCE(p.enfant_prenom, r.enfant_prenom) || ' ' || COALESCE(p.enfant_nom, r.enfant_nom) as eleve,
-        COALESCE(p.classe, r.classe_nom) as classe,
+        COALESCE(
+          NULLIF(TRIM(CONCAT(ue.prenom, ' ', ue.nom)), ''),
+          NULLIF(TRIM(CONCAT(p.enfant_prenom, ' ', p.enfant_nom)), ''),
+          NULLIF(TRIM(CONCAT(r.enfant_prenom, ' ', r.enfant_nom)), ''),
+          'Élève'
+        ) as eleve,
+        COALESCE(ce.nom, p.classe, r.classe_nom, '-') as classe,
         pa.montant,
         pa.type_frais as type,
         pa.date_paiement as date,
@@ -208,8 +213,11 @@ export async function GET() {
       FROM paiements pa
       LEFT JOIN preinscriptions p ON pa.preinscription_id = p.id
       LEFT JOIN reinscriptions r ON pa.reinscription_id = r.id
+      LEFT JOIN eleves e ON pa.eleve_id = e.id
+      LEFT JOIN utilisateurs ue ON e.utilisateur_id = ue.id
+      LEFT JOIN classes ce ON e.classe_id = ce.id
       WHERE pa.statut IN ('valide', 'paye')
-      ORDER BY pa.date_paiement DESC
+      ORDER BY pa.date_paiement DESC, pa.id DESC
       LIMIT 10
     `);
 
@@ -218,17 +226,17 @@ export async function GET() {
         CASE
           WHEN type_frais = 'inscription' THEN 'Inscription'
           WHEN type_frais = 'reinscription' THEN 'Réinscription'
-          WHEN type_frais = 'mensualite' THEN 'Mensualité'
+          WHEN type_frais = 'mensualite' OR type_frais = 'scolarite' THEN 'Mensualité'
           WHEN type_frais = 'cantine' THEN 'Cantine'
           WHEN type_frais = 'transport' THEN 'Transport'
-          WHEN type_frais = 'librairie' THEN 'Fournitures'
+          WHEN type_frais = 'librairie' OR type_frais = 'fournitures' THEN 'Fournitures'
           ELSE 'Autre'
         END as name,
         COALESCE(SUM(montant), 0) as montant
       FROM paiements
       WHERE statut IN ('valide', 'paye')
-        AND (preinscription_id IS NOT NULL OR reinscription_id IS NOT NULL)
-      GROUP BY type_frais
+      GROUP BY 1
+      ORDER BY montant DESC
     `);
 
     const totalRecettesCat = paiementsParType.rows.reduce((acc, row) => acc + Number(row.montant), 0);

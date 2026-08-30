@@ -24,7 +24,7 @@ export default function SoumissionsPage() {
   const params = useParams();
   // ⭐ Récupérer l'ID correctement
   const devoirId = params.id as string;
-  
+
   const [soumissions, setSoumissions] = useState<Soumission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,8 +90,8 @@ export default function SoumissionsPage() {
 
       if (res.ok) {
         const data = await res.json();
-        setSoumissions(soumissions.map(s => 
-          s.id === selectedSoumission.id 
+        setSoumissions(soumissions.map(s =>
+          s.id === selectedSoumission.id
             ? { ...s, note: data.soumission.note, commentaire: data.soumission.commentaire }
             : s
         ));
@@ -139,7 +139,7 @@ export default function SoumissionsPage() {
     <div className="space-y-6">
       <Link
         href="/dashboard/enseignant/devoirs"
-        className="inline-flex items-center gap-2 text-gray-500 hover:text-orange-600 text-sm font-medium transition"
+        className="inline-flex items-center gap-2 text-gray-900 hover:text-orange-600 text-sm font-medium transition"
       >
         <ArrowLeft className="w-4 h-4" /> Retour aux devoirs
       </Link>
@@ -149,11 +149,11 @@ export default function SoumissionsPage() {
         <div className="w-full md:w-1/3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-12rem)]">
           <div className="p-4 border-b bg-gray-50">
             <h2 className="font-bold text-gray-900 line-clamp-1">{devoirInfo?.titre || "Soumissions"}</h2>
-            <p className="text-sm text-gray-500 mt-1">{devoirInfo?.classe} • {soumissions.length} reçue(s)</p>
+            <p className="text-sm text-gray-900 mt-1">{devoirInfo?.classe} • {soumissions.length} reçue(s)</p>
           </div>
           <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
             {soumissions.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">
+              <div className="p-8 text-center text-gray-900">
                 <FileText className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">Aucune soumission reçue.</p>
               </div>
@@ -162,14 +162,13 @@ export default function SoumissionsPage() {
                 <button
                   key={s.id}
                   onClick={() => handleSelect(s)}
-                  className={`w-full text-left p-4 hover:bg-orange-50 transition flex items-center justify-between group ${
-                    selectedSoumission?.id === s.id ? "bg-orange-50 border-l-2 border-orange-500" : ""
-                  }`}
+                  className={`w-full text-left p-4 hover:bg-orange-50 transition flex items-center justify-between group ${selectedSoumission?.id === s.id ? "bg-orange-50 border-l-2 border-orange-500" : ""
+                    }`}
                 >
                   <div className="flex-1 min-w-0 pr-3">
                     <p className="font-medium text-gray-900 text-sm truncate">{s.eleve_nom}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                      <span className="text-[10px] text-gray-900 flex items-center gap-1">
                         <Clock className="w-3 h-3" /> {new Date(s.date_soumission).toLocaleDateString()}
                       </span>
                       {s.est_retard && (
@@ -203,7 +202,7 @@ export default function SoumissionsPage() {
                     <User className="w-5 h-5 text-orange-600" />
                     {selectedSoumission.eleve_nom}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+                  <p className="text-sm text-gray-900 mt-1 flex items-center gap-2">
                     Soumis le {new Date(selectedSoumission.date_soumission).toLocaleString("fr-FR")}
                     {selectedSoumission.est_retard && (
                       <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs font-semibold">En retard</span>
@@ -212,7 +211,7 @@ export default function SoumissionsPage() {
                 </div>
                 {selectedSoumission.note !== null && (
                   <div className="text-center">
-                    <span className="block text-xs text-gray-500 mb-1">Note actuelle</span>
+                    <span className="block text-xs text-gray-900 mb-1">Note actuelle</span>
                     <span className="text-2xl font-black text-green-600 bg-green-50 px-3 py-1 rounded-xl">
                       {selectedSoumission.note}/20
                     </span>
@@ -255,11 +254,10 @@ export default function SoumissionsPage() {
               {/* Formulaire notation */}
               <div className="p-6 border-t bg-white">
                 <h4 className="text-sm font-bold text-gray-900 mb-4">Évaluer ce travail</h4>
-                
+
                 {message && (
-                  <div className={`mb-4 p-3 rounded-lg text-sm flex items-center gap-2 ${
-                    message.type === "success" ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100"
-                  }`}>
+                  <div className={`mb-4 p-3 rounded-lg text-sm flex items-center gap-2 ${message.type === "success" ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100"
+                    }`}>
                     {message.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                     {message.text}
                   </div>
@@ -267,7 +265,7 @@ export default function SoumissionsPage() {
 
                 <form onSubmit={handleNoteSubmit} className="flex flex-col sm:flex-row gap-4">
                   <div className="w-full sm:w-32">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Note </label>
+                    <label className="block text-xs font-semibold text-gray-900 mb-1">Note </label>
                     <input
                       type="number"
                       min="0"
@@ -280,7 +278,7 @@ export default function SoumissionsPage() {
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Appréciation (optionnelle)</label>
+                    <label className="block text-xs font-semibold text-gray-900 mb-1">Appréciation (optionnelle)</label>
                     <input
                       type="text"
                       value={noteForm.commentaire}
@@ -309,7 +307,7 @@ export default function SoumissionsPage() {
                           setNoteForm({ note: "", commentaire: "" });
                           setMessage(null);
                         }}
-                        className="text-gray-400 hover:text-gray-600 p-2.5"
+                        className="text-gray-900 hover:text-gray-600 p-2.5"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -319,7 +317,7 @@ export default function SoumissionsPage() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8 text-center bg-gray-50">
+            <div className="flex-1 flex flex-col items-center justify-center text-gray-900 p-8 text-center bg-gray-50">
               <FileText className="w-16 h-16 mb-4 opacity-20" />
               <p className="text-lg font-medium text-gray-600">Sélectionnez une copie</p>
               <p className="text-sm mt-2">Choisissez un élève dans la liste à gauche pour voir son travail et le noter.</p>

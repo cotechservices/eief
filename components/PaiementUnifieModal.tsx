@@ -2,9 +2,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { 
-  X, Loader2, Wallet, Smartphone, CreditCard, CheckCircle, 
-  Clock, GraduationCap, Bus, Utensils, BookOpen, 
+import {
+  X, Loader2, Wallet, Smartphone, CreditCard, CheckCircle,
+  Clock, GraduationCap, Bus, Utensils, BookOpen,
   AlertCircle, TrendingUp, TrendingDown
 } from "lucide-react";
 
@@ -54,10 +54,10 @@ const formatMontant = (montant: number): string => {
   return Math.round(montant).toLocaleString('fr-FR');
 };
 
-export default function PaiementUnifieModal({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
+export default function PaiementUnifieModal({
+  isOpen,
+  onClose,
+  onSuccess,
   id,
   type,
   enfantNom,
@@ -100,15 +100,15 @@ export default function PaiementUnifieModal({
     try {
       // ⭐ Utiliser l'API stats pour récupérer les données
       const response = await fetch(`/api/parent/enfants/${id}/stats`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Erreur lors du chargement");
       }
-      
+
       const result = await response.json();
       console.log("📊 Données récupérées:", result);
-      
+
       // ⭐ Construire les données pour le modal
       const plan = result.plan_paiement || {
         niveau: niveau || result.niveau || "Non défini",
@@ -211,7 +211,7 @@ export default function PaiementUnifieModal({
 
     } catch (error) {
       console.error("Erreur chargement plan:", error);
-      setError((error as Error).message || "Erreur lors du chargement du plan");
+      setError((error as Error).message || "Connexion instable lors du chargement du plan");
     } finally {
       setLoading(false);
     }
@@ -271,9 +271,9 @@ export default function PaiementUnifieModal({
       if (result.success) {
         setSuccess(`✅ Paiement de ${formatMontant(montantSaisiNumber)} GNF effectué !`);
         setPaiementEffectue(true);
-        
+
         await fetchPlan();
-        
+
         if (result.est_termine) {
           setTimeout(() => {
             onSuccess();
@@ -310,19 +310,18 @@ export default function PaiementUnifieModal({
             <div>
               <h2 className="text-xl font-bold text-black">💳 Paiement - {typeLabel}</h2>
               <p className="text-sm text-gray-600">
-                {enfantPrenom} {enfantNom} 
+                {enfantPrenom} {enfantNom}
                 {niveau ? ` - ${niveau}` : ''}
                 {classe ? ` (${classe})` : ''}
               </p>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${
-                type === 'reinscription' ? 'bg-indigo-100 text-indigo-700' : 
-                type === 'preinscription' ? 'bg-blue-100 text-blue-700' : 
-                'bg-green-100 text-green-700'
-              }`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${type === 'reinscription' ? 'bg-indigo-100 text-indigo-700' :
+                type === 'preinscription' ? 'bg-blue-100 text-blue-700' :
+                  'bg-green-100 text-green-700'
+                }`}>
                 {typeLabel}
               </span>
             </div>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-700">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -354,17 +353,17 @@ export default function PaiementUnifieModal({
                   <span className="font-medium">{totals.pourcentage_paye}% payé</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                  <div 
+                  <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ 
+                    style={{
                       width: `${Math.min(totals.pourcentage_paye, 100)}%`,
-                      background: totals.pourcentage_paye >= 100 
-                        ? 'linear-gradient(90deg, #10b981, #059669)' 
+                      background: totals.pourcentage_paye >= 100
+                        ? 'linear-gradient(90deg, #10b981, #059669)'
                         : 'linear-gradient(90deg, #3b82f6, #8b5cf6)'
                     }}
                   />
                 </div>
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-gray-900 mt-1">
                   <span>Payé: {formatMontant(totals.paye)} GNF</span>
                   <span>Restant: {formatMontant(totals.restant)} GNF</span>
                   <span>Total: {formatMontant(totals.total_general)} GNF</span>
@@ -381,7 +380,7 @@ export default function PaiementUnifieModal({
                   <p className="text-2xl font-bold text-blue-700">
                     {formatMontant(data.plan?.total || data.frais_inscription || 0)} GNF
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-900 mt-1">
                     {data.plan?.premier_versement ? `1er: ${formatMontant(data.plan.premier_versement)} GNF` : ''}
                     {data.plan?.deuxieme_versement ? ` | 2ème: ${formatMontant(data.plan.deuxieme_versement)} GNF` : ''}
                     {data.plan?.troisieme_versement ? ` | 3ème: ${formatMontant(data.plan.troisieme_versement)} GNF` : ''}
@@ -397,7 +396,7 @@ export default function PaiementUnifieModal({
                       <p className="text-2xl font-bold text-purple-700">
                         {formatMontant((data.transport || 0) + (data.cantine || 0) + (data.fournitures || 0))} GNF
                       </p>
-                      <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                      <div className="text-xs text-gray-900 mt-1 space-y-0.5">
                         {data.transport > 0 && (
                           <div className="flex justify-between">
                             <span>🚌 Transport</span>
@@ -419,7 +418,7 @@ export default function PaiementUnifieModal({
                       </div>
                     </>
                   ) : (
-                    <p className="text-gray-500 text-sm">Aucun service optionnel</p>
+                    <p className="text-gray-900 text-sm">Aucun service optionnel</p>
                   )}
                 </div>
               </div>
@@ -447,7 +446,7 @@ export default function PaiementUnifieModal({
                       <label className="font-semibold text-gray-700">
                         Montant à payer
                       </label>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-900">
                         Restant: <span className="font-bold text-blue-600">{formatMontant(montantRestant)} GNF</span>
                       </span>
                     </div>
@@ -460,7 +459,7 @@ export default function PaiementUnifieModal({
                         placeholder="0"
                         className="w-full text-2xl font-bold text-center py-3 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-900 text-sm font-medium">
                         GNF
                       </span>
                     </div>
@@ -516,11 +515,10 @@ export default function PaiementUnifieModal({
                           key={value}
                           type="button"
                           onClick={() => setModePaiement(value)}
-                          className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${
-                            modePaiement === value
-                              ? `border-${color}-500 bg-${color}-50`
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
+                          className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === value
+                            ? `border-${color}-500 bg-${color}-50`
+                            : 'border-gray-200 hover:border-gray-300'
+                            }`}
                         >
                           <Icon className={`w-6 h-6 text-${color}-600`} />
                           <span className="text-xs text-black">{label}</span>
@@ -540,7 +538,7 @@ export default function PaiementUnifieModal({
                         placeholder={modePaiement === 'orange_money' ? 'Ex: #OM-123456789' : 'Ex: VISA-****-1234'}
                         className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-900 mt-1">
                         {modePaiement === 'orange_money'
                           ? 'Entrez le numéro de transaction reçu par SMS'
                           : 'Entrez le numéro de transaction de votre carte'}
@@ -572,13 +570,12 @@ export default function PaiementUnifieModal({
                   <button
                     onClick={handlePaiement}
                     disabled={!modePaiement || !montantValide || paying || paiementEffectue}
-                    className={`w-full py-3 rounded-lg font-semibold transition ${
-                      !modePaiement || !montantValide || paying || paiementEffectue
-                        ? 'bg-gray-300 cursor-not-allowed'
-                        : montantSaisiNumber === montantRestant
-                          ? 'bg-green-600 text-white hover:bg-green-700'
-                          : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
+                    className={`w-full py-3 rounded-lg font-semibold transition ${!modePaiement || !montantValide || paying || paiementEffectue
+                      ? 'bg-gray-300 cursor-not-allowed'
+                      : montantSaisiNumber === montantRestant
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
                   >
                     {paying ? (
                       <>
@@ -607,29 +604,27 @@ export default function PaiementUnifieModal({
                       return (
                         <div
                           key={echeance.id}
-                          className={`p-2 rounded-lg border flex justify-between items-center text-sm ${
-                            estPaye ? 'bg-green-50 border-green-200' : 
-                            estPartiel ? 'bg-yellow-50 border-yellow-200' : 
-                            'bg-white border-gray-200'
-                          }`}
+                          className={`p-2 rounded-lg border flex justify-between items-center text-sm ${estPaye ? 'bg-green-50 border-green-200' :
+                            estPartiel ? 'bg-yellow-50 border-yellow-200' :
+                              'bg-white border-gray-200'
+                            }`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 rounded-full text-xs ${
-                              echeance.type === 'reinscription' || echeance.type === 'inscription'
-                                ? 'bg-blue-100 text-blue-700'
-                                : echeance.type === 'transport'
+                            <span className={`px-2 py-0.5 rounded-full text-xs ${echeance.type === 'reinscription' || echeance.type === 'inscription'
+                              ? 'bg-blue-100 text-blue-700'
+                              : echeance.type === 'transport'
                                 ? 'bg-yellow-100 text-yellow-700'
                                 : echeance.type === 'cantine'
-                                ? 'bg-orange-100 text-orange-700'
-                                : 'bg-purple-100 text-purple-700'
-                            }`}>
-                              {echeance.type === 'reinscription' || echeance.type === 'inscription' 
-                                ? 'Frais' 
-                                : echeance.type === 'transport' 
-                                ? '🚌' 
-                                : echeance.type === 'cantine' 
-                                ? '🍽️' 
-                                : '📚'}
+                                  ? 'bg-orange-100 text-orange-700'
+                                  : 'bg-purple-100 text-purple-700'
+                              }`}>
+                              {echeance.type === 'reinscription' || echeance.type === 'inscription'
+                                ? 'Frais'
+                                : echeance.type === 'transport'
+                                  ? '🚌'
+                                  : echeance.type === 'cantine'
+                                    ? '🍽️'
+                                    : '📚'}
                             </span>
                             <span className="text-black font-medium">
                               {echeance.echeance.replace('_partiel', '')}
@@ -640,11 +635,10 @@ export default function PaiementUnifieModal({
                             <span className="font-bold text-black">
                               {formatMontant(echeance.montant)} GNF
                             </span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              estPaye ? 'bg-green-100 text-green-700' : 
-                              estPartiel ? 'bg-yellow-100 text-yellow-700' : 
-                              'bg-yellow-100 text-yellow-700'
-                            }`}>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${estPaye ? 'bg-green-100 text-green-700' :
+                              estPartiel ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
                               {estPaye ? '✅ Payé' : estPartiel ? '⏳ Partiel' : '⏳ En attente'}
                             </span>
                           </div>

@@ -117,7 +117,7 @@ export default function GestionPreinscriptionsPage() {
   const [deleting, setDeleting] = useState(false);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  
+
   // ⭐ AJOUTER CET ÉTAT POUR LE RAFRAÎCHISSEMENT
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -263,20 +263,20 @@ export default function GestionPreinscriptionsPage() {
   const handlePaiementSuccess = () => {
     // Mise à jour locale immédiate
     if (paiementPreinscription) {
-      setPreinscriptions(prev => 
-        prev.map(p => 
-          p.id === paiementPreinscription.id 
-            ? { ...p, frais_statut: 'paye' } 
+      setPreinscriptions(prev =>
+        prev.map(p =>
+          p.id === paiementPreinscription.id
+            ? { ...p, frais_statut: 'paye' }
             : p
         )
       );
     }
-    
+
     // ⭐ Rafraîchissement complet après un court délai
     setTimeout(() => {
       triggerRefresh();
     }, 300);
-    
+
     addNotification("success", "Paiement enregistré avec succès");
   };
 
@@ -843,18 +843,18 @@ export default function GestionPreinscriptionsPage() {
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div 
-                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
-                            style={{ 
-                              width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%` 
-                            }} 
+                          <div
+                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%`
+                            }}
                           />
                         </div>
                       </div>
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-4 text-gray-500">
+                  <div className="text-center py-4 text-gray-900">
                     <p>Chargement des informations de frais...</p>
                   </div>
                 )}
@@ -876,10 +876,10 @@ export default function GestionPreinscriptionsPage() {
                       (e: any) => e.type === 'inscription'
                     ) || [];
                     const auMoinsUnePayee = echeancesInscription.some((e: any) => e.statut === 'paye');
-                    const peutValider = selectedPreinscription.frais_statut === 'paye' || 
-                                        selectedPreinscription.frais_statut === 'partiel' ||
-                                        auMoinsUnePayee;
-                    
+                    const peutValider = selectedPreinscription.frais_statut === 'paye' ||
+                      selectedPreinscription.frais_statut === 'partiel' ||
+                      auMoinsUnePayee;
+
                     return peutValider ? (
                       <button onClick={() => handleUpdateStatut(selectedPreinscription.id, "valide")} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                         Valider l'inscription

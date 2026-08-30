@@ -170,11 +170,11 @@ export default function CantinePage() {
             <Utensils className="w-7 h-7 text-purple-600" />
             Gestion de la Cantine
           </h1>
-          <p className="text-gray-500 mt-1">Gérez les repas et les menus de la cantine</p>
+          <p className="text-gray-900 mt-1">Gérez les repas et les menus de la cantine</p>
         </div>
-        
+
         <div className="flex gap-2">
-         {/* <Link
+          {/* <Link
             href="/dashboard/admin_cantine/rapports"
             className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition flex items-center gap-2"
           >
@@ -202,22 +202,22 @@ export default function CantinePage() {
       {/* Statistiques rapides */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Total menus</p>
+          <p className="text-gray-900 text-xs">Total menus</p>
           <p className="text-2xl font-bold text-blue-600">{menus.length}</p>
           <Utensils className="w-4 h-4 text-blue-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Avec prix annuel</p>
+          <p className="text-gray-900 text-xs">Avec prix annuel</p>
           <p className="text-2xl font-bold text-green-600">{menus.filter(m => m.prix_annuel).length}</p>
           <ShoppingBag className="w-4 h-4 text-green-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Régime spécial</p>
+          <p className="text-gray-900 text-xs">Régime spécial</p>
           <p className="text-2xl font-bold text-orange-600">{menus.filter(m => m.regime_special).length}</p>
           <UserCheck className="w-4 h-4 text-orange-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Total inscrits</p>
+          <p className="text-gray-900 text-xs">Total inscrits</p>
           <p className="text-2xl font-bold text-purple-600">{menus.reduce((acc, m) => acc + m.inscrits, 0)}</p>
           <Users className="w-4 h-4 text-purple-200 mt-1" />
         </div>
@@ -226,7 +226,7 @@ export default function CantinePage() {
       {/* Barre de recherche */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
           <input
             type="text"
             placeholder="Rechercher un menu..."
@@ -271,7 +271,7 @@ export default function CantinePage() {
                         Oui
                       </span>
                     ) : (
-                      <span className="text-gray-400 text-xs">-</span>
+                      <span className="text-gray-900 text-xs">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-purple-600">
@@ -301,7 +301,7 @@ export default function CantinePage() {
               ))}
               {menusFiltres.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-12 text-center text-gray-900">
                     <Utensils className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p className="font-medium">Aucun menu trouvé</p>
                     <p className="text-sm mt-1">Cliquez sur "Ajouter un menu" pour commencer</p>
@@ -321,7 +321,7 @@ export default function CantinePage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingMenu ? "Modifier le menu" : "Ajouter un menu"}
               </h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -377,7 +377,7 @@ export default function CantinePage() {
                   onChange={e => setFormData({ ...formData, prix_annuel: e.target.value })}
                   className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
-                <p className="text-xs text-gray-400 mt-1">Laissez vide si non défini</p>
+                <p className="text-xs text-gray-900 mt-1">Laissez vide si non défini</p>
               </div>
 
               {/* Régime spécial */}

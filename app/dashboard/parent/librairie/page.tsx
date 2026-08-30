@@ -3,15 +3,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Search, 
-  ShoppingCart, 
-  Package, 
-  TrendingUp, 
-  Star, 
-  Filter, 
-  ChevronRight, 
-  Loader2, 
+import {
+  Search,
+  ShoppingCart,
+  Package,
+  TrendingUp,
+  Star,
+  Filter,
+  ChevronRight,
+  Loader2,
   ImageIcon,
   X,
   CheckCircle,
@@ -58,7 +58,7 @@ export default function LibrairiePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
-  
+
   // ⭐ États pour le modal d'ajout au panier
   const [showModal, setShowModal] = useState(false);
   const [modalProduit, setModalProduit] = useState<Produit | null>(null);
@@ -68,7 +68,7 @@ export default function LibrairiePage() {
   // ⭐ État pour le modal de confirmation de commande
   const [showCommandeModal, setShowCommandeModal] = useState(false);
   const [commandeLoading, setCommandeLoading] = useState(false);
-  
+
   // ⭐ État pour les notifications
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -110,7 +110,7 @@ export default function LibrairiePage() {
     if (produit.image_url && !imageErrors[produit.id]) {
       return produit.image_url;
     }
-    
+
     const nom = produit.nom.toLowerCase();
     const categorie = (produit.categorie || "").toLowerCase();
 
@@ -132,7 +132,7 @@ export default function LibrairiePage() {
     if (nom.includes("stylo") || nom.includes("crayon") || nom.includes("feutre")) {
       return "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=400&h=300&fit=crop";
     }
-    
+
     return "https://images.unsplash.com/photo-1584779858347-6b8d9f4d3d6a?w=400&h=300&fit=crop";
   };
 
@@ -167,22 +167,22 @@ export default function LibrairiePage() {
   // ⭐ Confirmer l'ajout au panier
   const confirmAddToCart = () => {
     if (!modalProduit) return;
-    
+
     setModalLoading(true);
-    
+
     setTimeout(() => {
       const existingItem = cart.find(item => item.id === modalProduit.id);
-      
+
       if (existingItem) {
-        setCart(cart.map(item => 
-          item.id === modalProduit.id 
+        setCart(cart.map(item =>
+          item.id === modalProduit.id
             ? { ...item, quantite: item.quantite + modalQuantite }
             : item
         ));
       } else {
         setCart([...cart, { ...modalProduit, quantite: modalQuantite }]);
       }
-      
+
       setModalLoading(false);
       setShowModal(false);
       setModalProduit(null);
@@ -203,7 +203,7 @@ export default function LibrairiePage() {
       removeFromCart(id);
       return;
     }
-    setCart(cart.map(item => 
+    setCart(cart.map(item =>
       item.id === id ? { ...item, quantite: newQuantite } : item
     ));
   };
@@ -259,15 +259,14 @@ export default function LibrairiePage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
-              notification.type === "success"
-                ? "bg-green-50 border-l-4 border-green-500 text-green-800"
-                : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -278,7 +277,7 @@ export default function LibrairiePage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-500 hover:text-gray-700 transition"
+              className="ml-4 text-gray-900 hover:text-gray-700 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -339,7 +338,7 @@ export default function LibrairiePage() {
                   <p className="text-xs text-gray-600">Choisissez la quantité souhaitée</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center transition"
               >
@@ -471,7 +470,7 @@ export default function LibrairiePage() {
               </div>
               <div className="flex flex-wrap items-center gap-4">
                 <span className="text-xl font-bold text-blue-600">{totalPanier.toLocaleString()} GNF</span>
-                <button 
+                <button
                   onClick={() => setShowCommandeModal(true)}
                   className="bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition font-semibold text-sm flex items-center gap-2"
                 >
@@ -480,15 +479,15 @@ export default function LibrairiePage() {
                 </button>
               </div>
             </div>
-            
+
             <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="flex flex-wrap gap-2">
                 {cart.slice(0, 3).map((item) => (
                   <div key={item.id} className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full text-sm">
                     <span className="font-medium text-gray-700">{item.nom}</span>
-                    <span className="text-gray-400">x</span>
+                    <span className="text-gray-900">x</span>
                     <span className="font-semibold text-gray-900">{item.quantite}</span>
-                    <button 
+                    <button
                       onClick={() => removeFromCart(item.id)}
                       className="text-red-400 hover:text-red-600 ml-1"
                     >
@@ -497,7 +496,7 @@ export default function LibrairiePage() {
                   </div>
                 ))}
                 {cart.length > 3 && (
-                  <span className="text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full">
+                  <span className="text-sm text-gray-900 bg-gray-50 px-3 py-1.5 rounded-full">
                     +{cart.length - 3} autres
                   </span>
                 )}
@@ -523,7 +522,7 @@ export default function LibrairiePage() {
               const imageSrc = getProductImage(produit);
               const isInCart = cart.some(item => item.id === produit.id);
               const cartItem = cart.find(item => item.id === produit.id);
-              
+
               return (
                 <div key={produit.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:translate-y-[-2px] transition-all duration-300 group flex flex-col justify-between">
                   <div>
@@ -571,11 +570,10 @@ export default function LibrairiePage() {
                     <button
                       onClick={() => openAddToCartModal(produit)}
                       disabled={produit.stock === 0}
-                      className={`w-full py-2.5 rounded-xl transition flex items-center justify-center gap-2 font-semibold text-sm shadow-sm hover:shadow ${
-                        isInCart 
-                          ? 'bg-green-600 hover:bg-green-700 text-white' 
-                          : 'bg-blue-600 hover:bg-blue-700 text-white'
-                      } disabled:bg-gray-200 disabled:text-gray-900 disabled:cursor-not-allowed`}
+                      className={`w-full py-2.5 rounded-xl transition flex items-center justify-center gap-2 font-semibold text-sm shadow-sm hover:shadow ${isInCart
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        } disabled:bg-gray-200 disabled:text-gray-900 disabled:cursor-not-allowed`}
                     >
                       {isInCart ? (
                         <>
@@ -611,7 +609,7 @@ export default function LibrairiePage() {
                   <p className="text-xs text-gray-600">Vérifiez votre panier avant de commander</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowCommandeModal(false)}
                 className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center transition"
               >
@@ -626,7 +624,7 @@ export default function LibrairiePage() {
                   <div key={item.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
                     <div>
                       <p className="font-medium text-gray-900 text-sm">{item.nom}</p>
-                      <p className="text-xs text-gray-500">x{item.quantite}</p>
+                      <p className="text-xs text-gray-900">x{item.quantite}</p>
                     </div>
                     <p className="font-bold text-green-600">{(item.prix * item.quantite).toLocaleString()} GNF</p>
                   </div>

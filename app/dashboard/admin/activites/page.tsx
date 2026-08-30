@@ -241,7 +241,7 @@ export default function ActivitesPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-black">Activités Périscolaires</h1>
-          <p className="text-gray-500">Gestion des activités, inscriptions et paiements</p>
+          <p className="text-gray-900">Gestion des activités, inscriptions et paiements</p>
         </div>
         <button onClick={() => { setEditingActivite(null); setActiviteData({ nom: "", description: "", categorie: "sport", jour: "Lundi", heure_debut: "14:00", heure_fin: "16:00", age_min: 5, age_max: 18, capacite_max: 20, frais_inscription: 50000, photo_url: "", est_actif: true }); setSelectedFile(null); setPreviewUrl(""); setShowActiviteForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
           <Plus className="w-4 h-4" /> Nouvelle activité
@@ -261,7 +261,7 @@ export default function ActivitesPage() {
 
         <div className="p-4 border-b flex justify-between bg-gray-50/50">
           <div className="relative w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 w-4 h-4" />
             <input type="text" placeholder="Rechercher..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm" />
           </div>
           {activeTab === "activites" && (
@@ -290,14 +290,14 @@ export default function ActivitesPage() {
                     <img src={a.photo_url} alt={a.nom} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="w-12 h-12 text-gray-400" />
+                      <ImageIcon className="w-12 h-12 text-gray-900" />
                     </div>
                   )}
                   <div className="absolute top-2 right-2">{getCategorieBadge(a.categorie)}</div>
                 </div>
                 <div className="p-4">
                   <h3 className="font-bold text-lg text-gray-800">{a.nom}</h3>
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{a.description}</p>
+                  <p className="text-sm text-gray-900 mt-1 line-clamp-2">{a.description}</p>
                   <div className="mt-3 space-y-1 text-sm">
                     <div className="flex items-center gap-2 text-gray-600"><Calendar className="w-4 h-4" /> {a.jour} • {a.heure_debut} - {a.heure_fin}</div>
                     <div className="flex items-center gap-2 text-gray-600"><Users className="w-4 h-4" /> Âge: {a.age_min}-{a.age_max} ans | Max: {a.capacite_max}</div>
@@ -331,11 +331,11 @@ export default function ActivitesPage() {
               <tbody className="divide-y">
                 {filteredInscriptions.map((i) => (
                   <tr key={i.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4"><span className="font-medium">{i.activite_nom}</span><div className="text-xs text-gray-500">{getCategorieBadge(i.categorie)}</div></td>
-                    <td className="px-6 py-4">{i.eleve_prenom} {i.eleve_nom}<div className="text-xs text-gray-500">Mat: {i.matricule}</div></td>
+                    <td className="px-6 py-4"><span className="font-medium">{i.activite_nom}</span><div className="text-xs text-gray-900">{getCategorieBadge(i.categorie)}</div></td>
+                    <td className="px-6 py-4">{i.eleve_prenom} {i.eleve_nom}<div className="text-xs text-gray-900">Mat: {i.matricule}</div></td>
                     <td className="px-6 py-4 text-sm">{i.classe_nom || "-"}</td>
                     <td className="px-6 py-4 text-sm">{i.parent_prenom} {i.parent_nom}</td>
-                    <td className="px-6 py-4 text-center">{getFraisBadge(i.frais_statut)}<div className="text-xs text-gray-500">{i.montant_frais?.toLocaleString()} GNF</div></td>
+                    <td className="px-6 py-4 text-center">{getFraisBadge(i.frais_statut)}<div className="text-xs text-gray-900">{i.montant_frais?.toLocaleString()} GNF</div></td>
                     <td className="px-6 py-4 text-center">{getStatutBadge(i.statut)}</td>
                     <td className="px-6 py-4">
                       <button onClick={() => { setSelectedInscription(i); setObservations(i.observations || ""); setShowDetailModal(true); }} className="text-blue-600 hover:text-blue-800"><Eye className="w-4 h-4" /></button>
@@ -354,7 +354,7 @@ export default function ActivitesPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
               <h2 className="text-xl font-bold">{editingActivite ? "Modifier l'activité" : "Nouvelle activité"}</h2>
-              <button onClick={() => setShowActiviteForm(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              <button onClick={() => setShowActiviteForm(false)} className="text-gray-900 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleActiviteSubmit} className="p-6 space-y-4">
               <div>
@@ -363,7 +363,7 @@ export default function ActivitesPage() {
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
                   {previewUrl || activiteData.photo_url ? (
                     <div className="relative inline-block"><img src={previewUrl || activiteData.photo_url || ""} alt="Aperçu" className="w-32 h-32 object-cover rounded-lg mx-auto" /><button type="button" onClick={handleRemoveImage} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1"><X className="w-4 h-4" /></button></div>
-                  ) : (<div className="text-center"><ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" /><p className="text-sm text-gray-600">Cliquez pour ajouter une image</p></div>)}
+                  ) : (<div className="text-center"><ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" /><p className="text-sm text-gray-600">Cliquez pour ajouter une image</p></div>)}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -398,15 +398,15 @@ export default function ActivitesPage() {
       {showDetailModal && selectedInscription && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
-            <div className="p-6 border-b sticky top-0 bg-white flex justify-between items-center"><h2 className="text-xl font-bold">Détail de l'inscription</h2><button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button></div>
+            <div className="p-6 border-b sticky top-0 bg-white flex justify-between items-center"><h2 className="text-xl font-bold">Détail de l'inscription</h2><button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600"><X className="w-5 h-5" /></button></div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div><p className="text-sm text-gray-500">Activité</p><p className="font-semibold">{selectedInscription.activite_nom}</p>{getCategorieBadge(selectedInscription.categorie)}</div>
-                <div><p className="text-sm text-gray-500">Date d'inscription</p><p className="font-semibold">{new Date(selectedInscription.date_inscription).toLocaleDateString()}</p></div>
+                <div><p className="text-sm text-gray-900">Activité</p><p className="font-semibold">{selectedInscription.activite_nom}</p>{getCategorieBadge(selectedInscription.categorie)}</div>
+                <div><p className="text-sm text-gray-900">Date d'inscription</p><p className="font-semibold">{new Date(selectedInscription.date_inscription).toLocaleDateString()}</p></div>
               </div>
-              <div className="border-t pt-4"><h3 className="font-semibold mb-3">Informations élève</h3><div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg"><div><p className="text-sm text-gray-500">Nom complet</p><p>{selectedInscription.eleve_prenom} {selectedInscription.eleve_nom}</p></div><div><p className="text-sm text-gray-500">Classe</p><p>{selectedInscription.classe_nom || "-"}</p></div><div><p className="text-sm text-gray-500">Matricule</p><p>{selectedInscription.matricule}</p></div></div></div>
-              <div className="border-t pt-4"><h3 className="font-semibold mb-3">Parent</h3><div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg"><div><p className="text-sm text-gray-500">Nom complet</p><p>{selectedInscription.parent_prenom} {selectedInscription.parent_nom}</p></div><div><p className="text-sm text-gray-500">Email</p><p>{selectedInscription.parent_email}</p></div><div><p className="text-sm text-gray-500">Téléphone</p><p>{selectedInscription.parent_telephone}</p></div></div></div>
-              <div className="border-t pt-4"><h3 className="font-semibold mb-3">Paiement</h3><div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg"><div><p className="text-sm text-gray-500">Montant</p><p className="font-bold text-green-600">{selectedInscription.montant_frais?.toLocaleString()} GNF</p></div><div><p className="text-sm text-gray-500">Statut</p>{getFraisBadge(selectedInscription.frais_statut)}</div></div></div>
+              <div className="border-t pt-4"><h3 className="font-semibold mb-3">Informations élève</h3><div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg"><div><p className="text-sm text-gray-900">Nom complet</p><p>{selectedInscription.eleve_prenom} {selectedInscription.eleve_nom}</p></div><div><p className="text-sm text-gray-900">Classe</p><p>{selectedInscription.classe_nom || "-"}</p></div><div><p className="text-sm text-gray-900">Matricule</p><p>{selectedInscription.matricule}</p></div></div></div>
+              <div className="border-t pt-4"><h3 className="font-semibold mb-3">Parent</h3><div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg"><div><p className="text-sm text-gray-900">Nom complet</p><p>{selectedInscription.parent_prenom} {selectedInscription.parent_nom}</p></div><div><p className="text-sm text-gray-900">Email</p><p>{selectedInscription.parent_email}</p></div><div><p className="text-sm text-gray-900">Téléphone</p><p>{selectedInscription.parent_telephone}</p></div></div></div>
+              <div className="border-t pt-4"><h3 className="font-semibold mb-3">Paiement</h3><div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg"><div><p className="text-sm text-gray-900">Montant</p><p className="font-bold text-green-600">{selectedInscription.montant_frais?.toLocaleString()} GNF</p></div><div><p className="text-sm text-gray-900">Statut</p>{getFraisBadge(selectedInscription.frais_statut)}</div></div></div>
               <div><label className="block text-sm font-medium mb-1">Observations</label><textarea rows={3} value={observations} onChange={e => setObservations(e.target.value)} className="w-full border p-2 rounded-lg" placeholder="Ajouter une observation..." /></div>
             </div>
             <div className="p-6 border-t bg-gray-50 flex justify-between">

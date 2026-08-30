@@ -462,7 +462,7 @@ export default function ParentDashboard() {
           </div>
           <p className="text-lg font-bold text-blue-600">{statsGlobales.totalAPayerNet.toLocaleString()} GNF</p>
           {statsGlobales.totalRemises > 0 && (
-            <p className="text-xs text-gray-400 mt-1 line-through">
+            <p className="text-xs text-gray-900 mt-1 line-through">
               Brut: {statsGlobales.totalAPayerBrut.toLocaleString()} GNF
             </p>
           )}
@@ -658,16 +658,16 @@ export default function ParentDashboard() {
                     <User className="w-5 h-5 text-blue-900" /> Informations des parents
                   </h3>
                   <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                    <p className="text-sm text-gray-500">Email (commun)</p>
+                    <p className="text-sm text-gray-900">Email (commun)</p>
                     <p className="font-medium text-black">{preinscriptionDetail.parent_email}</p>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                       <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">Père</h4>
                       <div className="space-y-2">
-                        <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-black">{preinscriptionDetail.parent_prenom} {preinscriptionDetail.parent_nom}</p></div>
-                        <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-black">{preinscriptionDetail.parent_telephone || "Non renseigné"}</p></div>
-                        <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-black">{preinscriptionDetail.parent_profession || "Non renseigné"}</p></div>
+                        <div><p className="text-xs text-gray-900">Nom complet</p><p className="font-medium text-black">{preinscriptionDetail.parent_prenom} {preinscriptionDetail.parent_nom}</p></div>
+                        <div><p className="text-xs text-gray-900">Téléphone</p><p className="font-medium text-black">{preinscriptionDetail.parent_telephone || "Non renseigné"}</p></div>
+                        <div><p className="text-xs text-gray-900">Profession</p><p className="font-medium text-black">{preinscriptionDetail.parent_profession || "Non renseigné"}</p></div>
                       </div>
                     </div>
                     <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg">
@@ -683,12 +683,12 @@ export default function ParentDashboard() {
                         } catch (e) { }
                         return mereData && (mereData.mereNom || mereData.merePrenom) ? (
                           <div className="space-y-2">
-                            <div><p className="text-xs text-gray-500">Nom complet</p><p className="font-medium text-black">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p></div>
-                            <div><p className="text-xs text-gray-500">Téléphone</p><p className="font-medium text-black">{mereData.merePhone || "Non renseigné"}</p></div>
-                            <div><p className="text-xs text-gray-500">Profession</p><p className="font-medium text-black">{mereData.mereProfession || "Non renseigné"}</p></div>
+                            <div><p className="text-xs text-gray-900">Nom complet</p><p className="font-medium text-black">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p></div>
+                            <div><p className="text-xs text-gray-900">Téléphone</p><p className="font-medium text-black">{mereData.merePhone || "Non renseigné"}</p></div>
+                            <div><p className="text-xs text-gray-900">Profession</p><p className="font-medium text-black">{mereData.mereProfession || "Non renseigné"}</p></div>
                           </div>
                         ) : (
-                          <p className="text-sm text-gray-400 italic">Non renseigné</p>
+                          <p className="text-sm text-gray-900 italic">Non renseigné</p>
                         );
                       })()}
                     </div>
@@ -747,7 +747,7 @@ export default function ParentDashboard() {
                           Voir le document <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <p className="text-gray-500 text-sm">Non téléchargé</p>
+                        <p className="text-gray-900 text-sm">Non téléchargé</p>
                       );
                     })()}
                   </div>
@@ -763,7 +763,7 @@ export default function ParentDashboard() {
                           Voir la photo <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <p className="text-gray-500 text-sm">Non téléchargée</p>
+                        <p className="text-gray-900 text-sm">Non téléchargée</p>
                       );
                     })()}
                   </div>
@@ -779,7 +779,7 @@ export default function ParentDashboard() {
                           Voir le bulletin <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
-                        <p className="text-gray-500 text-sm">Non téléchargé</p>
+                        <p className="text-gray-900 text-sm">Non téléchargé</p>
                       );
                     })()}
                   </div>
@@ -880,7 +880,7 @@ export default function ParentDashboard() {
                           preinscriptionDetail.details_frais.transport === 0 &&
                           preinscriptionDetail.details_frais.librairie === 0 &&
                           preinscriptionDetail.details_frais.scolarite === 0 && (
-                            <span className="text-gray-500 text-xs italic">Aucun service optionnel</span>
+                            <span className="text-gray-900 text-xs italic">Aucun service optionnel</span>
                           )}
                       </div>
                     </div>
@@ -936,7 +936,7 @@ export default function ParentDashboard() {
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-4 text-gray-500">
+                  <div className="text-center py-4 text-gray-900">
                     <p>Chargement des informations de frais...</p>
                   </div>
                 )}

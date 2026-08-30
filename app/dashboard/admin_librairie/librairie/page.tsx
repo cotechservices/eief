@@ -71,7 +71,7 @@ export default function TransportLibrairiePage() {
       ]);
       setArticles(dataArticles.articles || (Array.isArray(dataArticles) ? dataArticles : []));
       setVentes(dataVentes.ventes || (Array.isArray(dataVentes) ? dataVentes : []));
-      
+
       // Sécurité si l'API renvoie { eleves: [] } ou []
       setEleves(Array.isArray(dataEleves) ? dataEleves : (dataEleves.eleves || []));
     } catch (e) {
@@ -246,7 +246,7 @@ export default function TransportLibrairiePage() {
             <BookOpen className="w-7 h-7 text-purple-600" />
             Librairie
           </h1>
-          <p className="text-gray-500 mt-1">Gestion des fournitures et uniformes</p>
+          <p className="text-gray-900 mt-1">Gestion des fournitures et uniformes</p>
         </div>
         <div className="flex gap-2">
           <Link
@@ -271,28 +271,28 @@ export default function TransportLibrairiePage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Articles</p>
+            <p className="text-sm text-gray-900">Articles</p>
             <p className="text-2xl font-bold text-blue-600">{stats.totalArticles}</p>
           </div>
           <Package className="text-blue-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500 flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">En stock</p>
+            <p className="text-sm text-gray-900">En stock</p>
             <p className="text-2xl font-bold text-green-600">{stats.articlesEnStock}</p>
           </div>
           <Box className="text-green-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-orange-500 flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Ventes</p>
+            <p className="text-sm text-gray-900">Ventes</p>
             <p className="text-2xl font-bold text-orange-600">{stats.totalVentes}</p>
           </div>
           <ShoppingCart className="text-orange-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-purple-500 flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Articles vendus</p>
+            <p className="text-sm text-gray-900">Articles vendus</p>
             <p className="text-2xl font-bold text-purple-600">{stats.totalQuantiteVendue}</p>
           </div>
           <BookOpen className="text-purple-200 w-10 h-10" />
@@ -305,8 +305,8 @@ export default function TransportLibrairiePage() {
           <button
             onClick={() => setActiveTab("articles")}
             className={`px-6 py-4 font-medium transition-colors ${activeTab === "articles"
-                ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
-                : "text-gray-600 hover:bg-gray-50"
+              ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
+              : "text-gray-600 hover:bg-gray-50"
               }`}
           >
             <Package className="w-4 h-4 inline mr-2" />
@@ -315,8 +315,8 @@ export default function TransportLibrairiePage() {
           <button
             onClick={() => setActiveTab("ventes")}
             className={`px-6 py-4 font-medium transition-colors ${activeTab === "ventes"
-                ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
-                : "text-gray-600 hover:bg-gray-50"
+              ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
+              : "text-gray-600 hover:bg-gray-50"
               }`}
           >
             <ShoppingCart className="w-4 h-4 inline mr-2" />
@@ -332,7 +332,7 @@ export default function TransportLibrairiePage() {
         {/* Barre de recherche et actions */}
         <div className="p-4 border-b flex flex-wrap justify-between gap-2 bg-gray-50/50">
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 w-4 h-4" />
             <input
               type="text"
               placeholder="Rechercher..."
@@ -389,12 +389,12 @@ export default function TransportLibrairiePage() {
                           </div>
                         ) : (
                           <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Package className="w-6 h-6 text-gray-400" />
+                            <Package className="w-6 h-6 text-gray-900" />
                           </div>
                         )}
                         <div>
                           <p className="font-bold text-gray-900">{a.nom}</p>
-                          <p className="text-sm text-gray-500">{a.description}</p>
+                          <p className="text-sm text-gray-900">{a.description}</p>
                         </div>
                       </div>
                     </td>
@@ -406,8 +406,8 @@ export default function TransportLibrairiePage() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-2 py-1 rounded-full text-xs font-bold ${a.quantite_stock > 10 ? "bg-green-100 text-green-700" :
-                          a.quantite_stock > 0 ? "bg-orange-100 text-orange-700" :
-                            "bg-red-100 text-red-700"
+                        a.quantite_stock > 0 ? "bg-orange-100 text-orange-700" :
+                          "bg-red-100 text-red-700"
                         }`}>
                         {a.quantite_stock}
                       </span>
@@ -427,7 +427,7 @@ export default function TransportLibrairiePage() {
               </tbody>
             </table>
             {filteredArticles.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-900">
                 <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium">Aucun article trouvé</p>
               </div>
@@ -463,7 +463,7 @@ export default function TransportLibrairiePage() {
               </tbody>
             </table>
             {filteredVentes.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-900">
                 <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium">Aucune vente trouvée</p>
               </div>
@@ -480,7 +480,7 @@ export default function TransportLibrairiePage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingArticle ? "Modifier l'article" : "Nouvel article"}
               </h2>
-              <button onClick={() => setShowArticleForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowArticleForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -513,9 +513,9 @@ export default function TransportLibrairiePage() {
                     </div>
                   ) : (
                     <div className="text-center">
-                      <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                      <ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" />
                       <p className="text-sm text-gray-600">Cliquez pour ajouter une image</p>
-                      <p className="text-xs text-gray-400">PNG, JPG, WEBP</p>
+                      <p className="text-xs text-gray-900">PNG, JPG, WEBP</p>
                     </div>
                   )}
                 </div>
@@ -544,7 +544,7 @@ export default function TransportLibrairiePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Prix Unitaire (GNF) *</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">GNF</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 text-sm">GNF</span>
                     <input
                       required
                       type="text"
@@ -555,7 +555,7 @@ export default function TransportLibrairiePage() {
                       className="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Saisissez uniquement des chiffres</p>
+                  <p className="text-xs text-gray-900 mt-1">Saisissez uniquement des chiffres</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Quantité en stock *</label>
@@ -613,7 +613,7 @@ export default function TransportLibrairiePage() {
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Nouvelle vente</h2>
-              <button onClick={() => setShowVenteForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowVenteForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>

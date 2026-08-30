@@ -66,7 +66,7 @@ export default function DevoirDetailPage() {
       setDevoir(found || null);
     } catch (error) {
       console.error("Erreur:", error);
-      setMessage({ type: "error", text: "Erreur lors du chargement du devoir" });
+      setMessage({ type: "error", text: "Connexion instable lors du chargement du devoir" });
     } finally {
       setLoading(false);
     }
@@ -193,7 +193,7 @@ export default function DevoirDetailPage() {
 
   if (!devoir) {
     return (
-      <div className="text-center py-16 text-gray-500">
+      <div className="text-center py-16 text-gray-900">
         <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
         <p>Devoir introuvable</p>
         <Link href="/dashboard/eleve/devoirs" className="text-blue-600 text-sm mt-2 block">
@@ -210,7 +210,7 @@ export default function DevoirDetailPage() {
     <div className="space-y-6 max-w-3xl mx-auto">
       <Link
         href="/dashboard/eleve/devoirs"
-        className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 text-sm transition"
+        className="inline-flex items-center gap-2 text-gray-900 hover:text-blue-600 text-sm transition"
       >
         <ArrowLeft className="w-4 h-4" />
         Retour aux devoirs
@@ -248,13 +248,13 @@ export default function DevoirDetailPage() {
           {/* Infos */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
             <div className="bg-gray-50 rounded-xl p-3">
-              <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+              <p className="text-xs text-gray-900 mb-1 flex items-center gap-1">
                 <User className="w-3 h-3" /> Enseignant
               </p>
               <p className="text-sm font-medium text-gray-900">{devoir.enseignant}</p>
             </div>
             <div className="bg-gray-50 rounded-xl p-3">
-              <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+              <p className="text-xs text-gray-900 mb-1 flex items-center gap-1">
                 <Calendar className="w-3 h-3" /> Date limite
               </p>
               <p className={`text-sm font-semibold ${isExpired ? "text-red-600" : "text-gray-900"}`}>
@@ -266,7 +266,7 @@ export default function DevoirDetailPage() {
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-3">
-              <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+              <p className="text-xs text-gray-900 mb-1 flex items-center gap-1">
                 <FileText className="w-3 h-3" /> Publié le
               </p>
               <p className="text-sm font-medium text-gray-900">
@@ -317,7 +317,7 @@ export default function DevoirDetailPage() {
                 </div>
                 {devoir.commentaire_soumission && (
                   <div className="flex-1 bg-white rounded-xl p-3 border border-green-100">
-                    <p className="text-xs text-gray-400 mb-1">Commentaire de l'enseignant</p>
+                    <p className="text-xs text-gray-900 mb-1">Commentaire de l'enseignant</p>
                     <p className="text-sm text-gray-700">{devoir.commentaire_soumission}</p>
                   </div>
                 )}
@@ -342,11 +342,10 @@ export default function DevoirDetailPage() {
 
               {message && (
                 <div
-                  className={`mb-4 p-4 rounded-xl text-sm flex items-center gap-2 ${
-                    message.type === "success"
-                      ? "bg-green-50 border border-green-200 text-green-700"
-                      : "bg-red-50 border border-red-200 text-red-700"
-                  }`}
+                  className={`mb-4 p-4 rounded-xl text-sm flex items-center gap-2 ${message.type === "success"
+                    ? "bg-green-50 border border-green-200 text-green-700"
+                    : "bg-red-50 border border-red-200 text-red-700"
+                    }`}
                 >
                   {message.type === "success" ? (
                     <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -417,7 +416,7 @@ export default function DevoirDetailPage() {
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-900 mt-1">
                     Formats acceptés : JPG, PNG, GIF, WEBP, PDF. Taille max : 10MB.
                   </p>
                 </div>
@@ -425,7 +424,7 @@ export default function DevoirDetailPage() {
                 {/* Commentaire */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Votre réponse / commentaire <span className="text-gray-400 font-normal">optionnel</span>
+                    Votre réponse / commentaire <span className="text-gray-900 font-normal">optionnel</span>
                   </label>
                   <textarea
                     value={commentaire}

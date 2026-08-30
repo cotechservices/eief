@@ -466,7 +466,7 @@ export default function CantinePage() {
               <p className="text-xl font-bold text-green-700">
                 {paymentStats.montantTotalPaye.toLocaleString()} GNF
               </p>
-              <p className="text-xs text-gray-500">{paymentStats.pourcentagePaye}% du total</p>
+              <p className="text-xs text-gray-900">{paymentStats.pourcentagePaye}% du total</p>
             </div>
           </div>
         </div>
@@ -480,7 +480,7 @@ export default function CantinePage() {
               <p className="text-xl font-bold text-yellow-700">
                 {paymentStats.montantTotalEnAttente.toLocaleString()} GNF
               </p>
-              <p className="text-xs text-gray-500">{paymentStats.pourcentageEnAttente}% du total</p>
+              <p className="text-xs text-gray-900">{paymentStats.pourcentageEnAttente}% du total</p>
             </div>
           </div>
         </div>
@@ -494,7 +494,7 @@ export default function CantinePage() {
               <p className="text-xl font-bold text-red-700">
                 {paymentStats.montantTotalNonPaye.toLocaleString()} GNF
               </p>
-              <p className="text-xs text-gray-500">{paymentStats.pourcentageNonPaye}% du total</p>
+              <p className="text-xs text-gray-900">{paymentStats.pourcentageNonPaye}% du total</p>
             </div>
           </div>
         </div>
@@ -506,7 +506,7 @@ export default function CantinePage() {
             <div>
               <p className="text-sm text-gray-600">Taux de paiement</p>
               <p className="text-2xl font-bold text-indigo-700">{paymentStats.tauxPaiement}%</p>
-              <p className="text-xs text-gray-500">Global</p>
+              <p className="text-xs text-gray-900">Global</p>
             </div>
           </div>
         </div>
@@ -520,7 +520,7 @@ export default function CantinePage() {
               onClick={() => setActiveTab('menus')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${activeTab === 'menus'
                 ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-gray-900 hover:text-gray-700'
                 }`}
             >
               <Utensils className="w-4 h-4 inline mr-2" />
@@ -530,7 +530,7 @@ export default function CantinePage() {
               onClick={() => setActiveTab('inscriptions')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${activeTab === 'inscriptions'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-gray-900 hover:text-gray-700'
                 }`}
             >
               <Users className="w-4 h-4 inline mr-2" />
@@ -540,7 +540,7 @@ export default function CantinePage() {
               onClick={() => setActiveTab('preinscriptions')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${activeTab === 'preinscriptions'
                 ? 'border-purple-600 text-purple-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-gray-900 hover:text-gray-700'
                 }`}
             >
               <ClipboardList className="w-4 h-4 inline mr-2" />
@@ -550,7 +550,7 @@ export default function CantinePage() {
               onClick={() => setActiveTab('reinscriptions')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${activeTab === 'reinscriptions'
                 ? 'border-orange-600 text-orange-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-gray-900 hover:text-gray-700'
                 }`}
             >
               <RefreshCw className="w-4 h-4 inline mr-2" />
@@ -564,7 +564,7 @@ export default function CantinePage() {
           <div className="p-6">
             <div className="mb-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                 <input
                   type="text"
                   placeholder="Rechercher un menu..."
@@ -642,7 +642,7 @@ export default function CantinePage() {
                       <td className="px-6 py-4">{ins.classe_nom || '-'}</td>
                       <td className="px-6 py-4 text-center">
                         <span className="font-medium">{ins.mois_total}</span>
-                        <span className="text-xs text-gray-400">/{MOIS_MAX}</span>
+                        <span className="text-xs text-gray-900">/{MOIS_MAX}</span>
                       </td>
                       <td className="px-6 py-4 text-purple-600">{ins.montant_mensuel.toLocaleString()} GNF</td>
                       <td className="px-6 py-4 font-medium text-green-600">{ins.montant_total.toLocaleString()} GNF</td>
@@ -714,12 +714,12 @@ export default function CantinePage() {
                             <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs">Non payé</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-gray-500 text-xs">{new Date(p.date).toLocaleDateString('fr-FR')}</td>
+                        <td className="px-6 py-4 text-gray-900 text-xs">{new Date(p.date).toLocaleDateString('fr-FR')}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={8} className="px-6 py-8 text-center text-gray-900">
                         Aucune inscription avec cantine
                       </td>
                     </tr>
@@ -768,12 +768,12 @@ export default function CantinePage() {
                             <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs">Non payé</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-gray-500 text-xs">{new Date(r.date).toLocaleDateString('fr-FR')}</td>
+                        <td className="px-6 py-4 text-gray-900 text-xs">{new Date(r.date).toLocaleDateString('fr-FR')}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-900">
                         Aucune réinscription avec cantine
                       </td>
                     </tr>
@@ -797,7 +797,7 @@ export default function CantinePage() {
                 <UserPlus className="w-5 h-5 text-green-600" />
                 Inscription à la cantine
               </h2>
-              <button onClick={() => setShowInscriptionModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowInscriptionModal(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -807,7 +807,7 @@ export default function CantinePage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Élève *</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
                     type="text"
                     placeholder="Rechercher par nom, prénom ou matricule..."
@@ -832,7 +832,7 @@ export default function CantinePage() {
                         </div>
                         <div>
                           <p className="font-medium">{eleve.prenom} {eleve.nom}</p>
-                          <p className="text-xs text-gray-500">{eleve.matricule} • {eleve.classe_nom}</p>
+                          <p className="text-xs text-gray-900">{eleve.matricule} • {eleve.classe_nom}</p>
                         </div>
                       </button>
                     ))}
@@ -863,7 +863,7 @@ export default function CantinePage() {
                   </button>
                   <div className="text-center">
                     <span className="text-3xl font-bold text-blue-600">{nombreMois}</span>
-                    <span className="text-sm text-gray-500 ml-1">/ 9 mois</span>
+                    <span className="text-sm text-gray-900 ml-1">/ 9 mois</span>
                   </div>
                   <button
                     type="button"
@@ -942,7 +942,7 @@ export default function CantinePage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingMenu ? "Modifier le menu" : "Ajouter un menu"}
               </h2>
-              <button onClick={() => setShowMenuForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowMenuForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1044,7 +1044,7 @@ export default function CantinePage() {
                 <Pencil className="w-5 h-5 text-blue-600" />
                 Modifier l'inscription
               </h2>
-              <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowEditModal(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1067,7 +1067,7 @@ export default function CantinePage() {
                   </button>
                   <div className="text-center">
                     <span className="text-3xl font-bold text-blue-600">{nombreMois}</span>
-                    <span className="text-sm text-gray-500 ml-1">/ 9 mois</span>
+                    <span className="text-sm text-gray-900 ml-1">/ 9 mois</span>
                   </div>
                   <button
                     type="button"

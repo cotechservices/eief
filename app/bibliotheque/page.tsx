@@ -116,7 +116,7 @@ export default function BibliothequePage() {
         <div className="max-w-3xl mx-auto mb-8">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-900" />
               <input
                 type="text"
                 placeholder="Rechercher par titre, auteur, ou ISBN..."
@@ -146,22 +146,22 @@ export default function BibliothequePage() {
           <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
             <BookOpen className="w-8 h-8 text-blue-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-gray-900">{totalLivresExistants}</p>
-            <p className="text-xs text-gray-500">Titres référencés</p>
+            <p className="text-xs text-gray-900">Titres référencés</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
             <User className="w-8 h-8 text-green-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-green-600">{totalLivresDisponibles}</p>
-            <p className="text-xs text-gray-500">Disponibles de suite</p>
+            <p className="text-xs text-gray-900">Disponibles de suite</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
             <Calendar className="w-8 h-8 text-orange-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-gray-900">{totalLivresEmpruntes}</p>
-            <p className="text-xs text-gray-500">Emprunts en cours</p>
+            <p className="text-xs text-gray-900">Emprunts en cours</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-100">
             <Download className="w-8 h-8 text-purple-600 mx-auto mb-2" />
             <p className="text-2xl font-bold text-gray-900">6</p>
-            <p className="text-xs text-gray-500">Rayons thématiques</p>
+            <p className="text-xs text-gray-900">Rayons thématiques</p>
           </div>
         </div>
 
@@ -178,8 +178,8 @@ export default function BibliothequePage() {
           ) : filteredLivres.length === 0 ? (
             <div className="text-center py-16">
               <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 font-medium">Aucun livre trouvé</p>
-              <p className="text-gray-400 text-xs mt-1">Recherchez avec d'autres mots clés ou une autre catégorie.</p>
+              <p className="text-gray-900 font-medium">Aucun livre trouvé</p>
+              <p className="text-gray-900 text-xs mt-1">Recherchez avec d'autres mots clés ou une autre catégorie.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -212,12 +212,12 @@ export default function BibliothequePage() {
                               </div>
                             ) : (
                               <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <BookOpen className="w-6 h-6 text-gray-400" />
+                                <BookOpen className="w-6 h-6 text-gray-900" />
                               </div>
                             )}
                             <div>
                               <p className="font-bold text-gray-900">{livre.titre}</p>
-                              <div className="text-[10px] text-gray-500 font-normal">ISBN: {livre.isbn || "N/A"}</div>
+                              <div className="text-[10px] text-gray-900 font-normal">ISBN: {livre.isbn || "N/A"}</div>
                             </div>
                           </div>
                         </td>

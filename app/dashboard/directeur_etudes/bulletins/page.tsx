@@ -8,12 +8,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } fro
 export default function BulletinsDirecteurPage() {
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClasse, setSelectedClasse] = useState("");
-  
+
   const [bulletins, setBulletins] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expandedBulletin, setExpandedBulletin] = useState<number | null>(null);
-  
+
   const printRef = useRef<HTMLDivElement>(null);
 
   // Read class_id from URL query parameter
@@ -32,7 +32,7 @@ export default function BulletinsDirecteurPage() {
     fetch("/api/directeur_etudes/bulletins?action=classes")
       .then(res => res.json())
       .then(data => {
-        if(Array.isArray(data)) setClasses(data);
+        if (Array.isArray(data)) setClasses(data);
       })
       .catch(console.error);
   }, []);
@@ -48,7 +48,7 @@ export default function BulletinsDirecteurPage() {
     fetch(`/api/directeur_etudes/bulletins?action=bulletins&classe_id=${selectedClasse}`)
       .then(res => res.json())
       .then(data => {
-        if(Array.isArray(data)) {
+        if (Array.isArray(data)) {
           setBulletins(data);
         } else {
           setError(data.error || "Erreur lors du chargement des bulletins.");
@@ -86,7 +86,7 @@ export default function BulletinsDirecteurPage() {
           <FileText className="w-6 h-6 text-blue-600" />
           Bulletins Scolaires
         </h1>
-        <p className="text-gray-500 mt-1">Générez et imprimez les bulletins des élèves par classe (Format PDF Officiel).</p>
+        <p className="text-gray-900 mt-1">Générez et imprimez les bulletins des élèves par classe (Format PDF Officiel).</p>
       </div>
 
       {/* Filtres (écran) */}
@@ -159,12 +159,12 @@ export default function BulletinsDirecteurPage() {
           const totalMoyCoeff = bulletin.matieres.reduce((sum: number, m: any) => sum + (m.moyenne * parseInt(m.coefficient)), 0);
 
           return (
-            <div 
-              key={bulletin.eleve.id} 
+            <div
+              key={bulletin.eleve.id}
               className="bulletin-page bg-white print:break-inside-avoid print:page-break-after-always print:shadow-none print:border-none border border-gray-200 rounded-xl overflow-hidden mb-12"
             >
               {/* Résumé cliquable (seulement à l'écran) */}
-              <div 
+              <div
                 className="p-4 bg-gray-50 flex justify-between items-center cursor-pointer print:hidden hover:bg-gray-100 transition"
                 onClick={() => toggleBulletin(index)}
               >
@@ -177,14 +177,14 @@ export default function BulletinsDirecteurPage() {
 
               {/* CONTENU EXACT DU BULLETIN (Visible à l'impression, ou si déroulé à l'écran) */}
               <div className={`p-[1cm] ${expandedBulletin === index ? 'block' : 'hidden'} print:block text-black bg-white`} style={{ fontFamily: "Times New Roman, serif" }}>
-                
+
                 {/* 1. En-tête principal (Bordure noire) */}
                 <div className="border border-black p-2 flex items-center justify-between mb-2">
                   <div className="w-[120px] flex-shrink-0 text-center">
                     {/* Logo */}
                     <div className="border border-green-600 p-1 inline-block mx-auto">
                       <div className="text-red-600 font-bold text-xl leading-none">E.I.E.F</div>
-                      <div className="text-[8px] text-green-700 leading-tight">ECOLE INTERNATIONALE<br/>LES ENFANTS DU FUTUR</div>
+                      <div className="text-[8px] text-green-700 leading-tight">ECOLE INTERNATIONALE<br />LES ENFANTS DU FUTUR</div>
                       <div className="text-[9px] text-red-600 font-bold mt-1">FAISONS PLUS !</div>
                     </div>
                   </div>
@@ -218,7 +218,7 @@ export default function BulletinsDirecteurPage() {
                 <div className="border border-black flex h-[100px] mb-2 mt-1">
                   <div className="w-[100px] border-r border-black flex items-center justify-center overflow-hidden bg-gray-200">
                     {/* Silhouette de l'élève */}
-                    <div className="w-full h-full text-gray-400">
+                    <div className="w-full h-full text-gray-900">
                       <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full scale-125 translate-y-3">
                         <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
                       </svg>
@@ -363,9 +363,10 @@ export default function BulletinsDirecteurPage() {
           );
         })}
       </div>
-      
+
       {/* CSS d'impression Strict */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @media print {
           @page {
             size: A4 portrait;

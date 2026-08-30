@@ -106,7 +106,7 @@ export default function ActivitesPage() {
         <div className="max-w-4xl mx-auto mb-10">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-900" />
               <input
                 type="text"
                 placeholder="Rechercher une activité..."
@@ -130,7 +130,7 @@ export default function ActivitesPage() {
         {/* Liste des activités */}
         {filteredActivites.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
-            <p className="text-gray-500">Aucune activité trouvée</p>
+            <p className="text-gray-900">Aucune activité trouvée</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -162,11 +162,11 @@ export default function ActivitesPage() {
                       {activite.description || "Une activité enrichissante pour vos enfants."}
                     </p>
                     <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-gray-500">
+                      <div className="flex items-center gap-2 text-gray-900">
                         <Calendar className="w-4 h-4" />
                         <span>{activite.jour} • {activite.heure_debut} - {activite.heure_fin}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-500">
+                      <div className="flex items-center gap-2 text-gray-900">
                         <Users className="w-4 h-4" />
                         <span>Âge: {getAgeRange(activite.age_min, activite.age_max)} | Max: {activite.capacite_max}</span>
                       </div>
@@ -208,19 +208,19 @@ export default function ActivitesPage() {
               <p className="text-gray-600 mb-6">{selectedActivite.description || "Aucune description disponible."}</p>
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm text-gray-500">Jour & Horaire</p>
+                  <p className="text-sm text-gray-900">Jour & Horaire</p>
                   <p className="font-semibold">{selectedActivite.jour} • {selectedActivite.heure_debut} - {selectedActivite.heure_fin}</p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm text-gray-500">Âge requis</p>
+                  <p className="text-sm text-gray-900">Âge requis</p>
                   <p className="font-semibold">{getAgeRange(selectedActivite.age_min, selectedActivite.age_max)}</p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm text-gray-500">Capacité maximale</p>
+                  <p className="text-sm text-gray-900">Capacité maximale</p>
                   <p className="font-semibold">{selectedActivite.capacite_max} enfants</p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm text-gray-500">Frais d'inscription</p>
+                  <p className="text-sm text-gray-900">Frais d'inscription</p>
                   <p className="font-semibold text-purple-600">{selectedActivite.frais_inscription.toLocaleString()} GNF</p>
                 </div>
               </div>

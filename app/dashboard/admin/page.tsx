@@ -147,7 +147,7 @@ export default function AdminDashboard() {
     try {
       const response = await fetch("/api/dashboard/stats");
       const data = await response.json();
-      
+
       setStats({
         general: data.general || stats.general,
         financieres: {
@@ -183,7 +183,7 @@ export default function AdminDashboard() {
     Cantine: "bg-orange-500",
     Transport: "bg-purple-500",
     Bibliothèque: "bg-teal-500",
-    Autre: "bg-gray-500",
+    Autre: "bg-gray-900",
   };
 
   if (loading) {
@@ -205,46 +205,46 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <Link href="/dashboard/admin/eleves" className="">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-900 text-sm">Total élèves</p>
-              <p className="text-2xl font-bold text-gray-900">{general.totalEleves || 0}</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-900 text-sm">Total élèves</p>
+                <p className="text-2xl font-bold text-gray-900">{general.totalEleves || 0}</p>
+              </div>
+              <div className="bg-blue-500 p-3 rounded-lg"><Users className="w-6 h-6 text-white" /></div>
             </div>
-            <div className="bg-blue-500 p-3 rounded-lg"><Users className="w-6 h-6 text-white" /></div>
-          </div>
           </Link>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <Link href="/dashboard/admin/personnel" className="">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-900 text-sm">Personnels</p> {/* ← libellé modifié */}
-              <p className="text-2xl font-bold text-gray-900">{general.totalPersonnels || 0}</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-900 text-sm">Personnels</p> {/* ← libellé modifié */}
+                <p className="text-2xl font-bold text-gray-900">{general.totalPersonnels || 0}</p>
+              </div>
+              <div className="bg-green-500 p-3 rounded-lg"><GraduationCap className="w-6 h-6 text-white" /></div>
             </div>
-            <div className="bg-green-500 p-3 rounded-lg"><GraduationCap className="w-6 h-6 text-white" /></div>
-          </div>
           </Link>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <Link href="/dashboard/admin/classes" className="">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-900 text-sm">Classes</p>
-              <p className="text-2xl font-bold text-gray-900">{general.totalClasses || 0}</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-900 text-sm">Classes</p>
+                <p className="text-2xl font-bold text-gray-900">{general.totalClasses || 0}</p>
+              </div>
+              <div className="bg-purple-500 p-3 rounded-lg"><BookOpen className="w-6 h-6 text-white" /></div>
             </div>
-            <div className="bg-purple-500 p-3 rounded-lg"><BookOpen className="w-6 h-6 text-white" /></div>
-          </div>
           </Link>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6">
           <Link href="/dashboard/admin/classes" className="">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-gray-900 text-sm">Parents</p>
-              <p className="text-2xl font-bold text-gray-900">{general.totalParents || 0}</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-900 text-sm">Parents</p>
+                <p className="text-2xl font-bold text-gray-900">{general.totalParents || 0}</p>
+              </div>
+              <div className="bg-indigo-500 p-3 rounded-lg"><UserPlus className="w-6 h-6 text-white" /></div>
             </div>
-            <div className="bg-indigo-500 p-3 rounded-lg"><UserPlus className="w-6 h-6 text-white" /></div>
-          </div>
           </Link>
         </div>
       </div>
@@ -372,7 +372,7 @@ export default function AdminDashboard() {
           <div className="space-y-3">
             {categoriesRecettes.map((cat: any, idx: number) => {
               const Icon = iconMap[cat.name] || DollarSign;
-              const color = colorMap[cat.name] || "bg-gray-500";
+              const color = colorMap[cat.name] || "bg-gray-900";
               return (
                 <div key={idx} className="flex items-center gap-3">
                   <div className={`w-8 h-8 ${color} rounded-lg flex items-center justify-center`}>
@@ -627,6 +627,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-  </div>
-);
+    </div>
+  );
 }

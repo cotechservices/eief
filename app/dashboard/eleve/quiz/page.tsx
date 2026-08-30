@@ -3,9 +3,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Brain, CheckCircle, Clock, BookOpen, ChevronRight, 
-  Zap, Award, FileText, AlertCircle, TrendingUp, 
+import {
+  Brain, CheckCircle, Clock, BookOpen, ChevronRight,
+  Zap, Award, FileText, AlertCircle, TrendingUp,
   Star, Sparkles
 } from "lucide-react";
 
@@ -55,8 +55,8 @@ export default function EleveQuizPage() {
   const termines = quiz.filter(q => q.statut === 'termine');
 
   const getCategorieIcon = (iconName: string) => {
-    const icons: Record<string, any> = { 
-      BookOpen, Zap, Brain, Star, Sparkles, Award, TrendingUp 
+    const icons: Record<string, any> = {
+      BookOpen, Zap, Brain, Star, Sparkles, Award, TrendingUp
     };
     const Icon = icons[iconName] || BookOpen;
     return <Icon className="w-4 h-4" />;
@@ -67,7 +67,7 @@ export default function EleveQuizPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Chargement des quiz...</p>
+          <p className="text-gray-900">Chargement des quiz...</p>
         </div>
       </div>
     );
@@ -82,10 +82,10 @@ export default function EleveQuizPage() {
             <Brain className="w-7 h-7 text-purple-600" />
             Quiz & Jeux
           </h1>
-          <p className="text-gray-500 mt-1">Entraînez-vous avec des quiz interactifs</p>
+          <p className="text-gray-900 mt-1">Entraînez-vous avec des quiz interactifs</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-900">
             {disponible.length} quiz disponible{disponible.length > 1 ? 's' : ''}
           </span>
         </div>
@@ -111,32 +111,29 @@ export default function EleveQuizPage() {
       <div className="flex gap-2 bg-gray-100 p-1 rounded-xl w-fit">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
-            filter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${filter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'
+            }`}
         >
           Tous
         </button>
         <button
           onClick={() => setFilter('disponible')}
-          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
-            filter === 'disponible' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${filter === 'disponible' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'
+            }`}
         >
           À faire
         </button>
         <button
           onClick={() => setFilter('termine')}
-          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
-            filter === 'termine' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${filter === 'termine' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'
+            }`}
         >
           Terminés
         </button>
       </div>
 
       {filteredQuiz.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-400">
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-900">
           <Brain className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="font-medium text-gray-600">Aucun quiz disponible</p>
           <p className="text-sm mt-1">Vos enseignants n'ont pas encore créé de quiz</p>
@@ -146,26 +143,25 @@ export default function EleveQuizPage() {
           {filteredQuiz.map((q) => {
             const isTermine = q.statut === 'termine';
             const isEnCours = q.statut === 'en_cours';
-            
+
             return (
               <Link
                 key={q.id}
                 href={`/dashboard/eleve/quiz/${q.id}`}
-                className={`bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition group ${
-                  isTermine ? 'border-gray-100 opacity-80' : 'border-purple-100 hover:border-purple-300'
-                }`}
+                className={`bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition group ${isTermine ? 'border-gray-100 opacity-80' : 'border-purple-100 hover:border-purple-300'
+                  }`}
               >
                 {/* Bandeau couleur catégorie */}
-                <div 
-                  className="h-1.5" 
+                <div
+                  className="h-1.5"
                   style={{ backgroundColor: q.categorie_couleur || '#6B46C1' }}
                 />
 
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-3">
-                    <span 
+                    <span
                       className="text-xs font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1"
-                      style={{ 
+                      style={{
                         backgroundColor: `${q.categorie_couleur || '#6B46C1'}20`,
                         color: q.categorie_couleur || '#6B46C1'
                       }}
@@ -189,40 +185,39 @@ export default function EleveQuizPage() {
                   </div>
 
                   <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">{q.titre}</h3>
-                  <p className="text-sm text-gray-500 line-clamp-2 mb-3">
+                  <p className="text-sm text-gray-900 line-clamp-2 mb-3">
                     {q.description || 'Quiz interactif'}
                   </p>
 
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-500 flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-gray-400" /> Questions
+                      <span className="text-gray-900 flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-gray-900" /> Questions
                       </span>
                       <span className="font-medium text-gray-900">{q.nb_questions}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-500 flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-gray-400" /> Durée
+                      <span className="text-gray-900 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-900" /> Durée
                       </span>
                       <span className="font-medium text-gray-900">{q.duree_minutes} min</span>
                     </div>
                     {q.fichier_url && (
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-500 flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-gray-400" /> Fichier
+                        <span className="text-gray-900 flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-gray-900" /> Fichier
                         </span>
                         <span className="text-xs text-purple-500">📎 Joint</span>
                       </div>
                     )}
                     {isTermine && q.points_obtenus !== undefined && q.pourcentage !== undefined && (
                       <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-100">
-                        <span className="text-gray-500 flex items-center gap-2">
-                          <Award className="w-4 h-4 text-gray-400" /> Score
+                        <span className="text-gray-900 flex items-center gap-2">
+                          <Award className="w-4 h-4 text-gray-900" /> Score
                         </span>
-                        <span className={`font-bold ${
-                          q.pourcentage >= 70 ? 'text-green-600' : 
+                        <span className={`font-bold ${q.pourcentage >= 70 ? 'text-green-600' :
                           q.pourcentage >= 50 ? 'text-orange-500' : 'text-red-500'
-                        }`}>
+                          }`}>
                           {q.points_obtenus} pts ({q.pourcentage}%)
                         </span>
                       </div>
@@ -230,10 +225,10 @@ export default function EleveQuizPage() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-900">
                       {isTermine ? 'Voir les résultats →' : 'Commencer →'}
                     </span>
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-500 transition" />
+                    <ChevronRight className="w-4 h-4 text-gray-900 group-hover:text-purple-500 transition" />
                   </div>
                 </div>
               </Link>

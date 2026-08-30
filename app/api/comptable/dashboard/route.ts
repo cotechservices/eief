@@ -20,7 +20,7 @@ export async function GET() {
     const recettesResult = await query(`
       SELECT COALESCE(SUM(montant), 0) as total
       FROM paiements
-      WHERE statut = 'valide'
+      WHERE statut IN ('valide', 'paye')
     `);
     const totalRecettes = Number(recettesResult.rows[0]?.total || 0);
 
@@ -28,7 +28,7 @@ export async function GET() {
     const recettesMoisResult = await query(`
       SELECT COALESCE(SUM(montant), 0) as total
       FROM paiements
-      WHERE statut = 'valide'
+      WHERE statut IN ('valide', 'paye')
       AND EXTRACT(MONTH FROM date_paiement) = $1
       AND EXTRACT(YEAR FROM date_paiement) = $2
     `, [currentMonth, currentYear]);
@@ -67,21 +67,29 @@ export async function GET() {
     `);
     const encoursTotal = Number(encours.rows[0]?.total || 0);
 
-    // 6. Derniers paiements élèves
+    // 6. Derniers paiements (tous types : élèves, préinscriptions, réinscriptions)
     const derniersPaiementsResult = await query(`
       SELECT
         p.id,
-        CONCAT(u.prenom, ' ', u.nom) as eleve,
-        c.nom as classe,
+        COALESCE(
+          NULLIF(TRIM(CONCAT(u.prenom, ' ', u.nom)), ''),
+          NULLIF(TRIM(CONCAT(pre.enfant_prenom, ' ', pre.enfant_nom)), ''),
+          NULLIF(TRIM(CONCAT(rein.enfant_prenom, ' ', rein.enfant_nom)), ''),
+          'Élève'
+        ) as eleve,
+        COALESCE(c.nom, pre.classe, rein.classe_nom, '-') as classe,
         p.montant,
         p.type_frais as type,
         TO_CHAR(p.date_paiement, 'DD/MM/YYYY') as date,
         p.statut,
         p.mode_paiement as mode
       FROM paiements p
-      JOIN eleves e ON p.eleve_id = e.id
-      JOIN utilisateurs u ON e.utilisateur_id = u.id
+      LEFT JOIN eleves e ON p.eleve_id = e.id
+      LEFT JOIN utilisateurs u ON e.utilisateur_id = u.id
       LEFT JOIN classes c ON e.classe_id = c.id
+      LEFT JOIN preinscriptions pre ON p.preinscription_id = pre.id
+      LEFT JOIN reinscriptions rein ON p.reinscription_id = rein.id
+      WHERE p.statut IN ('valide', 'paye')
       ORDER BY p.date_paiement DESC, p.id DESC
       LIMIT 10
     `);
@@ -92,7 +100,7 @@ export async function GET() {
         COALESCE(type_frais, 'Autre') as name,
         SUM(montant) as montant
       FROM paiements
-      WHERE statut = 'valide'
+      WHERE statut IN ('valide', 'paye')
       GROUP BY type_frais
       ORDER BY montant DESC
     `);

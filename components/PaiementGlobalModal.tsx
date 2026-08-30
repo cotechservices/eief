@@ -105,7 +105,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
               <h2 className="text-xl font-bold text-black">Paiement Global</h2>
               <p className="text-sm text-gray-600">Payez pour l'ensemble de vos enfants inscrits</p>
             </div>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -173,7 +173,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-medium mb-2">Montant à payer *</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">GNF</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 font-semibold">GNF</span>
                   <input
                     type="text"
                     value={montantSaisi}
@@ -252,7 +252,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
             <div className="text-center py-8">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-2">Tous vos paiements sont à jour</h3>
-              <p className="text-gray-500">Vous n'avez aucun solde restant.</p>
+              <p className="text-gray-900">Vous n'avez aucun solde restant.</p>
               <button onClick={onClose} className="mt-6 px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">Fermer</button>
             </div>
           )}

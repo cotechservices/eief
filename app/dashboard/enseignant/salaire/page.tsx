@@ -107,7 +107,7 @@ export default function EnseignantSalairePage() {
 
   useEffect(() => {
     fetchSalaire();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMois, selectedAnnee]);
 
   const printBulletin = () => {
@@ -367,21 +367,21 @@ export default function EnseignantSalairePage() {
         <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-blue-50 p-2.5 rounded-xl"><Banknote className="w-5 h-5 text-blue-600" /></div>
-            <p className="text-sm text-gray-500 font-medium">Salaire de base</p>
+            <p className="text-sm text-gray-900 font-medium">Salaire de base</p>
           </div>
           <p className="text-2xl font-bold text-gray-900">{salaire.salaire_base.toLocaleString('fr-FR')}</p>
-          <p className="text-xs text-gray-400 mt-1">GNF / mois</p>
+          <p className="text-xs text-gray-900 mt-1">GNF / mois</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-green-50 p-2.5 rounded-xl"><TrendingUp className="w-5 h-5 text-green-600" /></div>
-            <p className="text-sm text-gray-500 font-medium">Total Primes</p>
+            <p className="text-sm text-gray-900 font-medium">Total Primes</p>
           </div>
           <p className="text-2xl font-bold text-green-600">
             {primesCumulees > 0 ? `+${primesCumulees.toLocaleString('fr-FR')}` : '-'}
           </p>
-          <p className="text-xs text-gray-400 mt-1">GNF</p>
+          <p className="text-xs text-gray-900 mt-1">GNF</p>
         </div>
 
         <div className="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl shadow-sm p-5 text-white">
@@ -451,7 +451,7 @@ export default function EnseignantSalairePage() {
             <span className="text-sm text-gray-600">Salaire de base</span>
             <span className="text-sm font-semibold text-gray-900">+{salaire.salaire_base.toLocaleString('fr-FR')} GNF</span>
           </div>
-          
+
           {(salaire.prime_mensuelle > 0 || Number(salaire.prime_responsabilite || 0) > 0 || Number(salaire.prime_craie || 0) > 0) && (
             <>
               <div className="flex justify-between items-center px-6 py-3 bg-green-50/50">
@@ -496,7 +496,7 @@ export default function EnseignantSalairePage() {
           {Number(salaire.retenue_sanction || 0) === 0 && Number(salaire.autres_retenues || 0) === 0 && (
             <div className="flex justify-between items-center px-6 py-3 hover:bg-gray-50">
               <span className="text-sm text-gray-600">Retenues / Sanctions</span>
-              <span className="text-sm text-gray-400">0 GNF</span>
+              <span className="text-sm text-gray-900">0 GNF</span>
             </div>
           )}
 
@@ -516,7 +516,7 @@ export default function EnseignantSalairePage() {
               Historique des paiements
             </h2>
             <div className="text-right">
-              <p className="text-xs text-gray-400">{nbPayesHistorique} paiement(s)</p>
+              <p className="text-xs text-gray-900">{nbPayesHistorique} paiement(s)</p>
               <p className="text-sm font-bold text-purple-600">{totalPercu.toLocaleString('fr-FR')} GNF percus</p>
             </div>
           </div>
@@ -530,7 +530,7 @@ export default function EnseignantSalairePage() {
                   <div>
                     <p className="text-sm font-medium text-gray-800">{MOIS_NOMS[item.mois - 1]} {item.annee}</p>
                     {item.date_paiement && (
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-900">
                         Paye le {new Date(item.date_paiement).toLocaleDateString('fr-FR')}
                         {item.mode_paiement && ` - ${item.mode_paiement.replace('_', ' ')}`}
                       </p>

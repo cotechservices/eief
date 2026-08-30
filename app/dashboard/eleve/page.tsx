@@ -149,7 +149,7 @@ export default function EleveDashboard() {
         <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Devoirs à rendre</p>
+              <p className="text-gray-900 text-sm">Devoirs à rendre</p>
               <p className="text-3xl font-bold text-orange-500 mt-1">
                 {devoirsARendreOuRetard.length}
               </p>
@@ -169,11 +169,11 @@ export default function EleveDashboard() {
         <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Devoirs soumis</p>
+              <p className="text-gray-900 text-sm">Devoirs soumis</p>
               <p className="text-3xl font-bold text-green-600 mt-1">
                 {devoirs.filter((d) => d.statut === "soumis").length}
               </p>
-              <p className="text-xs text-gray-400 mt-2">/ {devoirs.length} total</p>
+              <p className="text-xs text-gray-900 mt-2">/ {devoirs.length} total</p>
             </div>
             <div className="bg-green-50 p-2 rounded-xl">
               <CheckCircle className="w-6 h-6 text-green-600" />
@@ -262,9 +262,8 @@ export default function EleveDashboard() {
                     <p className="font-medium text-gray-900 text-sm">{m.matiere}</p>
                     <div className="mt-1.5 bg-gray-100 rounded-full h-1.5 w-full">
                       <div
-                        className={`h-1.5 rounded-full transition-all ${
-                          m.moyenne >= 14 ? "bg-green-500" : m.moyenne >= 10 ? "bg-orange-400" : "bg-red-500"
-                        }`}
+                        className={`h-1.5 rounded-full transition-all ${m.moyenne >= 14 ? "bg-green-500" : m.moyenne >= 10 ? "bg-orange-400" : "bg-red-500"
+                          }`}
                         style={{ width: `${(m.moyenne / 20) * 100}%` }}
                       />
                     </div>
@@ -273,12 +272,12 @@ export default function EleveDashboard() {
                     <span className={`text-lg font-bold ${getMoyenneColor(m.moyenne)}`}>
                       {m.moyenne.toFixed(2)}
                     </span>
-                    <span className="text-xs text-gray-400">/20</span>
+                    <span className="text-xs text-gray-900">/20</span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="px-6 py-8 text-center text-gray-400">
+              <div className="px-6 py-8 text-center text-gray-900">
                 <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Aucune note disponible</p>
               </div>
@@ -310,13 +309,12 @@ export default function EleveDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                            isRetard ? "bg-red-500" : "bg-orange-400"
-                          }`}
+                          className={`w-2 h-2 rounded-full flex-shrink-0 ${isRetard ? "bg-red-500" : "bg-orange-400"
+                            }`}
                         />
                         <p className="font-medium text-gray-900 text-sm truncate">{d.titre}</p>
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5 ml-4">{d.matiere}</p>
+                      <p className="text-xs text-gray-900 mt-0.5 ml-4">{d.matiere}</p>
                     </div>
                     <div className="ml-3 text-right flex-shrink-0">
                       {isRetard ? (
@@ -325,13 +323,12 @@ export default function EleveDashboard() {
                         </span>
                       ) : (
                         <span
-                          className={`text-xs px-2 py-1 rounded-lg font-medium ${
-                            d.joursRestants <= 2
-                              ? "bg-red-100 text-red-600"
-                              : d.joursRestants <= 5
+                          className={`text-xs px-2 py-1 rounded-lg font-medium ${d.joursRestants <= 2
+                            ? "bg-red-100 text-red-600"
+                            : d.joursRestants <= 5
                               ? "bg-orange-100 text-orange-600"
                               : "bg-green-100 text-green-600"
-                          }`}
+                            }`}
                         >
                           {d.joursRestants > 0 ? `J-${d.joursRestants}` : "Aujourd'hui"}
                         </span>
@@ -341,7 +338,7 @@ export default function EleveDashboard() {
                 );
               })
             ) : (
-              <div className="px-6 py-8 text-center text-gray-400">
+              <div className="px-6 py-8 text-center text-gray-900">
                 <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-400" />
                 <p className="text-sm">Tous les devoirs sont à jour ! 🎉</p>
               </div>

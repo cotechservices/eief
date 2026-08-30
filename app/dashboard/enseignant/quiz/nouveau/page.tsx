@@ -4,8 +4,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  ArrowLeft, Save, Plus, Trash2, BookOpen, Clock, 
+import {
+  ArrowLeft, Save, Plus, Trash2, BookOpen, Clock,
   Users, Zap, Layers, Search, CheckCircle, School, FileText, Upload, X
 } from "lucide-react";
 
@@ -33,13 +33,13 @@ export default function NouveauQuizPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  
+
   const [enseignements, setEnseignements] = useState<Enseignement[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
   const [fichier, setFichier] = useState<File | null>(null);
   const [fichierName, setFichierName] = useState("");
-  
+
   const [formData, setFormData] = useState({
     enseignement_id: "",
     titre: "",
@@ -50,7 +50,7 @@ export default function NouveauQuizPage() {
     est_aleatoire: false,
     afficher_resultats: true,
   });
-  
+
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [searchQuestion, setSearchQuestion] = useState("");
   const [selectedCategorie, setSelectedCategorie] = useState<string>("all");
@@ -211,12 +211,12 @@ export default function NouveauQuizPage() {
       <div className="flex items-center justify-between">
         <Link
           href="/dashboard/enseignant/quiz"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-purple-600 text-sm font-medium transition"
+          className="inline-flex items-center gap-2 text-gray-900 hover:text-purple-600 text-sm font-medium transition"
         >
           <ArrowLeft className="w-4 h-4" /> Retour aux quiz
         </Link>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-900">
             {selectedQuestions.length} question{selectedQuestions.length > 1 ? 's' : ''} sélectionnée{selectedQuestions.length > 1 ? 's' : ''}
           </span>
           {selectedClasse && (
@@ -247,8 +247,8 @@ export default function NouveauQuizPage() {
             {/* ⭐ Sélection de la classe - comme pour les évaluations */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <School className="w-4 h-4" /> Classe * 
-                <span className="text-xs font-normal text-gray-400">
+                <School className="w-4 h-4" /> Classe *
+                <span className="text-xs font-normal text-gray-900">
                   (le quiz sera disponible pour tous les élèves de cette classe)
                 </span>
               </label>
@@ -266,7 +266,7 @@ export default function NouveauQuizPage() {
                 ))}
               </select>
               {selectedClasse && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-900">
                   📌 Quiz destiné à la {selectedClasse.classe_nom} ({selectedClasse.nb_eleves} élèves)
                 </p>
               )}
@@ -314,12 +314,12 @@ export default function NouveauQuizPage() {
               <div className="flex items-center gap-2 mb-2">
                 <Upload className="w-5 h-5 text-purple-600" />
                 <h3 className="font-semibold text-gray-900">Fichier du sujet (Optionnel)</h3>
-                <span className="text-xs text-gray-400">(Image ou PDF - max 10 Mo)</span>
+                <span className="text-xs text-gray-900">(Image ou PDF - max 10 Mo)</span>
               </div>
-              <p className="text-sm text-gray-500 mb-3">Vous pouvez joindre une image ou un fichier PDF du sujet du quiz.</p>
+              <p className="text-sm text-gray-900 mb-3">Vous pouvez joindre une image ou un fichier PDF du sujet du quiz.</p>
 
               {!fichier ? (
-                <div 
+                <div
                   className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-purple-400 transition cursor-pointer bg-gray-50 hover:bg-purple-50"
                   onClick={() => document.getElementById('fileInput')?.click()}
                 >
@@ -330,9 +330,9 @@ export default function NouveauQuizPage() {
                     onChange={handleFileChange}
                     className="hidden"
                   />
-                  <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                  <Upload className="w-10 h-10 text-gray-900 mx-auto mb-3" />
                   <p className="text-sm text-gray-600">Cliquez pour sélectionner un fichier</p>
-                  <p className="text-xs text-gray-400 mt-1">Formats acceptés : JPG, PNG, GIF, PDF</p>
+                  <p className="text-xs text-gray-900 mt-1">Formats acceptés : JPG, PNG, GIF, PDF</p>
                 </div>
               ) : (
                 <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-xl p-4">
@@ -344,7 +344,7 @@ export default function NouveauQuizPage() {
                     )}
                     <div>
                       <p className="font-medium text-gray-800 truncate max-w-[200px]">{fichierName}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-900">
                         {(fichier.size / 1024).toFixed(1)} KB • {fichier.type}
                       </p>
                     </div>
@@ -352,7 +352,7 @@ export default function NouveauQuizPage() {
                   <button
                     type="button"
                     onClick={removeFile}
-                    className="text-gray-400 hover:text-red-500 transition p-1"
+                    className="text-gray-900 hover:text-red-500 transition p-1"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -400,7 +400,7 @@ export default function NouveauQuizPage() {
                 <BookOpen className="w-6 h-6 text-blue-600" />
                 Sélectionner les questions
               </h2>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-900">
                 {selectedQuestions.length} sélectionnée{selectedQuestions.length > 1 ? 's' : ''}
               </span>
             </div>
@@ -410,7 +410,7 @@ export default function NouveauQuizPage() {
             {/* Filtres */}
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                 <input
                   type="text"
                   placeholder="Rechercher une question..."
@@ -433,7 +433,7 @@ export default function NouveauQuizPage() {
 
             {/* Liste des questions */}
             {filteredQuestions.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-gray-900">
                 <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p>Aucune question trouvée</p>
                 <Link
@@ -450,18 +450,16 @@ export default function NouveauQuizPage() {
                     key={q.id}
                     type="button"
                     onClick={() => toggleQuestion(q.id)}
-                    className={`w-full text-left flex items-start gap-3 p-3 rounded-xl border transition ${
-                      selectedQuestions.includes(q.id)
-                        ? "border-purple-400 bg-purple-50"
-                        : "border-gray-200 hover:border-purple-200 hover:bg-gray-50"
-                    }`}
+                    className={`w-full text-left flex items-start gap-3 p-3 rounded-xl border transition ${selectedQuestions.includes(q.id)
+                      ? "border-purple-400 bg-purple-50"
+                      : "border-gray-200 hover:border-purple-200 hover:bg-gray-50"
+                      }`}
                   >
                     <div className="mt-0.5">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center border-2 ${
-                        selectedQuestions.includes(q.id)
-                          ? "border-purple-600 bg-purple-600 text-white"
-                          : "border-gray-300"
-                      }`}>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center border-2 ${selectedQuestions.includes(q.id)
+                        ? "border-purple-600 bg-purple-600 text-white"
+                        : "border-gray-300"
+                        }`}>
                         {selectedQuestions.includes(q.id) && (
                           <CheckCircle className="w-3.5 h-3.5" />
                         )}
@@ -469,23 +467,22 @@ export default function NouveauQuizPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span 
+                        <span
                           className="text-xs font-semibold px-2 py-0.5 rounded"
-                          style={{ 
+                          style={{
                             backgroundColor: `${q.categorie_couleur || '#6B46C1'}20`,
                             color: q.categorie_couleur || '#6B46C1'
                           }}
                         >
                           {q.categorie_nom}
                         </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          q.difficulte === 'facile' ? 'bg-green-100 text-green-700' :
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${q.difficulte === 'facile' ? 'bg-green-100 text-green-700' :
                           q.difficulte === 'moyen' ? 'bg-orange-100 text-orange-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
+                            'bg-red-100 text-red-700'
+                          }`}>
                           {q.difficulte}
                         </span>
-                        <span className="text-xs text-gray-400">{q.points} pts</span>
+                        <span className="text-xs text-gray-900">{q.points} pts</span>
                       </div>
                       <p className="text-sm text-gray-800 mt-0.5">{q.question}</p>
                     </div>
@@ -493,8 +490,8 @@ export default function NouveauQuizPage() {
                 ))}
               </div>
             )}
-            
-            <p className="text-xs text-gray-400 mt-4">
+
+            <p className="text-xs text-gray-900 mt-4">
               {filteredQuestions.length} question{filteredQuestions.length > 1 ? 's' : ''} disponible{filteredQuestions.length > 1 ? 's' : ''}
             </p>
           </div>

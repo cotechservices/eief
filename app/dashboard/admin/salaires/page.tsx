@@ -344,7 +344,7 @@ export default function SalairesPage() {
           mois: parseInt(selectedMois),
           annee: parseInt(selectedAnnee),
           mode_paiement: modePaiement,
-          reference_transaction: `SAL-${selectedAnnee}${String(selectedMois).padStart(2,'0')}-${selectedAgent.matricule}`
+          reference_transaction: `SAL-${selectedAnnee}${String(selectedMois).padStart(2, '0')}-${selectedAgent.matricule}`
         })
       });
 
@@ -354,21 +354,21 @@ export default function SalairesPage() {
           prev.map(s =>
             s.personnel_id === selectedAgent.personnel_id
               ? {
-                  ...s,
-                  statut: "paye",
-                  date_paiement: today,
-                  mode_paiement: modePaiement,
-                  salaire_base: valBase,
-                  prime_mensuelle: valPrimeM,
-                  prime_responsabilite: valPrimeR,
-                  prime_craie: valPrimeC,
-                  retenue_sanction: valRetenueS,
-                  autres_retenues: valAutresR,
-                  details_lignes: formLignesDeductions,
-                  total_brut: calculatedBrut,
-                  total_deductions: calculatedDeductions,
-                  montant_paye: calculatedTotalNet
-                }
+                ...s,
+                statut: "paye",
+                date_paiement: today,
+                mode_paiement: modePaiement,
+                salaire_base: valBase,
+                prime_mensuelle: valPrimeM,
+                prime_responsabilite: valPrimeR,
+                prime_craie: valPrimeC,
+                retenue_sanction: valRetenueS,
+                autres_retenues: valAutresR,
+                details_lignes: formLignesDeductions,
+                total_brut: calculatedBrut,
+                total_deductions: calculatedDeductions,
+                montant_paye: calculatedTotalNet
+              }
               : s
           )
         );
@@ -393,7 +393,7 @@ export default function SalairesPage() {
       addToast("ℹ️ Tous les salaires sont déjà payés ce mois.", "info");
       return;
     }
-    if (!confirm(`Confirmer le paiement en masse de ${nonPayes.length} salaires pour ${MOIS[parseInt(selectedMois)-1]} ${selectedAnnee} ?`)) return;
+    if (!confirm(`Confirmer le paiement en masse de ${nonPayes.length} salaires pour ${MOIS[parseInt(selectedMois) - 1]} ${selectedAnnee} ?`)) return;
 
     addToast(`⏳ Traitement de ${nonPayes.length} paiements en cours...`, "info");
     let success = 0;
@@ -422,7 +422,7 @@ export default function SalairesPage() {
           mois: parseInt(selectedMois),
           annee: parseInt(selectedAnnee),
           mode_paiement: 'virement',
-          reference_transaction: `SAL-${selectedAnnee}${String(selectedMois).padStart(2,'0')}-${agent.matricule}`
+          reference_transaction: `SAL-${selectedAnnee}${String(selectedMois).padStart(2, '0')}-${agent.matricule}`
         })
       });
       if (res.ok) {
@@ -472,19 +472,18 @@ export default function SalairesPage() {
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-lg border-l-4 max-w-sm animate-slide-in ${
-              toast.type === "success" ? "bg-green-50 border-green-500 text-green-800" :
-              toast.type === "error"   ? "bg-red-50 border-red-500 text-red-800" :
-              "bg-blue-50 border-blue-500 text-blue-800"
-            }`}
+            className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-lg border-l-4 max-w-sm animate-slide-in ${toast.type === "success" ? "bg-green-50 border-green-500 text-green-800" :
+              toast.type === "error" ? "bg-red-50 border-red-500 text-red-800" :
+                "bg-blue-50 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-shrink-0 mt-0.5">
               {toast.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
-              {toast.type === "error"   && <AlertCircle className="w-5 h-5 text-red-500" />}
-              {toast.type === "info"    && <Clock className="w-5 h-5 text-blue-500" />}
+              {toast.type === "error" && <AlertCircle className="w-5 h-5 text-red-500" />}
+              {toast.type === "info" && <Clock className="w-5 h-5 text-blue-500" />}
             </div>
             <p className="text-sm font-medium flex-1">{toast.message}</p>
-            <button onClick={() => removeToast(toast.id)} className="flex-shrink-0 text-gray-400 hover:text-gray-600">
+            <button onClick={() => removeToast(toast.id)} className="flex-shrink-0 text-gray-900 hover:text-gray-600">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -495,7 +494,7 @@ export default function SalairesPage() {
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestion des salaires</h1>
-          <p className="text-gray-500 text-sm mt-1">Paie mensuelle du personnel</p>
+          <p className="text-gray-900 text-sm mt-1">Paie mensuelle du personnel</p>
         </div>
         <div className="flex flex-wrap gap-3 items-center">
           <select
@@ -503,7 +502,7 @@ export default function SalairesPage() {
             onChange={e => setSelectedMois(e.target.value)}
             className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {MOIS.map((m, i) => <option key={i+1} value={String(i+1)}>{m}</option>)}
+            {MOIS.map((m, i) => <option key={i + 1} value={String(i + 1)}>{m}</option>)}
           </select>
           <select
             value={selectedAnnee}
@@ -534,9 +533,9 @@ export default function SalairesPage() {
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-400">
           <div className="flex justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Déjà payé</p>
-              <p className="text-xl font-bold text-green-600 mt-1">{totalPaye.toLocaleString()} <span className="text-xs font-normal text-gray-400">GNF</span></p>
-              <p className="text-xs text-gray-400 mt-0.5">{nbPayes} agent(s)</p>
+              <p className="text-gray-900 text-sm">Déjà payé</p>
+              <p className="text-xl font-bold text-green-600 mt-1">{totalPaye.toLocaleString()} <span className="text-xs font-normal text-gray-900">GNF</span></p>
+              <p className="text-xs text-gray-900 mt-0.5">{nbPayes} agent(s)</p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-300" />
           </div>
@@ -544,9 +543,9 @@ export default function SalairesPage() {
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-yellow-400">
           <div className="flex justify-between">
             <div>
-              <p className="text-gray-500 text-sm">En attente</p>
-              <p className="text-xl font-bold text-yellow-600 mt-1">{totalEnAttente.toLocaleString()} <span className="text-xs font-normal text-gray-400">GNF</span></p>
-              <p className="text-xs text-gray-400 mt-0.5">{nbNonPayes} agent(s)</p>
+              <p className="text-gray-900 text-sm">En attente</p>
+              <p className="text-xl font-bold text-yellow-600 mt-1">{totalEnAttente.toLocaleString()} <span className="text-xs font-normal text-gray-900">GNF</span></p>
+              <p className="text-xs text-gray-900 mt-0.5">{nbNonPayes} agent(s)</p>
             </div>
             <Clock className="w-8 h-8 text-yellow-300" />
           </div>
@@ -554,11 +553,11 @@ export default function SalairesPage() {
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-purple-400">
           <div className="flex justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Taux de paiement</p>
+              <p className="text-gray-900 text-sm">Taux de paiement</p>
               <p className="text-xl font-bold text-purple-600 mt-1">
                 {salaires.length > 0 ? Math.round((nbPayes / salaires.length) * 100) : 0}%
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">{MOIS[parseInt(selectedMois)-1]} {selectedAnnee}</p>
+              <p className="text-xs text-gray-900 mt-0.5">{MOIS[parseInt(selectedMois) - 1]} {selectedAnnee}</p>
             </div>
             <TrendingUp className="w-8 h-8 text-purple-300" />
           </div>
@@ -568,7 +567,7 @@ export default function SalairesPage() {
       {/* Filtre */}
       <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
           <input
             type="text"
             placeholder="Rechercher par nom, matricule ou poste..."
@@ -590,20 +589,20 @@ export default function SalairesPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Employé</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Poste</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Salaire base</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Primes</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Déductions</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Total net</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Statut</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date paiement</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Employé</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Poste</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-900 uppercase">Salaire base</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-900 uppercase">Primes</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-900 uppercase">Déductions</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-900 uppercase">Total net</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Statut</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Date paiement</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredSalaires.length === 0 ? (
-                  <tr><td colSpan={9} className="px-6 py-12 text-center text-gray-400">Aucun agent trouvé</td></tr>
+                  <tr><td colSpan={9} className="px-6 py-12 text-center text-gray-900">Aucun agent trouvé</td></tr>
                 ) : filteredSalaires.map(agent => {
                   const primesTotal = Number(agent.prime_mensuelle || 0) + Number(agent.prime_responsabilite || 0) + Number(agent.prime_craie || 0);
                   const sumLignes = agent.details_lignes ? agent.details_lignes.reduce((a, l) => a + Number(l.montant || 0), 0) : 0;
@@ -620,7 +619,7 @@ export default function SalairesPage() {
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">{agent.employe}</p>
-                            <p className="text-xs text-gray-400">{agent.matricule}</p>
+                            <p className="text-xs text-gray-900">{agent.matricule}</p>
                           </div>
                         </div>
                       </td>
@@ -646,7 +645,7 @@ export default function SalairesPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{agent.date_paiement || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{agent.date_paiement || '-'}</td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           {agent.statut !== "paye" && (
@@ -691,27 +690,27 @@ export default function SalairesPage() {
             <div className="p-5 border-b flex justify-between items-center bg-gray-50">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Formulaire de Paie Détaillée</h2>
-                <p className="text-xs text-gray-500 mt-0.5">Saisie des primes, avances, bons, sanctions et déductions</p>
+                <p className="text-xs text-gray-900 mt-0.5">Saisie des primes, avances, bons, sanctions et déductions</p>
               </div>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+              <button onClick={() => setShowModal(false)} className="text-gray-900 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
 
             <div className="p-6 space-y-6 overflow-y-auto flex-1">
               <div className="bg-blue-50 rounded-xl p-4 flex justify-between items-center border border-blue-100">
                 <div>
                   <p className="font-bold text-gray-900">{selectedAgent.employe}</p>
-                  <p className="text-xs text-gray-500">{selectedAgent.poste} • Matricule: {selectedAgent.matricule}</p>
+                  <p className="text-xs text-gray-900">{selectedAgent.poste} • Matricule: {selectedAgent.matricule}</p>
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-semibold uppercase text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
-                    {MOIS[parseInt(selectedMois)-1]} {selectedAnnee}
+                    {MOIS[parseInt(selectedMois) - 1]} {selectedAnnee}
                   </span>
                 </div>
               </div>
 
               {/* 1. Rémunération de base & Primes */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">1. Rémunération de base & Primes</h3>
+                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">1. Rémunération de base & Primes</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Salaire de base (GNF)</label>
@@ -760,8 +759,8 @@ export default function SalairesPage() {
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">2. Lignes de Déductions, Avances & Sanctions</h3>
-                    <p className="text-xs text-gray-400">Ces lignes figureront directement dans le tableau du bulletin imprimé</p>
+                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">2. Lignes de Déductions, Avances & Sanctions</h3>
+                    <p className="text-xs text-gray-900">Ces lignes figureront directement dans le tableau du bulletin imprimé</p>
                   </div>
                   <button
                     type="button"
@@ -806,7 +805,7 @@ export default function SalairesPage() {
                           onChange={e => updateLigneDeduction(idx, 'montant', e.target.value === '' ? '' : Number(e.target.value))}
                           className="w-32 px-2.5 py-1.5 border rounded-lg text-xs font-bold text-red-600 text-right"
                         />
-                        <span className="text-xs text-gray-400">GNF</span>
+                        <span className="text-xs text-gray-900">GNF</span>
                       </div>
                       <button
                         type="button"
@@ -822,7 +821,7 @@ export default function SalairesPage() {
 
               {/* 3. Retenues additionnelles fixes */}
               <div className="space-y-3 pt-3 border-t">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">3. Retenues additionnelles fixes</h3>
+                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">3. Retenues additionnelles fixes</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-red-700 mb-1">Retenue pour sanction complémentaire (GNF)</label>

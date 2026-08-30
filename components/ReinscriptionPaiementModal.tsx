@@ -57,14 +57,14 @@ const formatMontant = (montant: number): string => {
   return Math.round(Math.max(0, montant)).toLocaleString();
 };
 
-export default function ReinscriptionPaiementModal({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
+export default function ReinscriptionPaiementModal({
+  isOpen,
+  onClose,
+  onSuccess,
   onPaymentComplete,
-  reinscriptionId, 
-  enfantNom, 
-  niveau 
+  reinscriptionId,
+  enfantNom,
+  niveau
 }: Props) {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
@@ -90,44 +90,44 @@ export default function ReinscriptionPaiementModal({
     setError(null);
     try {
       const response = await fetch(`/api/parent/plan-paiement-reinscription?reinscriptionId=${reinscriptionId}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Erreur lors du chargement");
       }
-      
+
       const data = await response.json();
-      
+
       if (data && data.plan) {
         setPlan(data.plan);
         setServices(data.services_optionnels || null);
-        
+
         const allEcheances = data.echeances || [];
         setEcheances(allEcheances);
-        
+
         // ⭐ Total = réinscription + services optionnels
         const totalInscription = Number(data.plan?.total) || Number(data.montant_total_plan) || 0;
         const totalServices = data.services_optionnels?.total_services || 0;
         const total = totalInscription + totalServices;
-        
+
         // ⭐ Montant payé = total - restant (calculé par l'API)
         const restant = Number(data.restant_calcule) || Number(data.montant_restant_plan) || 0;
         const paye = Math.max(0, total - restant);
-        
-        console.log("📊 Calcul des montants (Réinscription):", { 
-          totalInscription, 
-          totalServices, 
-          total, 
-          paye, 
+
+        console.log("📊 Calcul des montants (Réinscription):", {
+          totalInscription,
+          totalServices,
+          total,
+          paye,
           restant,
           restant_calcule: data.restant_calcule,
           montant_restant_plan: data.montant_restant_plan
         });
-        
+
         setMontantTotal(total);
         setMontantPaye(paye);
         setMontantRestant(restant);
-        
+
         if (restant > 0) {
           setMontantSaisi(restant.toString());
         } else {
@@ -138,7 +138,7 @@ export default function ReinscriptionPaiementModal({
       }
     } catch (error) {
       console.error("Erreur chargement plan:", error);
-      setError((error as Error).message || "Erreur lors du chargement du plan");
+      setError((error as Error).message || "Connexion instable lors du chargement du plan");
     } finally {
       setLoading(false);
     }
@@ -146,7 +146,7 @@ export default function ReinscriptionPaiementModal({
 
   const handlePaiement = async () => {
     const montant = parseInt(montantSaisi.replace(/\s/g, ''));
-    
+
     if (!montant || montant <= 0) {
       setError("Veuillez saisir un montant valide");
       return;
@@ -164,7 +164,7 @@ export default function ReinscriptionPaiementModal({
 
     setPaying(true);
     setError(null);
-    
+
     try {
       const response = await fetch("/api/parent/paiement-libre-reinscription", {
         method: "POST",
@@ -183,14 +183,14 @@ export default function ReinscriptionPaiementModal({
       if (data.success) {
         await fetchPlan();
         onSuccess();
-        
+
         if (onPaymentComplete) {
           onPaymentComplete();
         }
-        
+
         setModePaiement("");
         setReference("");
-        
+
         if (data.est_termine) {
           setTimeout(() => {
             onClose();
@@ -238,7 +238,7 @@ export default function ReinscriptionPaiementModal({
                 Paiement libre
               </span>
             </div>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-700">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -351,7 +351,7 @@ export default function ReinscriptionPaiementModal({
                     style={{ width: `${Math.min(100, Math.max(0, pourcentagePaye))}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-gray-900 mt-1">
                   <span>Payé: {formatMontant(montantPaye)} GNF</span>
                   <span>Total: {formatMontant(montantTotal)} GNF</span>
                   <span className="font-semibold text-indigo-600">Reste: {formatMontant(montantRestant)} GNF</span>
@@ -366,7 +366,7 @@ export default function ReinscriptionPaiementModal({
                     <span className="text-gray-700">Frais de réinscription</span>
                     <span className="font-medium text-indigo-600">{formatMontant(totalInscription)} GNF</span>
                   </div>
-                  
+
                   {services && services.total_services > 0 && (
                     <>
                       {services.transport.total > 0 && (
@@ -387,13 +387,13 @@ export default function ReinscriptionPaiementModal({
                           <span className="font-medium text-purple-600">{formatMontant(services.fournitures.total)} GNF</span>
                         </div>
                       )}
-                      <div className="flex justify-between pl-4 text-xs text-gray-500">
+                      <div className="flex justify-between pl-4 text-xs text-gray-900">
                         <span>Sous-total services</span>
                         <span>{formatMontant(services.total_services)} GNF</span>
                       </div>
                     </>
                   )}
-                  
+
                   <div className="border-t pt-2 flex justify-between font-bold text-black text-lg">
                     <span>Total général</span>
                     <span className="text-indigo-700">{formatMontant(totalGeneral)} GNF</span>
@@ -434,10 +434,10 @@ export default function ReinscriptionPaiementModal({
               {/* CHAMP DE SAISIE DU MONTANT */}
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-medium mb-2">
-                  Montant à payer * <span className="text-gray-400 text-xs">(saisie libre)</span>
+                  Montant à payer * <span className="text-gray-900 text-xs">(saisie libre)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">GNF</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 font-semibold">GNF</span>
                   <input
                     type="text"
                     value={montantSaisi}
@@ -478,11 +478,10 @@ export default function ReinscriptionPaiementModal({
                       key={value}
                       type="button"
                       onClick={() => setModePaiement(value)}
-                      className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${
-                        modePaiement === value
-                          ? `border-${color}-500 bg-${color}-50`
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === value
+                        ? `border-${color}-500 bg-${color}-50`
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
                       disabled={estTermine}
                     >
                       <Icon className={`w-6 h-6 text-${color}-600`} />
@@ -503,7 +502,7 @@ export default function ReinscriptionPaiementModal({
                     placeholder={modePaiement === 'orange_money' ? 'Ex: #OM-123456789' : 'Ex: VISA-****-1234'}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-900 mt-1">
                     {modePaiement === 'orange_money'
                       ? 'Entrez le numéro de transaction reçu par SMS'
                       : 'Entrez le numéro de transaction de votre carte'}
@@ -525,19 +524,18 @@ export default function ReinscriptionPaiementModal({
                 <button
                   onClick={handlePaiement}
                   disabled={
-                    !modePaiement || 
-                    paying || 
+                    !modePaiement ||
+                    paying ||
                     montantSaisiNumber <= 0 ||
                     montantSaisiNumber > montantRestant
                   }
-                  className={`w-full py-3 rounded-lg font-semibold transition ${
-                    !modePaiement || 
-                    paying || 
+                  className={`w-full py-3 rounded-lg font-semibold transition ${!modePaiement ||
+                    paying ||
                     montantSaisiNumber <= 0 ||
                     montantSaisiNumber > montantRestant
-                      ? 'bg-gray-300 cursor-not-allowed'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  }`}
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    }`}
                 >
                   {paying ? (
                     <>
@@ -578,16 +576,16 @@ export default function ReinscriptionPaiementModal({
                               {e.echeance || `Paiement ${index + 1}`}
                             </span>
                             {e.mode_paiement && (
-                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                                {e.mode_paiement === 'especes' ? 'Espèces' : 
-                                 e.mode_paiement === 'orange_money' ? 'Orange Money' : 
-                                 e.mode_paiement === 'carte' ? 'Carte' : e.mode_paiement}
+                              <span className="text-xs text-gray-900 bg-gray-100 px-2 py-0.5 rounded-full">
+                                {e.mode_paiement === 'especes' ? 'Espèces' :
+                                  e.mode_paiement === 'orange_money' ? 'Orange Money' :
+                                    e.mode_paiement === 'carte' ? 'Carte' : e.mode_paiement}
                               </span>
                             )}
                           </div>
                           <div className="text-right">
                             <span className="font-medium text-green-600">{formatMontant(e.montant)} GNF</span>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-900">
                               {e.date_paiement ? new Date(e.date_paiement).toLocaleDateString('fr-FR') : 'Date inconnue'}
                             </p>
                           </div>
@@ -609,7 +607,7 @@ export default function ReinscriptionPaiementModal({
               )}
             </>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-900">
               <p>Aucun plan de paiement disponible pour cette réinscription.</p>
             </div>
           )}

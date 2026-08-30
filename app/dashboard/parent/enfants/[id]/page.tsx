@@ -56,10 +56,10 @@ type Tab = "apercu" | "devoirs" | "notes" | "examens" | "cours" | "bulletin" | "
 const MentionBadge = ({ moy }: { moy: number }) => {
   const cfg =
     moy >= 16 ? { label: "Très Bien", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" } :
-    moy >= 14 ? { label: "Bien", cls: "bg-blue-100 text-blue-700 border-blue-200" } :
-    moy >= 12 ? { label: "Assez Bien", cls: "bg-indigo-100 text-indigo-700 border-indigo-200" } :
-    moy >= 10 ? { label: "Passable", cls: "bg-yellow-100 text-yellow-700 border-yellow-200" } :
-    { label: "Insuffisant", cls: "bg-red-100 text-red-700 border-red-200" };
+      moy >= 14 ? { label: "Bien", cls: "bg-blue-100 text-blue-700 border-blue-200" } :
+        moy >= 12 ? { label: "Assez Bien", cls: "bg-indigo-100 text-indigo-700 border-indigo-200" } :
+          moy >= 10 ? { label: "Passable", cls: "bg-yellow-100 text-yellow-700 border-yellow-200" } :
+            { label: "Insuffisant", cls: "bg-red-100 text-red-700 border-red-200" };
   return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.cls}`}>{cfg.label}</span>;
 };
 
@@ -156,7 +156,7 @@ export default function ParentEnfantDashboard() {
         <AlertCircle className="w-8 h-8 text-red-500" />
       </div>
       <h2 className="text-xl font-bold text-gray-800 mb-2">Accès refusé</h2>
-      <p className="text-gray-500 mb-6">{error}</p>
+      <p className="text-gray-900 mb-6">{error}</p>
       <Link href="/dashboard/parent/enfants" className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition font-medium">
         <ArrowLeft className="w-4 h-4" /> Retour à mes enfants
       </Link>
@@ -182,7 +182,7 @@ export default function ParentEnfantDashboard() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 text-sm text-gray-900">
         <Link href="/dashboard/parent/enfants" className="hover:text-blue-600 transition flex items-center gap-1">
           <ArrowLeft className="w-4 h-4" /> Mes Enfants
         </Link>
@@ -239,11 +239,10 @@ export default function ParentEnfantDashboard() {
               const Icon = tab.icon;
               return (
                 <button key={tab.id} onClick={() => loadTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-all ${
-                    activeTab === tab.id
-                      ? "border-blue-600 text-blue-600 bg-white rounded-t-lg"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-all ${activeTab === tab.id
+                    ? "border-blue-600 text-blue-600 bg-white rounded-t-lg"
+                    : "border-transparent text-gray-900 hover:text-gray-700"
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   {tab.label}
@@ -284,7 +283,7 @@ export default function ParentEnfantDashboard() {
                           <div key={d.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                             <div>
                               <p className="font-semibold text-gray-800 text-sm">{d.titre}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">
+                              <p className="text-xs text-gray-900 mt-0.5">
                                 <Calendar className="w-3 h-3 inline mr-1" />
                                 {new Date(d.date_limite).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                                 {" · "}{d.enseignant}
@@ -308,7 +307,7 @@ export default function ParentEnfantDashboard() {
                     </h3>
                     {matieres.length === 0 ? (
                       <div className="text-center py-6 bg-gray-50 rounded-xl border border-gray-100">
-                        <p className="text-gray-500 text-sm">Aucune note disponible pour le moment</p>
+                        <p className="text-gray-900 text-sm">Aucune note disponible pour le moment</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -317,11 +316,11 @@ export default function ParentEnfantDashboard() {
                             <div className="flex items-start justify-between">
                               <div>
                                 <p className="font-semibold text-gray-800 text-sm">{m.matiere}</p>
-                                <p className="text-xs text-gray-400 mt-0.5">{m.enseignant}</p>
+                                <p className="text-xs text-gray-900 mt-0.5">{m.enseignant}</p>
                               </div>
                               <div className="text-right">
                                 <span className={`text-lg font-extrabold ${m.moyenne >= 10 ? "text-green-600" : "text-red-600"}`}>{m.moyenne.toFixed(2)}</span>
-                                <p className="text-xs text-gray-400">/20</p>
+                                <p className="text-xs text-gray-900">/20</p>
                               </div>
                             </div>
                             <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5">
@@ -349,7 +348,7 @@ export default function ParentEnfantDashboard() {
                   {devoirs.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
                       <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">Aucun devoir assigné</p>
+                      <p className="text-gray-900 font-medium">Aucun devoir assigné</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -364,8 +363,8 @@ export default function ParentEnfantDashboard() {
                                   <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold">Note : {d.note_soumission}/20</span>
                                 )}
                               </div>
-                              {d.description && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{d.description}</p>}
-                              <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                              {d.description && <p className="text-sm text-gray-900 mt-1 line-clamp-2">{d.description}</p>}
+                              <div className="flex items-center gap-3 mt-2 text-xs text-gray-900">
                                 <span><Calendar className="w-3 h-3 inline mr-1" />Limite : {new Date(d.date_limite).toLocaleDateString("fr-FR")}</span>
                                 <span>Prof : {d.enseignant}</span>
                               </div>
@@ -395,7 +394,7 @@ export default function ParentEnfantDashboard() {
                     {moyenneGenerale > 0 && (
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-2xl text-blue-700">{moyenneGenerale}</span>
-                        <span className="text-gray-400">/20</span>
+                        <span className="text-gray-900">/20</span>
                         <MentionBadge moy={moyenneGenerale} />
                       </div>
                     )}
@@ -403,7 +402,7 @@ export default function ParentEnfantDashboard() {
                   {matieres.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
                       <Award className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">Aucune note disponible</p>
+                      <p className="text-gray-900 font-medium">Aucune note disponible</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -417,12 +416,12 @@ export default function ParentEnfantDashboard() {
                               </div>
                               <div>
                                 <p className="font-semibold text-gray-800">{m.matiere}</p>
-                                <p className="text-xs text-gray-400">{m.enseignant} · {m.notes.length} note{m.notes.length > 1 ? "s" : ""}</p>
+                                <p className="text-xs text-gray-900">{m.enseignant} · {m.notes.length} note{m.notes.length > 1 ? "s" : ""}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
                               <MentionBadge moy={m.moyenne} />
-                              {expandedMatiere === m.matiere ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                              {expandedMatiere === m.matiere ? <ChevronUp className="w-4 h-4 text-gray-900" /> : <ChevronDown className="w-4 h-4 text-gray-900" />}
                             </div>
                           </button>
                           {expandedMatiere === m.matiere && (
@@ -431,13 +430,13 @@ export default function ParentEnfantDashboard() {
                                 <div key={i} className="flex items-center justify-between px-5 py-3">
                                   <div>
                                     <span className="text-xs font-medium capitalize bg-blue-50 text-blue-700 px-2 py-0.5 rounded">{n.type_note}</span>
-                                    <span className="text-xs text-gray-400 ml-2">{new Date(n.date_saisie).toLocaleDateString("fr-FR")}</span>
-                                    {n.commentaire && <p className="text-xs text-gray-500 mt-0.5 italic">{n.commentaire}</p>}
+                                    <span className="text-xs text-gray-900 ml-2">{new Date(n.date_saisie).toLocaleDateString("fr-FR")}</span>
+                                    {n.commentaire && <p className="text-xs text-gray-900 mt-0.5 italic">{n.commentaire}</p>}
                                   </div>
                                   <div className="text-right">
                                     <span className={`font-bold text-lg ${n.valeur >= 10 ? "text-green-600" : "text-red-600"}`}>{n.valeur}</span>
-                                    <span className="text-xs text-gray-400">/20</span>
-                                    <p className="text-xs text-gray-400">coeff. {n.coefficient}</p>
+                                    <span className="text-xs text-gray-900">/20</span>
+                                    <p className="text-xs text-gray-900">coeff. {n.coefficient}</p>
                                   </div>
                                 </div>
                               ))}
@@ -457,7 +456,7 @@ export default function ParentEnfantDashboard() {
                   {examens.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
                       <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">Aucune évaluation disponible</p>
+                      <p className="text-gray-900 font-medium">Aucune évaluation disponible</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -472,9 +471,9 @@ export default function ParentEnfantDashboard() {
                                   : <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" /> À passer</span>
                                 }
                               </div>
-                              <p className="text-xs text-gray-500 mt-1">{ex.matiere} · {ex.enseignant}</p>
-                              {ex.date_debut && <p className="text-xs text-gray-400 mt-0.5"><Calendar className="w-3 h-3 inline mr-1" />{new Date(ex.date_debut).toLocaleDateString("fr-FR")}</p>}
-                              <div className="flex gap-3 mt-2 text-xs text-gray-500">
+                              <p className="text-xs text-gray-900 mt-1">{ex.matiere} · {ex.enseignant}</p>
+                              {ex.date_debut && <p className="text-xs text-gray-900 mt-0.5"><Calendar className="w-3 h-3 inline mr-1" />{new Date(ex.date_debut).toLocaleDateString("fr-FR")}</p>}
+                              <div className="flex gap-3 mt-2 text-xs text-gray-900">
                                 {ex.nb_questions > 0 && <span>{ex.nb_questions} question{ex.nb_questions > 1 ? "s" : ""}</span>}
                                 {ex.total_points > 0 && <span>/ {ex.total_points} pts</span>}
                               </div>
@@ -500,7 +499,7 @@ export default function ParentEnfantDashboard() {
                   {cours.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
                       <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">Aucun cours disponible</p>
+                      <p className="text-gray-900 font-medium">Aucun cours disponible</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -508,15 +507,15 @@ export default function ParentEnfantDashboard() {
                         <div key={ci} className="border border-gray-100 rounded-xl overflow-hidden">
                           <div className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-100">
                             <p className="font-bold text-gray-800">{c.matiere}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">{c.enseignant} · {c.lecons.length} leçon{c.lecons.length > 1 ? "s" : ""}</p>
+                            <p className="text-xs text-gray-900 mt-0.5">{c.enseignant} · {c.lecons.length} leçon{c.lecons.length > 1 ? "s" : ""}</p>
                           </div>
                           <div className="divide-y divide-gray-50">
                             {c.lecons.map(l => (
                               <div key={l.id} className="p-4 flex items-start justify-between gap-3 hover:bg-gray-50 transition">
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium text-gray-800 text-sm">{l.titre}</p>
-                                  {l.description && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{l.description}</p>}
-                                  <p className="text-xs text-gray-400 mt-1"><Calendar className="w-3 h-3 inline mr-1" />{new Date(l.date_publication).toLocaleDateString("fr-FR")}</p>
+                                  {l.description && <p className="text-xs text-gray-900 mt-0.5 line-clamp-2">{l.description}</p>}
+                                  <p className="text-xs text-gray-900 mt-1"><Calendar className="w-3 h-3 inline mr-1" />{new Date(l.date_publication).toLocaleDateString("fr-FR")}</p>
                                 </div>
                                 <div className="flex gap-2 shrink-0">
                                   {l.fichier_url && (
@@ -551,7 +550,7 @@ export default function ParentEnfantDashboard() {
                       <div className="flex items-center gap-3">
                         <div className="text-center">
                           <span className="text-3xl font-extrabold text-blue-700">{bulletin.moyenneGenerale}</span>
-                          <span className="text-gray-400">/20</span>
+                          <span className="text-gray-900">/20</span>
                         </div>
                         <MentionBadge moy={bulletin.moyenneGenerale} />
                       </div>
@@ -560,7 +559,7 @@ export default function ParentEnfantDashboard() {
                   {!bulletin || bulletin.lignes.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
                       <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">Bulletin non disponible</p>
+                      <p className="text-gray-900 font-medium">Bulletin non disponible</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
@@ -579,13 +578,13 @@ export default function ParentEnfantDashboard() {
                             <tr key={i} className="hover:bg-blue-50/30 transition">
                               <td className="px-4 py-3">
                                 <p className="font-semibold text-gray-800">{l.matiere}</p>
-                                <p className="text-xs text-gray-400">{l.enseignant}</p>
+                                <p className="text-xs text-gray-900">{l.enseignant}</p>
                               </td>
                               <td className="px-4 py-3 text-center text-gray-600">{l.coefficient}</td>
-                              <td className="px-4 py-3 text-center text-gray-500 text-xs">{l.nbNotes}</td>
+                              <td className="px-4 py-3 text-center text-gray-900 text-xs">{l.nbNotes}</td>
                               <td className="px-4 py-3 text-center">
                                 <span className={`font-extrabold text-lg ${l.moyenne >= 10 ? "text-green-600" : "text-red-600"}`}>{l.moyenne}</span>
-                                <span className="text-gray-400 text-xs">/20</span>
+                                <span className="text-gray-900 text-xs">/20</span>
                               </td>
                               <td className="px-4 py-3 text-center"><MentionBadge moy={l.moyenne} /></td>
                             </tr>
@@ -617,7 +616,7 @@ export default function ParentEnfantDashboard() {
                   {!frais ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
                       <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">Aucune donnée financière</p>
+                      <p className="text-gray-900 font-medium">Aucune donnée financière</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -637,15 +636,15 @@ export default function ParentEnfantDashboard() {
                         </div>
                         <div className="grid grid-cols-3 gap-4 mt-4">
                           <div className="text-center">
-                            <p className="text-xs text-gray-400">Total</p>
+                            <p className="text-xs text-gray-900">Total</p>
                             <p className="font-bold text-gray-800 text-sm">{Number(frais.total).toLocaleString()} GNF</p>
                           </div>
                           <div className="text-center border-x border-gray-100">
-                            <p className="text-xs text-gray-400">Payé</p>
+                            <p className="text-xs text-gray-900">Payé</p>
                             <p className="font-bold text-green-600 text-sm">{Number(frais.paye).toLocaleString()} GNF</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-xs text-gray-400">Restant</p>
+                            <p className="text-xs text-gray-900">Restant</p>
                             <p className={`font-bold text-sm ${frais.reste === 0 ? "text-green-600" : "text-red-600"}`}>
                               {Number(frais.reste).toLocaleString()} GNF
                             </p>
@@ -669,7 +668,7 @@ export default function ParentEnfantDashboard() {
                                 <Icon className={`w-4 h-4 text-${item.color}-600`} />
                               </div>
                               <div>
-                                <p className="text-xs text-gray-500">{item.label}</p>
+                                <p className="text-xs text-gray-900">{item.label}</p>
                                 <p className="font-bold text-gray-800 text-sm">{Number(item.value).toLocaleString()} GNF</p>
                               </div>
                             </div>

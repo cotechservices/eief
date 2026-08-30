@@ -468,7 +468,7 @@ export default function ReinscriptionParentPage() {
               {notification.type === "error" && <XCircle className="w-5 h-5 text-red-500" />}
             </div>
             <p className="text-sm font-medium">{notification.message}</p>
-            <button onClick={() => removeNotification(notification.id)} className="ml-4 text-gray-500 hover:text-gray-700 transition">
+            <button onClick={() => removeNotification(notification.id)} className="ml-4 text-gray-900 hover:text-gray-700 transition">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -544,7 +544,7 @@ export default function ReinscriptionParentPage() {
               Nouvelle demande de réinscription
             </h2>
             <button onClick={() => { setShowForm(false); setSelectedEnfant(null); setSelectedClasseId(null); setSelectedNiveau(""); }}
-              className="text-gray-500 hover:text-gray-700">
+              className="text-gray-900 hover:text-gray-700">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -557,7 +557,7 @@ export default function ReinscriptionParentPage() {
               {enfants.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Aucun enfant inscrit</p>
+                  <p className="text-gray-900">Aucun enfant inscrit</p>
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-4">
@@ -586,14 +586,14 @@ export default function ReinscriptionParentPage() {
                               <GraduationCap className="w-4 h-4" />
                               {enfant.classe_nom || "Classe non assignée"}
                             </p>
-                            <p className="text-xs text-gray-500 mt-1">Matricule: {enfant.matricule}</p>
+                            <p className="text-xs text-gray-900 mt-1">Matricule: {enfant.matricule}</p>
                           </div>
                           {alreadyPending ? (
                             <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
                               <Clock className="w-3 h-3" /> En attente
                             </span>
                           ) : (
-                            <ArrowRight className="w-5 h-5 text-gray-400" />
+                            <ArrowRight className="w-5 h-5 text-gray-900" />
                           )}
                         </div>
                       </div>
@@ -658,7 +658,7 @@ export default function ReinscriptionParentPage() {
                           : "border-gray-200 hover:border-green-300 text-gray-900"
                           }`}
                       >
-                        <GraduationCap className={`w-6 h-6 mx-auto mb-1 ${selectedClasseId === classe.id ? "text-green-600" : "text-gray-400"}`} />
+                        <GraduationCap className={`w-6 h-6 mx-auto mb-1 ${selectedClasseId === classe.id ? "text-green-600" : "text-gray-900"}`} />
                         <p className="font-medium">{classe.nom}</p>
                       </div>
                     ))}
@@ -686,9 +686,9 @@ export default function ReinscriptionParentPage() {
                           <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded-lg border">
                             <div>
                               <p className="text-sm font-medium text-gray-800">{item.nom}</p>
-                              <p className="text-xs text-gray-500">{item.prix.toLocaleString()} GNF</p>
+                              <p className="text-xs text-gray-900">{item.prix.toLocaleString()} GNF</p>
                               {item.horaireMatin && item.horaireSoir && (
-                                <p className="text-xs text-gray-400">Horaire: {item.horaireMatin} - {item.horaireSoir}</p>
+                                <p className="text-xs text-gray-900">Horaire: {item.horaireMatin} - {item.horaireSoir}</p>
                               )}
                             </div>
                             <button
@@ -720,7 +720,7 @@ export default function ReinscriptionParentPage() {
                             <div>
                               <p className="text-sm font-medium text-gray-800">{item.nom}</p>
                               <p className="text-xs text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
-                              {item.plat && <p className="text-xs text-gray-400">{item.plat}</p>}
+                              {item.plat && <p className="text-xs text-gray-900">{item.plat}</p>}
                             </div>
                             <button
                               type="button"
@@ -750,13 +750,13 @@ export default function ReinscriptionParentPage() {
                           <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded-lg border">
                             <div>
                               <p className="text-sm font-medium text-gray-800">{item.nom}</p>
-                              <p className="text-xs text-gray-500">{item.prix_unitaire.toLocaleString()} GNF</p>
+                              <p className="text-xs text-gray-900">{item.prix_unitaire.toLocaleString()} GNF</p>
                             </div>
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
                                 onClick={() => handleSupplyChange(idx, -1)}
-                                className="w-7 h-7 rounded-full text-gray-400 border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                                className="w-7 h-7 rounded-full text-gray-900 border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                                 disabled={item.selectedQty === 0}
                               >
                                 <Minus className="w-3 h-3 text-black" />
@@ -765,7 +765,7 @@ export default function ReinscriptionParentPage() {
                               <button
                                 type="button"
                                 onClick={() => handleSupplyChange(idx, 1)}
-                                className="w-7 h-7 rounded-full text-gray-400 border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                                className="w-7 h-7 rounded-full text-gray-900 border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                                 disabled={item.selectedQty >= item.quantite_stock}
                               >
                                 <Plus className="w-3 h-3 text-black" />
@@ -859,7 +859,7 @@ export default function ReinscriptionParentPage() {
                   disabled={!selectedClasseId || submitting}
                   className={`px-6 py-2.5 rounded-lg transition flex items-center gap-2 ${selectedClasseId && !submitting
                     ? "bg-green-600 text-white hover:bg-green-700"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-gray-300 text-gray-900 cursor-not-allowed"
                     }`}
                 >
                   {submitting ? (
@@ -898,10 +898,10 @@ export default function ReinscriptionParentPage() {
                     <img src={r.photo_url} alt="photo" className="w-12 h-12 rounded-full object-cover" />
                   ) : (
                     <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-gray-400" />
+                      <User className="w-6 h-6 text-gray-900" />
                     </div>
                   )}
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
                       {/* Infos enfant */}
@@ -911,7 +911,7 @@ export default function ReinscriptionParentPage() {
                           {r.classe_actuelle_nom && <span>De: {r.classe_actuelle_nom} → </span>}
                           <span className="font-medium text-green-700">Vers: {r.classe_nom || "N/A"}</span>
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-900 mt-1">
                           Matricule: {r.matricule} • Soumis le {new Date(r.date_reinscription).toLocaleDateString("fr-FR")}
                           {r.annee_scolaire && <span> • {r.annee_scolaire}</span>}
                         </p>
@@ -921,7 +921,7 @@ export default function ReinscriptionParentPage() {
                       <div className="flex flex-col items-end gap-1">
                         {getStatutBadge(r.statut)}
                         {getFraisBadge(r.frais_statut)}
-                        
+
                         {/* Affichage des montants avec restant */}
                         {r.montant_total > 0 && (
                           <div className="text-right mt-1 space-y-0.5">
@@ -950,13 +950,12 @@ export default function ReinscriptionParentPage() {
                     <div className="mt-3">
                       {r.statut === "en_attente" && (
                         <div className="flex flex-wrap items-center gap-2">
-                          <div className={`text-sm py-2 px-3 rounded-lg flex items-center gap-2 flex-1 ${
-                            r.frais_statut === 'paye' 
-                              ? 'bg-green-50 text-green-700' 
-                              : r.frais_statut === 'partiel'
+                          <div className={`text-sm py-2 px-3 rounded-lg flex items-center gap-2 flex-1 ${r.frais_statut === 'paye'
+                            ? 'bg-green-50 text-green-700'
+                            : r.frais_statut === 'partiel'
                               ? 'bg-yellow-50 text-yellow-700'
                               : 'bg-yellow-50 text-yellow-700'
-                          }`}>
+                            }`}>
                             {r.frais_statut === 'paye' ? (
                               <><CheckCircle className="w-4 h-4" /> Paiement complété - En attente de validation...</>
                             ) : r.frais_statut === 'partiel' ? (
@@ -965,7 +964,7 @@ export default function ReinscriptionParentPage() {
                               <><Clock className="w-4 h-4" /> En attente de paiement...</>
                             )}
                           </div>
-                          
+
                           {r.frais_statut !== 'paye' && (
                             <button
                               onClick={() => handleOpenPaiement(r)}
@@ -975,7 +974,7 @@ export default function ReinscriptionParentPage() {
                               {r.frais_statut === 'partiel' ? `Payer ${r.montant_restant.toLocaleString()} GNF` : 'Payer'}
                             </button>
                           )}
-                          
+
                           <button
                             onClick={() => handleCancelClick(r.id, `${r.enfant_prenom} ${r.enfant_nom}`)}
                             className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition flex items-center gap-2 text-sm whitespace-nowrap"
@@ -1037,7 +1036,7 @@ export default function ReinscriptionParentPage() {
                     setCancelReinscriptionId(null);
                     setCancelEnfantNom("");
                   }}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-900 hover:text-gray-700"
                 >
                   <X className="w-5 h-5" />
                 </button>

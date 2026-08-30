@@ -567,21 +567,19 @@ export default function ParentDashboard() {
           <div className="flex gap-1">
             <button
               onClick={() => setActiveTab("apercu")}
-              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-all ${
-                activeTab === "apercu"
-                  ? "border-blue-600 text-blue-600 bg-white rounded-t-lg"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-all ${activeTab === "apercu"
+                ? "border-blue-600 text-blue-600 bg-white rounded-t-lg"
+                : "border-transparent text-gray-900 hover:text-gray-700"
+                }`}
             >
               <FileText className="w-4 h-4" /> Mes pré-inscriptions
             </button>
             <button
               onClick={() => setActiveTab("recus")}
-              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-all ${
-                activeTab === "recus"
-                  ? "border-blue-600 text-blue-600 bg-white rounded-t-lg"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-all ${activeTab === "recus"
+                ? "border-blue-600 text-blue-600 bg-white rounded-t-lg"
+                : "border-transparent text-gray-900 hover:text-gray-700"
+                }`}
             >
               <Receipt className="w-4 h-4" /> Mes reçus
               {recus.length > 0 && (
@@ -596,10 +594,10 @@ export default function ParentDashboard() {
         <div className="p-6">
           {/* Onglet : pré-inscriptions (vide pour l'instant, les cartes sont au-dessus) */}
           {activeTab === "apercu" && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-900">
               <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="font-medium">Vos pré-inscriptions sont affichées ci-dessus</p>
-              <p className="text-sm text-gray-400 mt-1">Consultez vos statistiques et détails en haut de la page</p>
+              <p className="text-sm text-gray-900 mt-1">Consultez vos statistiques et détails en haut de la page</p>
             </div>
           )}
 
@@ -609,7 +607,7 @@ export default function ParentDashboard() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="font-bold text-gray-800 text-lg">Mes reçus de paiement</h3>
-                  <p className="text-sm text-gray-500 mt-0.5">
+                  <p className="text-sm text-gray-900 mt-0.5">
                     Historique de tous vos paiements effectués
                   </p>
                 </div>
@@ -625,7 +623,7 @@ export default function ParentDashboard() {
 
               {/* Barre de recherche */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                 <input
                   type="text"
                   placeholder="Rechercher un reçu, un enfant..."
@@ -642,10 +640,10 @@ export default function ParentDashboard() {
               ) : recus.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Receipt className="w-8 h-8 text-gray-400" />
+                    <Receipt className="w-8 h-8 text-gray-900" />
                   </div>
                   <p className="font-semibold text-gray-600">Aucun reçu disponible</p>
-                  <p className="text-sm text-gray-400 mt-1">Vos reçus apparaîtront ici après chaque paiement</p>
+                  <p className="text-sm text-gray-900 mt-1">Vos reçus apparaîtront ici après chaque paiement</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto rounded-xl border border-gray-100">
@@ -696,11 +694,11 @@ export default function ParentDashboard() {
                             </td>
                             <td className="px-4 py-3 text-gray-600 text-xs">
                               {recu.mode_paiement === "orange_money" ? "Orange Money" :
-                               recu.mode_paiement === "especes" ? "Espèces" :
-                               recu.mode_paiement === "carte" ? "Carte" :
-                               recu.mode_paiement || "—"}
+                                recu.mode_paiement === "especes" ? "Espèces" :
+                                  recu.mode_paiement === "carte" ? "Carte" :
+                                    recu.mode_paiement || "—"}
                             </td>
-                            <td className="px-4 py-3 text-gray-500 text-xs">
+                            <td className="px-4 py-3 text-gray-900 text-xs">
                               {recu.date_paiement
                                 ? new Date(recu.date_paiement).toLocaleDateString("fr-FR")
                                 : "—"}
@@ -722,10 +720,10 @@ export default function ParentDashboard() {
                     r.enfant?.toLowerCase().includes(searchRecu.toLowerCase()) ||
                     r.numero_recu?.toLowerCase().includes(searchRecu.toLowerCase())
                   ).length === 0 && (
-                    <div className="text-center py-8 text-gray-400 text-sm">
-                      Aucun reçu trouvé pour «&nbsp;{searchRecu}&nbsp;»
-                    </div>
-                  )}
+                      <div className="text-center py-8 text-gray-900 text-sm">
+                        Aucun reçu trouvé pour «&nbsp;{searchRecu}&nbsp;»
+                      </div>
+                    )}
                 </div>
               )}
             </div>

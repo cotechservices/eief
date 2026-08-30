@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
+import {
   Bus, Users, Route, Calendar, TrendingUp, TrendingDown,
   Download, Printer, FileText, PieChart, BarChart3,
   Eye, Clock, UserCheck, UserX, AlertCircle, ChevronDown,
@@ -62,7 +62,7 @@ export default function TransportRapportsPage() {
       const bus = data.bus || [];
       const totalInscrits = bus.reduce((acc: number, b: any) => acc + b.inscrits, 0);
       const capaciteTotale = bus.reduce((acc: number, b: any) => acc + b.capacite, 0);
-      
+
       setStats({
         totalBus: bus.length,
         totalInscrits: totalInscrits,
@@ -85,7 +85,7 @@ export default function TransportRapportsPage() {
       const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
-      
+
       const mensuels = [];
       for (let i = 0; i < 12; i++) {
         const monthIndex = (currentMonth - i + 12) % 12;
@@ -199,7 +199,7 @@ export default function TransportRapportsPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `rapport_transport_${new Date().toISOString().slice(0,10)}.xlsx`;
+      a.download = `rapport_transport_${new Date().toISOString().slice(0, 10)}.xlsx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -232,7 +232,7 @@ export default function TransportRapportsPage() {
             <FileText className="w-7 h-7 text-purple-600" />
             Rapports Transports
           </h1>
-          <p className="text-gray-500 mt-1">Consultez les statistiques et rapports des transports</p>
+          <p className="text-gray-900 mt-1">Consultez les statistiques et rapports des transports</p>
         </div>
         <div className="flex gap-2 print:hidden">
           <button
@@ -269,29 +269,29 @@ export default function TransportRapportsPage() {
       {/* ⭐ Statistiques globales - Sans finance */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Total Bus</p>
+          <p className="text-gray-900 text-xs">Total Bus</p>
           <p className="text-2xl font-bold text-blue-600">{stats.totalBus}</p>
           <Bus className="w-4 h-4 text-blue-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Élèves inscrits</p>
+          <p className="text-gray-900 text-xs">Élèves inscrits</p>
           <p className="text-2xl font-bold text-green-600">{stats.totalInscrits}</p>
           <Users className="w-4 h-4 text-green-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Taux remplissage</p>
+          <p className="text-gray-900 text-xs">Taux remplissage</p>
           <p className={`text-2xl font-bold ${stats.tauxRemplissage > 80 ? 'text-green-600' : stats.tauxRemplissage > 50 ? 'text-orange-600' : 'text-red-600'}`}>
             {stats.tauxRemplissage}%
           </p>
           <TrendingUp className="w-4 h-4 text-gray-300 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Trajets</p>
+          <p className="text-gray-900 text-xs">Trajets</p>
           <p className="text-2xl font-bold text-orange-600">{stats.nbTrajets}</p>
           <Route className="w-4 h-4 text-orange-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Chauffeurs</p>
+          <p className="text-gray-900 text-xs">Chauffeurs</p>
           <p className="text-2xl font-bold text-teal-600">{stats.nbChauffeurs}</p>
           <Users className="w-4 h-4 text-teal-200 mt-1" />
         </div>
@@ -301,33 +301,30 @@ export default function TransportRapportsPage() {
       <div className="flex gap-2 border-b border-gray-200 pb-2 print:hidden">
         <button
           onClick={() => setViewType('global')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            viewType === 'global' 
-              ? 'bg-purple-100 text-purple-700' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'global'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
+            }`}
         >
           <BarChart3 className="w-4 h-4 inline mr-2" />
           Vue globale
         </button>
         <button
           onClick={() => setViewType('bus')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            viewType === 'bus' 
-              ? 'bg-purple-100 text-purple-700' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'bus'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
+            }`}
         >
           <Bus className="w-4 h-4 inline mr-2" />
           Par bus
         </button>
         <button
           onClick={() => setViewType('mensuel')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            viewType === 'mensuel' 
-              ? 'bg-purple-100 text-purple-700' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'mensuel'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
+            }`}
         >
           <Calendar className="w-4 h-4 inline mr-2" />
           Évolution mensuelle
@@ -412,11 +409,10 @@ export default function TransportRapportsPage() {
                     <td className="px-4 py-3 text-center text-gray-600">{b.capacite}</td>
                     <td className="px-4 py-3 text-center font-semibold">{b.inscrits}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        b.taux > 80 ? 'bg-green-100 text-green-700' :
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${b.taux > 80 ? 'bg-green-100 text-green-700' :
                         b.taux > 50 ? 'bg-orange-100 text-orange-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
+                          'bg-red-100 text-red-700'
+                        }`}>
                         {b.taux}%
                       </span>
                     </td>
@@ -424,7 +420,7 @@ export default function TransportRapportsPage() {
                 ))}
                 {busDetails.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-900">
                       Aucun bus disponible
                     </td>
                   </tr>
@@ -469,11 +465,10 @@ export default function TransportRapportsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        r.tauxRemplissage > 80 ? 'bg-green-100 text-green-700' :
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${r.tauxRemplissage > 80 ? 'bg-green-100 text-green-700' :
                         r.tauxRemplissage > 50 ? 'bg-orange-100 text-orange-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
+                          'bg-red-100 text-red-700'
+                        }`}>
                         {r.tauxRemplissage}%
                       </span>
                     </td>
@@ -486,7 +481,7 @@ export default function TransportRapportsPage() {
       )}
 
       {/* Pied de page */}
-      <div className="text-center text-xs text-gray-400 pt-4 border-t border-gray-100 print:hidden">
+      <div className="text-center text-xs text-gray-900 pt-4 border-t border-gray-100 print:hidden">
         <p>Rapport généré le {new Date().toLocaleString()}</p>
         <p>© {new Date().getFullYear()} E.I.E.F - Module Transport</p>
       </div>

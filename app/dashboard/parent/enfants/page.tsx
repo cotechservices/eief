@@ -273,7 +273,7 @@ export default function MesEnfantsPage() {
           </div>
           <p className="text-lg font-bold text-blue-600">{statsGlobales.totalAPayerNet.toLocaleString()} GNF</p>
           {statsGlobales.totalRemises > 0 && (
-            <p className="text-xs text-gray-400 mt-1 line-through">
+            <p className="text-xs text-gray-900 mt-1 line-through">
               Brut: {statsGlobales.totalAPayerBrut.toLocaleString()} GNF
             </p>
           )}
@@ -293,7 +293,7 @@ export default function MesEnfantsPage() {
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
               <input
                 type="text"
                 placeholder="Rechercher par nom, prénom ou matricule..."
@@ -310,7 +310,7 @@ export default function MesEnfantsPage() {
       {filteredEnfants.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-200">
           <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">Aucun enfant trouvé</p>
+          <p className="text-gray-900">Aucun enfant trouvé</p>
         </div>
       ) : (
         <>
@@ -343,23 +343,23 @@ export default function MesEnfantsPage() {
                             <img src={e.photo_url} alt="photo" className="w-10 h-10 rounded-full object-cover border" />
                           ) : (
                             <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center border">
-                              <Users className="w-5 h-5 text-gray-400" />
+                              <Users className="w-5 h-5 text-gray-900" />
                             </div>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="font-medium text-gray-900 block">{e.prenom} {e.nom}</span>
-                          <span className="text-xs text-gray-500 block">
+                          <span className="text-xs text-gray-900 block">
                             {e.sexe === "M" ? "Garçon" : "Fille"}
                             {e.date_naissance && ` - ${new Date(e.date_naissance).toLocaleDateString()}`}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-1.5 text-gray-950 font-medium">
-                            <GraduationCap className="w-4 h-4 text-gray-500" />
+                            <GraduationCap className="w-4 h-4 text-gray-900" />
                             <span>{e.classe_nom}</span>
                           </div>
-                          <span className="text-xs text-gray-500">{e.niveau}</span>
+                          <span className="text-xs text-gray-900">{e.niveau}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {statusPaiement === "paye" ? (
@@ -423,7 +423,7 @@ export default function MesEnfantsPage() {
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
-                        <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-500">...</span>
+                        <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-900">...</span>
                       ) : (
                         <button
                           key={page}
@@ -456,7 +456,7 @@ export default function MesEnfantsPage() {
             <div className="p-6 border-b sticky top-0 bg-white z-10">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-black">Détail de l'élève</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-500 hover:text-gray-700 text-xl font-bold">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-700 text-xl font-bold">✕</button>
               </div>
             </div>
 
@@ -465,41 +465,41 @@ export default function MesEnfantsPage() {
               <div className="flex items-start gap-6 pb-6 border-b">
                 <div className="flex-shrink-0">
                   {enfantDetail?.eleve?.photo_url ? (
-                    <img 
-                      src={enfantDetail.eleve.photo_url} 
-                      alt="Photo" 
-                      className="w-32 h-32 rounded-lg object-cover shadow-md border" 
+                    <img
+                      src={enfantDetail.eleve.photo_url}
+                      alt="Photo"
+                      className="w-32 h-32 rounded-lg object-cover shadow-md border"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                         const parent = (e.target as HTMLImageElement).parentElement;
                         if (parent) {
                           const fallback = document.createElement('div');
                           fallback.className = 'w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center border';
-                          fallback.innerHTML = `<svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`;
+                          fallback.innerHTML = `<svg class="w-12 h-12 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`;
                           parent.appendChild(fallback);
                         }
                       }}
                     />
                   ) : (
                     <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center border">
-                      <Camera className="w-12 h-12 text-gray-400" />
+                      <Camera className="w-12 h-12 text-gray-900" />
                     </div>
                   )}
                 </div>
                 <div className="flex-1">
                   <div className="bg-gray-50 p-3 rounded-lg mb-3 border">
-                    <p className="text-sm text-gray-500">Numéro de Matricule</p>
+                    <p className="text-sm text-gray-900">Numéro de Matricule</p>
                     <p className="font-mono text-xl font-bold text-blue-600">{selectedEnfant.matricule}</p>
                   </div>
                   <div className="flex gap-4">
                     <div className="bg-gray-50 p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500">Statut dossier</p>
+                      <p className="text-xs text-gray-900">Statut dossier</p>
                       <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
                         <CheckCircle className="w-3 h-3" /> Inscription active
                       </span>
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500">Paiement</p>
+                      <p className="text-xs text-gray-900">Paiement</p>
                       {selectedEnfant.details_frais.reste === 0 ? (
                         <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
                           <CheckCircle className="w-3 h-3" /> Payé
@@ -532,7 +532,7 @@ export default function MesEnfantsPage() {
                         <User className="w-5 h-5 text-blue-900" /> Informations des parents
                       </h3>
                       <div className="bg-gray-50 p-3 rounded-lg mb-4 border">
-                        <p className="text-sm text-gray-500">Email de contact</p>
+                        <p className="text-sm text-gray-900">Email de contact</p>
                         <p className="font-medium text-gray-900">{enfantDetail?.eleve?.parent_email}</p>
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
@@ -540,15 +540,15 @@ export default function MesEnfantsPage() {
                           <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">Père</h4>
                           <div className="space-y-2">
                             <div>
-                              <p className="text-xs text-gray-500">Nom complet</p>
+                              <p className="text-xs text-gray-900">Nom complet</p>
                               <p className="font-medium text-gray-900">{enfantDetail?.eleve?.parent_prenom} {enfantDetail?.eleve?.parent_nom}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-500">Téléphone</p>
+                              <p className="text-xs text-gray-900">Téléphone</p>
                               <p className="font-medium text-gray-900">{enfantDetail?.eleve?.parent_telephone || "Non renseigné"}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-500">Profession</p>
+                              <p className="text-xs text-gray-900">Profession</p>
                               <p className="font-medium text-gray-900">{enfantDetail?.eleve?.parent_profession || "Non renseigné"}</p>
                             </div>
                           </div>
@@ -559,28 +559,28 @@ export default function MesEnfantsPage() {
                             let mereData: any = null;
                             try {
                               if (enfantDetail?.eleve?.mere_info) {
-                                mereData = typeof enfantDetail.eleve.mere_info === 'string' 
-                                  ? JSON.parse(enfantDetail.eleve.mere_info) 
+                                mereData = typeof enfantDetail.eleve.mere_info === 'string'
+                                  ? JSON.parse(enfantDetail.eleve.mere_info)
                                   : enfantDetail.eleve.mere_info;
                               }
                             } catch (e) { }
                             return mereData && (mereData.mereNom || mereData.merePrenom) ? (
                               <div className="space-y-2">
                                 <div>
-                                  <p className="text-xs text-gray-500">Nom complet</p>
+                                  <p className="text-xs text-gray-900">Nom complet</p>
                                   <p className="font-medium text-gray-900">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p>
                                 </div>
                                 <div>
-                                  <p className="text-xs text-gray-500">Téléphone</p>
+                                  <p className="text-xs text-gray-900">Téléphone</p>
                                   <p className="font-medium text-gray-900">{mereData.merePhone || "Non renseigné"}</p>
                                 </div>
                                 <div>
-                                  <p className="text-xs text-gray-500">Profession</p>
+                                  <p className="text-xs text-gray-900">Profession</p>
                                   <p className="font-medium text-gray-900">{mereData.mereProfession || "Non renseigné"}</p>
                                 </div>
                               </div>
                             ) : (
-                              <p className="text-sm text-gray-400 italic">Non renseigné</p>
+                              <p className="text-sm text-gray-900 italic">Non renseigné</p>
                             );
                           })()}
                         </div>
@@ -595,29 +595,29 @@ export default function MesEnfantsPage() {
                     </h3>
                     <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border">
                       <div>
-                        <p className="text-sm text-gray-500">Nom complet</p>
+                        <p className="text-sm text-gray-900">Nom complet</p>
                         <p className="font-medium text-gray-900">{enfantDetail?.eleve?.prenom ?? selectedEnfant?.prenom} {enfantDetail?.eleve?.nom ?? selectedEnfant?.nom}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Date de naissance</p>
+                        <p className="text-sm text-gray-900">Date de naissance</p>
                         <p className="font-medium text-gray-900">
                           {(enfantDetail?.eleve?.date_naissance ?? selectedEnfant?.date_naissance) ? new Date(enfantDetail?.eleve?.date_naissance ?? selectedEnfant?.date_naissance ?? '').toLocaleDateString() : "Non renseigné"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Lieu de naissance</p>
+                        <p className="text-sm text-gray-900">Lieu de naissance</p>
                         <p className="font-medium text-gray-900">{enfantDetail?.eleve?.lieu_naissance ?? selectedEnfant?.lieu_naissance ?? "Non renseigné"}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Sexe</p>
+                        <p className="text-sm text-gray-900">Sexe</p>
                         <p className="font-medium text-gray-900">{(enfantDetail?.eleve?.sexe ?? selectedEnfant?.sexe) === "M" ? "Masculin" : "Féminin"}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Niveau</p>
+                        <p className="text-sm text-gray-900">Niveau</p>
                         <p className="font-medium text-gray-900">{enfantDetail?.eleve?.niveau ?? selectedEnfant?.niveau}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Classe</p>
+                        <p className="text-sm text-gray-900">Classe</p>
                         <p className="font-medium text-gray-900">{enfantDetail?.eleve?.classe_nom ?? selectedEnfant?.classe_nom}</p>
                       </div>
                     </div>
@@ -636,16 +636,16 @@ export default function MesEnfantsPage() {
                           <span className="font-medium text-black">Acte de naissance</span>
                         </div>
                         {enfantDetail?.eleve?.acte_naissance_url ? (
-                          <a 
-                            href={enfantDetail.eleve.acte_naissance_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                          <a
+                            href={enfantDetail.eleve.acte_naissance_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                           >
                             Voir le document <ExternalLink className="w-3 h-3" />
                           </a>
                         ) : (
-                          <p className="text-gray-500 text-sm">Non téléchargé</p>
+                          <p className="text-gray-900 text-sm">Non téléchargé</p>
                         )}
                       </div>
 
@@ -656,16 +656,16 @@ export default function MesEnfantsPage() {
                           <span className="font-medium text-black">Photo d'identité</span>
                         </div>
                         {(enfantDetail?.eleve?.photo_url ?? selectedEnfant?.photo_url) ? (
-                          <a 
-                            href={(enfantDetail?.eleve?.photo_url ?? selectedEnfant?.photo_url) as string} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                          <a
+                            href={(enfantDetail?.eleve?.photo_url ?? selectedEnfant?.photo_url) as string}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                           >
                             Voir la photo <ExternalLink className="w-3 h-3" />
                           </a>
                         ) : (
-                          <p className="text-gray-500 text-sm">Non téléchargée</p>
+                          <p className="text-gray-900 text-sm">Non téléchargée</p>
                         )}
                       </div>
 
@@ -676,16 +676,16 @@ export default function MesEnfantsPage() {
                           <span className="font-medium text-black">Bulletin scolaire</span>
                         </div>
                         {enfantDetail?.eleve?.bulletin_url ? (
-                          <a 
-                            href={enfantDetail.eleve.bulletin_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                          <a
+                            href={enfantDetail.eleve.bulletin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-blue-600 text-sm hover:underline flex items-center gap-1"
                           >
                             Voir le bulletin <ExternalLink className="w-3 h-3" />
                           </a>
                         ) : (
-                          <p className="text-gray-500 text-sm">Non téléchargé</p>
+                          <p className="text-gray-900 text-sm">Non téléchargé</p>
                         )}
                       </div>
                     </div>
@@ -707,7 +707,7 @@ export default function MesEnfantsPage() {
                       const totalAPayer = selectedEnfant?.details_frais?.total ?? enfantDetail?.frais?.total_a_payer ?? 0;
                       const dejaPaye = selectedEnfant?.details_frais?.paye ?? enfantDetail?.frais?.total_paye ?? 0;
                       const resteAPayer = selectedEnfant?.details_frais?.reste ?? enfantDetail?.frais?.solde_restant ?? 0;
-                      
+
                       return (
                         <>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -750,9 +750,9 @@ export default function MesEnfantsPage() {
                                 <span>{Math.round((dejaPaye / totalAPayer) * 100)}%</span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                <div 
-                                  className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
-                                  style={{ width: `${Math.min(100, (dejaPaye / totalAPayer) * 100)}%` }} 
+                                <div
+                                  className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                                  style={{ width: `${Math.min(100, (dejaPaye / totalAPayer) * 100)}%` }}
                                 />
                               </div>
                             </div>
@@ -776,9 +776,9 @@ export default function MesEnfantsPage() {
                               <div>
                                 <h4 className="font-medium text-gray-900">{bulletin.titre || "Bulletin"}</h4>
                                 {bulletin.trimestre && (
-                                  <p className="text-xs text-gray-500">Trimestre {bulletin.trimestre}</p>
+                                  <p className="text-xs text-gray-900">Trimestre {bulletin.trimestre}</p>
                                 )}
-                                <p className="text-xs text-gray-400 mt-1">
+                                <p className="text-xs text-gray-900 mt-1">
                                   {bulletin.date_publication ? new Date(bulletin.date_publication).toLocaleDateString() : "Date inconnue"}
                                 </p>
                               </div>
@@ -800,7 +800,7 @@ export default function MesEnfantsPage() {
                   )}
                 </>
               ) : (
-                <div className="text-center py-12 text-gray-500">Une erreur est survenue lors du chargement des détails.</div>
+                <div className="text-center py-12 text-gray-900">Une erreur est survenue lors du chargement des détails.</div>
               )}
             </div>
 

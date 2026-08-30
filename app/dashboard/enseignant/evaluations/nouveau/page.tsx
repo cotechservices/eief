@@ -4,9 +4,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  ArrowLeft, Save, Plus, Trash2, HelpCircle, BookOpen, 
-  Clock, Award, Users, CheckCircle, Upload, File, Image, X, FileText 
+import {
+  ArrowLeft, Save, Plus, Trash2, HelpCircle, BookOpen,
+  Clock, Award, Users, CheckCircle, Upload, File, Image, X, FileText
 } from "lucide-react";
 
 interface Enseignement {
@@ -36,7 +36,7 @@ interface Question {
 export default function NouveauQCMPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [enseignements, setEnseignements] = useState<Enseignement[]>([]);
   const [eleves, setEleves] = useState<Eleve[]>([]);
   const [elevesSelectionnes, setElevesSelectionnes] = useState<number[]>([]);
@@ -209,11 +209,11 @@ export default function NouveauQCMPage() {
 
   const updateOption = (qIndex: number, oIndex: number, field: keyof Option, value: string | boolean) => {
     const newQuestions = [...questions];
-    
+
     if (field === "est_correcte" && value === true) {
       newQuestions[qIndex].options.forEach((opt) => (opt.est_correcte = false));
     }
-    
+
     newQuestions[qIndex].options[oIndex] = { ...newQuestions[qIndex].options[oIndex], [field]: value };
     setQuestions(newQuestions);
   };
@@ -292,7 +292,7 @@ export default function NouveauQCMPage() {
       <div className="flex items-center justify-between">
         <Link
           href="/dashboard/enseignant/evaluations"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-purple-600 text-sm font-medium transition"
+          className="inline-flex items-center gap-2 text-gray-900 hover:text-purple-600 text-sm font-medium transition"
         >
           <ArrowLeft className="w-4 h-4" /> Retour aux évaluations
         </Link>
@@ -393,12 +393,12 @@ export default function NouveauQCMPage() {
               <div className="flex items-center gap-2 mb-2">
                 <Upload className="w-5 h-5 text-purple-600" />
                 <h3 className="font-semibold text-gray-900">Fichier du sujet (Optionnel)</h3>
-                <span className="text-xs text-gray-400">(Image ou PDF - max 10 Mo)</span>
+                <span className="text-xs text-gray-900">(Image ou PDF - max 10 Mo)</span>
               </div>
-              <p className="text-sm text-gray-500 mb-3">Vous pouvez joindre une image ou un fichier PDF du sujet de l'évaluation.</p>
+              <p className="text-sm text-gray-900 mb-3">Vous pouvez joindre une image ou un fichier PDF du sujet de l'évaluation.</p>
 
               {!fichier ? (
-                <div 
+                <div
                   className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-purple-400 transition cursor-pointer bg-gray-50 hover:bg-purple-50"
                   onClick={() => fileInputRef.current?.click()}
                 >
@@ -409,9 +409,9 @@ export default function NouveauQCMPage() {
                     onChange={handleFileChange}
                     className="hidden"
                   />
-                  <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                  <Upload className="w-10 h-10 text-gray-900 mx-auto mb-3" />
                   <p className="text-sm text-gray-600">Cliquez pour sélectionner un fichier</p>
-                  <p className="text-xs text-gray-400 mt-1">Formats acceptés : JPG, PNG, GIF, PDF</p>
+                  <p className="text-xs text-gray-900 mt-1">Formats acceptés : JPG, PNG, GIF, PDF</p>
                 </div>
               ) : (
                 <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-xl p-4">
@@ -423,7 +423,7 @@ export default function NouveauQCMPage() {
                     )}
                     <div>
                       <p className="font-medium text-gray-800 truncate max-w-[200px]">{fichierName}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-900">
                         {(fichier.size / 1024).toFixed(1)} KB • {fichier.type}
                       </p>
                     </div>
@@ -431,7 +431,7 @@ export default function NouveauQCMPage() {
                   <button
                     type="button"
                     onClick={removeFile}
-                    className="text-gray-400 hover:text-red-500 transition p-1"
+                    className="text-gray-900 hover:text-red-500 transition p-1"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -445,7 +445,7 @@ export default function NouveauQCMPage() {
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-purple-600" />
                   <h3 className="font-semibold text-gray-900">Élèves concernés</h3>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-900">
                     ({elevesSelectionnes.length} sélectionné{elevesSelectionnes.length > 1 ? 's' : ''})
                   </span>
                 </div>
@@ -463,10 +463,10 @@ export default function NouveauQCMPage() {
               {loadingEleves ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                  <span className="ml-2 text-sm text-gray-500">Chargement des élèves...</span>
+                  <span className="ml-2 text-sm text-gray-900">Chargement des élèves...</span>
                 </div>
               ) : eleves.length === 0 ? (
-                <div className="text-center py-8 text-gray-400 bg-gray-50 rounded-xl">
+                <div className="text-center py-8 text-gray-900 bg-gray-50 rounded-xl">
                   <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
                   <p className="text-sm">Aucun élève dans cette classe</p>
                 </div>
@@ -477,17 +477,15 @@ export default function NouveauQCMPage() {
                       key={eleve.id}
                       type="button"
                       onClick={() => toggleEleve(eleve.id)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition ${
-                        elevesSelectionnes.includes(eleve.id)
-                          ? "bg-purple-100 text-purple-700 border-2 border-purple-300"
-                          : "bg-white text-gray-600 border-2 border-gray-200 hover:border-purple-300"
-                      }`}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition ${elevesSelectionnes.includes(eleve.id)
+                        ? "bg-purple-100 text-purple-700 border-2 border-purple-300"
+                        : "bg-white text-gray-600 border-2 border-gray-200 hover:border-purple-300"
+                        }`}
                     >
-                      <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        elevesSelectionnes.includes(eleve.id)
-                          ? "bg-purple-600 text-white"
-                          : "border-2 border-gray-300"
-                      }`}>
+                      <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${elevesSelectionnes.includes(eleve.id)
+                        ? "bg-purple-600 text-white"
+                        : "border-2 border-gray-300"
+                        }`}>
                         {elevesSelectionnes.includes(eleve.id) && (
                           <CheckCircle className="w-3 h-3" />
                         )}
@@ -497,7 +495,7 @@ export default function NouveauQCMPage() {
                   ))}
                 </div>
               )}
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-900 mt-2">
                 {elevesSelectionnes.length} élève{elevesSelectionnes.length > 1 ? 's' : ''} sélectionné{elevesSelectionnes.length > 1 ? 's' : ''} sur {eleves.length}
               </p>
             </div>
@@ -523,7 +521,7 @@ export default function NouveauQCMPage() {
           {questions.map((q, qIndex) => (
             <div key={qIndex} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden relative">
               <div className="absolute top-0 left-0 w-1 h-full bg-purple-500" />
-              
+
               <div className="p-6 border-b bg-gray-50 flex justify-between items-start gap-4">
                 <div className="flex-1 flex gap-4">
                   <span className="bg-purple-100 text-purple-800 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">
@@ -535,15 +533,15 @@ export default function NouveauQCMPage() {
                       value={q.question}
                       onChange={(e) => updateQuestion(qIndex, "question", e.target.value)}
                       placeholder="Intitulé de la question..."
-                      className="w-full bg-transparent border-b border-gray-300 px-0 py-1 text-lg font-medium text-gray-900 focus:border-purple-500 focus:ring-0 placeholder:text-gray-400"
+                      className="w-full bg-transparent border-b border-gray-300 px-0 py-1 text-lg font-medium text-gray-900 focus:border-purple-500 focus:ring-0 placeholder:text-gray-900"
                       required
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4 shrink-0">
                   <div className="flex items-center gap-2">
-                    <label className="text-xs font-semibold text-gray-500">Points</label>
+                    <label className="text-xs font-semibold text-gray-900">Points</label>
                     <input
                       type="number"
                       min="1"
@@ -556,7 +554,7 @@ export default function NouveauQCMPage() {
                     <button
                       type="button"
                       onClick={() => removeQuestion(qIndex)}
-                      className="text-gray-400 hover:text-red-500 transition p-1"
+                      className="text-gray-900 hover:text-red-500 transition p-1"
                       title="Supprimer la question"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -566,8 +564,8 @@ export default function NouveauQCMPage() {
               </div>
 
               <div className="p-6 space-y-3 pl-16">
-                <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Options de réponse (Cochez la bonne réponse)</p>
-                
+                <p className="text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wider">Options de réponse (Cochez la bonne réponse)</p>
+
                 {q.options.map((opt, oIndex) => (
                   <div key={oIndex} className="flex items-center gap-3">
                     <input
@@ -582,16 +580,15 @@ export default function NouveauQCMPage() {
                       value={opt.texte}
                       onChange={(e) => updateOption(qIndex, oIndex, "texte", e.target.value)}
                       placeholder={`Option ${oIndex + 1}`}
-                      className={`flex-1 px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:outline-none transition ${
-                        opt.est_correcte ? "border-green-300 bg-green-50 focus:ring-green-500" : "border-gray-200 focus:ring-purple-500"
-                      }`}
+                      className={`flex-1 px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:outline-none transition ${opt.est_correcte ? "border-green-300 bg-green-50 focus:ring-green-500" : "border-gray-200 focus:ring-purple-500"
+                        }`}
                       required
                     />
                     {q.options.length > 2 && (
                       <button
                         type="button"
                         onClick={() => removeOption(qIndex, oIndex)}
-                        className="text-gray-400 hover:text-red-500 p-2"
+                        className="text-gray-900 hover:text-red-500 p-2"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -614,7 +611,7 @@ export default function NouveauQCMPage() {
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 flex justify-center">
           <div className="max-w-4xl w-full flex justify-between items-center px-4 md:px-0">
             <div className="flex items-center gap-4">
-              <span className="text-gray-500 font-medium hidden sm:inline">
+              <span className="text-gray-900 font-medium hidden sm:inline">
                 {questions.length} question{questions.length > 1 ? 's' : ''} • {totalPoints} points
               </span>
               <span className="text-sm text-purple-600 font-medium">

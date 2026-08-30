@@ -333,7 +333,7 @@ export default function LibrairieRapportsPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `rapport_librairie_${new Date().toISOString().slice(0,10)}.xlsx`;
+      a.download = `rapport_librairie_${new Date().toISOString().slice(0, 10)}.xlsx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -365,7 +365,7 @@ export default function LibrairieRapportsPage() {
             <FileText className="w-7 h-7 text-purple-600" />
             Rapports Librairie
           </h1>
-          <p className="text-gray-500 mt-1">Consultez les statistiques de la librairie</p>
+          <p className="text-gray-900 mt-1">Consultez les statistiques de la librairie</p>
         </div>
         <div className="flex gap-2 print:hidden">
           <button
@@ -402,32 +402,32 @@ export default function LibrairieRapportsPage() {
       {/* Statistiques - Sans données financières */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Articles</p>
+          <p className="text-gray-900 text-xs">Articles</p>
           <p className="text-2xl font-bold text-blue-600">{stats.totalArticles}</p>
           <Package className="w-4 h-4 text-blue-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">En stock</p>
+          <p className="text-gray-900 text-xs">En stock</p>
           <p className="text-2xl font-bold text-green-600">{stats.articlesEnStock}</p>
           <Box className="w-4 h-4 text-green-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Rupture</p>
+          <p className="text-gray-900 text-xs">Rupture</p>
           <p className="text-2xl font-bold text-red-600">{stats.articlesRupture}</p>
           <AlertCircle className="w-4 h-4 text-red-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Commandes</p>
+          <p className="text-gray-900 text-xs">Commandes</p>
           <p className="text-2xl font-bold text-purple-600">{stats.totalCommandes}</p>
           <ShoppingCart className="w-4 h-4 text-purple-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">En attente</p>
+          <p className="text-gray-900 text-xs">En attente</p>
           <p className="text-2xl font-bold text-orange-600">{stats.commandesEnAttente}</p>
           <Clock className="w-4 h-4 text-orange-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Ventes</p>
+          <p className="text-gray-900 text-xs">Ventes</p>
           <p className="text-2xl font-bold text-indigo-600">{stats.totalVentes}</p>
           <TrendingUp className="w-4 h-4 text-indigo-200 mt-1" />
         </div>
@@ -437,44 +437,40 @@ export default function LibrairieRapportsPage() {
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-2 print:hidden">
         <button
           onClick={() => setViewType('global')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            viewType === 'global' 
-              ? 'bg-purple-100 text-purple-700' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'global'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
+            }`}
         >
           <PieChart className="w-4 h-4 inline mr-2" />
           Vue globale
         </button>
         <button
           onClick={() => setViewType('articles')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            viewType === 'articles' 
-              ? 'bg-purple-100 text-purple-700' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'articles'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
+            }`}
         >
           <Package className="w-4 h-4 inline mr-2" />
           Articles ({articles.length})
         </button>
         <button
           onClick={() => setViewType('commandes')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            viewType === 'commandes' 
-              ? 'bg-purple-100 text-purple-700' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'commandes'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
+            }`}
         >
           <ShoppingCart className="w-4 h-4 inline mr-2" />
           Commandes ({commandes.length})
         </button>
         <button
           onClick={() => setViewType('ventes')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            viewType === 'ventes' 
-              ? 'bg-purple-100 text-purple-700' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'ventes'
+            ? 'bg-purple-100 text-purple-700'
+            : 'text-gray-600 hover:bg-gray-100'
+            }`}
         >
           <TrendingUp className="w-4 h-4 inline mr-2" />
           Ventes ({ventes.length})
@@ -529,26 +525,26 @@ export default function LibrairieRapportsPage() {
                   <span className="text-gray-600">
                     {vente.quantite}x {vente.article_nom}
                   </span>
-                  <span className="text-gray-500 text-xs">
+                  <span className="text-gray-900 text-xs">
                     {new Date(vente.date_vente).toLocaleDateString('fr-FR')}
                   </span>
                 </div>
               ))}
               {ventes.length === 0 && (
-                <p className="text-gray-500 text-sm">Aucune vente récente</p>
+                <p className="text-gray-900 text-sm">Aucune vente récente</p>
               )}
-              
+
               <h4 className="text-sm font-medium text-gray-700 mt-3">Dernières commandes</h4>
               {commandes.slice(0, 3).map((commande) => (
                 <div key={commande.id} className="flex justify-between items-center border-b border-gray-100 pb-2 text-sm">
                   <span className="font-mono text-xs text-purple-600">{commande.numero_commande}</span>
-                  <span className="text-gray-500 text-xs">
+                  <span className="text-gray-900 text-xs">
                     {new Date(commande.date_commande).toLocaleDateString('fr-FR')}
                   </span>
                 </div>
               ))}
               {commandes.length === 0 && (
-                <p className="text-gray-500 text-sm">Aucune commande récente</p>
+                <p className="text-gray-900 text-sm">Aucune commande récente</p>
               )}
             </div>
           </div>
@@ -577,12 +573,12 @@ export default function LibrairieRapportsPage() {
                           <img src={article.image_url} alt={article.nom} className="w-10 h-10 rounded-lg object-cover" />
                         ) : (
                           <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <Package className="w-5 h-5 text-gray-400" />
+                            <Package className="w-5 h-5 text-gray-900" />
                           </div>
                         )}
                         <div>
                           <p className="font-medium text-gray-900">{article.nom}</p>
-                          <p className="text-xs text-gray-500">{article.description}</p>
+                          <p className="text-xs text-gray-900">{article.description}</p>
                         </div>
                       </div>
                     </td>
@@ -603,7 +599,7 @@ export default function LibrairieRapportsPage() {
                 ))}
                 {articles.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={4} className="px-4 py-8 text-center text-gray-900">
                       <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                       <p className="font-medium">Aucun article</p>
                     </td>
@@ -640,19 +636,19 @@ export default function LibrairieRapportsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-900">{commande.parent_prenom} {commande.parent_nom}</p>
-                      <p className="text-xs text-gray-500">{commande.parent_email}</p>
+                      <p className="text-xs text-gray-900">{commande.parent_email}</p>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {getStatutBadge(commande.statut)}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-gray-900 text-xs">
                       {new Date(commande.date_commande).toLocaleDateString('fr-FR')}
                     </td>
                   </tr>
                 ))}
                 {commandes.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={4} className="px-4 py-8 text-center text-gray-900">
                       <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                       <p className="font-medium">Aucune commande</p>
                     </td>
@@ -681,7 +677,7 @@ export default function LibrairieRapportsPage() {
               <tbody className="divide-y divide-gray-100">
                 {ventes.map((vente) => (
                   <tr key={vente.id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-gray-900 text-xs">
                       {new Date(vente.date_vente).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900">
@@ -691,14 +687,14 @@ export default function LibrairieRapportsPage() {
                       {vente.eleve_nom || "Vente libre"}
                     </td>
                     <td className="px-4 py-3 text-center font-semibold">{vente.quantite}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-gray-900 text-xs">
                       {vente.vendeur || 'Système'}
                     </td>
                   </tr>
                 ))}
                 {ventes.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-4 py-8 text-center text-gray-900">
                       <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                       <p className="font-medium">Aucune vente</p>
                     </td>
@@ -720,9 +716,9 @@ export default function LibrairieRapportsPage() {
                   <ShoppingCart className="w-5 h-5 text-purple-600" />
                   Détail de la commande
                 </h2>
-                <p className="text-sm text-gray-500 font-mono">{selectedCommande.numero_commande}</p>
+                <p className="text-sm text-gray-900 font-mono">{selectedCommande.numero_commande}</p>
               </div>
-              <button onClick={() => setShowCommandeDetail(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowCommandeDetail(false)} className="text-gray-900 hover:text-gray-600">
                 ✕
               </button>
             </div>
@@ -730,19 +726,19 @@ export default function LibrairieRapportsPage() {
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-gray-500">Parent</p>
+                    <p className="text-xs text-gray-900">Parent</p>
                     <p className="font-medium">{selectedCommande.parent_prenom} {selectedCommande.parent_nom}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Email</p>
+                    <p className="text-xs text-gray-900">Email</p>
                     <p className="font-medium">{selectedCommande.parent_email}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Téléphone</p>
+                    <p className="text-xs text-gray-900">Téléphone</p>
                     <p className="font-medium">{selectedCommande.parent_telephone || "Non renseigné"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Statut</p>
+                    <p className="text-xs text-gray-900">Statut</p>
                     {getStatutBadge(selectedCommande.statut)}
                   </div>
                 </div>
@@ -754,13 +750,13 @@ export default function LibrairieRapportsPage() {
                   <div key={article.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
                     <div>
                       <p className="font-medium text-gray-900">{article.nom}</p>
-                      <p className="text-xs text-gray-500">x{article.quantite} × {formatPrix(article.prix_unitaire)} GNF</p>
+                      <p className="text-xs text-gray-900">x{article.quantite} × {formatPrix(article.prix_unitaire)} GNF</p>
                     </div>
                     <p className="font-bold text-green-600">{formatPrix(article.total)} GNF</p>
                   </div>
                 ))}
                 {commandeArticles.length === 0 && (
-                  <p className="text-gray-500 text-sm">Aucun article trouvé</p>
+                  <p className="text-gray-900 text-sm">Aucun article trouvé</p>
                 )}
               </div>
             </div>
@@ -777,7 +773,7 @@ export default function LibrairieRapportsPage() {
       )}
 
       {/* Pied de page */}
-      <div className="text-center text-xs text-gray-400 pt-4 border-t border-gray-100 print:hidden">
+      <div className="text-center text-xs text-gray-900 pt-4 border-t border-gray-100 print:hidden">
         <p>Rapport généré le {new Date().toLocaleString()}</p>
         <p>© {new Date().getFullYear()} E.I.E.F - Module Librairie</p>
       </div>

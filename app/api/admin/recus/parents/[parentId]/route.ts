@@ -4,7 +4,6 @@ import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-// ⭐ CORRECTION : params doit être traité comme une Promise
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ parentId: string }> }
@@ -21,7 +20,6 @@ export async function GET(
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
-    // ⭐ CORRECTION : Déballer params avec await
     const { parentId } = await params;
     const parentIdInt = parseInt(parentId);
 
@@ -54,28 +52,49 @@ export async function GET(
 
     const parent = parentResult.rows[0];
 
-    // 2. Récupérer tous les paiements de pré-inscription du parent
+    // 2. Récupérer TOUS les paiements liés au parent (pré-inscription, réinscription, élèves)
     const paiementsResult = await query(`
       SELECT 
-        CONCAT('REC-PAY-', LPAD(pay.id::text, 5, '0')) AS numero_recu,
-        pay.date_paiement,
-        p.enfant_prenom || ' ' || p.enfant_nom AS enfant,
-        pay.montant,
-        COALESCE(pay.mode_paiement, 'especes') AS mode_paiement,
+        CONCAT('REC-', LPAD(COALESCE(pay.id, r.id, 0)::text, 5, '0')) AS numero_recu,
+        COALESCE(pay.date_paiement, p.frais_date_paiement, r.date_reinscription, NOW()) AS date_paiement,
+        COALESCE(
+          p.enfant_prenom || ' ' || p.enfant_nom,
+          r.enfant_prenom || ' ' || r.enfant_nom,
+          ue.prenom || ' ' || ue.nom,
+          'Élève inconnu'
+        ) AS enfant,
+        COALESCE(pay.montant, p.frais_montant, r.montant_frais, 0) AS montant,
+        COALESCE(pay.mode_paiement, p.frais_mode_paiement, 'especes') AS mode_paiement,
         COALESCE(pay.type_frais, 'inscription') AS type_frais,
-        COALESCE(pay.reference_transaction, p.numero_dossier) AS reference,
-        p.classe AS classe,
-        COALESCE(p.montant_total_plan, 0) AS montant_total,
-        COALESCE(p.montant_restant_plan, 0) AS reste_a_payer,
-        'preinscription' AS source,
-        pay.id AS source_id,
+        COALESCE(pay.reference_transaction, p.numero_dossier, CONCAT('REF-', COALESCE(pay.id, r.id, 0))) AS reference,
+        COALESCE(p.classe, r.classe_nom, c.nom, 'N/A') AS classe,
+        COALESCE(p.montant_total_plan, r.montant_total_plan, c.total_versement, 0) AS montant_total,
+        COALESCE(p.montant_restant_plan, r.montant_restant_plan, 0) AS reste_a_payer,
+        'paiement' AS source,
+        COALESCE(pay.id, 0) AS source_id,
         pay.preinscription_id
-      FROM paiements pay
-      JOIN preinscriptions p ON pay.preinscription_id = p.id
-      WHERE pay.statut = 'valide'
-        AND p.parent_id = $1
-        AND EXTRACT(YEAR FROM pay.date_paiement) = $2
-      ORDER BY pay.date_paiement DESC
+      FROM parents pa
+      -- Paiements via pré-inscriptions
+      LEFT JOIN preinscriptions p ON p.parent_id = pa.id
+      LEFT JOIN paiements pay ON pay.preinscription_id = p.id
+      -- Paiements via réinscriptions
+      LEFT JOIN reinscriptions r ON r.parent_id = pa.id
+      LEFT JOIN paiements pay_r ON pay_r.reinscription_id = r.id
+      -- Élèves directs
+      LEFT JOIN lien_parent_eleve lpe ON lpe.parent_id = pa.id
+      LEFT JOIN eleves e ON e.id = lpe.eleve_id
+      LEFT JOIN utilisateurs ue ON e.utilisateur_id = ue.id
+      LEFT JOIN classes c ON e.classe_id = c.id
+      LEFT JOIN paiements pay_e ON pay_e.eleve_id = e.id AND pay_e.preinscription_id IS NULL AND pay_e.reinscription_id IS NULL
+      WHERE pa.id = $1
+        AND (
+          pay.id IS NOT NULL OR 
+          p.frais_statut = 'paye' OR 
+          pay_r.id IS NOT NULL OR 
+          pay_e.id IS NOT NULL
+        )
+        AND EXTRACT(YEAR FROM COALESCE(pay.date_paiement, p.frais_date_paiement, r.date_reinscription, pay_r.date_paiement, pay_e.date_paiement, NOW())) = $2
+      ORDER BY COALESCE(pay.date_paiement, p.frais_date_paiement, r.date_reinscription, pay_r.date_paiement, pay_e.date_paiement, NOW()) DESC
     `, [parentIdInt, parseInt(annee)]);
 
     console.log(`📊 ${paiementsResult.rows.length} paiements trouvés pour le parent ${parentIdInt}`);
@@ -85,33 +104,32 @@ export async function GET(
       SELECT 
         r.numero_recu,
         r.date_paiement,
-        r.enfant_nom AS enfant,
+        COALESCE(r.enfant_nom, 'Élève inconnu') AS enfant,
         r.montant,
         COALESCE(r.mode_paiement, 'especes') AS mode_paiement,
         COALESCE(r.type_frais, 'inscription') AS type_frais,
-        r.reference,
-        r.classe_nom AS classe,
+        COALESCE(r.reference, r.numero_recu) AS reference,
+        COALESCE(r.classe_nom, 'N/A') AS classe,
         COALESCE(r.montant_total, 0) AS montant_total,
         COALESCE(r.reste_a_payer, 0) AS reste_a_payer,
         'recus' AS source,
         r.paiement_id AS source_id,
         r.preinscription_id
       FROM recus r
-      LEFT JOIN preinscriptions p ON r.preinscription_id = p.id
-      WHERE p.parent_id = $1
+      WHERE r.parent_nom = $1
         AND EXTRACT(YEAR FROM r.date_paiement) = $2
       ORDER BY r.date_paiement DESC
-    `, [parentIdInt, parseInt(annee)]);
+    `, [`${parent.prenom} ${parent.nom}`, parseInt(annee)]);
 
     console.log(`📊 ${recusResult.rows.length} reçus trouvés dans la table recus`);
 
     // 4. Fusionner les résultats et éviter les doublons
     const allRecus = [...paiementsResult.rows, ...recusResult.rows];
     
-    // Éliminer les doublons (par montant + date)
+    // Éliminer les doublons (par montant + date + enfant)
     const seen = new Set();
     const uniqueRecus = allRecus.filter((recu: any) => {
-      const key = `${recu.montant}-${new Date(recu.date_paiement).toDateString()}`;
+      const key = `${recu.montant}-${new Date(recu.date_paiement).toDateString()}-${recu.enfant}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -121,7 +139,7 @@ export async function GET(
 
     // Calculer les totaux
     const totalRecus = uniqueRecus.length;
-    const totalMontant = uniqueRecus.reduce((acc, r) => acc + Number(r.montant), 0);
+    const totalMontant = uniqueRecus.reduce((acc, r) => acc + Number(r.montant || 0), 0);
     const totalMontantTotal = uniqueRecus.reduce((acc, r) => acc + Number(r.montant_total || 0), 0);
     const totalReste = uniqueRecus.reduce((acc, r) => acc + Number(r.reste_a_payer || 0), 0);
 

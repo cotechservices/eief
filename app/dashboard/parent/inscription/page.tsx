@@ -392,12 +392,11 @@ export default function InscriptionParentPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
-              notification.type === "success" ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${notification.type === "success" ? "bg-green-50 border-l-4 border-green-500 text-green-800"
               : notification.type === "error" ? "bg-red-50 border-l-4 border-red-500 text-red-800"
-              : notification.type === "warning" ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-              : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                : notification.type === "warning" ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -484,7 +483,7 @@ export default function InscriptionParentPage() {
           <div className="p-12 text-center">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-900">Aucune pré-inscription</p>
-            <p className="text-sm text-gray-500 mt-1">Cliquez sur "Nouvelle inscription" pour commencer.</p>
+            <p className="text-sm text-gray-900 mt-1">Cliquez sur "Nouvelle inscription" pour commencer.</p>
           </div>
         ) : (
           <div className="divide-y">
@@ -495,7 +494,7 @@ export default function InscriptionParentPage() {
                     <img src={p.photo_url} alt="photo" className="w-12 h-12 rounded-full object-cover" />
                   ) : (
                     <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-gray-400" />
+                      <User className="w-6 h-6 text-gray-900" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
@@ -503,7 +502,7 @@ export default function InscriptionParentPage() {
                       <div>
                         <h3 className="font-semibold text-black">{p.enfant_prenom} {p.enfant_nom}</h3>
                         <p className="text-sm text-gray-600">{p.classe} • Dossier: <span className="font-mono text-blue-600">{p.numero_dossier}</span></p>
-                        <p className="text-xs text-gray-500 mt-1">Soumis le {new Date(p.date_preinscription).toLocaleDateString("fr-FR")}</p>
+                        <p className="text-xs text-gray-900 mt-1">Soumis le {new Date(p.date_preinscription).toLocaleDateString("fr-FR")}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         {getStatutBadge(p.statut)}
@@ -584,7 +583,7 @@ export default function InscriptionParentPage() {
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-black">Paiement des frais</h2>
                 <button onClick={() => { setShowPaiementModal(false); setSelectedPreinscription(null); setModePaiement(""); setReference(""); }}>
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5 text-gray-900" />
                 </button>
               </div>
               <p className="text-gray-900 text-sm">{selectedPreinscription.enfant_prenom} {selectedPreinscription.enfant_nom} - {selectedPreinscription.classe}</p>

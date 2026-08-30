@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  ClipboardList, CheckCircle, Clock, BookOpen, ChevronRight, Lock, FileText 
+import {
+  ClipboardList, CheckCircle, Clock, BookOpen, ChevronRight, Lock, FileText
 } from "lucide-react";
 
 interface Examen {
@@ -49,7 +49,7 @@ export default function ExamensPage() {
           <ClipboardList className="w-6 h-6 text-purple-600" />
           Évaluations en ligne
         </h1>
-        <p className="text-gray-500 mt-1">QCM interactifs préparés par vos enseignants</p>
+        <p className="text-gray-900 mt-1">QCM interactifs préparés par vos enseignants</p>
       </div>
 
       {/* Stats */}
@@ -88,7 +88,7 @@ export default function ExamensPage() {
                       <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-lg">
                         {examen.matiere}
                       </span>
-                      <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <span className="text-xs text-gray-900 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {examen.duree_minutes} min
                       </span>
@@ -100,7 +100,7 @@ export default function ExamensPage() {
                       )}
                     </div>
                     <h3 className="font-semibold text-gray-900">{examen.titre}</h3>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-400 flex-wrap">
+                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-900 flex-wrap">
                       <span>{examen.nb_questions} questions</span>
                       <span>{examen.total_points} points au total</span>
                       <span>Par {examen.enseignant}</span>
@@ -110,7 +110,7 @@ export default function ExamensPage() {
                     <span className="text-sm font-semibold text-purple-600 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition">
                       Commencer
                     </span>
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-500" />
+                    <ChevronRight className="w-4 h-4 text-gray-900 group-hover:text-purple-500" />
                   </div>
                 </div>
               </Link>
@@ -136,7 +136,7 @@ export default function ExamensPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg">
+                      <span className="text-xs font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-lg">
                         {examen.matiere}
                       </span>
                       <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-lg font-medium">
@@ -144,15 +144,15 @@ export default function ExamensPage() {
                       </span>
                       {/* ⭐ Indicateur de fichier joint pour les examens passés */}
                       {examen.fichier_url && (
-                        <span className="text-xs text-gray-400 flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-lg">
+                        <span className="text-xs text-gray-900 flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-lg">
                           <FileText className="w-3 h-3" /> Sujet
                         </span>
                       )}
                     </div>
                     <h3 className="font-medium text-gray-700">{examen.titre}</h3>
-                    <p className="text-xs text-gray-400 mt-1">{examen.nb_questions} questions</p>
+                    <p className="text-xs text-gray-900 mt-1">{examen.nb_questions} questions</p>
                   </div>
-                  <span className="text-xs text-gray-400 flex items-center gap-1 flex-shrink-0">
+                  <span className="text-xs text-gray-900 flex items-center gap-1 flex-shrink-0">
                     Voir résultats →
                   </span>
                 </div>
@@ -163,7 +163,7 @@ export default function ExamensPage() {
       )}
 
       {examens.length === 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-400">
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-900">
           <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="font-medium">Aucune évaluation disponible pour le moment</p>
           <p className="text-sm mt-1">Vos enseignants n'ont pas encore publié</p>

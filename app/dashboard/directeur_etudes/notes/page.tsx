@@ -8,20 +8,20 @@ export default function NotesDirecteurPage() {
   const router = useRouter();
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClasse, setSelectedClasse] = useState("");
-  
+
   const [eleves, setEleves] = useState<any[]>([]);
   const [enseignements, setEnseignements] = useState<any[]>([]);
-  
+
   // Format: { "eleveId_enseignementId": { id?: number, valeur: string, note_sur: string, coefficient: string } }
   const [notesForm, setNotesForm] = useState<Record<string, any>>({});
-  
+
   // Track expanded students
   const [expandedEleves, setExpandedEleves] = useState<Record<number, boolean>>({});
-  
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
-  
+
   const [globalNoteSur, setGlobalNoteSur] = useState("10");
 
   const handleGlobalNoteSurChange = (newVal: string) => {
@@ -63,17 +63,17 @@ export default function NotesDirecteurPage() {
 
     setLoading(true);
     setMessage({ type: "", text: "" });
-    
+
     fetch(`/api/directeur_etudes/notes/grid?classe_id=${selectedClasse}`)
       .then(res => res.json())
       .then(data => {
         if (data.eleves && data.enseignements && data.notes) {
           setEleves(data.eleves);
           setEnseignements(data.enseignements);
-          
+
           // Pre-populate form map
           const newForm: Record<string, any> = {};
-          
+
           // Set global note sur based on first database note if exists
           let resolvedGlobalNoteSur = globalNoteSur;
           if (data.notes && data.notes.length > 0) {
@@ -134,10 +134,10 @@ export default function NotesDirecteurPage() {
     const val = parseFloat(valeurStr);
     const sur = parseFloat(noteSurStr) || 10;
     if (isNaN(val) || val < 0) return "-";
-    
+
     // Normalize to base 10 for mention calculation
     const val10 = sur === 20 ? val / 2 : val;
-    
+
     if (val10 >= 8) return "TRES BIEN";
     if (val10 >= 7) return "BIEN";
     if (val10 >= 6) return "ASSEZ BIEN";
@@ -303,7 +303,7 @@ export default function NotesDirecteurPage() {
           <FileText className="w-6 h-6 text-blue-600" />
           Saisie des Notes (Format Bulletin Individuel)
         </h1>
-        <p className="text-gray-500 mt-1">Saisissez les notes, barèmes et coefficients élève par élève pour l'ensemble d'une classe.</p>
+        <p className="text-gray-900 mt-1">Saisissez les notes, barèmes et coefficients élève par élève pour l'ensemble d'une classe.</p>
       </div>
 
       {/* FILTRES & CONTROL */}
@@ -369,9 +369,8 @@ export default function NotesDirecteurPage() {
 
       {/* MESSAGE NOTIFICATION */}
       {message.text && (
-        <div className={`p-4 rounded-xl flex items-center gap-3 font-semibold text-sm ${
-          message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
-        }`}>
+        <div className={`p-4 rounded-xl flex items-center gap-3 font-semibold text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
           {message.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
           {message.text}
         </div>
@@ -381,7 +380,7 @@ export default function NotesDirecteurPage() {
       {loading && (
         <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-gray-100 gap-3">
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-          <p className="text-sm font-medium text-gray-500">Chargement de la liste des élèves...</p>
+          <p className="text-sm font-medium text-gray-900">Chargement de la liste des élèves...</p>
         </div>
       )}
 
@@ -391,16 +390,15 @@ export default function NotesDirecteurPage() {
           {eleves.map((eleve) => {
             const isExpanded = !!expandedEleves[eleve.id];
             const stats = calculateStudentAverages(eleve.id);
-            
+
             return (
-              <div 
-                key={eleve.id} 
-                className={`bg-white border rounded-2xl shadow-sm transition overflow-hidden ${
-                  isExpanded ? 'border-blue-200 ring-2 ring-blue-50/50' : 'border-gray-100 hover:border-gray-200'
-                }`}
+              <div
+                key={eleve.id}
+                className={`bg-white border rounded-2xl shadow-sm transition overflow-hidden ${isExpanded ? 'border-blue-200 ring-2 ring-blue-50/50' : 'border-gray-100 hover:border-gray-200'
+                  }`}
               >
                 {/* CARD ACCORDION HEADER */}
-                <div 
+                <div
                   onClick={() => toggleExpand(eleve.id)}
                   className="p-4 sm:p-5 flex items-center justify-between cursor-pointer bg-gray-50/50 hover:bg-gray-50 transition"
                 >
@@ -410,22 +408,22 @@ export default function NotesDirecteurPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900">{eleve.nom} {eleve.prenom}</h3>
-                      <p className="text-xs text-gray-500 font-mono">{eleve.matricule}</p>
+                      <p className="text-xs text-gray-900 font-mono">{eleve.matricule}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <span className="text-xs text-gray-500 block">Moyenne Générale</span>
+                      <span className="text-xs text-gray-900 block">Moyenne Générale</span>
                       <span className={`font-bold text-base ${stats.moyenne !== '-' && parseFloat(stats.moyenne) >= 5 ? 'text-green-600' : 'text-red-500'}`}>
                         {stats.moyenne !== '-' ? `${stats.moyenne}/10` : '-'}
                       </span>
                     </div>
                     <div>
                       {isExpanded ? (
-                        <ChevronUp className="w-5 h-5 text-gray-400" />
+                        <ChevronUp className="w-5 h-5 text-gray-900" />
                       ) : (
-                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                        <ChevronDown className="w-5 h-5 text-gray-900" />
                       )}
                     </div>
                   </div>
@@ -451,7 +449,7 @@ export default function NotesDirecteurPage() {
                             const form = notesForm[key] || { valeur: "", note_sur: globalNoteSur, coefficient: "1" };
                             const calculatedMoyCoeff = (parseFloat(form.valeur) * parseFloat(form.coefficient)).toFixed(1);
                             const mention = getMention(form.valeur, form.note_sur);
-                            
+
                             return (
                               <tr key={ens.enseignement_id} className="hover:bg-gray-50/50">
                                 <td className="border border-gray-200 p-2.5 font-semibold text-gray-800 uppercase">
@@ -482,15 +480,14 @@ export default function NotesDirecteurPage() {
                                 <td className="border border-gray-200 p-2.5 text-center font-bold text-gray-700">
                                   {!isNaN(parseFloat(calculatedMoyCoeff)) ? calculatedMoyCoeff.replace('.0', '') : "-"}
                                 </td>
-                                <td className={`border border-gray-200 p-2.5 text-center font-bold text-xs ${
-                                  mention === 'TRES BIEN' || mention === 'BIEN' ? 'text-green-600' : 'text-gray-700'
-                                }`}>
+                                <td className={`border border-gray-200 p-2.5 text-center font-bold text-xs ${mention === 'TRES BIEN' || mention === 'BIEN' ? 'text-green-600' : 'text-gray-700'
+                                  }`}>
                                   {mention}
                                 </td>
                               </tr>
                             );
                           })}
-                          
+
                           {/* SUMMARY ROW */}
                           <tr className="bg-blue-50/50 font-bold">
                             <td className="border border-gray-200 p-2.5 text-blue-900 uppercase">TOTAL DES POINTS</td>

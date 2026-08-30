@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Plus, Search, BookOpen, Clock, BarChart2, 
+import {
+  Plus, Search, BookOpen, Clock, BarChart2,
   Edit2, Eye, Zap, Users, School, FileText
 } from "lucide-react";
 
@@ -61,7 +61,7 @@ export default function EnseignantQuizPage() {
             <Zap className="w-7 h-7 text-yellow-500" />
             Quiz & Jeux
           </h1>
-          <p className="text-gray-500 mt-1">Quiz interactifs pour vos classes</p>
+          <p className="text-gray-900 mt-1">Quiz interactifs pour vos classes</p>
         </div>
         <div className="flex gap-2">
           <Link
@@ -81,7 +81,7 @@ export default function EnseignantQuizPage() {
 
       {/* Filtres - comme pour les évaluations */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
         <input
           type="text"
           placeholder="Rechercher un quiz..."
@@ -93,7 +93,7 @@ export default function EnseignantQuizPage() {
 
       {/* Liste des quiz - comme pour les évaluations */}
       {filteredQuiz.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-400">
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-900">
           <Zap className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="font-medium text-gray-600">Aucun quiz créé</p>
           <p className="text-sm mt-1">Créez votre premier quiz pour une de vos classes</p>
@@ -118,13 +118,13 @@ export default function EnseignantQuizPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Actif
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-gray-900 bg-gray-100 px-2.5 py-1 rounded-full">
                       Inactif
                     </span>
                   )}
                 </div>
                 <h3 className="font-bold text-gray-900 leading-tight mb-1">{q.titre}</h3>
-                <span className="text-xs text-gray-400">{q.matiere}</span>
+                <span className="text-xs text-gray-900">{q.matiere}</span>
                 {q.fichier_url && (
                   <div className="mt-1 flex items-center gap-1 text-xs text-purple-500">
                     <FileText className="w-3 h-3" /> Fichier joint
@@ -135,27 +135,27 @@ export default function EnseignantQuizPage() {
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500 flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-400" /> Durée
+                    <span className="text-gray-900 flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-900" /> Durée
                     </span>
                     <span className="font-medium text-gray-900">{q.duree_minutes} min</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500 flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-gray-400" /> Questions
+                    <span className="text-gray-900 flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-gray-900" /> Questions
                     </span>
                     <span className="font-medium text-gray-900">{q.nb_questions}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500 flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-400" /> Participants
+                    <span className="text-gray-900 flex items-center gap-2">
+                      <Users className="w-4 h-4 text-gray-900" /> Participants
                     </span>
                     <span className="font-medium text-gray-900">{q.nb_participations} élèves</span>
                   </div>
                   {q.nb_participations > 0 && (
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-500 flex items-center gap-2">
-                        <BarChart2 className="w-4 h-4 text-gray-400" /> Moyenne
+                      <span className="text-gray-900 flex items-center gap-2">
+                        <BarChart2 className="w-4 h-4 text-gray-900" /> Moyenne
                       </span>
                       <span className="font-medium text-green-600">{q.moyenne_participations.toFixed(1)}%</span>
                     </div>

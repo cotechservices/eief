@@ -324,7 +324,7 @@ export default function ResetPasswordPage() {
                     Nouveau mot de passe
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-900" />
                     <input
                       type={showPassword ? "text" : "password"}
                       value={password}
@@ -337,7 +337,7 @@ export default function ResetPasswordPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-600"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -354,7 +354,7 @@ export default function ResetPasswordPage() {
                     Confirmer le mot de passe
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-900" />
                     <input
                       type={showPassword ? "text" : "password"}
                       value={confirmPassword}

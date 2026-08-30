@@ -56,7 +56,7 @@ export default function EnseignantDashboard() {
         throw new Error(data.error || "Erreur de chargement des données");
       }
       const data = await response.json();
-      
+
       setProfil(data.profil);
       setClasses(data.classes || []);
       setStats(data.stats);
@@ -81,7 +81,7 @@ export default function EnseignantDashboard() {
       <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-xl text-center">
         <AlertCircle className="w-8 h-8 mx-auto mb-2" />
         <p className="font-medium">{error}</p>
-        <button 
+        <button
           onClick={fetchEnseignantData}
           className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
         >
@@ -99,13 +99,13 @@ export default function EnseignantDashboard() {
           <h1 className="text-2xl font-bold text-gray-900">
             {profil?.prenom} {profil?.nom}
           </h1>
-          <p className="text-gray-500 mt-1 flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${profil?.statut === 'actif' ? 'bg-green-500' : 'bg-gray-400'}`} />
+          <p className="text-gray-900 mt-1 flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${profil?.statut === 'actif' ? 'bg-green-500' : 'bg-gray-900'}`} />
             Enseignant {profil?.statut || 'inconnu'} • {profil?.email}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-         {/*  <Link href="/dashboard/enseignant/quiz/nouveau" className="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-700 transition flex items-center gap-2">
+          {/*  <Link href="/dashboard/enseignant/quiz/nouveau" className="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-700 transition flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Nouveau quiz
           </Link> */}
@@ -125,7 +125,7 @@ export default function EnseignantDashboard() {
         <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Mes classes</p>
+              <p className="text-gray-900 text-sm">Mes classes</p>
               <p className="text-3xl font-bold text-blue-600 mt-1">{stats?.total_classes || 0}</p>
             </div>
             <div className="bg-blue-50 p-2.5 rounded-xl">
@@ -137,7 +137,7 @@ export default function EnseignantDashboard() {
         <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Total élèves</p>
+              <p className="text-gray-900 text-sm">Total élèves</p>
               <p className="text-3xl font-bold text-green-600 mt-1">{stats?.total_eleves || 0}</p>
             </div>
             <div className="bg-green-50 p-2.5 rounded-xl">
@@ -149,7 +149,7 @@ export default function EnseignantDashboard() {
         <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Devoirs</p>
+              <p className="text-gray-900 text-sm">Devoirs</p>
               <p className="text-3xl font-bold text-orange-600 mt-1">{stats?.total_devoirs || 0}</p>
             </div>
             <div className="bg-orange-50 p-2.5 rounded-xl">
@@ -161,7 +161,7 @@ export default function EnseignantDashboard() {
         <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Évaluations</p>
+              <p className="text-gray-900 text-sm">Évaluations</p>
               <p className="text-3xl font-bold text-purple-600 mt-1">{stats?.total_examens || 0}</p>
             </div>
             <div className="bg-purple-50 p-2.5 rounded-xl">

@@ -117,51 +117,51 @@ export default function AdminCantineDashboard() {
       if (response.ok) {
         const data = await response.json();
         setMenus(data.menus || []);
-        
+
         const preinscriptions = data.stats?.preinscriptions || [];
         const reinscriptions = data.stats?.reinscriptions || [];
-        
+
         const preinscriptionsPayees = preinscriptions.filter((p: any) => p.frais_statut === 'paye' || p.frais_statut === 'partiel');
         const reinscriptionsPayees = reinscriptions.filter((r: any) => r.frais_statut === 'paye' || r.frais_statut === 'partiel');
-        
+
         const montantTotalPaye = preinscriptionsPayees.reduce((sum: number, p: any) => sum + (p.prix_cantine || 0), 0) +
-                                 reinscriptionsPayees.reduce((sum: number, r: any) => sum + (r.montant_cantine || 0), 0);
-        
+          reinscriptionsPayees.reduce((sum: number, r: any) => sum + (r.montant_cantine || 0), 0);
+
         const montantTotal = preinscriptions.reduce((sum: number, p: any) => sum + (p.prix_cantine || 0), 0) +
-                            reinscriptions.reduce((sum: number, r: any) => sum + (r.montant_cantine || 0), 0);
-        
+          reinscriptions.reduce((sum: number, r: any) => sum + (r.montant_cantine || 0), 0);
+
         const montantTotalEnAttente = montantTotal - montantTotalPaye;
         const montantTotalNonPaye = montantTotalEnAttente;
-        
+
         const tauxPaiement = montantTotal > 0 ? Math.round((montantTotalPaye / montantTotal) * 100) : 0;
         const pourcentagePaye = montantTotal > 0 ? Math.round((montantTotalPaye / montantTotal) * 100) : 0;
         const pourcentageEnAttente = montantTotal > 0 ? Math.round((montantTotalEnAttente / montantTotal) * 100) : 0;
         const pourcentageNonPaye = montantTotal > 0 ? Math.round((montantTotalNonPaye / montantTotal) * 100) : 0;
-        
+
         // ⭐ Calcul des garçons et filles à partir des pré-inscriptions et réinscriptions
         const preinscriptionsWithSexe = preinscriptions.map((p: any) => ({
           ...p,
           sexe: p.sexe || 'Non renseigné'
         }));
-        
+
         const reinscriptionsWithSexe = reinscriptions.map((r: any) => ({
           ...r,
           sexe: r.sexe || 'Non renseigné'
         }));
-        
+
         // ⭐ Compter les garçons et filles dans les pré-inscriptions
         const garconsPreinscriptions = preinscriptionsWithSexe.filter((p: any) => p.sexe === 'M').length;
         const fillesPreinscriptions = preinscriptionsWithSexe.filter((p: any) => p.sexe === 'F').length;
-        
+
         // ⭐ Compter les garçons et filles dans les réinscriptions
         const garconsReinscriptions = reinscriptionsWithSexe.filter((r: any) => r.sexe === 'M').length;
         const fillesReinscriptions = reinscriptionsWithSexe.filter((r: any) => r.sexe === 'F').length;
-        
+
         // ⭐ Total garçons et filles (pré-inscriptions + réinscriptions)
         const totalGarcons = garconsPreinscriptions + garconsReinscriptions;
         const totalFilles = fillesPreinscriptions + fillesReinscriptions;
         const totalInscrits = totalGarcons + totalFilles;
-        
+
         setStats({
           totalInscrits: totalInscrits,
           totalGarcons: totalGarcons,
@@ -345,7 +345,7 @@ export default function AdminCantineDashboard() {
             <Utensils className="w-7 h-7 text-purple-600" />
             Dashboard Cantine
           </h1>
-          <p className="text-gray-500 mt-1">Gestion des menus, inscriptions et présences</p>
+          <p className="text-gray-900 mt-1">Gestion des menus, inscriptions et présences</p>
         </div>
         <button
           onClick={handleOpenAdd}
@@ -359,22 +359,22 @@ export default function AdminCantineDashboard() {
       {/* Statistiques globales */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Total inscrits</p>
+          <p className="text-gray-900 text-xs">Total inscrits</p>
           <p className="text-2xl font-bold text-blue-600">{stats.totalInscrits}</p>
           <Users className="w-4 h-4 text-blue-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Taux de présence</p>
+          <p className="text-gray-900 text-xs">Taux de présence</p>
           <p className="text-2xl font-bold text-green-600">{stats.tauxPresence}%</p>
           <UserCheck className="w-4 h-4 text-green-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Menus enregistrés</p>
+          <p className="text-gray-900 text-xs">Menus enregistrés</p>
           <p className="text-2xl font-bold text-purple-600">{stats.totalMenus}</p>
           <Utensils className="w-4 h-4 text-purple-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Recettes (mois)</p>
+          <p className="text-gray-900 text-xs">Recettes (mois)</p>
           <p className="text-2xl font-bold text-orange-600">{formatPrix(stats.recettesMois)} GNF</p>
           <CreditCard className="w-4 h-4 text-orange-200 mt-1" />
         </div>
@@ -390,7 +390,7 @@ export default function AdminCantineDashboard() {
             <div>
               <p className="text-sm text-gray-600">Montant total payé</p>
               <p className="text-xl font-bold text-green-700">{formatPrix(paymentStats.montantTotalPaye)} GNF</p>
-              <p className="text-xs text-gray-500">{paymentStats.pourcentagePaye}% du total</p>
+              <p className="text-xs text-gray-900">{paymentStats.pourcentagePaye}% du total</p>
             </div>
           </div>
         </div>
@@ -402,7 +402,7 @@ export default function AdminCantineDashboard() {
             <div>
               <p className="text-sm text-gray-600">En attente</p>
               <p className="text-xl font-bold text-yellow-700">{formatPrix(paymentStats.montantTotalEnAttente)} GNF</p>
-              <p className="text-xs text-gray-500">{paymentStats.pourcentageEnAttente}% du total</p>
+              <p className="text-xs text-gray-900">{paymentStats.pourcentageEnAttente}% du total</p>
             </div>
           </div>
         </div>
@@ -414,7 +414,7 @@ export default function AdminCantineDashboard() {
             <div>
               <p className="text-sm text-gray-600">Non payé</p>
               <p className="text-xl font-bold text-red-700">{formatPrix(paymentStats.montantTotalNonPaye)} GNF</p>
-              <p className="text-xs text-gray-500">{paymentStats.pourcentageNonPaye}% du total</p>
+              <p className="text-xs text-gray-900">{paymentStats.pourcentageNonPaye}% du total</p>
             </div>
           </div>
         </div>
@@ -426,7 +426,7 @@ export default function AdminCantineDashboard() {
             <div>
               <p className="text-sm text-gray-600">Taux de paiement</p>
               <p className="text-2xl font-bold text-indigo-700">{paymentStats.tauxPaiement}%</p>
-              <p className="text-xs text-gray-500">{formatPrix(paymentStats.montantTotalPaye)} / {formatPrix(paymentStats.montantTotalPaye + paymentStats.montantTotalEnAttente + paymentStats.montantTotalNonPaye || 1)} GNF</p>
+              <p className="text-xs text-gray-900">{formatPrix(paymentStats.montantTotalPaye)} / {formatPrix(paymentStats.montantTotalPaye + paymentStats.montantTotalEnAttente + paymentStats.montantTotalNonPaye || 1)} GNF</p>
             </div>
           </div>
         </div>
@@ -441,37 +441,37 @@ export default function AdminCantineDashboard() {
           </h3>
           <div className="flex gap-6">
             <div>
-              <p className="text-sm text-gray-500">Garçons</p>
+              <p className="text-sm text-gray-900">Garçons</p>
               <p className="text-2xl font-bold text-blue-600">{stats.totalGarcons}</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-900">
                 {stats.totalInscrits > 0 ? Math.round((stats.totalGarcons / stats.totalInscrits) * 100) : 0}%
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Filles</p>
+              <p className="text-sm text-gray-900">Filles</p>
               <p className="text-2xl font-bold text-pink-600">{stats.totalFilles}</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-900">
                 {stats.totalInscrits > 0 ? Math.round((stats.totalFilles / stats.totalInscrits) * 100) : 0}%
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Total</p>
+              <p className="text-sm text-gray-900">Total</p>
               <p className="text-2xl font-bold text-gray-900">{stats.totalInscrits}</p>
             </div>
           </div>
           <div className="mt-3 w-full bg-gray-200 h-2 rounded-full overflow-hidden">
             <div className="flex h-full">
-              <div 
-                className="bg-blue-600 h-full" 
+              <div
+                className="bg-blue-600 h-full"
                 style={{ width: `${stats.totalInscrits > 0 ? (stats.totalGarcons / stats.totalInscrits) * 100 : 0}%` }}
               />
-              <div 
-                className="bg-pink-400 h-full" 
+              <div
+                className="bg-pink-400 h-full"
                 style={{ width: `${stats.totalInscrits > 0 ? (stats.totalFilles / stats.totalInscrits) * 100 : 0}%` }}
               />
             </div>
           </div>
-          <div className="flex justify-between text-xs text-gray-400 mt-1">
+          <div className="flex justify-between text-xs text-gray-900 mt-1">
             <span>Garçons: {stats.totalGarcons}</span>
             <span>Filles: {stats.totalFilles}</span>
           </div>
@@ -483,15 +483,15 @@ export default function AdminCantineDashboard() {
           </h3>
           <div className="flex gap-6">
             <div>
-              <p className="text-sm text-gray-500">Total menus</p>
+              <p className="text-sm text-gray-900">Total menus</p>
               <p className="text-2xl font-bold text-purple-600">{stats.totalMenus}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Avec prix</p>
+              <p className="text-sm text-gray-900">Avec prix</p>
               <p className="text-2xl font-bold text-orange-600">{stats.nbMenusAvecPrix}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Moyenne / menu</p>
+              <p className="text-sm text-gray-900">Moyenne / menu</p>
               <p className="text-2xl font-bold text-green-600">{formatPrix(stats.recetteMoyenneParMenu)} GNF</p>
             </div>
           </div>
@@ -506,11 +506,10 @@ export default function AdminCantineDashboard() {
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => setActiveTab('preinscriptions')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
-                  activeTab === 'preinscriptions'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${activeTab === 'preinscriptions'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
               >
                 <UserCheck className="w-4 h-4" />
                 Inscriptions ({stats.totalPreinscriptions})
@@ -528,11 +527,10 @@ export default function AdminCantineDashboard() {
               </button>*/}
               <button
                 onClick={() => setActiveTab('reinscriptions')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
-                  activeTab === 'reinscriptions'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${activeTab === 'reinscriptions'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
               >
                 <RefreshCw className="w-4 h-4" />
                 Réinscriptions ({stats.totalReinscriptions})
@@ -574,7 +572,7 @@ export default function AdminCantineDashboard() {
                 ))}
                 {stats.preinscriptions.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-8 text-center text-gray-900">
                       Aucune pré-inscription avec cantine
                     </td>
                   </tr>
@@ -614,12 +612,12 @@ export default function AdminCantineDashboard() {
                         <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium">❌ Inactif</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-gray-500 text-xs">{formatDate(i.date_inscription)}</td>
+                    <td className="px-6 py-4 text-gray-900 text-xs">{formatDate(i.date_inscription)}</td>
                   </tr>
                 ))}
                 {stats.inscriptions?.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-8 text-center text-gray-900">
                       Aucune inscription à la cantine
                     </td>
                   </tr>
@@ -658,7 +656,7 @@ export default function AdminCantineDashboard() {
                 ))}
                 {stats.reinscriptions.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-8 text-center text-gray-900">
                       Aucune réinscription avec cantine
                     </td>
                   </tr>
@@ -681,7 +679,7 @@ export default function AdminCantineDashboard() {
               className="px-3 py-1 border rounded-lg text-sm"
             />
             <button className="p-2 border rounded-lg hover:bg-gray-50">
-              <Search className="w-4 h-4 text-gray-400" />
+              <Search className="w-4 h-4 text-gray-900" />
             </button>
           </div>
         </div>
@@ -712,7 +710,7 @@ export default function AdminCantineDashboard() {
                     {m.regime_special ? (
                       <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">Oui</span>
                     ) : (
-                      <span className="text-gray-400 text-xs">-</span>
+                      <span className="text-gray-900 text-xs">-</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-center font-medium">{m.inscrits}</td>
@@ -737,7 +735,7 @@ export default function AdminCantineDashboard() {
               ))}
               {menus.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-8 text-center text-gray-900">
                     <Utensils className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p className="font-medium">Aucun menu disponible</p>
                     <p className="text-sm mt-1">Cliquez sur "Ajouter un menu" pour commencer</p>
@@ -757,7 +755,7 @@ export default function AdminCantineDashboard() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingMenu ? "Modifier le menu" : "Ajouter un menu"}
               </h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -806,7 +804,7 @@ export default function AdminCantineDashboard() {
                   onChange={e => setFormData({ ...formData, prix_annuel: e.target.value })}
                   className="w-full border border-gray-300 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
-                <p className="text-xs text-gray-400 mt-1">Laissez vide si non défini</p>
+                <p className="text-xs text-gray-900 mt-1">Laissez vide si non défini</p>
               </div>
               <div className="flex items-center gap-2 py-2">
                 <input
@@ -841,7 +839,7 @@ export default function AdminCantineDashboard() {
       )}
 
       {/* Pied de page */}
-      <div className="text-center text-xs text-gray-400 pt-4 border-t border-gray-100">
+      <div className="text-center text-xs text-gray-900 pt-4 border-t border-gray-100">
         <p>© {new Date().getFullYear()} E.I.E.F - Module Cantine</p>
       </div>
     </div>

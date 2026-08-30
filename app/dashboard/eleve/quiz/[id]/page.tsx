@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft, Clock, CheckCircle, AlertCircle, Play, 
+  ArrowLeft, Clock, CheckCircle, AlertCircle, Play,
   Brain, ChevronRight, Check, X, FileText, Download,
   Image, File, Award, Zap, Sparkles, BookOpen
 } from "lucide-react";
@@ -115,7 +115,7 @@ export default function PasserQuizPage() {
 
     const totalQuestions = data.questions.length;
     const answered = Object.keys(reponses).length;
-    
+
     if (answered < totalQuestions) {
       const confirmSubmit = confirm(
         `Vous avez répondu à ${answered}/${totalQuestions} questions. Voulez-vous vraiment soumettre ?`
@@ -135,9 +135,9 @@ export default function PasserQuizPage() {
       const res = await fetch(`/api/eleve/quiz/${params.id}/repondre`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           reponses: reponsesArray,
-          temps_total_ms: tempsMs 
+          temps_total_ms: tempsMs
         }),
       });
       if (res.ok) {
@@ -185,7 +185,7 @@ export default function PasserQuizPage() {
 
   if (error || !data) {
     return (
-      <div className="text-center py-16 text-gray-500">
+      <div className="text-center py-16 text-gray-900">
         <AlertCircle className="w-12 h-12 mx-auto mb-3 text-red-400" />
         <p>{error || "Quiz introuvable"}</p>
         <Link href="/dashboard/eleve/quiz" className="text-purple-600 text-sm mt-2 block hover:underline">
@@ -202,13 +202,13 @@ export default function PasserQuizPage() {
   if (dejaTermine && resultat) {
     return (
       <div className="max-w-3xl mx-auto space-y-6">
-        <Link href="/dashboard/eleve/quiz" className="inline-flex items-center gap-2 text-gray-500 hover:text-purple-600 text-sm">
+        <Link href="/dashboard/eleve/quiz" className="inline-flex items-center gap-2 text-gray-900 hover:text-purple-600 text-sm">
           <ArrowLeft className="w-4 h-4" /> Retour aux quiz
         </Link>
 
         <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" 
-               style={{ backgroundColor: `${quiz.categorie_couleur || '#6B46C1'}20` }}>
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ backgroundColor: `${quiz.categorie_couleur || '#6B46C1'}20` }}>
             {resultat.pourcentage >= 70 ? (
               <Sparkles className="w-10 h-10 text-yellow-500" />
             ) : resultat.pourcentage >= 50 ? (
@@ -217,9 +217,9 @@ export default function PasserQuizPage() {
               <Brain className="w-10 h-10 text-purple-500" />
             )}
           </div>
-          
+
           <h1 className="text-2xl font-bold text-gray-900">Quiz terminé !</h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-900 mt-1">
             <span style={{ color: quiz.categorie_couleur || '#6B46C1' }}>
               {quiz.categorie_nom}
             </span> • {quiz.titre}
@@ -227,20 +227,20 @@ export default function PasserQuizPage() {
 
           <div className="flex justify-center gap-8 mt-6 p-6 bg-gray-50 rounded-xl border border-gray-100">
             <div>
-              <p className="text-sm text-gray-500">Score</p>
+              <p className="text-sm text-gray-900">Score</p>
               <p className={`text-4xl font-black ${resultat.pourcentage >= 70 ? 'text-green-600' : resultat.pourcentage >= 50 ? 'text-orange-500' : 'text-red-500'}`}>
                 {resultat.points_obtenus}
-                <span className="text-xl text-gray-400">/{questions.reduce((sum, q) => sum + q.points, 0)}</span>
+                <span className="text-xl text-gray-900">/{questions.reduce((sum, q) => sum + q.points, 0)}</span>
               </p>
             </div>
             <div className="w-px bg-gray-200" />
             <div>
-              <p className="text-sm text-gray-500">Pourcentage</p>
-              <p className="text-4xl font-black text-purple-600">{resultat.pourcentage}<span className="text-xl text-gray-400">%</span></p>
+              <p className="text-sm text-gray-900">Pourcentage</p>
+              <p className="text-4xl font-black text-purple-600">{resultat.pourcentage}<span className="text-xl text-gray-900">%</span></p>
             </div>
             <div className="w-px bg-gray-200" />
             <div>
-              <p className="text-sm text-gray-500">Correctes</p>
+              <p className="text-sm text-gray-900">Correctes</p>
               <p className="text-2xl font-bold text-gray-800 mt-2">{resultat.reponses_correctes} / {resultat.reponses_totales}</p>
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function PasserQuizPage() {
                       <p className="text-sm mt-1">
                         <span className="font-medium">Votre réponse :</span> {r.option_texte}
                         {!r.est_correcte && r.explication && (
-                          <span className="block mt-1 text-xs text-gray-500">
+                          <span className="block mt-1 text-xs text-gray-900">
                             💡 {r.explication}
                           </span>
                         )}
@@ -281,9 +281,9 @@ export default function PasserQuizPage() {
               <FileText className="w-5 h-5 text-purple-500" />
               <div className="text-left">
                 <p className="text-sm font-medium text-gray-700">📎 Sujet du quiz</p>
-                <a 
-                  href={quiz.fichier_url} 
-                  target="_blank" 
+                <a
+                  href={quiz.fichier_url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-purple-600 hover:text-purple-800 hover:underline flex items-center gap-1"
                 >
@@ -309,13 +309,13 @@ export default function PasserQuizPage() {
   if (questions.length === 0) {
     return (
       <div className="max-w-2xl mx-auto text-center py-10">
-        <Link href="/dashboard/eleve/quiz" className="inline-flex items-center gap-2 text-gray-500 hover:text-purple-600 text-sm mb-8">
+        <Link href="/dashboard/eleve/quiz" className="inline-flex items-center gap-2 text-gray-900 hover:text-purple-600 text-sm mb-8">
           <ArrowLeft className="w-4 h-4" /> Retour
         </Link>
         <div className="bg-white rounded-2xl p-10 border border-yellow-100 shadow-lg">
           <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{quiz.titre}</h1>
-          <p className="text-gray-500">Ce quiz n'a pas encore de questions.</p>
+          <p className="text-gray-900">Ce quiz n'a pas encore de questions.</p>
         </div>
       </div>
     );
@@ -324,32 +324,32 @@ export default function PasserQuizPage() {
   // ⭐ ÉCRAN DE DÉBUT
   if (!started) {
     const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
-    
+
     return (
       <div className="max-w-2xl mx-auto text-center py-10">
-        <Link href="/dashboard/eleve/quiz" className="inline-flex items-center gap-2 text-gray-500 hover:text-purple-600 text-sm mb-8">
+        <Link href="/dashboard/eleve/quiz" className="inline-flex items-center gap-2 text-gray-900 hover:text-purple-600 text-sm mb-8">
           <ArrowLeft className="w-4 h-4" /> Retour
         </Link>
-        
-        <div className="bg-white rounded-2xl p-10 border shadow-lg" 
-             style={{ borderColor: `${quiz.categorie_couleur || '#6B46C1'}30` }}>
+
+        <div className="bg-white rounded-2xl p-10 border shadow-lg"
+          style={{ borderColor: `${quiz.categorie_couleur || '#6B46C1'}30` }}>
           <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
-               style={{ backgroundColor: `${quiz.categorie_couleur || '#6B46C1'}20` }}>
+            style={{ backgroundColor: `${quiz.categorie_couleur || '#6B46C1'}20` }}>
             <Brain className="w-10 h-10" style={{ color: quiz.categorie_couleur || '#6B46C1' }} />
           </div>
-          
+
           <span className="text-xs font-semibold px-3 py-1 rounded-full mb-3 inline-block"
-                style={{ 
-                  backgroundColor: `${quiz.categorie_couleur || '#6B46C1'}20`,
-                  color: quiz.categorie_couleur || '#6B46C1'
-                }}>
+            style={{
+              backgroundColor: `${quiz.categorie_couleur || '#6B46C1'}20`,
+              color: quiz.categorie_couleur || '#6B46C1'
+            }}>
             {quiz.categorie_nom || 'Général'}
           </span>
-          
+
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{quiz.titre}</h1>
-          <p className="text-gray-500 mb-6">{quiz.description || 'Quiz interactif'}</p>
-          
-          <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500 mb-8">
+          <p className="text-gray-900 mb-6">{quiz.description || 'Quiz interactif'}</p>
+
+          <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-900 mb-8">
             <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg">
               <BookOpen className="w-4 h-4" /> {questions.length} questions
             </div>
@@ -407,13 +407,12 @@ export default function PasserQuizPage() {
           <div className="bg-purple-50 text-purple-700 font-semibold px-3 py-1.5 rounded-lg text-sm">
             Question {currentQ + 1} / {questions.length}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-900">
             {answeredCount} répondues
           </div>
         </div>
-        <div className={`flex items-center gap-2 font-mono text-xl font-bold px-4 py-1.5 rounded-lg ${
-          timeLeft < 60 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-gray-50 text-gray-800'
-        }`}>
+        <div className={`flex items-center gap-2 font-mono text-xl font-bold px-4 py-1.5 rounded-lg ${timeLeft < 60 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-gray-50 text-gray-800'
+          }`}>
           <Clock className="w-5 h-5" />
           {formatTime(timeLeft)}
         </div>
@@ -428,9 +427,9 @@ export default function PasserQuizPage() {
                 <FileText className="w-5 h-5 text-purple-600" />
                 <span className="text-sm font-medium text-gray-700">📎 Sujet du quiz</span>
               </div>
-              <a 
-                href={quiz.fichier_url} 
-                target="_blank" 
+              <a
+                href={quiz.fichier_url}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-purple-600 hover:text-purple-800 hover:underline flex items-center gap-1"
               >
@@ -441,22 +440,22 @@ export default function PasserQuizPage() {
           <div className="p-4">
             {fileType === 'image' && (
               <div className="relative">
-                <img 
-                  src={quiz.fichier_url} 
+                <img
+                  src={quiz.fichier_url}
                   alt="Sujet du quiz"
                   className="w-full max-h-96 object-contain rounded-lg border border-gray-200 bg-white"
                   onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
                 />
-                <p className="text-xs text-gray-400 mt-2 text-center">{getFileName(quiz.fichier_url)}</p>
+                <p className="text-xs text-gray-900 mt-2 text-center">{getFileName(quiz.fichier_url)}</p>
               </div>
             )}
             {fileType === 'pdf' && (
               <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 text-center">
                 <FileText className="w-16 h-16 text-red-500 mx-auto mb-3" />
                 <p className="text-sm text-gray-600 font-medium">Document PDF</p>
-                <a 
-                  href={quiz.fichier_url} 
-                  target="_blank" 
+                <a
+                  href={quiz.fichier_url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block mt-3 text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium"
                 >
@@ -473,7 +472,7 @@ export default function PasserQuizPage() {
         <div className="p-8 border-b bg-gray-50">
           <div className="flex justify-between items-start gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-semibold text-gray-400">Q{currentQ + 1}</span>
+              <span className="text-sm font-semibold text-gray-900">Q{currentQ + 1}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${difficulte.color}`}>
                 {difficulte.label}
               </span>
@@ -492,18 +491,16 @@ export default function PasserQuizPage() {
               <button
                 key={opt.id}
                 onClick={() => handleOptionSelect(question.id, opt.id)}
-                className={`w-full text-left p-4 rounded-xl border-2 transition flex items-center justify-between group ${
-                  isSelected
-                    ? "border-purple-600 bg-purple-50"
-                    : "border-gray-100 bg-white hover:border-purple-200 hover:bg-gray-50"
-                }`}
+                className={`w-full text-left p-4 rounded-xl border-2 transition flex items-center justify-between group ${isSelected
+                  ? "border-purple-600 bg-purple-50"
+                  : "border-gray-100 bg-white hover:border-purple-200 hover:bg-gray-50"
+                  }`}
               >
                 <span className={`text-[15px] ${isSelected ? "text-purple-900 font-medium" : "text-gray-700"}`}>
                   {opt.option_texte}
                 </span>
-                <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                  isSelected ? "border-purple-600 bg-purple-600" : "border-gray-300"
-                }`}>
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${isSelected ? "border-purple-600 bg-purple-600" : "border-gray-300"
+                  }`}>
                   {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                 </div>
               </button>
@@ -551,13 +548,12 @@ export default function PasserQuizPage() {
           <button
             key={q.id}
             onClick={() => setCurrentQ(idx)}
-            className={`w-2.5 h-2.5 rounded-full transition-all ${
-              idx === currentQ
-                ? "w-6"
-                : reponses[q.id]
+            className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentQ
+              ? "w-6"
+              : reponses[q.id]
                 ? "bg-purple-300"
                 : "bg-gray-200 hover:bg-gray-300"
-            }`}
+              }`}
             style={idx === currentQ ? { backgroundColor: quiz.categorie_couleur || '#6B46C1' } : {}}
             aria-label={`Question ${idx + 1}`}
           />

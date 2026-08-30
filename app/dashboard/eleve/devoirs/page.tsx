@@ -81,7 +81,7 @@ export default function DevoirsPage() {
           <FileText className="w-6 h-6 text-orange-500" />
           Mes devoirs
         </h1>
-        <p className="text-gray-500 mt-1">Tous les devoirs envoyés par vos enseignants</p>
+        <p className="text-gray-900 mt-1">Tous les devoirs envoyés par vos enseignants</p>
       </div>
 
       {/* Stats */}
@@ -106,11 +106,10 @@ export default function DevoirsPage() {
           <button
             key={f}
             onClick={() => setFiltre(f)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
-              filtre === f
-                ? "bg-blue-600 text-white shadow-sm"
-                : "bg-white border border-gray-200 text-gray-600 hover:border-blue-300"
-            }`}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${filtre === f
+              ? "bg-blue-600 text-white shadow-sm"
+              : "bg-white border border-gray-200 text-gray-600 hover:border-blue-300"
+              }`}
           >
             {f === "tous" ? "Tous" : f === "a_rendre" ? "À rendre" : f === "en_retard" ? "En retard" : "Soumis"}
           </button>
@@ -120,7 +119,7 @@ export default function DevoirsPage() {
       {/* Liste devoirs */}
       <div className="space-y-3">
         {devoirsFiltres.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center text-gray-400">
+          <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center text-gray-900">
             <CheckCircle className="w-10 h-10 mx-auto mb-3 text-green-400" />
             <p className="font-medium">Aucun devoir dans cette catégorie</p>
           </div>
@@ -146,9 +145,9 @@ export default function DevoirsPage() {
                   </div>
                   <h3 className="font-semibold text-gray-900 mt-1 truncate">{devoir.titre}</h3>
                   {devoir.description && (
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">{devoir.description}</p>
+                    <p className="text-sm text-gray-900 mt-1 line-clamp-2">{devoir.description}</p>
                   )}
-                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-900">
                     <span>Enseignant : {devoir.enseignant}</span>
                     <span>
                       Date limite :{" "}
@@ -163,20 +162,19 @@ export default function DevoirsPage() {
                 <div className="flex items-center gap-3 flex-shrink-0">
                   {devoir.statut !== "soumis" && (
                     <span
-                      className={`text-xs px-2 py-1 rounded-lg font-medium ${
-                        devoir.joursRestants <= 0
-                          ? "bg-red-100 text-red-600"
-                          : devoir.joursRestants <= 2
+                      className={`text-xs px-2 py-1 rounded-lg font-medium ${devoir.joursRestants <= 0
+                        ? "bg-red-100 text-red-600"
+                        : devoir.joursRestants <= 2
                           ? "bg-red-100 text-red-600"
                           : devoir.joursRestants <= 5
-                          ? "bg-orange-100 text-orange-600"
-                          : "bg-green-100 text-green-600"
-                      }`}
+                            ? "bg-orange-100 text-orange-600"
+                            : "bg-green-100 text-green-600"
+                        }`}
                     >
                       {devoir.joursRestants > 0 ? `J-${devoir.joursRestants}` : "Expiré"}
                     </span>
                   )}
-                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition" />
+                  <ChevronRight className="w-4 h-4 text-gray-900 group-hover:text-blue-500 transition" />
                 </div>
               </div>
             </Link>

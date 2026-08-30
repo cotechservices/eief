@@ -19,12 +19,12 @@ const formatMontant = (montant: number): string => {
   return Math.round(montant).toLocaleString();
 };
 
-export default function PaiementLibreModal({ 
-  isOpen, 
-  onClose, 
-  onSuccess, 
-  preinscriptionId, 
-  enfantNom, 
+export default function PaiementLibreModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  preinscriptionId,
+  enfantNom,
   niveau,
   montantTotal = 0,
   montantRestant = 0
@@ -53,23 +53,23 @@ export default function PaiementLibreModal({
     try {
       // Récupérer les infos de la pré-inscription
       const response = await fetch(`/api/parent/plan-paiement?preinscriptionId=${preinscriptionId}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Erreur lors du chargement");
       }
-      
+
       const data = await response.json();
-      
+
       if (data) {
         setTotal(Number(data.montant_total_plan) || montantTotal || 0);
         setRestant(Number(data.montant_restant_plan) || montantRestant || 0);
         setMontantPaye(Number(data.montant_total_plan) - Number(data.montant_restant_plan) || 0);
         setEcheances(data.echeances || []);
-        
+
         // Suggérer le montant restant
         setSuggestionMontant(Number(data.montant_restant_plan) || montantRestant || 0);
-        
+
         // Pré-remplir le champ avec le montant restant
         const restantValue = Number(data.montant_restant_plan) || montantRestant || 0;
         if (restantValue > 0) {
@@ -88,7 +88,7 @@ export default function PaiementLibreModal({
 
   const handlePaiement = async () => {
     const montant = parseInt(montantSaisi.replace(/\s/g, ''));
-    
+
     if (!montant || montant <= 0) {
       setError("Veuillez saisir un montant valide");
       return;
@@ -106,7 +106,7 @@ export default function PaiementLibreModal({
 
     setPaying(true);
     setError(null);
-    
+
     try {
       const response = await fetch("/api/parent/paiement-libre", {
         method: "POST",
@@ -160,7 +160,7 @@ export default function PaiementLibreModal({
                 Saisie libre du montant
               </span>
             </div>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-700">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -196,7 +196,7 @@ export default function PaiementLibreModal({
                     style={{ width: `${Math.min(100, pourcentagePaye)}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-gray-900 mt-1">
                   <span>Payé: {formatMontant(montantPaye)} GNF</span>
                   <span>Total: {formatMontant(total)} GNF</span>
                   <span className="font-semibold text-indigo-600">Reste: {formatMontant(restant)} GNF</span>
@@ -257,10 +257,10 @@ export default function PaiementLibreModal({
               {/* ⭐ CHAMP DE SAISIE DU MONTANT */}
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-medium mb-2">
-                  Montant à payer * <span className="text-gray-400 text-xs">(saisie libre)</span>
+                  Montant à payer * <span className="text-gray-900 text-xs">(saisie libre)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">GNF</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 font-semibold">GNF</span>
                   <input
                     type="text"
                     value={montantSaisi}
@@ -302,11 +302,10 @@ export default function PaiementLibreModal({
                       key={value}
                       type="button"
                       onClick={() => setModePaiement(value)}
-                      className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${
-                        modePaiement === value
-                          ? `border-${color}-500 bg-${color}-50`
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition ${modePaiement === value
+                        ? `border-${color}-500 bg-${color}-50`
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
                     >
                       <Icon className={`w-6 h-6 text-${color}-600`} />
                       <span className="text-xs text-black">{label}</span>
@@ -326,7 +325,7 @@ export default function PaiementLibreModal({
                     placeholder={modePaiement === 'orange_money' ? 'Ex: #OM-123456789' : 'Ex: VISA-****-1234'}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-900 mt-1">
                     {modePaiement === 'orange_money'
                       ? 'Entrez le numéro de transaction reçu par SMS'
                       : 'Entrez le numéro de transaction de votre carte'}
@@ -347,21 +346,20 @@ export default function PaiementLibreModal({
               <button
                 onClick={handlePaiement}
                 disabled={
-                  !modePaiement || 
-                  paying || 
-                  !montantSaisi || 
+                  !modePaiement ||
+                  paying ||
+                  !montantSaisi ||
                   parseInt(montantSaisi.replace(/\s/g, '')) <= 0 ||
                   parseInt(montantSaisi.replace(/\s/g, '')) > restant
                 }
-                className={`w-full py-3 rounded-lg font-semibold transition ${
-                  !modePaiement || 
-                  paying || 
-                  !montantSaisi || 
+                className={`w-full py-3 rounded-lg font-semibold transition ${!modePaiement ||
+                  paying ||
+                  !montantSaisi ||
                   parseInt(montantSaisi.replace(/\s/g, '')) <= 0 ||
                   parseInt(montantSaisi.replace(/\s/g, '')) > restant
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                }`}
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
               >
                 {paying ? (
                   <>
@@ -390,14 +388,14 @@ export default function PaiementLibreModal({
                           </div>
                           <div className="text-right">
                             <span className="font-medium text-green-600">{formatMontant(e.montant)} GNF</span>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-900">
                               {e.date_paiement ? new Date(e.date_paiement).toLocaleDateString('fr-FR') : 'Date inconnue'}
                             </p>
                           </div>
                         </div>
                       ))}
                     {echeances.filter(e => e.statut === 'paye').length === 0 && (
-                      <p className="text-sm text-gray-500 text-center py-2">Aucun paiement effectué</p>
+                      <p className="text-sm text-gray-900 text-center py-2">Aucun paiement effectué</p>
                     )}
                   </div>
                 </div>

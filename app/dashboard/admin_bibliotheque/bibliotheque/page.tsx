@@ -264,7 +264,7 @@ export default function BibliothequePage() {
             <Library className="w-7 h-7 text-purple-600" />
             Gestion de la Bibliothèque
           </h1>
-          <p className="text-gray-500 mt-1">Gérez les livres et les emprunts</p>
+          <p className="text-gray-900 mt-1">Gérez les livres et les emprunts</p>
         </div>
         <div className="flex gap-2">
           <Link
@@ -288,19 +288,19 @@ export default function BibliothequePage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-500">Total livres</p><p className="text-2xl font-bold text-blue-600">{stats.totalLivres}</p></div>
+          <div><p className="text-sm text-gray-900">Total livres</p><p className="text-2xl font-bold text-blue-600">{stats.totalLivres}</p></div>
           <BookOpen className="text-blue-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-500">Disponibles</p><p className="text-2xl font-bold text-green-600">{stats.livresDispos}</p></div>
+          <div><p className="text-sm text-gray-900">Disponibles</p><p className="text-2xl font-bold text-green-600">{stats.livresDispos}</p></div>
           <CheckCircle className="text-green-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-orange-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-500">Emprunts en cours</p><p className="text-2xl font-bold text-orange-600">{stats.empruntsActifs}</p></div>
+          <div><p className="text-sm text-gray-900">Emprunts en cours</p><p className="text-2xl font-bold text-orange-600">{stats.empruntsActifs}</p></div>
           <BookMarked className="text-orange-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-red-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-500">En retard</p><p className="text-2xl font-bold text-red-600">{stats.empruntsRetard}</p></div>
+          <div><p className="text-sm text-gray-900">En retard</p><p className="text-2xl font-bold text-red-600">{stats.empruntsRetard}</p></div>
           <AlertCircle className="text-red-200 w-10 h-10" />
         </div>
       </div>
@@ -310,8 +310,8 @@ export default function BibliothequePage() {
           <button
             onClick={() => setActiveTab("livres")}
             className={`px-6 py-4 font-medium transition-colors ${activeTab === "livres"
-                ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
-                : "text-gray-600 hover:bg-gray-50"
+              ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
+              : "text-gray-600 hover:bg-gray-50"
               }`}
           >
             <BookOpen className="w-4 h-4 inline mr-2" />
@@ -320,8 +320,8 @@ export default function BibliothequePage() {
           <button
             onClick={() => setActiveTab("emprunts")}
             className={`px-6 py-4 font-medium transition-colors ${activeTab === "emprunts"
-                ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
-                : "text-gray-600 hover:bg-gray-50"
+              ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
+              : "text-gray-600 hover:bg-gray-50"
               }`}
           >
             <BookMarked className="w-4 h-4 inline mr-2" />
@@ -331,7 +331,7 @@ export default function BibliothequePage() {
 
         <div className="p-4 border-b flex flex-wrap justify-between gap-2 bg-gray-50/50">
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 w-4 h-4" />
             <input
               type="text"
               placeholder="Rechercher..."
@@ -391,13 +391,13 @@ export default function BibliothequePage() {
                             </div>
                           ) : (
                             <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <BookOpen className="w-6 h-6 text-gray-400" />
+                              <BookOpen className="w-6 h-6 text-gray-900" />
                             </div>
                           )}
                           <div>
                             <p className="font-medium text-gray-900">{l.titre}</p>
-                            <p className="text-sm text-gray-500">{l.auteur}</p>
-                            <p className="text-xs text-gray-400">ISBN: {l.isbn || 'N/A'}</p>
+                            <p className="text-sm text-gray-900">{l.auteur}</p>
+                            <p className="text-xs text-gray-900">ISBN: {l.isbn || 'N/A'}</p>
                           </div>
                         </div>
                       </td>
@@ -408,7 +408,7 @@ export default function BibliothequePage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="text-sm font-medium text-gray-900">{emplacement?.nom || l.emplacement || "-"}</div>
-                        {emplacement && <div className="text-xs text-gray-400">{emplacement.zone}</div>}
+                        {emplacement && <div className="text-xs text-gray-900">{emplacement.zone}</div>}
                       </td>
                       <td className="px-4 py-3 text-center font-medium">{l.quantite}</td>
                       <td className="px-4 py-3 text-center">
@@ -444,7 +444,7 @@ export default function BibliothequePage() {
                 })}
                 {filteredLivres.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-900">
                       <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                       <p className="font-medium">Aucun livre trouvé</p>
                     </td>
@@ -475,12 +475,12 @@ export default function BibliothequePage() {
                     <td className="px-4 py-3 font-medium text-gray-900">{e.livre_titre}</td>
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-900">{e.eleve_nom}</div>
-                      <div className="text-xs text-gray-400">{e.classe_nom}</div>
+                      <div className="text-xs text-gray-900">{e.classe_nom}</div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-gray-900 text-xs">
                       {new Date(e.date_emprunt).toLocaleDateString('fr-FR')}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-gray-900 text-xs">
                       {new Date(e.date_retour_prevue).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -508,7 +508,7 @@ export default function BibliothequePage() {
                 ))}
                 {filteredEmprunts.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-900">
                       <BookMarked className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                       <p className="font-medium">Aucun emprunt trouvé</p>
                     </td>
@@ -528,7 +528,7 @@ export default function BibliothequePage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingLivre ? "Modifier le livre" : "Ajouter un livre"}
               </h2>
-              <button onClick={() => setShowLivreForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowLivreForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -553,9 +553,9 @@ export default function BibliothequePage() {
                     </div>
                   ) : (
                     <div className="text-center">
-                      <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                      <ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" />
                       <p className="text-sm text-gray-600">Cliquez pour ajouter une image</p>
-                      <p className="text-xs text-gray-400">PNG, JPG, WEBP</p>
+                      <p className="text-xs text-gray-900">PNG, JPG, WEBP</p>
                     </div>
                   )}
                 </div>
@@ -622,7 +622,7 @@ export default function BibliothequePage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md border border-gray-100">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-900">Nouvel emprunt</h2>
-              <button onClick={() => setShowEmpruntForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowEmpruntForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>

@@ -178,10 +178,10 @@ export default function ReinscriptionForm() {
       if (enfant.classe) {
         const matchedClass = classes.find(c => c.nom === enfant.classe);
         if (matchedClass) {
-          const montant = matchedClass.reinscription_total_versement || 
-                         matchedClass.total_versement || 
-                         matchedClass.frais_inscription || 
-                         0;
+          const montant = matchedClass.reinscription_total_versement ||
+            matchedClass.total_versement ||
+            matchedClass.frais_inscription ||
+            0;
           total += montant;
         }
       }
@@ -868,7 +868,7 @@ export default function ReinscriptionForm() {
               <Users className="w-8 h-8 text-blue-600" />
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Informations des parents</h2>
-                <p className="text-gray-500 text-sm">Renseignez les informations du père et de la mère</p>
+                <p className="text-gray-900 text-sm">Renseignez les informations du père et de la mère</p>
               </div>
             </div>
 
@@ -894,7 +894,7 @@ export default function ReinscriptionForm() {
                 <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center">
                   <Heart className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-pink-900">Informations de la Mère <span className="text-gray-400 text-sm font-normal">(optionnel)</span></h3>
+                <h3 className="text-lg font-semibold text-pink-900">Informations de la Mère <span className="text-gray-900 text-sm font-normal">(optionnel)</span></h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div><label className="block text-gray-700 mb-2 text-sm font-medium">Nom</label><input type="text" name="nom" value={mereInfo.nom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Nom de la mère" /></div>
@@ -912,7 +912,7 @@ export default function ReinscriptionForm() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">Informations communes</h3>
               </div>
-              <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
+              <p className="text-sm text-gray-900 mb-4 flex items-center gap-1">
                 <CheckCircle className="w-4 h-4 text-blue-500" />
                 Cet email sera utilisé par les deux parents pour se connecter à la plateforme.
               </p>
@@ -1001,7 +1001,7 @@ export default function ReinscriptionForm() {
               <Upload className="w-8 h-8 text-blue-600" />
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Documents</h2>
-                <p className="text-sm text-gray-500">Téléchargez les documents pour chaque enfant <span className="text-gray-400">(optionnel)</span></p>
+                <p className="text-sm text-gray-900">Téléchargez les documents pour chaque enfant <span className="text-gray-900">(optionnel)</span></p>
               </div>
             </div>
             <p className="text-gray-900">Vous pouvez télécharger les documents pour chaque enfant (facultatif)</p>
@@ -1010,22 +1010,22 @@ export default function ReinscriptionForm() {
                 <h3 className="font-semibold text-blue-800 mb-4">{enfant.prenom || "Enfant"} {enfant.nom || ""} - Documents</h3>
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Extrait d'acte de naissance <span className="text-gray-400 text-sm">(optionnel)</span></label>
+                    <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
+                    <label className="block text-gray-700 font-medium mb-2">Extrait d'acte de naissance <span className="text-gray-900 text-sm">(optionnel)</span></label>
                     <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" id={`acte_${idx}`} onChange={(e) => handleFileChange(idx, 'acteNaissance', e.target.files?.[0] || null)} />
                     <button type="button" onClick={() => document.getElementById(`acte_${idx}`)?.click()} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
                     {enfant.acteNaissance && <p className="text-sm text-green-600 mt-2">✓ {enfant.acteNaissance.name}</p>}
                   </div>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Photo d'identité <span className="text-gray-400 text-sm">(optionnel)</span></label>
+                    <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
+                    <label className="block text-gray-700 font-medium mb-2">Photo d'identité <span className="text-gray-900 text-sm">(optionnel)</span></label>
                     <input type="file" accept=".jpg,.jpeg,.png" className="hidden" id={`photo_${idx}`} onChange={(e) => handleFileChange(idx, 'photo', e.target.files?.[0] || null)} />
                     <button type="button" onClick={() => document.getElementById(`photo_${idx}`)?.click()} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
                     {enfant.photo && <p className="text-sm text-green-600 mt-2">✓ {enfant.photo.name}</p>}
                   </div>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Bulletin scolaire <span className="text-gray-400 text-sm">(optionnel)</span></label>
+                    <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
+                    <label className="block text-gray-700 font-medium mb-2">Bulletin scolaire <span className="text-gray-900 text-sm">(optionnel)</span></label>
                     <input type="file" accept=".pdf" className="hidden" id={`bulletin_${idx}`} onChange={(e) => handleFileChange(idx, 'bulletin', e.target.files?.[0] || null)} />
                     <button type="button" onClick={() => document.getElementById(`bulletin_${idx}`)?.click()} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
                     {enfant.bulletin && <p className="text-sm text-green-600 mt-2">✓ {enfant.bulletin.name}</p>}
@@ -1044,10 +1044,10 @@ export default function ReinscriptionForm() {
               <>
                 <p className="text-gray-900">Créez un mot de passe pour accéder à la plateforme</p>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3"><p className="text-xs font-semibold text-blue-700 mb-1">Père</p><p className="text-sm text-gray-800 font-medium">{pereInfo.prenom} {pereInfo.nom}</p><p className="text-xs text-gray-500">{pereInfo.phone}</p>{pereInfo.profession && <p className="text-xs text-gray-500">{pereInfo.profession}</p>}</div>
-                  {(mereInfo.nom || mereInfo.prenom) && (<div className="bg-pink-50 border border-pink-200 rounded-lg p-3"><p className="text-xs font-semibold text-pink-700 mb-1">Mère</p><p className="text-sm text-gray-800 font-medium">{mereInfo.prenom} {mereInfo.nom}</p><p className="text-xs text-gray-500">{mereInfo.phone}</p>{mereInfo.profession && <p className="text-xs text-gray-500">{mereInfo.profession}</p>}</div>)}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3"><p className="text-xs font-semibold text-blue-700 mb-1">Père</p><p className="text-sm text-gray-800 font-medium">{pereInfo.prenom} {pereInfo.nom}</p><p className="text-xs text-gray-900">{pereInfo.phone}</p>{pereInfo.profession && <p className="text-xs text-gray-900">{pereInfo.profession}</p>}</div>
+                  {(mereInfo.nom || mereInfo.prenom) && (<div className="bg-pink-50 border border-pink-200 rounded-lg p-3"><p className="text-xs font-semibold text-pink-700 mb-1">Mère</p><p className="text-sm text-gray-800 font-medium">{mereInfo.prenom} {mereInfo.nom}</p><p className="text-xs text-gray-900">{mereInfo.phone}</p>{mereInfo.profession && <p className="text-xs text-gray-900">{mereInfo.profession}</p>}</div>)}
                 </div>
-                <p className="text-sm text-gray-500"> Email commun : <strong>{compteInfo.email}</strong></p>
+                <p className="text-sm text-gray-900"> Email commun : <strong>{compteInfo.email}</strong></p>
                 <div><label className="block text-gray-900 mb-2">Mot de passe *</label><input type={showPassword ? "text" : "password"} name="password" value={compteInfo.password} onChange={handleCompteChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Minimum 6 caractères" required /></div>
                 <div><label className="block text-gray-900 mb-2">Confirmer le mot de passe *</label><input type={showPassword ? "text" : "password"} name="confirmPassword" value={compteInfo.confirmPassword} onChange={handleCompteChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Retapez votre mot de passe" required /></div>
                 {compteInfo.password !== compteInfo.confirmPassword && compteInfo.confirmPassword && <p className="text-red-500 text-sm">Les mots de passe ne correspondent pas</p>}
@@ -1064,7 +1064,7 @@ export default function ReinscriptionForm() {
               <ShoppingCart className="w-8 h-8 text-blue-600" />
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Services optionnels</h2>
-                <p className="text-gray-500 text-sm">Vous pouvez choisir les services supplémentaires pour vos enfants</p>
+                <p className="text-gray-900 text-sm">Vous pouvez choisir les services supplémentaires pour vos enfants</p>
               </div>
             </div>
 
@@ -1110,7 +1110,7 @@ export default function ReinscriptionForm() {
                       <button onClick={fetchOptionalSupplies} className="mt-2 text-blue-600 underline text-sm">Réessayer</button>
                     </div>
                   ) : supplies.length === 0 ? (
-                    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
                       <p>Aucune fourniture optionnelle disponible.</p>
                     </div>
                   ) : (
@@ -1122,7 +1122,7 @@ export default function ReinscriptionForm() {
                             <div className="flex-1">
                               <p className="font-medium text-gray-800">{item.nom}</p>
                               <p className="text-sm text-gray-800">{item.prix_unitaire.toLocaleString()} GNF</p>
-                              <p className="text-xs text-gray-500">Stock: {item.quantite_stock}</p>
+                              <p className="text-xs text-gray-900">Stock: {item.quantite_stock}</p>
                             </div>
                             <div className="flex items-center gap-3">
                               <button
@@ -1155,7 +1155,7 @@ export default function ReinscriptionForm() {
                   )}
                 </>
               ) : (
-                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
                   <p className="text-sm">✅ Vous avez choisi de ne pas commander de fournitures optionnelles.</p>
                 </div>
               )}
@@ -1198,7 +1198,7 @@ export default function ReinscriptionForm() {
                       <span className="ml-2 text-gray-600">Chargement des options de transport...</span>
                     </div>
                   ) : transportOptions.length === 0 ? (
-                    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
                       <p>Aucune option de transport disponible pour le moment.</p>
                       <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
                     </div>
@@ -1211,12 +1211,12 @@ export default function ReinscriptionForm() {
                             <div>
                               <p className="font-medium text-gray-800">{item.nom}</p>
                               {item.prix > 0 ? (
-                                <p className="text-sm text-gray-500">{item.prix.toLocaleString()} GNF</p>
+                                <p className="text-sm text-gray-900">{item.prix.toLocaleString()} GNF</p>
                               ) : (
-                                <p className="text-sm text-gray-400">Prix non défini</p>
+                                <p className="text-sm text-gray-900">Prix non défini</p>
                               )}
                               {item.horaireMatin && item.horaireSoir && (
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-900">
                                   Horaire : {item.horaireMatin} - {item.horaireSoir}
                                 </p>
                               )}
@@ -1229,7 +1229,7 @@ export default function ReinscriptionForm() {
                                 ? "bg-green-600 text-white hover:bg-green-700"
                                 : item.prix > 0
                                   ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                  : "bg-gray-100 text-gray-900 cursor-not-allowed"
                                 }`}
                             >
                               {item.selected ? "✓ Sélectionné" : item.prix > 0 ? "Ajouter" : "Indisponible"}
@@ -1246,7 +1246,7 @@ export default function ReinscriptionForm() {
                   )}
                 </>
               ) : (
-                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
                   <p className="text-sm">✅ Vous avez choisi de ne pas utiliser le transport scolaire.</p>
                   <p className="text-xs mt-1">Vous pourrez vous inscrire plus tard.</p>
                 </div>
@@ -1290,7 +1290,7 @@ export default function ReinscriptionForm() {
                       <span className="ml-2 text-gray-600">Chargement des menus...</span>
                     </div>
                   ) : cantineOptions.length === 0 ? (
-                    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                    <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
                       <p>Aucun menu disponible pour le moment.</p>
                       <p className="text-sm mt-1">Vous pourrez vous inscrire plus tard.</p>
                     </div>
@@ -1305,16 +1305,16 @@ export default function ReinscriptionForm() {
                               {item.prix_annuel > 0 ? (
                                 <p className="text-sm text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
                               ) : (
-                                <p className="text-sm text-gray-400">Prix non défini</p>
+                                <p className="text-sm text-gray-900">Prix non défini</p>
                               )}
                               {item.plat && (
-                                <p className="text-xs text-gray-500">{item.plat}</p>
+                                <p className="text-xs text-gray-900">{item.plat}</p>
                               )}
                               {item.accompagnement && (
-                                <p className="text-xs text-gray-400">+ {item.accompagnement}</p>
+                                <p className="text-xs text-gray-900">+ {item.accompagnement}</p>
                               )}
                               {item.dessert && (
-                                <p className="text-xs text-gray-400">{item.dessert}</p>
+                                <p className="text-xs text-gray-900">{item.dessert}</p>
                               )}
                               {item.regime_special && (
                                 <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Régime spécial</span>
@@ -1328,7 +1328,7 @@ export default function ReinscriptionForm() {
                                 ? "bg-orange-600 text-white hover:bg-orange-700"
                                 : item.prix_annuel > 0
                                   ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                  : "bg-gray-100 text-gray-900 cursor-not-allowed"
                                 }`}
                             >
                               {item.selected ? "✓ Sélectionné" : item.prix_annuel > 0 ? "Ajouter" : "Indisponible"}
@@ -1345,7 +1345,7 @@ export default function ReinscriptionForm() {
                   )}
                 </>
               ) : (
-                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
                   <p className="text-sm">✅ Vous avez choisi de ne pas utiliser la cantine scolaire.</p>
                   <p className="text-xs mt-1">Vous pourrez vous inscrire plus tard.</p>
                 </div>

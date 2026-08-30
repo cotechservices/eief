@@ -33,7 +33,7 @@ export default function AproposPage() {
         <div className="absolute inset-0 z-0">
           <Image
             src="/img/slide2.jpg"
-            alt="École Internationale des Enfants Futur"
+            alt="École Internationale les Enfants du Futur"
             fill
             className="object-cover"
             priority
@@ -48,7 +48,7 @@ export default function AproposPage() {
                 À propos de notre école
               </h1>
               <p className="text-xl md:text-2xl text-blue-100 mb-6">
-                Découvrez l'histoire, la mission et les valeurs de l'École Internationale des Enfants Futur
+                Découvrez l'histoire, la mission et les valeurs de l'École Internationale les Enfants du Futur
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link
@@ -151,7 +151,7 @@ export default function AproposPage() {
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Notre histoire</h2>
               <div className="w-20 h-1 bg-blue-600 mb-6"></div>
               <p className="text-gray-900 text-lg leading-relaxed mb-4">
-                Fondée en 2010, l'École Internationale des Enfants Futur est née d'une vision :
+                Fondée en 2010, l'École Internationale les Enfants du Futur est née d'une vision :
                 offrir une éducation de qualité accessible à tous, qui prépare les enfants aux défis du monde moderne.
               </p>
               <p className="text-gray-900 text-lg leading-relaxed mb-4">

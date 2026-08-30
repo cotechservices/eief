@@ -63,7 +63,7 @@ export default function NouveauDevoirPage() {
 
       if (!profilRes.ok) {
         const data = await profilRes.json();
-        throw new Error(data.error || "Erreur lors du chargement du profil");
+        throw new Error(data.error || "Connexion instable lors du chargement du profil");
       }
 
       const classesData = await classesRes.json();
@@ -250,7 +250,7 @@ export default function NouveauDevoirPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       <Link
         href="/dashboard/enseignant/devoirs"
-        className="inline-flex items-center gap-2 text-gray-500 hover:text-orange-600 text-sm font-medium transition"
+        className="inline-flex items-center gap-2 text-gray-900 hover:text-orange-600 text-sm font-medium transition"
       >
         <ArrowLeft className="w-4 h-4" /> Retour aux devoirs
       </Link>
@@ -289,7 +289,7 @@ export default function NouveauDevoirPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-gray-400" /> Classe *
+                <BookOpen className="w-4 h-4 text-gray-900" /> Classe *
               </label>
               <select
                 name="classe_id"
@@ -310,7 +310,7 @@ export default function NouveauDevoirPage() {
                 <p className="text-xs text-orange-500">Aucune classe assignée. Contactez l'administrateur.</p>
               )}
               {enseignements.length > 0 && classes.length > 0 && (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-900">
                   {enseignements.length} enseignement(s) disponible(s)
                 </p>
               )}
@@ -318,7 +318,7 @@ export default function NouveauDevoirPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-gray-400" /> Date limite *
+                <Calendar className="w-4 h-4 text-gray-900" /> Date limite *
               </label>
               <input
                 type="date"
@@ -349,7 +349,7 @@ export default function NouveauDevoirPage() {
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-              <ImageIcon className="w-4 h-4 text-gray-400" />
+              <ImageIcon className="w-4 h-4 text-gray-900" />
               Image du sujet (optionnel)
             </label>
 
@@ -402,7 +402,7 @@ export default function NouveauDevoirPage() {
               )}
             </div>
 
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-900">
               Formats acceptés : JPG, PNG, GIF. Taille max : 5MB.
               {uploadedImageUrl && (
                 <span className="block text-green-600 mt-1">
@@ -430,8 +430,8 @@ export default function NouveauDevoirPage() {
               type="submit"
               disabled={submitLoading || classes.length === 0 || uploadingImage || success}
               className={`px-8 py-3 rounded-xl font-bold shadow-md transition flex items-center gap-2 ${success
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-orange-600 text-white hover:bg-orange-700'
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-orange-600 text-white hover:bg-orange-700'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {submitLoading ? (

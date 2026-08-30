@@ -314,19 +314,19 @@ export default function GestionReinscriptionsPage() {
 
   const handlePaiementSuccess = () => {
     if (paiementReinscription) {
-      setReinscriptions(prev => 
-        prev.map(p => 
-          p.id === paiementReinscription.id 
-            ? { ...p, frais_statut: 'paye' } 
+      setReinscriptions(prev =>
+        prev.map(p =>
+          p.id === paiementReinscription.id
+            ? { ...p, frais_statut: 'paye' }
             : p
         )
       );
     }
-    
+
     setTimeout(() => {
       triggerRefresh();
     }, 300);
-    
+
     addNotification("success", "Paiement enregistré avec succès");
   };
 
@@ -515,16 +515,16 @@ export default function GestionReinscriptionsPage() {
             className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            Réinscription anciens 
+            Réinscription anciens
           </button>
-         <button
+          <button
             onClick={() => setShowCreateModal(true)}
             className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Nouvelle réinscription
           </button>
-          
+
           <button
             onClick={exportToExcel}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
@@ -672,14 +672,14 @@ export default function GestionReinscriptionsPage() {
                               <CreditCard className="w-4 h-4" />
                             </button>
                           )}
-                          <button 
-                            onClick={() => { 
-                              setSelectedReinscription(p); 
-                              setObservations(p.observations || ""); 
-                              loadReinscriptionDetail(p.id); 
-                              setShowDetailModal(true); 
-                            }} 
-                            className="text-blue-600 hover:text-blue-700 transition" 
+                          <button
+                            onClick={() => {
+                              setSelectedReinscription(p);
+                              setObservations(p.observations || "");
+                              loadReinscriptionDetail(p.id);
+                              setShowDetailModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-700 transition"
                             title="Voir détails"
                           >
                             <Eye className="w-4 h-4" />
@@ -981,18 +981,18 @@ export default function GestionReinscriptionsPage() {
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div 
-                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500" 
-                            style={{ 
-                              width: `${Math.min(100, (reinscriptionDetail.details_frais.paye / reinscriptionDetail.details_frais.total) * 100)}%` 
-                            }} 
+                          <div
+                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                            style={{
+                              width: `${Math.min(100, (reinscriptionDetail.details_frais.paye / reinscriptionDetail.details_frais.total) * 100)}%`
+                            }}
                           />
                         </div>
                       </div>
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-4 text-gray-500">
+                  <div className="text-center py-4 text-gray-900">
                     <p>Chargement des informations de frais...</p>
                   </div>
                 )}
@@ -1025,11 +1025,11 @@ export default function GestionReinscriptionsPage() {
                     const auMoinsUnePayee = reinscriptionDetail?.echeances_paiement?.some(
                       (e: any) => e.type === 'reinscription' && e.statut === 'paye'
                     ) || false;
-                    
-                    const peutValider = selectedReinscription.frais_statut === 'paye' || 
-                                        selectedReinscription.frais_statut === 'partiel' ||
-                                        auMoinsUnePayee;
-                    
+
+                    const peutValider = selectedReinscription.frais_statut === 'paye' ||
+                      selectedReinscription.frais_statut === 'partiel' ||
+                      auMoinsUnePayee;
+
                     return peutValider ? (
                       <button
                         onClick={() => handleUpdateStatut(selectedReinscription.id, "valide")}
@@ -1092,16 +1092,16 @@ export default function GestionReinscriptionsPage() {
 
       {/* ⭐ MODAL DE CRÉATION DE RÉINSCRIPTION */}
       {showCreateModal && (
-      <AdminReinscriptionModal
-        isOpen={showCreateModal}
-        onClose={() => {
-          setShowCreateModal(false);
-        }}
-        onSuccess={() => {
-          triggerRefresh();
-          addNotification("success", "Réinscription créée avec succès");
-          setShowCreateModal(false);
-        }}
+        <AdminReinscriptionModal
+          isOpen={showCreateModal}
+          onClose={() => {
+            setShowCreateModal(false);
+          }}
+          onSuccess={() => {
+            triggerRefresh();
+            addNotification("success", "Réinscription créée avec succès");
+            setShowCreateModal(false);
+          }}
         />
       )}
     </div>

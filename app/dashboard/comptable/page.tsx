@@ -74,14 +74,14 @@ export default function ComptableDashboard() {
             Cantine: "bg-orange-500",
             Transport: "bg-purple-500",
             Bibliotheque: "bg-teal-500",
-            Autre: "bg-gray-500",
+            Autre: "bg-gray-900",
           };
 
           if (data.categoriesRecettes) {
             data.categoriesRecettes = data.categoriesRecettes.map((cat: any) => ({
               ...cat,
               icon: iconMap[cat.name] || DollarSign,
-              color: colorMap[cat.name] || "bg-gray-500"
+              color: colorMap[cat.name] || "bg-gray-900"
             }));
           }
 

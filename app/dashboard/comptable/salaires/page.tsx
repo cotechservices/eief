@@ -91,7 +91,7 @@ export default function SalairesPage() {
 
   const openPdfModal = (emp: any) => {
     setSelectedEmpForPdf(emp);
-    setDeductions([]); 
+    setDeductions([]);
     setIsModalOpen(true);
   };
 
@@ -126,7 +126,7 @@ export default function SalairesPage() {
         salaireBrut: Number(selectedEmpForPdf.salaireBase) || 0,
         deductions: deductions.map(d => ({ ...d, montant: Number(d.montant) })),
         dateEmission: new Date().toLocaleDateString('fr-FR'),
-        directeurNom: "TAMBA SOSSO DEMBADOUNO", 
+        directeurNom: "TAMBA SOSSO DEMBADOUNO",
       };
 
       const response = await fetch('/api/comptable/salaires/bulletin', {
@@ -275,7 +275,7 @@ export default function SalairesPage() {
                           <button className="text-blue-600 hover:text-blue-700">
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => openPdfModal(employe)}
                             className="text-gray-900 hover:text-gray-900"
                             title="Générer le bulletin de paie"
@@ -289,7 +289,7 @@ export default function SalairesPage() {
                 })}
                 {filteredEmployes.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-8 text-center text-gray-900">
                       Aucun employé trouvé.
                     </td>
                   </tr>
@@ -309,22 +309,22 @@ export default function SalairesPage() {
                 <Printer className="w-5 h-5 text-blue-600" />
                 Générer Bulletin: {selectedEmpForPdf.prenom} {selectedEmpForPdf.nom}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:bg-gray-200 hover:text-gray-700 p-2 rounded-full transition">
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-900 hover:bg-gray-200 hover:text-gray-700 p-2 rounded-full transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-6 flex-1 overflow-y-auto space-y-6">
               <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-500 font-medium mb-1">Période</p>
+                    <p className="text-sm text-gray-900 font-medium mb-1">Période</p>
                     <p className="font-semibold text-gray-900 capitalize bg-white px-3 py-2 rounded-lg border border-blue-100 inline-block shadow-sm">
                       {moisList.find(m => m.value === selectedMois)?.label} {selectedAnnee}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 font-medium mb-1">Salaire de Base</p>
+                    <p className="text-sm text-gray-900 font-medium mb-1">Salaire de Base</p>
                     <p className="font-semibold text-gray-900 bg-white px-3 py-2 rounded-lg border border-blue-100 inline-block shadow-sm">
                       {(Number(selectedEmpForPdf.salaireBase) || 0).toLocaleString()} GNF
                     </p>
@@ -335,19 +335,19 @@ export default function SalairesPage() {
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-gray-900">Déductions / Avances / Bons</h3>
-                  <button 
+                  <button
                     onClick={addDeduction}
                     className="flex items-center gap-1.5 text-sm font-medium bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition active:scale-95"
                   >
                     <Plus className="w-4 h-4" /> Ajouter
                   </button>
                 </div>
-                
+
                 {deductions.length === 0 ? (
                   <div className="py-8 text-center bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center">
                     <CreditCard className="w-8 h-8 text-gray-300 mb-2" />
-                    <p className="text-gray-500 font-medium">Aucune déduction ajoutée</p>
-                    <p className="text-gray-400 text-sm mt-1">Cliquez sur Ajouter pour inclure des avances ou bons</p>
+                    <p className="text-gray-900 font-medium">Aucune déduction ajoutée</p>
+                    <p className="text-gray-900 text-sm mt-1">Cliquez sur Ajouter pour inclure des avances ou bons</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -355,17 +355,17 @@ export default function SalairesPage() {
                       <div key={index} className="flex gap-3 items-start bg-white p-4 rounded-xl border shadow-sm relative group hover:border-blue-300 transition-colors">
                         <div className="flex-1 space-y-1.5">
                           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Date</label>
-                          <input 
-                            type="date" 
-                            value={ded.date} 
+                          <input
+                            type="date"
+                            value={ded.date}
                             onChange={e => updateDeduction(index, 'date', e.target.value)}
                             className="w-full text-sm border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 p-2 border transition-all"
                           />
                         </div>
                         <div className="flex-1 space-y-1.5">
                           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Type</label>
-                          <select 
-                            value={ded.type} 
+                          <select
+                            value={ded.type}
                             onChange={e => updateDeduction(index, 'type', e.target.value)}
                             className="w-full text-sm border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 p-2 border bg-white transition-all"
                           >
@@ -377,27 +377,27 @@ export default function SalairesPage() {
                         </div>
                         <div className="flex-[2] space-y-1.5">
                           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Motif</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             placeholder="Ex: Avance sur salaire"
-                            value={ded.motif} 
+                            value={ded.motif}
                             onChange={e => updateDeduction(index, 'motif', e.target.value)}
                             className="w-full text-sm border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 p-2 border transition-all"
                           />
                         </div>
                         <div className="flex-1 space-y-1.5">
                           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Montant (GNF)</label>
-                          <input 
-                            type="number" 
-                            value={ded.montant} 
+                          <input
+                            type="number"
+                            value={ded.montant}
                             onChange={e => updateDeduction(index, 'montant', e.target.value)}
                             className="w-full text-sm border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 p-2 border transition-all"
                           />
                         </div>
                         <div className="pt-7">
-                          <button 
+                          <button
                             onClick={() => removeDeduction(index)}
-                            className="text-gray-400 hover:text-red-600 p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                            className="text-gray-900 hover:text-red-600 p-2 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
                             title="Supprimer"
                           >
                             <Trash className="w-4 h-4" />
@@ -407,36 +407,36 @@ export default function SalairesPage() {
                     ))}
                   </div>
                 )}
-                
+
                 <div className="mt-6 flex justify-end">
-                   <div className="text-right bg-gray-50 p-4 rounded-xl border border-gray-100 min-w-[250px]">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-gray-500">Total Déductions</span>
-                        <span className="text-lg font-bold text-red-600">
-                          - {deductions.reduce((sum, d) => sum + Number(d.montant || 0), 0).toLocaleString()} GNF
-                        </span>
-                      </div>
-                      <div className="h-px bg-gray-200 my-2 w-full"></div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-bold text-gray-900">Net à Payer</span>
-                        <span className="text-xl font-black text-green-600">
-                          { ((Number(selectedEmpForPdf.salaireBase) || 0) - deductions.reduce((sum, d) => sum + Number(d.montant || 0), 0)).toLocaleString() } GNF
-                        </span>
-                      </div>
-                   </div>
+                  <div className="text-right bg-gray-50 p-4 rounded-xl border border-gray-100 min-w-[250px]">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-gray-900">Total Déductions</span>
+                      <span className="text-lg font-bold text-red-600">
+                        - {deductions.reduce((sum, d) => sum + Number(d.montant || 0), 0).toLocaleString()} GNF
+                      </span>
+                    </div>
+                    <div className="h-px bg-gray-200 my-2 w-full"></div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-gray-900">Net à Payer</span>
+                      <span className="text-xl font-black text-green-600">
+                        {((Number(selectedEmpForPdf.salaireBase) || 0) - deductions.reduce((sum, d) => sum + Number(d.montant || 0), 0)).toLocaleString()} GNF
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="px-5 py-2.5 text-gray-700 font-medium hover:bg-gray-200 rounded-xl transition"
                 disabled={isGenerating}
               >
                 Annuler
               </button>
-              <button 
+              <button
                 onClick={generateAndDownloadPdf}
                 disabled={isGenerating}
                 className="bg-blue-600 text-white font-medium px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-all flex items-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50 active:scale-95"

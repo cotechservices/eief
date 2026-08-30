@@ -29,7 +29,7 @@ import {
   MapPin,
   Smartphone,
   RefreshCw,
-  Download, 
+  Download,
   AlertTriangle
 } from "lucide-react";
 
@@ -180,7 +180,7 @@ export default function ListeElevesPage() {
 
   const getServiceBadge = (inscrit: boolean, statut: string) => {
     if (!inscrit) {
-      return <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs">Non inscrit</span>;
+      return <span className="bg-gray-100 text-gray-900 px-2 py-1 rounded-full text-xs">Non inscrit</span>;
     }
     if (statut === 'paye' || statut === 'valide') {
       return <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
@@ -255,15 +255,14 @@ export default function ListeElevesPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${
-              notification.type === "success"
-                ? "bg-green-50 border-l-4 border-green-500 text-green-800"
-                : notification.type === "error"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
+              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
+              : notification.type === "error"
                 ? "bg-red-50 border-l-4 border-red-500 text-red-800"
                 : notification.type === "warning"
-                ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-            }`}
+                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
+                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
+              }`}
           >
             <div className="flex-1">
               {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -274,7 +273,7 @@ export default function ListeElevesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-500 hover:text-gray-700 transition"
+              className="ml-4 text-gray-900 hover:text-gray-700 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -287,7 +286,7 @@ export default function ListeElevesPage() {
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Liste des élèves inscrits</h1>
-            <p className="text-gray-500">Tous les élèves de l'école</p>
+            <p className="text-gray-900">Tous les élèves de l'école</p>
           </div>
         </div>
       </div>
@@ -304,7 +303,7 @@ export default function ListeElevesPage() {
           </Link>
           <div className="flex-1 min-w-[250px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
               <input
                 type="text"
                 placeholder="Rechercher par nom, prénom, matricule, dossier ou email..."
@@ -335,8 +334,8 @@ export default function ListeElevesPage() {
       {/* Tableau */}
       {filteredByClasse.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">Aucun élève trouvé</p>
+          <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
+          <p className="text-gray-900">Aucun élève trouvé</p>
         </div>
       ) : (
         <>
@@ -345,14 +344,14 @@ export default function ListeElevesPage() {
               <table className="w-full min-w-[1400px]">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dossier</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matricule</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Photo</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enfant</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email Enfant</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Classe</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Dossier</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Matricule</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Photo</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Enfant</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Email Enfant</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Parent</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Classe</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-900 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -360,7 +359,7 @@ export default function ListeElevesPage() {
                     <tr key={e.id} className="hover:bg-gray-50">
                       <td className="px-4 py-4">
                         <span className="font-mono text-sm text-blue-600">{e.numero_dossier || '-'}</span>
-                        <p className="text-xs text-gray-500 mt-1">Inscrit: {new Date(e.date_inscription).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-900 mt-1">Inscrit: {new Date(e.date_inscription).toLocaleDateString()}</p>
                       </td>
                       <td className="px-4 py-4">
                         <span className="font-mono text-sm font-medium text-gray-800">{e.matricule}</span>
@@ -370,39 +369,39 @@ export default function ListeElevesPage() {
                           <img src={e.photo_url} alt="photo" className="w-10 h-10 rounded-full object-cover" />
                         ) : (
                           <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <Camera className="w-5 h-5 text-gray-400" />
+                            <Camera className="w-5 h-5 text-gray-900" />
                           </div>
                         )}
                       </td>
                       <td className="px-4 py-4">
                         <span className="font-medium text-gray-900">{e.enfant_prenom} {e.enfant_nom}</span>
-                        <p className="text-xs text-gray-500">{e.sexe === "M" ? "Garçon" : "Fille"}</p>
-                        <p className="text-xs text-gray-500">Né: {new Date(e.date_naissance).toLocaleDateString()}</p>
-                        {e.lieu_naissance && <p className="text-xs text-gray-500">{e.lieu_naissance}</p>}
+                        <p className="text-xs text-gray-900">{e.sexe === "M" ? "Garçon" : "Fille"}</p>
+                        <p className="text-xs text-gray-900">Né: {new Date(e.date_naissance).toLocaleDateString()}</p>
+                        {e.lieu_naissance && <p className="text-xs text-gray-900">{e.lieu_naissance}</p>}
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-1">
-                          <Mail className="w-3 h-3 text-gray-400" />
+                          <Mail className="w-3 h-3 text-gray-900" />
                           <span className="text-sm text-blue-600">{e.enfant_email || '-'}</span>
                         </div>
                       </td>
                       <td className="px-4 py-4">
                         <p className="text-sm text-gray-700">{e.parent_prenom} {e.parent_nom}</p>
                         <div className="flex items-center gap-1 mt-1">
-                          <Mail className="w-3 h-3 text-gray-400" />
+                          <Mail className="w-3 h-3 text-gray-900" />
                           <span className="text-xs text-blue-600">{e.parent_email}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-gray-400" />
-                          <span className="text-xs text-gray-500">{e.parent_telephone}</span>
+                          <Phone className="w-3 h-3 text-gray-900" />
+                          <span className="text-xs text-gray-900">{e.parent_telephone}</span>
                         </div>
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-1">
-                          <GraduationCap className="w-4 h-4 text-gray-400" />
+                          <GraduationCap className="w-4 h-4 text-gray-900" />
                           <span className="text-gray-700">{e.classe_nom}</span>
                         </div>
-                        <p className="text-xs text-gray-500">{e.niveau}</p>
+                        <p className="text-xs text-gray-900">{e.niveau}</p>
                       </td>
                       <td className="px-4 py-4">{getStatutBadge(e.statut)}</td>
                       <td className="px-4 py-4">
@@ -441,7 +440,7 @@ export default function ListeElevesPage() {
           {totalPages > 1 && (
             <div className="bg-white rounded-xl shadow-sm p-4">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-900">
                   Affichage de <span className="font-medium text-gray-700">{startIndex + 1}</span> à{' '}
                   <span className="font-medium text-gray-700">{Math.min(endIndex, filteredByClasse.length)}</span>{' '}
                   sur <span className="font-medium text-gray-700">{filteredByClasse.length}</span> élèves
@@ -459,7 +458,7 @@ export default function ListeElevesPage() {
                   <div className="flex gap-1">
                     {getPageNumbers().map((page, index) => (
                       page === '...' ? (
-                        <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-500">...</span>
+                        <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-900">...</span>
                       ) : (
                         <button
                           key={page}
@@ -496,7 +495,7 @@ export default function ListeElevesPage() {
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-900">Fiche élève</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-500 hover:text-gray-700">
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-700">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -510,7 +509,7 @@ export default function ListeElevesPage() {
                     <img src={selectedEleve.photo_url} alt="Photo" className="w-32 h-32 rounded-lg object-cover shadow-md" />
                   ) : (
                     <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Camera className="w-12 h-12 text-gray-400" />
+                      <Camera className="w-12 h-12 text-gray-900" />
                     </div>
                   )}
                 </div>
@@ -518,19 +517,19 @@ export default function ListeElevesPage() {
                   <h3 className="text-2xl font-bold text-gray-900">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</h3>
                   <div className="grid grid-cols-2 gap-4 mt-2">
                     <div>
-                      <p className="text-sm text-gray-500">Matricule</p>
+                      <p className="text-sm text-gray-900">Matricule</p>
                       <p className="font-mono font-medium text-blue-600">{selectedEleve.matricule}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Numéro dossier</p>
+                      <p className="text-sm text-gray-900">Numéro dossier</p>
                       <p className="font-mono font-medium text-blue-600">{selectedEleve.numero_dossier || '-'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Email</p>
+                      <p className="text-sm text-gray-900">Email</p>
                       <p className="font-medium">{selectedEleve.enfant_email || '-'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Statut</p>
+                      <p className="text-sm text-gray-900">Statut</p>
                       <div className="flex items-center gap-2">
                         {getStatutBadge(selectedEleve.statut)}
                         <button
@@ -553,15 +552,15 @@ export default function ListeElevesPage() {
                 <h4 className="font-semibold text-gray-900 mb-3">Informations du parent</h4>
                 <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-500">Nom complet</p>
+                    <p className="text-sm text-gray-900">Nom complet</p>
                     <p className="font-medium">{selectedEleve.parent_prenom} {selectedEleve.parent_nom}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="text-sm text-gray-900">Email</p>
                     <p className="font-medium">{selectedEleve.parent_email}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Téléphone</p>
+                    <p className="text-sm text-gray-900">Téléphone</p>
                     <p className="font-medium">{selectedEleve.parent_telephone}</p>
                   </div>
                 </div>
@@ -572,27 +571,27 @@ export default function ListeElevesPage() {
                 <h4 className="font-semibold text-gray-900 mb-3">Informations de l'enfant</h4>
                 <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-500">Nom complet</p>
+                    <p className="text-sm text-gray-900">Nom complet</p>
                     <p className="font-medium">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Date de naissance</p>
+                    <p className="text-sm text-gray-900">Date de naissance</p>
                     <p className="font-medium">{new Date(selectedEleve.date_naissance).toLocaleDateString()}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Lieu de naissance</p>
+                    <p className="text-sm text-gray-900">Lieu de naissance</p>
                     <p className="font-medium">{selectedEleve.lieu_naissance || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Sexe</p>
+                    <p className="text-sm text-gray-900">Sexe</p>
                     <p className="font-medium">{selectedEleve.sexe === "M" ? "Masculin" : "Féminin"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Niveau</p>
+                    <p className="text-sm text-gray-900">Niveau</p>
                     <p className="font-medium">{selectedEleve.niveau}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Classe</p>
+                    <p className="text-sm text-gray-900">Classe</p>
                     <p className="font-medium">{selectedEleve.classe_nom}</p>
                   </div>
                 </div>
@@ -603,16 +602,16 @@ export default function ListeElevesPage() {
                 <h4 className="font-semibold text-gray-900 mb-3">Informations de paiement</h4>
                 <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-500">Montant des frais</p>
+                    <p className="text-sm text-gray-900">Montant des frais</p>
                     <p className="font-bold text-lg">{(selectedEleve.frais_montant || 0).toLocaleString()} GNF</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Statut paiement</p>
+                    <p className="text-sm text-gray-900">Statut paiement</p>
                     {getFraisBadge(selectedEleve.frais_statut)}
                   </div>
                   {selectedEleve.frais_mode_paiement && (
                     <div>
-                      <p className="text-sm text-gray-500">Mode de paiement</p>
+                      <p className="text-sm text-gray-900">Mode de paiement</p>
                       <p className="capitalize">{selectedEleve.frais_mode_paiement.replace("_", " ")}</p>
                     </div>
                   )}
@@ -651,7 +650,7 @@ export default function ListeElevesPage() {
                 <h2 className="text-xl font-bold text-gray-900">Modifier le statut</h2>
                 <button
                   onClick={() => setShowStatutModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-900 hover:text-gray-700"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -660,9 +659,9 @@ export default function ListeElevesPage() {
 
             <div className="p-6">
               <div className="mb-6">
-                <p className="text-sm text-gray-500">Élève</p>
+                <p className="text-sm text-gray-900">Élève</p>
                 <p className="font-medium text-lg">{selectedEleve.enfant_prenom} {selectedEleve.enfant_nom}</p>
-                <p className="text-sm text-gray-500">Matricule: {selectedEleve.matricule}</p>
+                <p className="text-sm text-gray-900">Matricule: {selectedEleve.matricule}</p>
               </div>
 
               <div className="space-y-3">
@@ -677,22 +676,19 @@ export default function ListeElevesPage() {
                       key={value}
                       type="button"
                       onClick={() => setNewStatut(value as "actif" | "inactif" | "suspendu")}
-                      className={`p-3 border-2 rounded-lg text-center transition ${
-                        newStatut === value
-                          ? `border-${color}-500 bg-${color}-50`
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`p-3 border-2 rounded-lg text-center transition ${newStatut === value
+                        ? `border-${color}-500 bg-${color}-50`
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
                     >
-                      <div className={`w-3 h-3 rounded-full mx-auto mb-1 ${
-                        value === 'actif' ? 'bg-green-500' :
+                      <div className={`w-3 h-3 rounded-full mx-auto mb-1 ${value === 'actif' ? 'bg-green-500' :
                         value === 'suspendu' ? 'bg-orange-500' :
-                        'bg-red-500'
-                      }`} />
-                      <span className={`text-sm font-medium ${
-                        value === 'actif' ? 'text-green-700' :
+                          'bg-red-500'
+                        }`} />
+                      <span className={`text-sm font-medium ${value === 'actif' ? 'text-green-700' :
                         value === 'suspendu' ? 'text-orange-700' :
-                        'text-red-700'
-                      }`}>{label}</span>
+                          'text-red-700'
+                        }`}>{label}</span>
                     </button>
                   ))}
                 </div>
@@ -722,11 +718,10 @@ export default function ListeElevesPage() {
               <button
                 onClick={() => handleUpdateStatut(selectedEleve.id, newStatut)}
                 disabled={updatingStatut || newStatut === selectedEleve.statut}
-                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
-                  updatingStatut || newStatut === selectedEleve.statut
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${updatingStatut || newStatut === selectedEleve.statut
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
               >
                 {updatingStatut ? (
                   <>

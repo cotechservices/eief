@@ -188,7 +188,7 @@ export default function LibrairiePage() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-blue-600" />
-                <span className="font-medium">{cart.length} article(s) dans le panier</span>
+                <span className="font-medium text-black">{cart.length} article(s) dans le panier</span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-xl font-bold text-blue-600">{totalPanier.toLocaleString()} GNF</span>

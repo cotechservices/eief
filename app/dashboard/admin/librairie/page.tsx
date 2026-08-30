@@ -85,11 +85,11 @@ export default function LibrairiePage() {
     const rawValue = e.target.value;
     const digitsOnly = rawValue.replace(/[^\d]/g, '');
     const numericValue = parseInt(digitsOnly) || 0;
-    
+
     setPrixFormate(formatPrix(numericValue));
-    setArticleData({ 
-      ...articleData, 
-      prix_unitaire: numericValue 
+    setArticleData({
+      ...articleData,
+      prix_unitaire: numericValue
     });
   };
 
@@ -133,7 +133,7 @@ export default function LibrairiePage() {
     setUploading(true);
     try {
       let imageUrl = articleData.image_url;
-      
+
       if (selectedFile) {
         const uploadedUrl = await uploadImage(selectedFile);
         if (uploadedUrl) {
@@ -142,14 +142,14 @@ export default function LibrairiePage() {
       }
 
       const method = editingArticle ? 'PUT' : 'POST';
-      const body = { 
-        ...articleData, 
+      const body = {
+        ...articleData,
         id: editingArticle?.id,
         image_url: imageUrl
       };
       const res = await fetch('/api/admin/librairie/articles', {
-        method, 
-        headers: { 'Content-Type': 'application/json' }, 
+        method,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
       if (res.ok) {
@@ -163,7 +163,7 @@ export default function LibrairiePage() {
         const error = await res.json();
         alert(error.error || "Erreur lors de l'enregistrement");
       }
-    } catch (e) { 
+    } catch (e) {
       console.error(e);
       alert("Erreur lors de l'enregistrement");
     } finally {
@@ -193,8 +193,8 @@ export default function LibrairiePage() {
     e.preventDefault();
     try {
       const res = await fetch('/api/admin/librairie/ventes', {
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(venteData)
       });
       if (res.ok) {
@@ -234,7 +234,7 @@ export default function LibrairiePage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-900">Articles en stock</p><p className="text-2xl font-bold">{stats.totalArticles}</p></div>
+          <div><p className="text-sm text-gray-900">Articles en stock</p><p className="text-2xl font-bold text-gray-900">{stats.totalArticles}</p></div>
           <Box className="text-blue-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-purple-500 flex items-center justify-between">
@@ -279,13 +279,13 @@ export default function LibrairiePage() {
             <input type="text" placeholder="Rechercher..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm text-gray-900" />
           </div>
           {activeTab === "articles" ? (
-            <button onClick={() => { 
-              setEditingArticle(null); 
-              setArticleData({ nom: "", description: "", prix_unitaire: 0, quantite_stock: 0, categorie: "fourniture", image_url: "" }); 
+            <button onClick={() => {
+              setEditingArticle(null);
+              setArticleData({ nom: "", description: "", prix_unitaire: 0, quantite_stock: 0, categorie: "fourniture", image_url: "" });
               setPrixFormate("");
-              setSelectedFile(null); 
-              setPreviewUrl(""); 
-              setShowArticleForm(true); 
+              setSelectedFile(null);
+              setPreviewUrl("");
+              setShowArticleForm(true);
             }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700 whitespace-nowrap">
               <Plus className="w-4 h-4" /> Ajouter un article
             </button>
@@ -320,7 +320,7 @@ export default function LibrairiePage() {
                           </div>
                         ) : (
                           <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Box className="w-6 h-6 text-gray-400" />
+                            <Box className="w-6 h-6 text-gray-900" />
                           </div>
                         )}
                         <div>
@@ -353,7 +353,7 @@ export default function LibrairiePage() {
               </tbody>
             </table>
             {filteredArticles.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-900">
                 <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium">Aucun article trouvé</p>
               </div>
@@ -389,7 +389,7 @@ export default function LibrairiePage() {
               </tbody>
             </table>
             {filteredVentes.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-900">
                 <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium">Aucune vente trouvée</p>
               </div>
@@ -404,7 +404,7 @@ export default function LibrairiePage() {
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">{editingArticle ? "Modifier l'article" : "Nouvel article"}</h2>
-              <button onClick={() => setShowArticleForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowArticleForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -430,9 +430,9 @@ export default function LibrairiePage() {
                     </div>
                   ) : (
                     <div className="text-center">
-                      <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                      <ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" />
                       <p className="text-sm text-gray-600">Cliquez pour ajouter une image</p>
-                      <p className="text-xs text-gray-400">PNG, JPG, WEBP</p>
+                      <p className="text-xs text-gray-900">PNG, JPG, WEBP</p>
                     </div>
                   )}
                 </div>
@@ -450,10 +450,10 @@ export default function LibrairiePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Prix Unitaire (GNF) *</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">GNF</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 text-sm">GNF</span>
                     <input required type="text" inputMode="numeric" value={prixFormate || (articleData.prix_unitaire ? formatPrix(articleData.prix_unitaire) : "")} onChange={handlePrixChange} placeholder="0" className="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Saisissez uniquement des chiffres</p>
+                  <p className="text-xs text-gray-900 mt-1">Saisissez uniquement des chiffres</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Quantité en stock *</label>
@@ -491,7 +491,7 @@ export default function LibrairiePage() {
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Nouvelle vente</h2>
-              <button onClick={() => setShowVenteForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowVenteForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>

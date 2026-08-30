@@ -1,5 +1,5 @@
 # Guide d'Utilisation - Application E.I.E.F
-Ce guide détaille les fonctionnalités et les workflows de la plateforme de gestion scolaire de l'**École Internationale des Enfants Futur (E.I.E.F)**.
+Ce guide détaille les fonctionnalités et les workflows de la plateforme de gestion scolaire de l'**École Internationale les Enfants du Futur (E.I.E.F)**.
 
 ---
 

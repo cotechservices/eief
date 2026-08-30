@@ -24,13 +24,9 @@ export async function GET(
       return NextResponse.json({ error: "Permission refusée" }, { status: 403 });
     }
 
-    // ⭐ CORRECTION : Déballer params avec await
     const { id } = await params;
-
-    // ⭐ Vérifier que l'ID est valide
     const parentId = parseInt(id);
 
-    // ⭐ Si l'ID n'est pas un nombre valide, retourner une erreur
     if (isNaN(parentId) || parentId <= 0) {
       return NextResponse.json(
         { error: "ID de parent invalide" },
@@ -38,7 +34,6 @@ export async function GET(
       );
     }
 
-    // Récupérer le parent
     const parentResult = await query(`
       SELECT 
         p.id,
@@ -64,7 +59,6 @@ export async function GET(
 
     const parent = parentResult.rows[0];
 
-    // Récupérer les enfants avec plus de détails
     const enfantsResult = await query(`
       SELECT 
         e.id,
@@ -94,7 +88,6 @@ export async function GET(
       ORDER BY u.nom, u.prenom
     `, [parentId]);
 
-    // Récupérer les pré-inscriptions du parent
     const preinscriptionsResult = await query(`
       SELECT 
         p.id,
@@ -116,7 +109,6 @@ export async function GET(
       ORDER BY p.date_preinscription DESC
     `, [parentId]);
 
-    // Récupérer les réinscriptions du parent
     const reinscriptionsResult = await query(`
       SELECT 
         r.id,
@@ -138,7 +130,6 @@ export async function GET(
       ORDER BY r.date_reinscription DESC
     `, [parentId]);
 
-    // ⭐ Calculer le solde restant exact pour les élèves du parent (identique à /api/parent/enfants)
     const elevesFraisResult = await query(`
       SELECT 
         e.id as eleve_id,
@@ -187,7 +178,6 @@ export async function GET(
   }
 }
 
-// ⭐ MÉTHODE DELETE - Supprimer un parent et tous ses enfants
 export async function DELETE(
   request: Request,
   { params }: RouteParams
@@ -199,7 +189,6 @@ export async function DELETE(
     }
 
     const role = (session.user as any).role;
-    // Seuls SUPER_ADMIN et DIRECTEUR_GENERAL peuvent supprimer
     if (role !== "SUPER_ADMIN" && role !== "DIRECTEUR_GENERAL") {
       return NextResponse.json({ error: "Permission refusée" }, { status: 403 });
     }
@@ -214,7 +203,6 @@ export async function DELETE(
       );
     }
 
-    // Vérifier que le parent existe
     const parentCheck = await query(`
       SELECT 
         p.id, 
@@ -233,18 +221,15 @@ export async function DELETE(
 
     const parent = parentCheck.rows[0];
 
-    // Démarrer une transaction
     await query('BEGIN');
 
     try {
-      // 1. Récupérer tous les IDs des enfants du parent
       const enfantsResult = await query(`
         SELECT eleve_id FROM lien_parent_eleve WHERE parent_id = $1
       `, [parentId]);
 
       const enfantIds = enfantsResult.rows.map(row => row.eleve_id);
 
-      // 2. Supprimer les données liées aux pré-inscriptions
       await query(`
         DELETE FROM commandes_fournitures 
         WHERE preinscription_id IN (
@@ -270,7 +255,6 @@ export async function DELETE(
         DELETE FROM preinscriptions WHERE parent_id = $1
       `, [parentId]);
 
-      // 3. Supprimer les données liées aux réinscriptions
       await query(`
         DELETE FROM echeances_paiement 
         WHERE reinscription_id IN (
@@ -289,12 +273,10 @@ export async function DELETE(
         DELETE FROM reinscriptions WHERE parent_id = $1
       `, [parentId]);
 
-      // 4. Supprimer les inscriptions
       await query(`
         DELETE FROM inscriptions WHERE parent_id = $1
       `, [parentId]);
 
-      // 5. Supprimer les présences et notes des enfants - ✅ CORRIGÉ
       if (enfantIds.length > 0) {
         await query(`
           DELETE FROM presences WHERE eleve_id IN (SELECT unnest($1::int[]))
@@ -313,42 +295,24 @@ export async function DELETE(
         `, [enfantIds]);
       }
 
-      // 6. Supprimer les liens parent-enfant
       await query(`
         DELETE FROM lien_parent_eleve WHERE parent_id = $1
       `, [parentId]);
 
-      // 7. Supprimer les enfants et leurs comptes utilisateurs
       for (const enfantId of enfantIds) {
-        // Récupérer l'utilisateur_id de l'enfant
         const enfantResult = await query(`
           SELECT utilisateur_id FROM eleves WHERE id = $1
         `, [enfantId]);
 
         if (enfantResult.rows.length > 0) {
           const utilisateurId = enfantResult.rows[0].utilisateur_id;
-
-          // Supprimer l'élève
-          await query(`
-            DELETE FROM eleves WHERE id = $1
-          `, [enfantId]);
-
-          // Supprimer l'utilisateur (élève)
-          await query(`
-            DELETE FROM utilisateurs WHERE id = $1
-          `, [utilisateurId]);
+          await query(`DELETE FROM eleves WHERE id = $1`, [enfantId]);
+          await query(`DELETE FROM utilisateurs WHERE id = $1`, [utilisateurId]);
         }
       }
 
-      // 8. Supprimer le parent
-      await query(`
-        DELETE FROM parents WHERE id = $1
-      `, [parentId]);
-
-      // 9. Supprimer l'utilisateur du parent
-      await query(`
-        DELETE FROM utilisateurs WHERE id = $1
-      `, [parent.utilisateur_id]);
+      await query(`DELETE FROM parents WHERE id = $1`, [parentId]);
+      await query(`DELETE FROM utilisateurs WHERE id = $1`, [parent.utilisateur_id]);
 
       await query('COMMIT');
 
@@ -372,7 +336,6 @@ export async function DELETE(
   }
 }
 
-// ⭐ MÉTHODE PUT - Mettre à jour un parent
 export async function PUT(
   request: Request,
   { params }: RouteParams
@@ -401,7 +364,6 @@ export async function PUT(
     const body = await request.json();
     const { nom, prenom, email, telephone, adresse, profession, situation_matrimoniale } = body;
 
-    // Vérifier que le parent existe
     const parentCheck = await query(`
       SELECT p.id, p.utilisateur_id
       FROM parents p
@@ -414,18 +376,15 @@ export async function PUT(
 
     const parent = parentCheck.rows[0];
 
-    // Démarrer une transaction
     await query('BEGIN');
 
     try {
-      // 1. Mettre à jour l'utilisateur (nom, prenom, email, telephone, adresse)
       await query(`
         UPDATE utilisateurs 
         SET nom = $1, prenom = $2, email = $3, telephone = $4, adresse = $5, updated_at = NOW()
         WHERE id = $6
       `, [nom, prenom, email, telephone, adresse, parent.utilisateur_id]);
 
-      // 2. Mettre à jour le parent (profession, situation_matrimoniale)
       await query(`
         UPDATE parents 
         SET profession = $1, situation_matrimoniale = $2, updated_at = NOW()
@@ -436,7 +395,7 @@ export async function PUT(
 
       return NextResponse.json({
         success: true,
-        message: `Parent mis à jour avec succès`
+        message: `Parent mis à jour avec succès`   // ← ligne corrigée (sans backslash)
       });
 
     } catch (error) {

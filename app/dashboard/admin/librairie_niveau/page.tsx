@@ -248,7 +248,7 @@ export default function AdminLibrairiePage() {
                         </span>
                       ))}
                       {(!article.niveaux_cibles || article.niveaux_cibles.length === 0) && (
-                        <span className="text-gray-400 text-xs">Aucun</span>
+                        <span className="text-gray-900 text-xs">Aucun</span>
                       )}
                     </div>
                   </td>
@@ -286,7 +286,7 @@ export default function AdminLibrairiePage() {
           </table>
         </div>
         {filteredArticles.length === 0 && (
-          <div className="text-center py-12 text-gray-500">Aucun article trouvé</div>
+          <div className="text-center py-12 text-gray-900">Aucun article trouvé</div>
         )}
       </div>
 
@@ -365,7 +365,7 @@ export default function AdminLibrairiePage() {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Sélectionnez les niveaux pour lesquels cet article est obligatoire.</p>
+                <p className="text-xs text-gray-900 mt-1">Sélectionnez les niveaux pour lesquels cet article est obligatoire.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">URL de l'image (optionnel)</label>

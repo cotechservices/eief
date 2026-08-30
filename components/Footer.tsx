@@ -70,7 +70,7 @@ export default function Footer() {
               <span className="text-xl font-bold text-white">E.I.E.F</span>
             </div>
             <p className="text-sm leading-relaxed">
-              École Internationale des Enfants Futur - Une éducation pour former les leaders de demain.
+              École Internationale les Enfants du Futur - Une éducation pour former les leaders de demain.
             </p>
           </div>
 
@@ -150,7 +150,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="text-center text-xs pt-8 border-t border-gray-800">
-          <p>&copy; {new Date().getFullYear()} École Internationale des Enfants Futur. Tous droits réservés.</p>
+          <p>&copy; {new Date().getFullYear()} École Internationale les Enfants du Futur. Tous droits réservés.</p>
         </div>
       </div>
     </footer>

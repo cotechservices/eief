@@ -50,7 +50,7 @@ export async function GET() {
     const totalInscrits = bus.reduce((acc, curr) => acc + curr.inscrits, 0);
     const capaciteTotale = bus.reduce((acc, curr) => acc + curr.capacite, 0);
     const tauxRemplissage = capaciteTotale > 0 ? Math.round((totalInscrits / capaciteTotale) * 100) : 0;
-    
+
     // Recettes Transport (Mois en cours)
     const recettesResult = await query(`
       SELECT COALESCE(SUM(montant), 0) as total 
@@ -84,13 +84,13 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { 
-      immatriculation, 
-      chauffeur, 
-      chauffeur_tel, 
-      capacite, 
-      trajet, 
-      horaireMatin, 
+    const {
+      immatriculation,
+      chauffeur,
+      chauffeur_tel,
+      capacite,
+      trajet,
+      horaireMatin,
       horaireSoir,
       prix_abonnement  // ⭐ Ajout du prix
     } = body;
@@ -110,9 +110,9 @@ export async function POST(request: Request) {
         INSERT INTO lignes_transport (nom, bus_id, horaire_matin, horaire_soir, prix_abonnement)
         VALUES ($1, $2, $3, $4, $5)
       `, [
-        trajet, 
-        busId, 
-        horaireMatin || null, 
+        trajet,
+        busId,
+        horaireMatin || null,
         horaireSoir || null,
         parseInt(prix_abonnement) || 0  // ⭐ Insertion du prix
       ]);
@@ -134,14 +134,14 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { 
-      id, 
-      immatriculation, 
-      chauffeur, 
-      chauffeur_tel, 
-      capacite, 
-      trajet, 
-      horaireMatin, 
+    const {
+      id,
+      immatriculation,
+      chauffeur,
+      chauffeur_tel,
+      capacite,
+      trajet,
+      horaireMatin,
       horaireSoir,
       prix_abonnement  // ⭐ Ajout du prix
     } = body;
@@ -161,8 +161,8 @@ export async function PUT(request: Request) {
         SET nom = $1, horaire_matin = $2, horaire_soir = $3, prix_abonnement = $4
         WHERE bus_id = $5
       `, [
-        trajet, 
-        horaireMatin || null, 
+        trajet,
+        horaireMatin || null,
         horaireSoir || null,
         parseInt(prix_abonnement) || 0,  // ⭐ Mise à jour du prix
         id
@@ -172,9 +172,9 @@ export async function PUT(request: Request) {
         INSERT INTO lignes_transport (nom, bus_id, horaire_matin, horaire_soir, prix_abonnement)
         VALUES ($1, $2, $3, $4, $5)
       `, [
-        trajet, 
-        id, 
-        horaireMatin || null, 
+        trajet,
+        id,
+        horaireMatin || null,
         horaireSoir || null,
         parseInt(prix_abonnement) || 0  // ⭐ Insertion du prix
       ]);
@@ -197,7 +197,7 @@ export async function DELETE(request: Request) {
 
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
-    
+
     if (!id) return NextResponse.json({ error: "ID manquant" }, { status: 400 });
 
     // Récupérer la ligne pour supprimer ses inscriptions d'abord

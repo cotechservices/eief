@@ -260,7 +260,7 @@ export default function BibliothequeAdminPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-900">Total livres</p><p className="text-2xl font-bold">{stats.totalLivres}</p></div>
+          <div><p className="text-sm text-gray-900">Total livres</p><p className="text-2xl font-bold text-gray-900">{stats.totalLivres}</p></div>
           <BookOpen className="text-blue-200 w-10 h-10" />
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500 flex items-center justify-between">
@@ -330,13 +330,13 @@ export default function BibliothequeAdminPage() {
                             </div>
                           ) : (
                             <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <BookOpen className="w-6 h-6 text-gray-400" />
+                              <BookOpen className="w-6 h-6 text-gray-900" />
                             </div>
                           )}
                           <div>
                             <p className="font-bold text-gray-900">{l.titre}</p>
                             <p className="text-sm text-gray-900">{l.auteur}</p>
-                            <p className="text-xs text-gray-500">ISBN: {l.isbn || 'N/A'}</p>
+                            <p className="text-xs text-gray-900">ISBN: {l.isbn || 'N/A'}</p>
                           </div>
                         </div>
                       </td>
@@ -347,7 +347,7 @@ export default function BibliothequeAdminPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">{emplacement?.nom || l.emplacement || "-"}</div>
-                        {emplacement && <div className="text-xs text-gray-500">{emplacement.zone}</div>}
+                        {emplacement && <div className="text-xs text-gray-900">{emplacement.zone}</div>}
                       </td>
                       <td className="px-6 py-4 text-center font-medium">{l.quantite}</td>
                       <td className="px-6 py-4 text-center">
@@ -393,7 +393,7 @@ export default function BibliothequeAdminPage() {
                     <td className="px-6 py-4 font-medium text-gray-900">{e.livre_titre}</td>
                     <td className="px-6 py-4 text-sm">
                       {e.eleve_nom}<br />
-                      <span className="text-xs text-gray-500">{e.classe_nom}</span>
+                      <span className="text-xs text-gray-900">{e.classe_nom}</span>
                     </td>
                     <td className="px-6 py-4 text-sm">{new Date(e.date_emprunt).toLocaleDateString()}</td>
                     <td className="px-6 py-4 text-sm">{new Date(e.date_retour_prevue).toLocaleDateString()}</td>
@@ -424,7 +424,7 @@ export default function BibliothequeAdminPage() {
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">{editingLivre ? "Modifier le livre" : "Ajouter un livre"}</h2>
-              <button onClick={() => setShowLivreForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowLivreForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -457,9 +457,9 @@ export default function BibliothequeAdminPage() {
                     </div>
                   ) : (
                     <div className="text-center">
-                      <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                      <ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" />
                       <p className="text-sm text-gray-600">Cliquez pour ajouter une image</p>
-                      <p className="text-xs text-gray-400">PNG, JPG, WEBP</p>
+                      <p className="text-xs text-gray-900">PNG, JPG, WEBP</p>
                     </div>
                   )}
                 </div>
@@ -535,15 +535,15 @@ export default function BibliothequeAdminPage() {
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Nouvel emprunt</h2>
-              <button onClick={() => setShowEmpruntForm(false)} className="text-gray-400 hover:text-gray-600">
+              <h2 className="text-xl font-bold text-gray-900">Nouvel emprunt</h2>
+              <button onClick={() => setShowEmpruntForm(false)} className="text-gray-900 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleEmpruntSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm mb-1">Livre</label>
-                <select required value={empruntData.livre_id} onChange={e => setEmpruntData({ ...empruntData, livre_id: e.target.value })} className="w-full border p-2 rounded-lg">
+                <label className="block text-sm mb-1 text-gray-900">Livre</label>
+                <select required value={empruntData.livre_id} onChange={e => setEmpruntData({ ...empruntData, livre_id: e.target.value })} className="w-full border p-2 rounded-lg text-gray-900">
                   <option value="">Sélectionner un livre</option>
                   {livres.filter(l => l.disponible > 0).map(l => (
                     <option key={l.id} value={l.id}>{l.titre} (Dispo: {l.disponible})</option>
@@ -551,7 +551,7 @@ export default function BibliothequeAdminPage() {
                 </select>
               </div>
               <div className="relative">
-                <label className="block text-sm mb-1">Élève</label>
+                <label className="block text-sm mb-1 text-gray-900">Élève</label>
                 <div
                   className="w-full border p-2 rounded-lg cursor-pointer flex justify-between items-center bg-white"
                   onClick={() => setEleveSearchOpen(!eleveSearchOpen)}
@@ -563,7 +563,7 @@ export default function BibliothequeAdminPage() {
                       return `${selected.enfant_prenom || selected.prenom || ''} ${selected.enfant_nom || selected.nom || ''} - Mat: ${selected.matricule || 'N/A'} - Dos: ${selected.numero_dossier || 'N/A'}`;
                     })()
                   ) : (
-                    <span className="text-gray-500">Sélectionner un élève</span>
+                    <span className="text-gray-900">Sélectionner un élève</span>
                   )}
                 </div>
 
@@ -573,10 +573,10 @@ export default function BibliothequeAdminPage() {
                     <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 flex flex-col">
                       <div className="p-2 border-b sticky top-0 bg-white">
                         <div className="relative">
-                          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                           <input
                             type="text"
-                            className="w-full pl-8 pr-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="text-gray-900 w-full pl-8 pr-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                             placeholder="Rechercher par nom, matricule, dossier..."
                             value={eleveSearchTerm}
                             onChange={(e) => setEleveSearchTerm(e.target.value)}
@@ -597,15 +597,15 @@ export default function BibliothequeAdminPage() {
                                 setEleveSearchTerm("");
                               }}
                             >
-                              <div className="font-medium">{e.enfant_prenom || e.prenom} {e.enfant_nom || e.nom}</div>
-                              <div className="text-xs text-gray-500 flex gap-2">
+                              <div className="font-medium text-gray-900">{e.enfant_prenom || e.prenom} {e.enfant_nom || e.nom}</div>
+                              <div className="text-xs text-gray-900 flex gap-2">
                                 <span>Mat: {e.matricule || 'N/A'}</span>
                                 {e.numero_dossier && <span>• Dos: {e.numero_dossier}</span>}
                               </div>
                             </div>
                           ))
                         ) : (
-                          <div className="p-3 text-sm text-center text-gray-500">Aucun élève trouvé</div>
+                          <div className="p-3 text-sm text-center text-gray-900">Aucun élève trouvé</div>
                         )}
                       </div>
                     </div>
@@ -613,8 +613,8 @@ export default function BibliothequeAdminPage() {
                 )}
               </div>
               <div>
-                <label className="block text-sm mb-1">Date de retour prévue</label>
-                <input required type="date" value={empruntData.date_retour_prevue} onChange={e => setEmpruntData({ ...empruntData, date_retour_prevue: e.target.value })} className="w-full border p-2 rounded-lg" />
+                <label className="block text-sm mb-1 text-gray-900">Date de retour prévue</label>
+                <input required type="date" value={empruntData.date_retour_prevue} onChange={e => setEmpruntData({ ...empruntData, date_retour_prevue: e.target.value })} className="w-full border p-2 rounded-lg text-gray-900" />
               </div>
               <div className="flex justify-end gap-3 mt-6">
                 <button type="button" onClick={() => setShowEmpruntForm(false)} className="px-4 py-2 border rounded-lg">Annuler</button>

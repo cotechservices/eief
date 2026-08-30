@@ -30,7 +30,7 @@ export default function EnseignantLeconsPage() {
   const [enseignements, setEnseignements] = useState<Enseignement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Form state
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
@@ -59,7 +59,7 @@ export default function EnseignantLeconsPage() {
 
       const leconsData = await leconsRes.json();
       const enseignementsData = await enseignementsRes.json();
-      
+
       setLecons(leconsData);
       setEnseignements(enseignementsData);
     } catch (err: any) {
@@ -76,7 +76,7 @@ export default function EnseignantLeconsPage() {
       alert("Veuillez remplir les champs obligatoires");
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -105,7 +105,7 @@ export default function EnseignantLeconsPage() {
       setFichier(null);
       setVideoUrl("");
       setShowForm(false);
-      
+
       // Refresh list
       fetchData();
     } catch (err: any) {
@@ -129,7 +129,7 @@ export default function EnseignantLeconsPage() {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-center">
         <p className="font-medium">❌ {error}</p>
-        <button 
+        <button
           onClick={fetchData}
           className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
         >
@@ -157,17 +157,17 @@ export default function EnseignantLeconsPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700">Titre *</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={titre}
                 onChange={(e) => setTitre(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700">Classe *</label>
-              <select 
+              <select
                 value={enseignementId}
                 onChange={(e) => setEnseignementId(e.target.value)}
                 required
@@ -181,41 +181,41 @@ export default function EnseignantLeconsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700">
-                Matière 
-                <span className="text-xs text-gray-400 ml-1">(optionnel)</span>
+                Matière
+                <span className="text-xs text-gray-900 ml-1">(optionnel)</span>
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={matiere}
                 onChange={(e) => setMatiere(e.target.value)}
                 placeholder="Ex: Mathématiques, Français..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
-              <p className="text-xs text-gray-400 mt-1">Laisse vide pour utiliser la matière par défaut de la classe</p>
+              <p className="text-xs text-gray-900 mt-1">Laisse vide pour utiliser la matière par défaut de la classe</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700">Fichier (PDF, Image, etc.)</label>
-              <input 
-                type="file" 
+              <input
+                type="file"
                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                 onChange={(e) => setFichier(e.target.files?.[0] || null)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700">Lien vidéo YouTube (optionnel)</label>
-              <input 
-                type="url" 
+              <input
+                type="url"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="https://youtube.com/..." 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                placeholder="https://youtube.com/..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1 text-gray-700">Description</label>
-              <textarea 
-                rows={3} 
+              <textarea
+                rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -235,29 +235,29 @@ export default function EnseignantLeconsPage() {
       <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
         <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
           <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
             <input type="text" placeholder="Rechercher une leçon..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-gray-900">
             <span>{lecons.length} leçon(s)</span>
           </div>
         </div>
         <div className="overflow-x-auto">
           {lecons.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-900">
               <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
               <p>Aucune leçon publiée pour le moment.</p>
-              <p className="text-sm text-gray-400 mt-1">Cliquez sur "Nouvelle leçon" pour commencer</p>
+              <p className="text-sm text-gray-900 mt-1">Cliquez sur "Nouvelle leçon" pour commencer</p>
             </div>
           ) : (
             <table className="w-full">
               <thead className="bg-white border-b">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Leçon</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Classe</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Matière</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Fichier</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Leçon</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Classe</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Matière</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-900 uppercase tracking-wider">Fichier</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -265,7 +265,7 @@ export default function EnseignantLeconsPage() {
                   <tr key={l.id} className="hover:bg-blue-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">{l.titre}</div>
-                      {l.description && <div className="text-sm text-gray-500 truncate max-w-xs">{l.description}</div>}
+                      {l.description && <div className="text-sm text-gray-900 truncate max-w-xs">{l.description}</div>}
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -283,12 +283,12 @@ export default function EnseignantLeconsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex justify-center gap-3">
                         {l.fichier ? (
-                          <a href={l.fichier} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-600" title="Voir le fichier">
+                          <a href={l.fichier} target="_blank" rel="noopener noreferrer" className="text-gray-900 hover:text-blue-600" title="Voir le fichier">
                             <FileText className="w-5 h-5" />
                           </a>
                         ) : <div className="w-5" />}
                         {l.video_url ? (
-                          <a href={l.video_url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-red-600" title="Voir la vidéo">
+                          <a href={l.video_url} target="_blank" rel="noopener noreferrer" className="text-gray-900 hover:text-red-600" title="Voir la vidéo">
                             <Video className="w-5 h-5" />
                           </a>
                         ) : <div className="w-5" />}

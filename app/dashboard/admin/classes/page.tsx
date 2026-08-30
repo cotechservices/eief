@@ -41,7 +41,7 @@ interface Classe {
   deuxieme_versement: number;
   troisieme_versement: number;
   total_versement: number;
-   // Versements pour les réinscriptions
+  // Versements pour les réinscriptions
   reinscription_premier_versement: number;
   reinscription_deuxieme_versement: number;
   reinscription_troisieme_versement: number;
@@ -118,12 +118,12 @@ export default function GestionClassesPage() {
   }, [formData.premier_versement, formData.deuxieme_versement, formData.troisieme_versement]);
 
   useEffect(() => {
-  // Total réinscriptions
-  const totalReinscription = (formData.reinscription_premier_versement || 0) +
-    (formData.reinscription_deuxieme_versement || 0) +
-    (formData.reinscription_troisieme_versement || 0);
-  setFormData(prev => ({ ...prev, reinscription_total_versement: totalReinscription }));
-}, [formData.reinscription_premier_versement, formData.reinscription_deuxieme_versement, formData.reinscription_troisieme_versement]);
+    // Total réinscriptions
+    const totalReinscription = (formData.reinscription_premier_versement || 0) +
+      (formData.reinscription_deuxieme_versement || 0) +
+      (formData.reinscription_troisieme_versement || 0);
+    setFormData(prev => ({ ...prev, reinscription_total_versement: totalReinscription }));
+  }, [formData.reinscription_premier_versement, formData.reinscription_deuxieme_versement, formData.reinscription_troisieme_versement]);
 
   const addNotification = (type: Notification["type"], message: string) => {
     const id = Date.now();
@@ -230,19 +230,19 @@ export default function GestionClassesPage() {
         setShowForm(false);
         setEditingClasse(null);
         setFormData({
-        nom: "",
-        niveau: "",
-        capacite_max: 30,
-        frais_inscription: 0,
-        premier_versement: 0,
-        deuxieme_versement: 0,
-        troisieme_versement: 0,
-        total_versement: 0,
-        reinscription_premier_versement: 0,
-        reinscription_deuxieme_versement: 0,
-        reinscription_troisieme_versement: 0,
-        reinscription_total_versement: 0
-      });
+          nom: "",
+          niveau: "",
+          capacite_max: 30,
+          frais_inscription: 0,
+          premier_versement: 0,
+          deuxieme_versement: 0,
+          troisieme_versement: 0,
+          total_versement: 0,
+          reinscription_premier_versement: 0,
+          reinscription_deuxieme_versement: 0,
+          reinscription_troisieme_versement: 0,
+          reinscription_total_versement: 0
+        });
         addNotification("success", editingClasse ? "Classe modifiée avec succès" : "Classe créée avec succès");
       } else {
         const error = await response.json();
@@ -304,7 +304,7 @@ export default function GestionClassesPage() {
   };
 
   const getTauxRemplissage = (effectif: number, capacite: number) => {
-    if (capacite === 0) return { color: "bg-gray-500", text: "N/A" };
+    if (capacite === 0) return { color: "bg-gray-900", text: "N/A" };
     const taux = (effectif / capacite) * 100;
     if (taux >= 90) return { color: "bg-red-500", text: "Saturée" };
     if (taux >= 70) return { color: "bg-yellow-500", text: "Élevé" };
@@ -523,15 +523,15 @@ export default function GestionClassesPage() {
                     <td className="px-6 py-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-500 w-24">1er Versement:</span>
+                          <span className="text-gray-900 w-24">1er Versement:</span>
                           <span className="font-medium text-blue-600">{classe.premier_versement?.toLocaleString()} GNF</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-500 w-24">2ème Versement:</span>
+                          <span className="text-gray-900 w-24">2ème Versement:</span>
                           <span className="font-medium text-blue-600">{classe.deuxieme_versement?.toLocaleString()} GNF</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-500 w-24">3ème Versement:</span>
+                          <span className="text-gray-900 w-24">3ème Versement:</span>
                           <span className="font-medium text-blue-600">{classe.troisieme_versement?.toLocaleString()} GNF</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs border-t pt-1 mt-1">
@@ -544,15 +544,15 @@ export default function GestionClassesPage() {
                     <td className="px-6 py-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-500 w-24">1er Versement:</span>
+                          <span className="text-gray-900 w-24">1er Versement:</span>
                           <span className="font-medium text-indigo-600">{classe.reinscription_premier_versement?.toLocaleString()} GNF</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-500 w-24">2ème Versement:</span>
+                          <span className="text-gray-900 w-24">2ème Versement:</span>
                           <span className="font-medium text-indigo-600">{classe.reinscription_deuxieme_versement?.toLocaleString()} GNF</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray-500 w-24">3ème Versement:</span>
+                          <span className="text-gray-900 w-24">3ème Versement:</span>
                           <span className="font-medium text-indigo-600">{classe.reinscription_troisieme_versement?.toLocaleString()} GNF</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs border-t pt-1 mt-1">
@@ -569,22 +569,22 @@ export default function GestionClassesPage() {
                         </button>
                         <button onClick={() => {
                           setEditingClasse(classe);
-                         setFormData({
-                          nom: classe.nom || "",
-                          niveau: classe.niveau || "",
-                          capacite_max: classe.capacite || 30,
-                          frais_inscription: classe.frais_inscription || 0,
-                          // ⭐ Préinscriptions
-                          premier_versement: classe.premier_versement || 0,
-                          deuxieme_versement: classe.deuxieme_versement || 0,
-                          troisieme_versement: classe.troisieme_versement || 0,
-                          total_versement: classe.total_versement || 0,
-                          // ⭐ Réinscriptions
-                          reinscription_premier_versement: classe.reinscription_premier_versement || 0,
-                          reinscription_deuxieme_versement: classe.reinscription_deuxieme_versement || 0,
-                          reinscription_troisieme_versement: classe.reinscription_troisieme_versement || 0,
-                          reinscription_total_versement: classe.reinscription_total_versement || 0
-                        });
+                          setFormData({
+                            nom: classe.nom || "",
+                            niveau: classe.niveau || "",
+                            capacite_max: classe.capacite || 30,
+                            frais_inscription: classe.frais_inscription || 0,
+                            // ⭐ Préinscriptions
+                            premier_versement: classe.premier_versement || 0,
+                            deuxieme_versement: classe.deuxieme_versement || 0,
+                            troisieme_versement: classe.troisieme_versement || 0,
+                            total_versement: classe.total_versement || 0,
+                            // ⭐ Réinscriptions
+                            reinscription_premier_versement: classe.reinscription_premier_versement || 0,
+                            reinscription_deuxieme_versement: classe.reinscription_deuxieme_versement || 0,
+                            reinscription_troisieme_versement: classe.reinscription_troisieme_versement || 0,
+                            reinscription_total_versement: classe.reinscription_total_versement || 0
+                          });
                           setShowForm(true);
                         }} className="text-green-600 hover:text-green-800 transition" title="Modifier">
                           <Edit className="w-4 h-4" />
@@ -826,7 +826,7 @@ export default function GestionClassesPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Frais de scolarité (GNF) *</label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
                     type="number"
                     value={formData.frais_inscription || ""}
@@ -838,7 +838,7 @@ export default function GestionClassesPage() {
                     placeholder="Ex: 5900000"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-900 mt-1">
                   Montant total des frais de scolarité pour cette classe
                 </p>
               </div>
@@ -868,7 +868,7 @@ export default function GestionClassesPage() {
                           placeholder="Ex: 2800000"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">1er paiement</p>
+                      <p className="text-xs text-gray-900 mt-1">1er paiement</p>
                     </div>
 
                     <div>
@@ -887,7 +887,7 @@ export default function GestionClassesPage() {
                           placeholder="Ex: 2100000"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">2ème paiement</p>
+                      <p className="text-xs text-gray-900 mt-1">2ème paiement</p>
                     </div>
 
                     <div>
@@ -906,7 +906,7 @@ export default function GestionClassesPage() {
                           placeholder="Ex: 1000000"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">3ème paiement</p>
+                      <p className="text-xs text-gray-900 mt-1">3ème paiement</p>
                     </div>
                   </div>
 
@@ -914,7 +914,7 @@ export default function GestionClassesPage() {
                   <div className="mt-4 p-3 bg-white rounded-lg border border-blue-300 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-700">Total des versements</span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-900">
                         ({formData.premier_versement?.toLocaleString() || 0} + {formData.deuxieme_versement?.toLocaleString() || 0} + {formData.troisieme_versement?.toLocaleString() || 0})
                       </span>
                     </div>
@@ -935,7 +935,7 @@ export default function GestionClassesPage() {
                       </div>
                     )}
 
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-gray-900 mt-2">
                     Ces montants seront appliqués à toutes les pré-inscriptions de cette classe
                   </p>
                 </div>
@@ -998,7 +998,7 @@ export default function GestionClassesPage() {
                   <div className="mt-4 p-3 bg-white rounded-lg border border-indigo-300 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-700">Total réinscription</span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-900">
                         ({formData.reinscription_premier_versement?.toLocaleString() || 0} + {formData.reinscription_deuxieme_versement?.toLocaleString() || 0} + {formData.reinscription_troisieme_versement?.toLocaleString() || 0})
                       </span>
                     </div>
@@ -1007,7 +1007,7 @@ export default function GestionClassesPage() {
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-gray-900 mt-2">
                     Ces montants seront appliqués à toutes les réinscriptions de cette classe
                   </p>
                 </div>

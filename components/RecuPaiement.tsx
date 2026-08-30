@@ -183,7 +183,7 @@ export default function RecuPaiement({ recu, onClose }: RecuPaiementProps) {
         {/* Barre d'action */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
           <h2 className="font-bold text-gray-800 flex items-center gap-2">
-            <span className="text-lg">🧾</span> Reçu de Paiement
+            <span className="text-lg">EIEF - </span> Reçu de Paiement
           </h2>
           <div className="flex items-center gap-2">
             <button
@@ -218,13 +218,10 @@ export default function RecuPaiement({ recu, onClose }: RecuPaiementProps) {
                 }}
               >
                 <div className="school-info">
-                  <h1 style={{ fontSize: "22px", fontWeight: 700 }}>EIEF</h1>
-                  <p style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>
-                    École Internationale de l'Espoir et de la Formation
-                  </p>
-                  <p style={{ fontSize: "11px", opacity: 0.65, marginTop: "2px" }}>
-                    Conakry, Guinée
-                  </p>
+                  <h1 style={{ fontSize: "22px", fontWeight: 700 }}> École Internationale les Enfants du Futur</h1>
+                  <h4 style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>
+                    Coyah-Sanoyah, Conakry-Guinée
+                  </h4>
                 </div>
                 <div
                   style={{
@@ -263,27 +260,6 @@ export default function RecuPaiement({ recu, onClose }: RecuPaiementProps) {
 
               {/* Corps */}
               <div style={{ padding: "32px 40px" }}>
-                {/* Montant reçu */}
-                <div
-                  style={{
-                    background: "linear-gradient(135deg, #f0f9ff, #e0f2fe)",
-                    border: "1px solid #bae6fd",
-                    borderRadius: "12px",
-                    padding: "20px",
-                    textAlign: "center",
-                    marginBottom: "16px",
-                  }}
-                >
-                  <div style={{ fontSize: "12px", color: "#0369a1", fontWeight: 500 }}>
-                    Montant reçu
-                  </div>
-                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#1e3a5f", margin: "4px 0" }}>
-                    {Number(recu.montant).toLocaleString("fr-FR")}
-                  </div>
-                  <div style={{ fontSize: "14px", color: "#0369a1", fontWeight: 600 }}>GNF</div>
-                </div>
-
-                {/* ⭐ MONTANT TOTAL ET RESTE À PAYER ⭐ */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "24px" }}>
                   <div style={{
                     background: "#eff6ff",
@@ -308,7 +284,7 @@ export default function RecuPaiement({ recu, onClose }: RecuPaiementProps) {
                     textAlign: "center"
                   }}>
                     <div style={{ fontSize: "11px", color: "#15803d", fontWeight: 500 }}>
-                      Déjà payé
+                      Montant payé
                     </div>
                     <div style={{ fontSize: "18px", fontWeight: 700, color: "#15803d" }}>
                       {totalPaye.toLocaleString("fr-FR")} GNF

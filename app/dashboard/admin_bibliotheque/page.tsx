@@ -81,7 +81,7 @@ export default function AdminTransportBibliothequeDashboard() {
             <Library className="w-7 h-7 text-purple-600" />
             Dashboard Bibliothèque
           </h1>
-          <p className="text-gray-500 mt-1">Gestion des livres et des emprunts</p>
+          <p className="text-gray-900 mt-1">Gestion des livres et des emprunts</p>
         </div>
         <div className="flex gap-2">
           <Link
@@ -104,22 +104,22 @@ export default function AdminTransportBibliothequeDashboard() {
       {/* Statistiques */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Total livres</p>
+          <p className="text-gray-900 text-xs">Total livres</p>
           <p className="text-2xl font-bold text-blue-600">{stats.totalLivres}</p>
           <BookOpen className="w-4 h-4 text-blue-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Disponibles</p>
+          <p className="text-gray-900 text-xs">Disponibles</p>
           <p className="text-2xl font-bold text-green-600">{stats.livresDispos}</p>
           <CheckCircle className="w-4 h-4 text-green-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">Emprunts en cours</p>
+          <p className="text-gray-900 text-xs">Emprunts en cours</p>
           <p className="text-2xl font-bold text-orange-600">{stats.empruntsActifs}</p>
           <BookMarked className="w-4 h-4 text-orange-200 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-xs">En retard</p>
+          <p className="text-gray-900 text-xs">En retard</p>
           <p className="text-2xl font-bold text-red-600">{stats.empruntsRetard}</p>
           <AlertCircle className="w-4 h-4 text-red-200 mt-1" />
         </div>
@@ -134,11 +134,11 @@ export default function AdminTransportBibliothequeDashboard() {
           </h3>
           <div className="space-y-2">
             <div className="flex justify-between border-b border-gray-100 pb-2">
-              <span className="text-gray-500">Total emprunts</span>
+              <span className="text-gray-900">Total emprunts</span>
               <span className="font-medium">{stats.totalEmprunts}</span>
             </div>
             <div className="flex justify-between border-b border-gray-100 pb-2">
-              <span className="text-gray-500">Taux d'occupation</span>
+              <span className="text-gray-900">Taux d'occupation</span>
               <span className="font-medium">
                 {stats.totalLivres > 0
                   ? Math.round(((stats.totalLivres - stats.livresDispos) / stats.totalLivres) * 100)
@@ -146,7 +146,7 @@ export default function AdminTransportBibliothequeDashboard() {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Livres par catégorie</span>
+              <span className="text-gray-900">Livres par catégorie</span>
               <span className="font-medium">{new Set(livres.map(l => l.categorie)).size}</span>
             </div>
           </div>
@@ -161,10 +161,10 @@ export default function AdminTransportBibliothequeDashboard() {
             {emprunts.slice(0, 5).map((e) => (
               <div key={e.id} className="flex justify-between items-center border-b border-gray-100 pb-2 text-sm">
                 <span className="text-gray-600 truncate max-w-[120px]">{e.livre_titre}</span>
-                <span className="text-gray-500 text-xs">{e.eleve_nom}</span>
+                <span className="text-gray-900 text-xs">{e.eleve_nom}</span>
                 <span className={`text-xs ${e.statut === 'retourne' ? 'text-green-600' :
-                    e.statut === 'en_retard' ? 'text-red-600' :
-                      'text-orange-600'
+                  e.statut === 'en_retard' ? 'text-red-600' :
+                    'text-orange-600'
                   }`}>
                   {e.statut === 'retourne' ? '✅' :
                     e.statut === 'en_retard' ? '⚠️' :
@@ -173,7 +173,7 @@ export default function AdminTransportBibliothequeDashboard() {
               </div>
             ))}
             {emprunts.length === 0 && (
-              <p className="text-gray-400 text-sm text-center py-4">Aucun emprunt</p>
+              <p className="text-gray-900 text-sm text-center py-4">Aucun emprunt</p>
             )}
           </div>
         </div>

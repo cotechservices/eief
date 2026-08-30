@@ -3,9 +3,9 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { 
-  Bus, LayoutDashboard, FileText, Users, Route, Calendar, 
-  TrendingUp, CreditCard, AlertCircle 
+import {
+  Bus, LayoutDashboard, FileText, Users, Route, Calendar,
+  TrendingUp, CreditCard, AlertCircle
 } from "lucide-react";
 import Link from "next/link";
 
@@ -20,7 +20,7 @@ interface Stats {
 export default function AdminTransportDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  
+
   // ⭐ État pour stocker les données réelles
   const [stats, setStats] = useState<Stats>({
     totalBus: 0,
@@ -36,15 +36,15 @@ export default function AdminTransportDashboard() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch('/api/admin/transport');
-      
+
       if (!response.ok) {
         throw new Error(`Erreur ${response.status}: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Mettre à jour les statistiques avec les données réelles
       if (data.stats) {
         setStats({
@@ -66,12 +66,12 @@ export default function AdminTransportDashboard() {
   useEffect(() => {
     console.log("=== ADMIN TRANSPORT DASHBOARD ===");
     console.log("Session:", session);
-    
+
     if (status === "unauthenticated") {
       router.push("/login");
       return;
     }
-    
+
     // Charger les données si l'utilisateur est authentifié
     if (status === "authenticated") {
       fetchStats();
@@ -104,12 +104,12 @@ export default function AdminTransportDashboard() {
             <Bus className="w-7 h-7 text-purple-600" />
             Dashboard Transport
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-900 mt-1">
             Bienvenue {(session?.user as any)?.prenom} {(session?.user as any)?.nom}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-900">
             Dernière mise à jour : {new Date().toLocaleString()}
           </span>
           <button
@@ -137,7 +137,7 @@ export default function AdminTransportDashboard() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 font-medium">Véhicules</p>
+              <p className="text-sm text-gray-900 font-medium">Véhicules</p>
               <p className="text-3xl font-bold text-gray-900">{stats.totalBus}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
@@ -149,7 +149,7 @@ export default function AdminTransportDashboard() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 font-medium">Lignes</p>
+              <p className="text-sm text-gray-900 font-medium">Lignes</p>
               <p className="text-3xl font-bold text-gray-900">{stats.totalBus}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -161,7 +161,7 @@ export default function AdminTransportDashboard() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 font-medium">Élèves inscrits</p>
+              <p className="text-sm text-gray-900 font-medium">Élèves inscrits</p>
               <p className="text-3xl font-bold text-gray-900">{stats.totalInscrits}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
@@ -173,7 +173,7 @@ export default function AdminTransportDashboard() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 font-medium">Taux d'occupation</p>
+              <p className="text-sm text-gray-900 font-medium">Taux d'occupation</p>
               <p className="text-3xl font-bold text-gray-900">{stats.tauxRemplissage}%</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
@@ -188,7 +188,7 @@ export default function AdminTransportDashboard() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 font-medium">Recettes du mois</p>
+              <p className="text-sm text-gray-900 font-medium">Recettes du mois</p>
               <p className="text-3xl font-bold text-green-600">
                 {stats.recettesMois.toLocaleString()} GNF
               </p>
@@ -202,7 +202,7 @@ export default function AdminTransportDashboard() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 font-medium">Trajets aujourd'hui</p>
+              <p className="text-sm text-gray-900 font-medium">Trajets aujourd'hui</p>
               <p className="text-3xl font-bold text-blue-600">
                 {stats.totalBus > 0 ? stats.totalBus : 0}
               </p>
@@ -260,23 +260,23 @@ export default function AdminTransportDashboard() {
           </h2>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between py-2 border-b border-gray-50">
-              <span className="text-gray-500">👤 Utilisateur</span>
+              <span className="text-gray-900">👤 Utilisateur</span>
               <span className="font-medium text-gray-900">{(session?.user as any)?.prenom} {(session?.user as any)?.nom}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-50">
-              <span className="text-gray-500">📧 Email</span>
+              <span className="text-gray-900">📧 Email</span>
               <span className="font-medium text-gray-900">{session.user?.email}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-50">
-              <span className="text-gray-500">🎯 Rôle</span>
+              <span className="text-gray-900">🎯 Rôle</span>
               <span className="font-medium text-purple-600">{session.user?.role}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-50">
-              <span className="text-gray-500">🕐 Dernière connexion</span>
+              <span className="text-gray-900">🕐 Dernière connexion</span>
               <span className="font-medium text-gray-900">{new Date().toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-2">
-              <span className="text-gray-500">📊 Total véhicules</span>
+              <span className="text-gray-900">📊 Total véhicules</span>
               <span className="font-medium text-gray-900">{stats.totalBus}</span>
             </div>
           </div>
@@ -284,7 +284,7 @@ export default function AdminTransportDashboard() {
       </div>
 
       {/* Pied de page */}
-      <div className="text-center text-xs text-gray-400 pt-4 border-t border-gray-100">
+      <div className="text-center text-xs text-gray-900 pt-4 border-t border-gray-100">
         <p>© {new Date().getFullYear()} E.I.E.F - Module Transport</p>
       </div>
     </div>

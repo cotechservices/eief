@@ -153,7 +153,7 @@ export default function RegisterSuccessPage() {
               <p className="text-sm text-gray-700">
                 Redirection vers votre dashboard dans {countdown} secondes...
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-900 mt-1">
                 {session.user.name || session.user.email} • {getRoleLabel((session.user as any).role)}
               </p>
             </div>
@@ -185,7 +185,7 @@ export default function RegisterSuccessPage() {
           </div>
 
           {session?.user && (
-            <p className="text-xs text-gray-500 mt-4">
+            <p className="text-xs text-gray-900 mt-4">
               Connecté en tant que {session.user.name || session.user.email}
               <span className="ml-1 text-blue-600">
                 ({getRoleLabel((session.user as any).role)})

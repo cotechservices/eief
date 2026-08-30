@@ -60,7 +60,7 @@ export default function AdminCommandesPage() {
     try {
       const params = new URLSearchParams();
       if (filterStatut !== "all") params.append("statut", filterStatut);
-      
+
       const response = await fetch(`/api/admin/librairie/commandes?${params}`);
       if (response.ok) {
         const data = await response.json();
@@ -170,7 +170,7 @@ export default function AdminCommandesPage() {
                     </td>
                     <td className="px-4 py-4">
                       <p className="font-medium text-black">{commande.parent_prenom} {commande.parent_nom}</p>
-                      <p className="text-xs text-gray-500">{commande.parent_email}</p>
+                      <p className="text-xs text-gray-900">{commande.parent_email}</p>
                     </td>
                     <td className="px-4 py-4 text-right font-bold text-green-600">
                       {commande.total.toLocaleString()} GNF
@@ -213,7 +213,7 @@ export default function AdminCommandesPage() {
                   <h2 className="text-xl font-bold text-black">Détail de la commande</h2>
                   <p className="text-sm text-gray-600 font-mono">{selectedCommande.numero_commande}</p>
                 </div>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-500 hover:text-gray-700">
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-700">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -228,19 +228,19 @@ export default function AdminCommandesPage() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-gray-500">Nom complet</p>
+                    <p className="text-xs text-gray-900">Nom complet</p>
                     <p className="font-medium">{selectedCommande.parent_prenom} {selectedCommande.parent_nom}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Email</p>
+                    <p className="text-xs text-gray-900">Email</p>
                     <p className="font-medium">{selectedCommande.parent_email}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Téléphone</p>
+                    <p className="text-xs text-gray-900">Téléphone</p>
                     <p className="font-medium">{selectedCommande.parent_telephone || "Non renseigné"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Statut</p>
+                    <p className="text-xs text-gray-900">Statut</p>
                     {getStatutBadge(selectedCommande.statut)}
                   </div>
                 </div>
@@ -254,7 +254,7 @@ export default function AdminCommandesPage() {
                     <div key={article.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
                       <div>
                         <p className="font-medium text-black">{article.nom}</p>
-                        <p className="text-xs text-gray-500">x{article.quantite} × {article.prix_unitaire.toLocaleString()} GNF</p>
+                        <p className="text-xs text-gray-900">x{article.quantite} × {article.prix_unitaire.toLocaleString()} GNF</p>
                       </div>
                       <p className="font-bold text-green-600">{article.total.toLocaleString()} GNF</p>
                     </div>
@@ -326,7 +326,7 @@ export default function AdminCommandesPage() {
 
             <div className="p-6">
               <p className="text-gray-900 mb-4">
-                {actionStatut === "valide" 
+                {actionStatut === "valide"
                   ? "Cette action validera la commande et mettra à jour le stock."
                   : "Cette action rejettera la commande."}
               </p>
@@ -341,11 +341,10 @@ export default function AdminCommandesPage() {
                 <button
                   onClick={() => handleUpdateStatut(selectedCommande.id, actionStatut)}
                   disabled={processing}
-                  className={`flex-1 py-2.5 rounded-lg transition font-medium flex items-center justify-center gap-2 ${
-                    actionStatut === "valide" 
-                      ? "bg-green-600 hover:bg-green-700 text-white" 
+                  className={`flex-1 py-2.5 rounded-lg transition font-medium flex items-center justify-center gap-2 ${actionStatut === "valide"
+                      ? "bg-green-600 hover:bg-green-700 text-white"
                       : "bg-red-600 hover:bg-red-700 text-white"
-                  } disabled:opacity-50`}
+                    } disabled:opacity-50`}
                 >
                   {processing ? (
                     <>

@@ -2,18 +2,18 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Users, 
-  GraduationCap, 
-  FileText, 
-  BarChart3, 
-  Loader2, 
-  ArrowRight, 
-  PlusCircle, 
-  Printer, 
-  CheckCircle2, 
-  Clock, 
-  BookOpen, 
+import {
+  Users,
+  GraduationCap,
+  FileText,
+  BarChart3,
+  Loader2,
+  ArrowRight,
+  PlusCircle,
+  Printer,
+  CheckCircle2,
+  Clock,
+  BookOpen,
   AlertCircle,
   RefreshCw
 } from "lucide-react";
@@ -74,7 +74,7 @@ export default function DirecteurEtudesDashboard() {
     return (
       <div className="flex flex-col justify-center items-center min-h-[60vh] gap-3">
         <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-        <p className="text-sm font-medium text-gray-500">Chargement du tableau de bord...</p>
+        <p className="text-sm font-medium text-gray-900">Chargement du tableau de bord...</p>
       </div>
     );
   }
@@ -85,7 +85,7 @@ export default function DirecteurEtudesDashboard() {
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
         <h3 className="text-lg font-semibold text-red-900">Erreur de chargement</h3>
         <p className="text-sm text-red-600 mt-1 mb-4">{error}</p>
-        <button 
+        <button
           onClick={fetchStats}
           className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition shadow-sm"
         >
@@ -100,33 +100,33 @@ export default function DirecteurEtudesDashboard() {
     : 0;
 
   const stats = [
-    { 
-      title: "Classes actives", 
-      value: statsData?.classesActives || 0, 
+    {
+      title: "Classes actives",
+      value: statsData?.classesActives || 0,
       subtitle: "Classes sous supervision",
-      icon: GraduationCap, 
-      color: "bg-blue-50 text-blue-600 border-blue-100" 
+      icon: GraduationCap,
+      color: "bg-blue-50 text-blue-600 border-blue-100"
     },
-    { 
-      title: "Élèves inscrits", 
-      value: statsData?.elevesInscrits || 0, 
+    {
+      title: "Élèves inscrits",
+      value: statsData?.elevesInscrits || 0,
       subtitle: "Effectif total scolarisé",
-      icon: Users, 
-      color: "bg-emerald-50 text-emerald-600 border-emerald-100" 
+      icon: Users,
+      color: "bg-emerald-50 text-emerald-600 border-emerald-100"
     },
-    { 
-      title: "Notes enregistrées", 
-      value: statsData?.notesSaisies || 0, 
+    {
+      title: "Notes enregistrées",
+      value: statsData?.notesSaisies || 0,
       subtitle: "Évaluations en BDD",
-      icon: FileText, 
-      color: "bg-indigo-50 text-indigo-600 border-indigo-100" 
+      icon: FileText,
+      color: "bg-indigo-50 text-indigo-600 border-indigo-100"
     },
-    { 
-      title: "Taux d'évaluation", 
-      value: `${evaluesPourcentage}%`, 
+    {
+      title: "Taux d'évaluation",
+      value: `${evaluesPourcentage}%`,
       subtitle: `${statsData?.elevesEvalues || 0} élèves avec notes`,
-      icon: BarChart3, 
-      color: "bg-amber-50 text-amber-600 border-amber-100" 
+      icon: BarChart3,
+      color: "bg-amber-50 text-amber-600 border-amber-100"
     },
   ];
 
@@ -152,14 +152,14 @@ export default function DirecteurEtudesDashboard() {
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <button 
+            <button
               onClick={fetchStats}
               className="p-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-white transition border border-white/10"
               title="Rafraîchir les données"
             >
               <RefreshCw className="w-5 h-5" />
             </button>
-            <Link 
+            <Link
               href="/dashboard/directeur_etudes/notes"
               className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold transition shadow-lg shadow-blue-500/30"
             >
@@ -174,19 +174,19 @@ export default function DirecteurEtudesDashboard() {
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all flex flex-col justify-between"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{stat.title}</span>
+                <span className="text-xs font-semibold text-gray-900 uppercase tracking-wider">{stat.title}</span>
                 <div className={`p-3 rounded-xl border ${stat.color}`}>
                   <Icon className="w-5 h-5" />
                 </div>
               </div>
               <div>
                 <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stat.value}</h3>
-                <p className="text-xs font-medium text-gray-500 mt-1">{stat.subtitle}</p>
+                <p className="text-xs font-medium text-gray-900 mt-1">{stat.subtitle}</p>
               </div>
             </div>
           );
@@ -204,7 +204,7 @@ export default function DirecteurEtudesDashboard() {
               Accédez aux fiches de saisie par classe et matière pour renseigner et réviser les notes.
             </p>
           </div>
-          <Link 
+          <Link
             href="/dashboard/directeur_etudes/notes"
             className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition whitespace-nowrap shadow-sm"
           >
@@ -221,7 +221,7 @@ export default function DirecteurEtudesDashboard() {
               Générez et imprimez les bulletins scolaires avec moyennes générales et classement par rang.
             </p>
           </div>
-          <Link 
+          <Link
             href="/dashboard/directeur_etudes/bulletins"
             className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition whitespace-nowrap shadow-sm"
           >
@@ -232,7 +232,7 @@ export default function DirecteurEtudesDashboard() {
 
       {/* MAIN TWO COLUMN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* LEFT COLUMN: DERNIÈRES NOTES SAISIES */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
           <div className="flex justify-between items-center pb-3 border-b border-gray-100">
@@ -240,9 +240,9 @@ export default function DirecteurEtudesDashboard() {
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-blue-600" /> Dernières Notes Saisies
               </h2>
-              <p className="text-xs text-gray-500">Historique récent des évaluations entrées en BDD</p>
+              <p className="text-xs text-gray-900">Historique récent des évaluations entrées en BDD</p>
             </div>
-            <Link 
+            <Link
               href="/dashboard/directeur_etudes/notes"
               className="text-xs font-bold text-blue-600 hover:text-blue-800 transition flex items-center gap-1"
             >
@@ -251,7 +251,7 @@ export default function DirecteurEtudesDashboard() {
           </div>
 
           {!statsData?.recentNotes || statsData.recentNotes.length === 0 ? (
-            <div className="p-8 text-center text-gray-400 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+            <div className="p-8 text-center text-gray-900 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
               <FileText className="w-10 h-10 mx-auto mb-2 opacity-50" />
               <p className="text-sm font-medium">Aucune note enregistrée récemment</p>
             </div>
@@ -259,7 +259,7 @@ export default function DirecteurEtudesDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 text-xs text-gray-400 uppercase font-semibold">
+                  <tr className="border-b border-gray-100 text-xs text-gray-900 uppercase font-semibold">
                     <th className="pb-3">Élève</th>
                     <th className="pb-3">Classe</th>
                     <th className="pb-3">Matière</th>
@@ -281,14 +281,13 @@ export default function DirecteurEtudesDashboard() {
                       <td className="py-3 text-gray-700 font-medium">{note.matiere_nom}</td>
                       <td className="py-3 font-bold text-blue-600">
                         {note.valeur}/20
-                        <span className="text-[10px] text-gray-400 font-normal ml-1">(coef {note.coefficient})</span>
+                        <span className="text-[10px] text-gray-900 font-normal ml-1">(coef {note.coefficient})</span>
                       </td>
                       <td className="py-3">
-                        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                          note.type_note === 'examen' 
-                            ? 'bg-purple-100 text-purple-700' 
-                            : 'bg-blue-100 text-blue-700'
-                        }`}>
+                        <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${note.type_note === 'examen'
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'bg-blue-100 text-blue-700'
+                          }`}>
                           {note.type_note || 'devoir'}
                         </span>
                       </td>
@@ -307,25 +306,25 @@ export default function DirecteurEtudesDashboard() {
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <GraduationCap className="w-5 h-5 text-emerald-600" /> Vue des Classes
               </h2>
-              <p className="text-xs text-gray-500">Supervision des effectifs et évaluations</p>
+              <p className="text-xs text-gray-900">Supervision des effectifs et évaluations</p>
             </div>
           </div>
 
           {!statsData?.classesOverview || statsData.classesOverview.length === 0 ? (
-            <div className="p-8 text-center text-gray-400 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+            <div className="p-8 text-center text-gray-900 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
               <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
               <p className="text-sm font-medium">Aucune classe disponible</p>
             </div>
           ) : (
             <div className="space-y-3">
               {statsData.classesOverview.map((cls) => (
-                <div 
+                <div
                   key={cls.id}
                   className="p-3.5 bg-gray-50/80 hover:bg-emerald-50/50 rounded-xl border border-gray-100 transition flex items-center justify-between"
                 >
                   <div>
                     <h4 className="font-bold text-gray-900 text-sm">{cls.nom}</h4>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-900 mt-0.5">
                       {cls.total_eleves} élève{cls.total_eleves > 1 ? 's' : ''} inscrit{cls.total_eleves > 1 ? 's' : ''}
                     </p>
                   </div>

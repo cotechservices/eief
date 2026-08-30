@@ -73,7 +73,7 @@ export default function EnseignantDevoirsPage() {
             <FileText className="w-6 h-6 text-orange-500" />
             Gestion des Devoirs
           </h1>
-          <p className="text-gray-500 mt-1">Vos devoirs publiés et suivi des soumissions</p>
+          <p className="text-gray-900 mt-1">Vos devoirs publiés et suivi des soumissions</p>
         </div>
         <Link
           href="/dashboard/enseignant/devoirs/nouveau"
@@ -85,7 +85,7 @@ export default function EnseignantDevoirsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {devoirs.length === 0 ? (
-          <div className="col-span-full bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-400">
+          <div className="col-span-full bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-900">
             <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="font-medium text-gray-600">Aucun devoir publié</p>
             <p className="text-sm mt-1">Cliquez sur "Créer un devoir" pour commencer.</p>
@@ -95,7 +95,7 @@ export default function EnseignantDevoirsPage() {
             const tauxSoumission = devoir.nb_eleves_classe > 0
               ? Math.round((devoir.nb_soumissions / devoir.nb_eleves_classe) * 100)
               : 0;
-              
+
             const isFinished = devoir.nb_notes === devoir.nb_soumissions && devoir.nb_soumissions > 0;
 
             return (
@@ -105,18 +105,18 @@ export default function EnseignantDevoirsPage() {
                     <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2.5 py-1 rounded-lg">
                       {devoir.classe}
                     </span>
-                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                    <span className="text-xs text-gray-900 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {new Date(devoir.date_publication).toLocaleDateString("fr-FR")}
                     </span>
                   </div>
                   <h3 className="font-bold text-gray-900 leading-tight">{devoir.titre}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{devoir.matiere}</p>
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-sm text-gray-900 mt-1">{devoir.matiere}</p>
+                  <p className="text-xs text-gray-900 mt-2">
                     À rendre avant le {new Date(devoir.date_limite).toLocaleDateString("fr-FR")}
                   </p>
                 </div>
-                
+
                 <div className="bg-gray-50 p-5">
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-600 font-medium flex items-center gap-1">
@@ -126,11 +126,11 @@ export default function EnseignantDevoirsPage() {
                       {devoir.nb_soumissions} / {devoir.nb_eleves_classe}
                     </span>
                   </div>
-                  
+
                   {/* Progress bar */}
                   <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden mb-4">
-                    <div 
-                      className={`h-full ${tauxSoumission === 100 ? 'bg-green-500' : 'bg-orange-500'}`} 
+                    <div
+                      className={`h-full ${tauxSoumission === 100 ? 'bg-green-500' : 'bg-orange-500'}`}
                       style={{ width: `${tauxSoumission}%` }}
                     />
                   </div>
@@ -146,7 +146,7 @@ export default function EnseignantDevoirsPage() {
                           <AlertCircle className="w-3.5 h-3.5" /> {devoir.nb_soumissions - devoir.nb_notes} à noter
                         </span>
                       ) : (
-                        <span className="text-gray-400">En attente des élèves</span>
+                        <span className="text-gray-900">En attente des élèves</span>
                       )}
                     </div>
                     <Link

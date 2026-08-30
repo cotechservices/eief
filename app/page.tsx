@@ -58,7 +58,7 @@ export default function HomePage() {
         const res = await fetch("/api/public-stats");
         const data = await res.json();
         console.log("Stats reçues:", data);
-        
+
         if (data && typeof data.students === "number") {
           setTargetStats({
             students: data.students || 0,
@@ -71,7 +71,7 @@ export default function HomePage() {
         console.error("Erreur chargement public stats:", err);
       }
     }
-    
+
     fetchStats();
   }, []);
 
@@ -293,7 +293,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h2 className="text-3xl text-white font-bold mb-4">
-              École Internationale des Enfants Futur
+              École Internationale les Enfants du Futur
             </h2>
             <p className="text-gray-100 max-w-2xl mx-auto">
               Une éducation d'excellence pour former les leaders de demain.

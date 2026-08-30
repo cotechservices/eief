@@ -99,10 +99,10 @@ export default function BadgeEleveModal({ isOpen, onClose, eleve }: EleveBadgePr
         {/* Corps du Modal - Aperçu des cartes (Recto & Verso) */}
         <div className="p-6 bg-gray-50 flex flex-col items-center space-y-6">
           <div ref={printRef} className="flex flex-col md:flex-row gap-6 items-center justify-center">
-            
+
             {/* ==================== RECTO DU BADGE ==================== */}
             <div className="badge-card w-[340px] h-[215px] bg-gradient-to-br from-blue-900 via-indigo-900 to-blue-950 rounded-2xl shadow-xl text-white p-3.5 relative overflow-hidden border-2 border-amber-400/40 flex flex-col justify-between shrink-0">
-              
+
               {/* Effet visuel d'arrière-plan */}
               <div className="absolute -right-8 -top-8 w-28 h-28 bg-amber-400/10 rounded-full blur-xl pointer-events-none"></div>
               <div className="absolute -left-8 -bottom-8 w-28 h-28 bg-blue-400/10 rounded-full blur-xl pointer-events-none"></div>
@@ -152,7 +152,7 @@ export default function BadgeEleveModal({ isOpen, onClose, eleve }: EleveBadgePr
                   <h4 className="font-black text-sm text-white truncate leading-tight uppercase tracking-tight">
                     {eleve.enfant_prenom} {eleve.enfant_nom}
                   </h4>
-                  
+
                   <div className="text-[10px] space-y-0.5 text-blue-100">
                     <div className="flex items-center gap-1 font-semibold text-amber-200">
                       <GraduationCap className="w-3 h-3 text-amber-400 shrink-0" />
@@ -194,7 +194,7 @@ export default function BadgeEleveModal({ isOpen, onClose, eleve }: EleveBadgePr
 
             {/* ==================== VERSO DU BADGE ==================== */}
             <div className="badge-card w-[340px] h-[215px] bg-white rounded-2xl shadow-xl text-gray-800 p-3.5 relative overflow-hidden border-2 border-blue-900/30 flex flex-col justify-between shrink-0">
-              
+
               {/* En-tête Verso */}
               <div className="border-b pb-1.5 flex justify-between items-center">
                 <h4 className="text-[11px] font-extrabold text-blue-950 uppercase tracking-wider flex items-center gap-1">
@@ -220,22 +220,22 @@ export default function BadgeEleveModal({ isOpen, onClose, eleve }: EleveBadgePr
                   )}
                 </div>
 
-                <div className="text-[8.5px] text-gray-500 italic leading-tight text-center px-1">
+                <div className="text-[8.5px] text-gray-900 italic leading-tight text-center px-1">
                   "Cette carte est strictement personnelle. En cas de perte ou de sinistre, merci de contacter immédiatement le secrétariat de l'école."
                 </div>
               </div>
 
               {/* Cachet & Signature */}
               <div className="border-t pt-1 flex justify-between items-end">
-                <div className="text-[8px] text-gray-400">
+                <div className="text-[8px] text-gray-900">
                   <p className="font-semibold text-gray-600">E.I.E.F Conakry</p>
                   <p>République de Guinée</p>
                 </div>
                 <div className="text-center">
-                  <div className="w-16 h-6 border-b border-dashed border-gray-400 flex items-center justify-center text-[7.5px] font-serif text-blue-900 italic font-bold">
+                  <div className="w-16 h-6 border-b border-dashed border-gray-900 flex items-center justify-center text-[7.5px] font-serif text-blue-900 italic font-bold">
                     Direction EIEF
                   </div>
-                  <span className="text-[7px] text-gray-400 block uppercase tracking-tighter">Signature & Cachet</span>
+                  <span className="text-[7px] text-gray-900 block uppercase tracking-tighter">Signature & Cachet</span>
                 </div>
               </div>
 

@@ -4,9 +4,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { 
-  ArrowLeft, Award, Users, Printer, CheckCircle, 
-  TrendingUp, BookOpen, File, FileText, Image, Download 
+import {
+  ArrowLeft, Award, Users, Printer, CheckCircle,
+  TrendingUp, BookOpen, File, FileText, Image, Download
 } from "lucide-react";
 
 interface Resultat {
@@ -32,7 +32,7 @@ interface Examen {
 export default function ResultatsQCMPage() {
   const params = useParams();
   const examenId = params.id as string;
-  
+
   const [resultats, setResultats] = useState<Resultat[]>([]);
   const [examen, setExamen] = useState<Examen | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ export default function ResultatsQCMPage() {
       setLoading(false);
       return;
     }
-    
+
     fetch(`/api/enseignant/evaluations/${examenId}/resultats`)
       .then((r) => r.json())
       .then((d) => {
@@ -69,7 +69,7 @@ export default function ResultatsQCMPage() {
 
   if (!examen) {
     return (
-      <div className="text-center py-16 text-gray-500">
+      <div className="text-center py-16 text-gray-900">
         <Award className="w-12 h-12 mx-auto mb-3 opacity-30" />
         <p>Évaluation introuvable ou vous n'avez pas l'accès.</p>
         <Link href="/dashboard/enseignant/evaluations" className="text-purple-600 text-sm mt-2 block hover:underline">
@@ -80,8 +80,8 @@ export default function ResultatsQCMPage() {
   }
 
   const notesNumber = resultats.map(r => parseFloat(r.note));
-  const moyenneClass = notesNumber.length > 0 
-    ? (notesNumber.reduce((a,b) => a+b, 0) / notesNumber.length).toFixed(2) 
+  const moyenneClass = notesNumber.length > 0
+    ? (notesNumber.reduce((a, b) => a + b, 0) / notesNumber.length).toFixed(2)
     : "0.00";
   const maxNote = notesNumber.length > 0 ? Math.max(...notesNumber).toFixed(2) : "0.00";
   const minNote = notesNumber.length > 0 ? Math.min(...notesNumber).toFixed(2) : "0.00";
@@ -91,7 +91,7 @@ export default function ResultatsQCMPage() {
   const getFileIcon = (url: string) => {
     if (url.endsWith('.pdf')) return <FileText className="w-4 h-4 text-red-500" />;
     if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) return <Image className="w-4 h-4 text-green-500" />;
-    return <File className="w-4 h-4 text-gray-500" />;
+    return <File className="w-4 h-4 text-gray-900" />;
   };
 
   return (
@@ -99,7 +99,7 @@ export default function ResultatsQCMPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <Link
           href="/dashboard/enseignant/evaluations"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-purple-600 text-sm font-medium transition"
+          className="inline-flex items-center gap-2 text-gray-900 hover:text-purple-600 text-sm font-medium transition"
         >
           <ArrowLeft className="w-4 h-4" /> Retour aux évaluations
         </Link>
@@ -122,15 +122,15 @@ export default function ResultatsQCMPage() {
               <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 font-medium">
                 <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-purple-500" /> {examen.classe}</span>
               </div>
-              
+
               {/* ⭐ Affichage du fichier joint */}
               {examen.fichier_url && (
                 <div className="mt-3 flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-purple-200 inline-flex">
                   {getFileIcon(examen.fichier_url)}
                   <span className="text-xs font-medium text-gray-600">Fichier joint :</span>
-                  <a 
-                    href={examen.fichier_url} 
-                    target="_blank" 
+                  <a
+                    href={examen.fichier_url}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-purple-700 hover:text-purple-900 font-semibold hover:underline flex items-center gap-1"
                   >
@@ -140,21 +140,21 @@ export default function ResultatsQCMPage() {
                 </div>
               )}
             </div>
-            
+
             <div className="flex gap-4">
               <div className="bg-white p-4 rounded-xl border border-purple-100 shadow-sm text-center min-w-[120px]">
-                <p className="text-xs text-gray-500 font-semibold mb-1 uppercase">Moyenne</p>
+                <p className="text-xs text-gray-900 font-semibold mb-1 uppercase">Moyenne</p>
                 <p className="text-3xl font-black text-purple-600">{moyenneClass}<span className="text-lg text-purple-400">/20</span></p>
               </div>
               <div className="bg-white p-4 rounded-xl border border-purple-100 shadow-sm text-center min-w-[120px]">
-                <p className="text-xs text-gray-500 font-semibold mb-1 uppercase">Taux réussite</p>
+                <p className="text-xs text-gray-900 font-semibold mb-1 uppercase">Taux réussite</p>
                 <p className="text-3xl font-black text-green-600">
                   {resultats.length > 0 ? Math.round((reussites / resultats.length) * 100) : 0}%
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white px-6 py-4 flex flex-wrap justify-between items-center text-sm font-medium border-t border-purple-100">
             <div className="flex gap-6">
               <span className="text-gray-600">Participants : <strong className="text-gray-900">{resultats.length}</strong></span>
@@ -178,7 +178,7 @@ export default function ResultatsQCMPage() {
               <tbody className="divide-y divide-gray-100">
                 {resultats.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-gray-400">
+                    <td colSpan={4} className="px-6 py-8 text-center text-gray-900">
                       Aucun élève n'a encore passé cet examen.
                     </td>
                   </tr>
@@ -189,10 +189,10 @@ export default function ResultatsQCMPage() {
                       <tr key={res.eleve_id} className="hover:bg-purple-50/50 transition">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <span className="text-gray-400 font-mono text-xs">{index + 1}.</span>
+                            <span className="text-gray-900 font-mono text-xs">{index + 1}.</span>
                             <div>
                               <p className="font-bold text-gray-900">{res.nom} {res.prenom}</p>
-                              <p className="text-xs text-gray-500">{res.email}</p>
+                              <p className="text-xs text-gray-900">{res.email}</p>
                             </div>
                           </div>
                         </td>
@@ -206,11 +206,10 @@ export default function ResultatsQCMPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className={`inline-flex items-center justify-center min-w-[3.5rem] px-2 py-1 rounded-xl font-bold text-base ${
-                            noteNum >= 14 ? "bg-green-100 text-green-700" :
+                          <span className={`inline-flex items-center justify-center min-w-[3.5rem] px-2 py-1 rounded-xl font-bold text-base ${noteNum >= 14 ? "bg-green-100 text-green-700" :
                             noteNum >= 10 ? "bg-orange-100 text-orange-700" :
-                            "bg-red-100 text-red-700"
-                          }`}>
+                              "bg-red-100 text-red-700"
+                            }`}>
                             {res.note}
                           </span>
                         </td>

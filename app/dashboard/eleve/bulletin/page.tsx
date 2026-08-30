@@ -59,15 +59,15 @@ export default function BulletinPage() {
     moy >= 14
       ? "text-green-700 font-bold"
       : moy >= 10
-      ? "text-orange-600 font-semibold"
-      : "text-red-600 font-bold";
+        ? "text-orange-600 font-semibold"
+        : "text-red-600 font-bold";
 
   const getMentionBg = (moy: number) =>
     moy >= 14
       ? "from-green-500 to-emerald-600"
       : moy >= 10
-      ? "from-orange-400 to-orange-500"
-      : "from-red-500 to-rose-600";
+        ? "from-orange-400 to-orange-500"
+        : "from-red-500 to-rose-600";
 
   const handlePrint = () => {
     window.print();
@@ -99,7 +99,7 @@ export default function BulletinPage() {
             <Award className="w-6 h-6 text-blue-600" />
             Bulletin de notes
           </h1>
-          <p className="text-gray-500 mt-1">Année scolaire {bulletin.eleve.annee_scolaire}</p>
+          <p className="text-gray-900 mt-1">Année scolaire {bulletin.eleve.annee_scolaire}</p>
         </div>
         <button
           onClick={handlePrint}
@@ -185,7 +185,7 @@ export default function BulletinPage() {
                       className={`text-lg ${getMoyenneStyle(ligne.moyenne)}`}
                     >
                       {ligne.moyenne.toFixed(2)}
-                      <span className="text-xs font-normal text-gray-400">/20</span>
+                      <span className="text-xs font-normal text-gray-900">/20</span>
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -195,7 +195,7 @@ export default function BulletinPage() {
                       {ligne.appreciation}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell">
+                  <td className="px-4 py-3 text-gray-900 text-xs hidden sm:table-cell">
                     {ligne.enseignant}
                   </td>
                 </tr>
@@ -211,7 +211,7 @@ export default function BulletinPage() {
                     className={`text-xl font-black ${getMoyenneStyle(bulletin.moyenneGenerale)}`}
                   >
                     {bulletin.moyenneGenerale.toFixed(2)}
-                    <span className="text-sm font-normal text-gray-400">/20</span>
+                    <span className="text-sm font-normal text-gray-900">/20</span>
                   </span>
                 </td>
                 <td className="px-4 py-4 text-center">
@@ -229,7 +229,7 @@ export default function BulletinPage() {
       </div>
 
       {/* Légende */}
-      <div className="bg-gray-50 rounded-2xl p-4 text-xs text-gray-500">
+      <div className="bg-gray-50 rounded-2xl p-4 text-xs text-gray-900">
         <p className="font-semibold mb-2 text-gray-700">Barème des mentions :</p>
         <div className="flex flex-wrap gap-3">
           {[
