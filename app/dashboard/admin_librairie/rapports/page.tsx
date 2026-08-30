@@ -384,7 +384,7 @@ export default function LibrairieRapportsPage() {
           </button>
           <button
             onClick={fetchData}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center gap-2"
+            className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center gap-2"
           >
             🔄 Rafraîchir
           </button>
@@ -439,7 +439,7 @@ export default function LibrairieRapportsPage() {
           onClick={() => setViewType('global')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'global'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <PieChart className="w-4 h-4 inline mr-2" />
@@ -449,7 +449,7 @@ export default function LibrairieRapportsPage() {
           onClick={() => setViewType('articles')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'articles'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <Package className="w-4 h-4 inline mr-2" />
@@ -459,7 +459,7 @@ export default function LibrairieRapportsPage() {
           onClick={() => setViewType('commandes')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'commandes'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <ShoppingCart className="w-4 h-4 inline mr-2" />
@@ -469,7 +469,7 @@ export default function LibrairieRapportsPage() {
           onClick={() => setViewType('ventes')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'ventes'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <TrendingUp className="w-4 h-4 inline mr-2" />
@@ -487,27 +487,27 @@ export default function LibrairieRapportsPage() {
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="text-gray-600">Articles disponibles</span>
+                <span className="text-gray-900">Articles disponibles</span>
                 <span className="font-bold text-blue-600">{stats.totalArticles}</span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="text-gray-600">Articles en stock</span>
+                <span className="text-gray-900">Articles en stock</span>
                 <span className="font-bold text-green-600">{stats.articlesEnStock}</span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="text-gray-600">Articles en rupture</span>
+                <span className="text-gray-900">Articles en rupture</span>
                 <span className="font-bold text-red-600">{stats.articlesRupture}</span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="text-gray-600">Commandes passées</span>
+                <span className="text-gray-900">Commandes passées</span>
                 <span className="font-bold text-purple-600">{stats.totalCommandes}</span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="text-gray-600">Commandes en attente</span>
+                <span className="text-gray-900">Commandes en attente</span>
                 <span className="font-bold text-orange-600">{stats.commandesEnAttente}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Ventes effectuées</span>
+                <span className="text-gray-900">Ventes effectuées</span>
                 <span className="font-bold text-indigo-600">{stats.totalVentes}</span>
               </div>
             </div>
@@ -519,10 +519,10 @@ export default function LibrairieRapportsPage() {
               Dernières activités
             </h3>
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-gray-700">Dernières ventes</h4>
+              <h4 className="text-sm font-medium text-gray-900">Dernières ventes</h4>
               {ventes.slice(0, 3).map((vente) => (
                 <div key={vente.id} className="flex justify-between items-center border-b border-gray-100 pb-2 text-sm">
-                  <span className="text-gray-600">
+                  <span className="text-gray-900">
                     {vente.quantite}x {vente.article_nom}
                   </span>
                   <span className="text-gray-900 text-xs">
@@ -534,7 +534,7 @@ export default function LibrairieRapportsPage() {
                 <p className="text-gray-900 text-sm">Aucune vente récente</p>
               )}
 
-              <h4 className="text-sm font-medium text-gray-700 mt-3">Dernières commandes</h4>
+              <h4 className="text-sm font-medium text-gray-900 mt-3">Dernières commandes</h4>
               {commandes.slice(0, 3).map((commande) => (
                 <div key={commande.id} className="flex justify-between items-center border-b border-gray-100 pb-2 text-sm">
                   <span className="font-mono text-xs text-purple-600">{commande.numero_commande}</span>
@@ -558,10 +558,10 @@ export default function LibrairieRapportsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Article</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Catégorie</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Stock</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Prix unitaire</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Article</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Catégorie</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Stock</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-900 uppercase">Prix unitaire</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -600,7 +600,7 @@ export default function LibrairieRapportsPage() {
                 {articles.length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-gray-900">
-                      <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <Package className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                       <p className="font-medium">Aucun article</p>
                     </td>
                   </tr>
@@ -618,10 +618,10 @@ export default function LibrairieRapportsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">N° Commande</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Parent</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Statut</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">N° Commande</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Parent</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Statut</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -649,7 +649,7 @@ export default function LibrairieRapportsPage() {
                 {commandes.length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-gray-900">
-                      <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                       <p className="font-medium">Aucune commande</p>
                     </td>
                   </tr>
@@ -667,11 +667,11 @@ export default function LibrairieRapportsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Article</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Élève</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Qté</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Vendeur</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Article</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Élève</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Qté</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Vendeur</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -683,7 +683,7 @@ export default function LibrairieRapportsPage() {
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {vente.article_nom}
                     </td>
-                    <td className="px-4 py-3 text-gray-600 text-sm">
+                    <td className="px-4 py-3 text-gray-900 text-sm">
                       {vente.eleve_nom || "Vente libre"}
                     </td>
                     <td className="px-4 py-3 text-center font-semibold">{vente.quantite}</td>
@@ -695,7 +695,7 @@ export default function LibrairieRapportsPage() {
                 {ventes.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-gray-900">
-                      <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                       <p className="font-medium">Aucune vente</p>
                     </td>
                   </tr>
@@ -718,7 +718,7 @@ export default function LibrairieRapportsPage() {
                 </h2>
                 <p className="text-sm text-gray-900 font-mono">{selectedCommande.numero_commande}</p>
               </div>
-              <button onClick={() => setShowCommandeDetail(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowCommandeDetail(false)} className="text-gray-900 hover:text-gray-900">
                 ✕
               </button>
             </div>

@@ -344,7 +344,7 @@ export default function AdminDashboard() {
           <div className="space-y-4">
             {(financieres.evolutionRecettes || []).map((item: any, idx: number) => (
               <div key={idx}>
-                <div className="flex justify-between text-sm mb-1">
+                <div className="flex justify-between text-sm mb-1 text-gray-900">
                   <span>{item.mois}</span>
                   <div className="flex gap-4">
                     <span className="text-green-600">{parseInt(item.recettes).toLocaleString()} GNF</span>
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
               const Icon = iconMap[cat.name] || DollarSign;
               const color = colorMap[cat.name] || "bg-gray-900";
               return (
-                <div key={idx} className="flex items-center gap-3">
+                <div key={idx} className="flex items-center gap-3 text-gray-900">
                   <div className={`w-8 h-8 ${color} rounded-lg flex items-center justify-center`}>
                     <Icon className="w-4 h-4 text-white" />
                   </div>
@@ -549,22 +549,22 @@ export default function AdminDashboard() {
             <div className="bg-blue-50 rounded-lg p-4 text-center">
               <Bus className="w-6 h-6 text-blue-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-blue-600">1</p>
-              <p className="text-xs text-gray-600">Bus</p>
+              <p className="text-xs text-gray-900">Bus</p>
             </div>
             <div className="bg-green-50 rounded-lg p-4 text-center">
               <BookOpen className="w-6 h-6 text-green-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-green-600">0</p>
-              <p className="text-xs text-gray-600">Livres</p>
+              <p className="text-xs text-gray-900">Livres</p>
             </div>
             <div className="bg-orange-50 rounded-lg p-4 text-center">
               <Utensils className="w-6 h-6 text-orange-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-orange-600">1</p>
-              <p className="text-xs text-gray-600">Menus cantine</p>
+              <p className="text-xs text-gray-900">Menus cantine</p>
             </div>
             <div className="bg-purple-50 rounded-lg p-4 text-center">
               <ShoppingCart className="w-6 h-6 text-purple-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-purple-600">1</p>
-              <p className="text-xs text-gray-600">Fournitures/Librairie</p>
+              <p className="text-xs text-gray-900">Fournitures/Librairie</p>
             </div>
           </div>
         </div>

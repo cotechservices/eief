@@ -148,27 +148,27 @@ export default function BulletinPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b">
-                <th className="px-4 py-3 text-left font-semibold text-gray-700">Matière</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-700">Coeff.</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-700">Moy. Devoirs</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-700">Moy. Compositions</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-700">Moyenne</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-700">Appréciation</th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-700 hidden sm:table-cell">Enseignant</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-900">Matière</th>
+                <th className="px-4 py-3 text-center font-semibold text-gray-900">Coeff.</th>
+                <th className="px-4 py-3 text-center font-semibold text-gray-900">Moy. Devoirs</th>
+                <th className="px-4 py-3 text-center font-semibold text-gray-900">Moy. Compositions</th>
+                <th className="px-4 py-3 text-center font-semibold text-gray-900">Moyenne</th>
+                <th className="px-4 py-3 text-center font-semibold text-gray-900">Appréciation</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-900 hidden sm:table-cell">Enseignant</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {bulletin.lignes.map((ligne, idx) => (
                 <tr key={idx} className="hover:bg-gray-50 transition">
                   <td className="px-4 py-3 font-medium text-gray-900">{ligne.matiere}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{ligne.coefficient}</td>
+                  <td className="px-4 py-3 text-center text-gray-900">{ligne.coefficient}</td>
                   <td className="px-4 py-3 text-center">
                     {ligne.moyenne_devoirs !== null ? (
                       <span className={getMoyenneStyle(ligne.moyenne_devoirs)}>
                         {ligne.moyenne_devoirs.toFixed(2)}
                       </span>
                     ) : (
-                      <span className="text-gray-300">—</span>
+                      <span className="text-gray-900">—</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -177,7 +177,7 @@ export default function BulletinPage() {
                         {ligne.moyenne_compositions.toFixed(2)}
                       </span>
                     ) : (
-                      <span className="text-gray-300">—</span>
+                      <span className="text-gray-900">—</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -230,7 +230,7 @@ export default function BulletinPage() {
 
       {/* Légende */}
       <div className="bg-gray-50 rounded-2xl p-4 text-xs text-gray-900">
-        <p className="font-semibold mb-2 text-gray-700">Barème des mentions :</p>
+        <p className="font-semibold mb-2 text-gray-900">Barème des mentions :</p>
         <div className="flex flex-wrap gap-3">
           {[
             { label: "Très Bien", min: 16, color: "bg-green-100 text-green-700" },

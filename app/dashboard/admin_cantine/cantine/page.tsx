@@ -243,14 +243,14 @@ export default function CantinePage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Plat</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Accompagnement</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Dessert</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Régime spécial</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Prix annuel</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Inscrits</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Présents</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Plat</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Accompagnement</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Dessert</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Régime spécial</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-900 uppercase">Prix annuel</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Inscrits</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Présents</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -262,8 +262,8 @@ export default function CantinePage() {
                       <span className="font-medium text-gray-900">{menu.plat}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{menu.accompagnement}</td>
-                  <td className="px-4 py-3 text-gray-600">{menu.dessert}</td>
+                  <td className="px-4 py-3 text-gray-900">{menu.accompagnement}</td>
+                  <td className="px-4 py-3 text-gray-900">{menu.dessert}</td>
                   <td className="px-4 py-3 text-center">
                     {menu.regime_special ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
@@ -302,7 +302,7 @@ export default function CantinePage() {
               {menusFiltres.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-4 py-12 text-center text-gray-900">
-                    <Utensils className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <Utensils className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                     <p className="font-medium">Aucun menu trouvé</p>
                     <p className="text-sm mt-1">Cliquez sur "Ajouter un menu" pour commencer</p>
                   </td>
@@ -321,14 +321,14 @@ export default function CantinePage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingMenu ? "Modifier le menu" : "Ajouter un menu"}
               </h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* Plat */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Plat principal *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Plat principal *</label>
                 <input
                   required
                   type="text"
@@ -341,7 +341,7 @@ export default function CantinePage() {
 
               {/* Accompagnement */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Accompagnement *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Accompagnement *</label>
                 <input
                   required
                   type="text"
@@ -354,7 +354,7 @@ export default function CantinePage() {
 
               {/* Dessert */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Dessert *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Dessert *</label>
                 <input
                   required
                   type="text"
@@ -367,7 +367,7 @@ export default function CantinePage() {
 
               {/* Prix annuel */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prix annuel (GNF)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Prix annuel (GNF)</label>
                 <input
                   type="number"
                   min="0"
@@ -389,7 +389,7 @@ export default function CantinePage() {
                   onChange={e => setFormData({ ...formData, regime_special: e.target.checked })}
                   className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
-                <label htmlFor="regime_special" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
+                <label htmlFor="regime_special" className="text-sm font-medium text-gray-900 select-none cursor-pointer">
                   Régime spécial disponible (végétarien, allergies...)
                 </label>
               </div>
@@ -399,7 +399,7 @@ export default function CantinePage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition"
                 >
                   Annuler
                 </button>

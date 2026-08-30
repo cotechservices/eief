@@ -103,7 +103,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
         <div className="bg-white rounded-xl shadow-sm p-4">
           <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
             <FileText className="w-5 h-5 text-purple-600" />
-            Statut des pré-inscriptions
+            Statut des inscriptions
           </h3>
           {hasPreinscriptionsData ? (
             <div className="h-64">
@@ -120,7 +120,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
             </div>
           ) : (
             <div className="h-64 flex items-center justify-center text-gray-900">
-              <p>Aucune pré-inscription disponible</p>
+              <p>Aucune inscription disponible</p>
             </div>
           )}
         </div>
@@ -276,19 +276,19 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
           <div className="bg-blue-50 rounded-lg p-4 text-center">
             <Wallet className="w-6 h-6 text-blue-600 mx-auto mb-2" />
             <p className="text-lg font-bold text-blue-600">{statsGlobales.totalAPayer.toLocaleString()} GNF</p>
-            <p className="text-xs text-gray-600">Total à payer</p>
+            <p className="text-xs text-gray-900">Total à payer</p>
           </div>
           <div className="bg-green-50 rounded-lg p-4 text-center">
             <CreditCard className="w-6 h-6 text-green-600 mx-auto mb-2" />
             <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
-            <p className="text-xs text-gray-600">Total payé</p>
+            <p className="text-xs text-gray-900">Total payé</p>
           </div>
           <div className="bg-red-50 rounded-lg p-4 text-center">
             <DollarSign className="w-6 h-6 text-red-600 mx-auto mb-2" />
             <p className={`text-lg font-bold ${(statsGlobales.soldeRestant || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
               {statsGlobales.soldeRestant.toLocaleString()} GNF
             </p>
-            <p className="text-xs text-gray-600">Solde restant</p>
+            <p className="text-xs text-gray-900">Solde restant</p>
           </div>
           <div className="bg-purple-50 rounded-lg p-4 text-center">
             <TrendingUp className="w-6 h-6 text-purple-600 mx-auto mb-2" />
@@ -297,7 +297,7 @@ export default function ParentStatsCharts({ enfants, preinscriptions, statsEnfan
                 ? `${Math.round((statsGlobales.totalPaye / statsGlobales.totalAPayer) * 100)}%`
                 : '0%'}
             </p>
-            <p className="text-xs text-gray-600">Taux de paiement</p>
+            <p className="text-xs text-gray-900">Taux de paiement</p>
           </div>
         </div>
       </div>

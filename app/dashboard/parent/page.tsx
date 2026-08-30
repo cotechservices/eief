@@ -354,9 +354,17 @@ export default function ParentDashboard() {
   // CALCUL DES STATISTIQUES GLOBALES
   const totalAPayerBrut = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.total) || 0), 0);
   const totalPaye = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.paye) || 0), 0);
-  const totalRemises = enfants.reduce((acc, e) => acc + (Number((e.details_frais as any)?.remise) || 0), 0);
+  const remisesAffectees = enfants.reduce((acc, e) => acc + (Number((e.details_frais as any)?.remise) || 0), 0);
+  const totalRemiseParentGlobale = enfants.length > 0 ? (Number((enfants[0] as any)?.total_remise_parent) || 0) : 0;
+  const totalRemises = Math.max(remisesAffectees, totalRemiseParentGlobale);
+
   const totalAPayerNet = Math.max(0, totalAPayerBrut - totalRemises);
   const soldeRestant = Math.max(0, totalAPayerNet - totalPaye);
+
+  const totalTransport = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.transport) || 0), 0);
+  const totalCantine = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.cantine) || 0), 0);
+  const totalFournitures = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.librairie) || 0), 0);
+  const totalScolarite = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.scolarite) || Number(e.details_frais?.inscription) || 0), 0);
 
   const statsGlobales = {
     totalEnfants: enfants.length,
@@ -369,12 +377,21 @@ export default function ParentDashboard() {
     totalAPayer: totalAPayerNet,
     totalPaye: totalPaye,
     totalRemises: totalRemises,
-    totalFraisInscription: totalAPayerNet,
-    totalTransport: 0,
-    totalCantine: 0,
-    totalFournitures: 0,
+    totalFraisInscription: totalScolarite,
+    totalTransport: totalTransport,
+    totalCantine: totalCantine,
+    totalFournitures: totalFournitures,
     totalFraisGeneral: totalAPayerNet,
     soldeRestant: soldeRestant,
+    soldeDetaille: {
+      total: soldeRestant,
+      details: {
+        inscription: Math.max(0, totalScolarite - totalPaye),
+        transport: totalTransport,
+        cantine: totalCantine,
+        fournitures: totalFournitures
+      }
+    }
   };
 
   if (loading) {
@@ -431,10 +448,10 @@ export default function ParentDashboard() {
               🏷️
             </div>
             <div>
-              <h4 className="font-bold text-sm">Remise Famille Nombreuse Accordée</h4>
-              <p className="text-xs text-indigo-700">Une réduction exceptionnelle de scolarité a été déduite de votre solde global.</p>
+              <h4 className="font-bold text-sm">Remise Famille Nombreuse / Déduction Accordée</h4>
+              <p className="text-xs text-indigo-700">Une réduction de scolarité a été déduite du montant total de vos dépenses.</p>
               <p className="text-xs text-indigo-900 mt-1 font-medium">
-                Scolarité brute initiale : <span className="font-semibold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</span>
+                Dépenses brutes totales : <span className="font-semibold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</span>
               </p>
             </div>
           </div>
@@ -445,47 +462,70 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {/* STATISTIQUES GLOBALES */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-5 mb-8">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-1"><Users className="w-5 h-5" /><p className="text-sm opacity-90">Enfants inscrits</p></div>
-          <p className="text-3xl font-bold">{statsGlobales.totalEnfants}</p>
-        </div>
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-1"><FileText className="w-5 h-5" /><p className="text-sm opacity-90">Pré-inscriptions</p></div>
-          <p className="text-3xl font-bold">{statsGlobales.totalPreinscriptions}</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900">
-            <CreditCard className="w-5 h-5 text-blue-600" />
-            <p className="text-sm">Montant net à payer</p>
+      {/* STATISTIQUES GLOBALES & FINANCIAL BREAKDOWN */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        {/* TOTAL TOUTES DÉPENSES */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-700">
+            <ShoppingCart className="w-4 h-4 text-blue-600" />
+            <p className="text-xs font-semibold uppercase tracking-wider">Total dépenses (Brut)</p>
           </div>
-          <p className="text-lg font-bold text-blue-600">{statsGlobales.totalAPayerNet.toLocaleString()} GNF</p>
-          {statsGlobales.totalRemises > 0 && (
-            <p className="text-xs text-gray-900 mt-1 line-through">
-              Brut: {statsGlobales.totalAPayerBrut.toLocaleString()} GNF
-            </p>
-          )}
+          <p className="text-xl font-extrabold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</p>
+          <p className="text-[11px] text-gray-500 mt-1">Scolarité + services</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-green-600" /><p className="text-sm">Montant payé</p></div>
-          <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
+
+        {/* REMISE ACCORDÉE */}
+        <div className="bg-white rounded-xl shadow-sm border border-indigo-200 bg-indigo-50/20 p-4">
+          <div className="flex items-center gap-2 mb-1 text-indigo-700">
+            <CreditCard className="w-4 h-4 text-indigo-600" />
+            <p className="text-xs font-semibold uppercase tracking-wider">Remise accordée</p>
+          </div>
+          <p className="text-xl font-extrabold text-indigo-600">
+            {statsGlobales.totalRemises > 0 ? `-${statsGlobales.totalRemises.toLocaleString()} GNF` : "0 GNF"}
+          </p>
+          <p className="text-[11px] text-indigo-500 mt-1">Réduction déduite</p>
         </div>
-        {/*<div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900"><Utensils className="w-5 h-5 text-orange-600" /><p className="text-sm">Cantine</p></div>
-          <p className="text-lg font-bold text-orange-600">{statsGlobales.totalCantine.toLocaleString()} GNF</p>
+
+        {/* MONTANT NET À PAYER */}
+        <div className="bg-white rounded-xl shadow-sm border border-blue-200 bg-blue-50/40 p-4">
+          <div className="flex items-center gap-2 mb-1 text-blue-800">
+            <Wallet className="w-4 h-4 text-blue-600" />
+            <p className="text-xs font-semibold uppercase tracking-wider">Net à payer</p>
+          </div>
+          <p className="text-xl font-extrabold text-blue-700">{statsGlobales.totalAPayerNet.toLocaleString()} GNF</p>
+          <p className="text-[11px] text-blue-600 mt-1">Dépenses - Remise</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900"><Bus className="w-5 h-5 text-blue-600" /><p className="text-sm">Transport</p></div>
-          <p className="text-lg font-bold text-blue-600">{statsGlobales.totalTransport.toLocaleString()} GNF</p>
+
+        {/* MONTANT PAYÉ */}
+        <div className="bg-white rounded-xl shadow-sm border border-green-200 bg-green-50/40 p-4">
+          <div className="flex items-center gap-2 mb-1 text-green-800">
+            <CheckCircle className="w-4 h-4 text-green-600" />
+            <p className="text-xs font-semibold uppercase tracking-wider">Montant payé</p>
+          </div>
+          <p className="text-xl font-extrabold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
+          <p className="text-[11px] text-green-600 mt-1">Versements effectués</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900"><ShoppingCart className="w-5 h-5 text-purple-600" /><p className="text-sm">Fournitures</p></div>
-          <p className="text-lg font-bold text-purple-600">{statsGlobales.totalFournitures.toLocaleString()} GNF</p>
-        </div>*/}
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-red-600" /><p className="text-sm">Solde restant</p></div>
-          <p className="text-lg font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
+
+        {/* SOLDE RESTANT */}
+        <div className={`rounded-xl shadow-sm border p-4 col-span-2 sm:col-span-1 ${
+          statsGlobales.soldeRestant === 0 ? "bg-green-100/50 border-green-300" : "bg-red-50/50 border-red-200"
+        }`}>
+          <div className="flex items-center gap-2 mb-1">
+            <Clock className={`w-4 h-4 ${statsGlobales.soldeRestant === 0 ? "text-green-600" : "text-red-600"}`} />
+            <p className={`text-xs font-semibold uppercase tracking-wider ${
+              statsGlobales.soldeRestant === 0 ? "text-green-800" : "text-red-800"
+            }`}>Reste à payer</p>
+          </div>
+          <p className={`text-xl font-extrabold ${
+            statsGlobales.soldeRestant === 0 ? "text-green-700" : "text-red-600"
+          }`}>
+            {statsGlobales.soldeRestant.toLocaleString()} GNF
+          </p>
+          <p className={`text-[11px] mt-1 ${
+            statsGlobales.soldeRestant === 0 ? "text-green-700 font-medium" : "text-red-500"
+          }`}>
+            {statsGlobales.soldeRestant === 0 ? "✅ Totalement réglé" : "Solde restant dû"}
+          </p>
         </div>
       </div>
 
@@ -800,14 +840,14 @@ export default function ParentDashboard() {
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                       <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                        <p className="text-xs text-gray-600">Inscription</p>
+                        <p className="text-xs text-gray-900">Inscription</p>
                         <p className="font-bold text-blue-600">
                           {preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF
                         </p>
                       </div>
                       {preinscriptionDetail.details_frais.cantine > 0 && (
                         <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
-                          <p className="text-xs text-gray-600">Cantine</p>
+                          <p className="text-xs text-gray-900">Cantine</p>
                           <p className="font-bold text-pink-600">
                             {preinscriptionDetail.details_frais.cantine.toLocaleString()} GNF
                           </p>
@@ -815,7 +855,7 @@ export default function ParentDashboard() {
                       )}
                       {preinscriptionDetail.details_frais.transport > 0 && (
                         <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                          <p className="text-xs text-gray-600">Transport</p>
+                          <p className="text-xs text-gray-900">Transport</p>
                           <p className="font-bold text-green-600">
                             {preinscriptionDetail.details_frais.transport.toLocaleString()} GNF
                           </p>
@@ -823,7 +863,7 @@ export default function ParentDashboard() {
                       )}
                       {preinscriptionDetail.details_frais.librairie > 0 && (
                         <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                          <p className="text-xs text-gray-600">Fournitures</p>
+                          <p className="text-xs text-gray-900">Fournitures</p>
                           <p className="font-bold text-purple-600">
                             {preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF
                           </p>
@@ -831,7 +871,7 @@ export default function ParentDashboard() {
                       )}
                       {preinscriptionDetail.details_frais.scolarite > 0 && (
                         <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                          <p className="text-xs text-gray-600">Scolarité</p>
+                          <p className="text-xs text-gray-900">Scolarité</p>
                           <p className="font-bold text-orange-600">
                             {preinscriptionDetail.details_frais.scolarite.toLocaleString()} GNF
                           </p>
@@ -843,8 +883,8 @@ export default function ParentDashboard() {
                         preinscriptionDetail.details_frais.scolarite === 0
                         ? 'col-span-2 md:col-span-1' : ''
                         }`}>
-                        <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
-                        <p className="font-bold text-gray-800 text-lg">
+                        <p className="text-xs text-gray-900 font-semibold">Total à payer</p>
+                        <p className="font-bold text-gray-900 text-lg">
                           {preinscriptionDetail.details_frais.total.toLocaleString()} GNF
                         </p>
                       </div>
@@ -887,19 +927,19 @@ export default function ParentDashboard() {
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
                       <div>
-                        <p className="text-xs text-gray-600">Déjà payé</p>
+                        <p className="text-xs text-gray-900">Déjà payé</p>
                         <p className="font-bold text-green-600">
                           {preinscriptionDetail.details_frais.paye.toLocaleString()} GNF
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-600">Reste à payer</p>
+                        <p className="text-xs text-gray-900">Reste à payer</p>
                         <p className={`font-bold ${preinscriptionDetail.details_frais.reste > 0 ? 'text-red-600' : 'text-green-600'}`}>
                           {preinscriptionDetail.details_frais.reste.toLocaleString()} GNF
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-600">Statut</p>
+                        <p className="text-xs text-gray-900">Statut</p>
                         {preinscriptionDetail.details_frais.reste === 0 ? (
                           <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
                             <CheckCircle className="w-3 h-3" /> Tout payé
@@ -918,7 +958,7 @@ export default function ParentDashboard() {
 
                     {preinscriptionDetail.details_frais.total > 0 && (
                       <div className="mt-3">
-                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                        <div className="flex justify-between text-xs text-gray-900 mb-1">
                           <span>Progression des paiements</span>
                           <span>
                             {Math.round((preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%
@@ -987,7 +1027,7 @@ export default function ParentDashboard() {
                   setPreinscriptionToCancel(null);
                 }}
                 disabled={cancelling}
-                className="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-100 transition"
+                className="px-4 py-2 text-gray-900 border rounded-lg hover:bg-gray-100 transition"
               >
                 Annuler
               </button>
@@ -1040,6 +1080,7 @@ export default function ParentDashboard() {
           addNotification("success", "Paiement global effectué avec succès !");
           triggerRefresh();
         }}
+        solde={statsGlobales.soldeDetaille}
         soldeRestant={statsGlobales.soldeRestant}
       />
     </div>

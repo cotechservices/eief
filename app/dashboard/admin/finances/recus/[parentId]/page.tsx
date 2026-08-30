@@ -7,7 +7,7 @@ import {
   ArrowLeft, User, Mail, Phone, Wallet,
   Receipt, Calendar, Loader2, Printer,
   FileText, Download, ChevronDown, ChevronUp,
-  RefreshCw, Search
+  RefreshCw, Search, Trash2, AlertTriangle
 } from "lucide-react";
 import RecuPaiement from "@/components/RecuPaiement";
 
@@ -42,6 +42,7 @@ export default function ParentRecusDetailPage() {
   const parentId = params.parentId as string;
 
   const [parent, setParent] = useState<ParentInfo | null>(null);
+  const [enfants, setEnfants] = useState<any[]>([]);
   const [recus, setRecus] = useState<RecuDetail[]>([]);
   const [statistiques, setStatistiques] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -50,11 +51,43 @@ export default function ParentRecusDetailPage() {
   const [showRecuModal, setShowRecuModal] = useState(false);
   const [search, setSearch] = useState("");
 
+  // État pour suppression directe
+  const [recuToDelete, setRecuToDelete] = useState<RecuDetail | null>(null);
+  const [deletingRecu, setDeletingRecu] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   useEffect(() => {
     if (parentId) {
       fetchParentRecus();
     }
   }, [parentId, annee]);
+
+  const handleDeleteRecu = async () => {
+    if (!recuToDelete) return;
+    const idToDelete = recuToDelete.source_id;
+    if (!idToDelete) {
+      setDeleteError("Identifiant du paiement manquant");
+      return;
+    }
+
+    setDeletingRecu(true);
+    setDeleteError(null);
+    try {
+      const response = await fetch(`/api/admin/paiements/${idToDelete}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Erreur lors de la suppression");
+      }
+      setRecuToDelete(null);
+      fetchParentRecus();
+    } catch (err: any) {
+      setDeleteError(err.message || "Erreur lors de la suppression");
+    } finally {
+      setDeletingRecu(false);
+    }
+  };
 
   const fetchParentRecus = async () => {
     setLoading(true);
@@ -63,10 +96,11 @@ export default function ParentRecusDetailPage() {
       if (response.ok) {
         const data = await response.json();
         console.log("📋 Données reçues:", data);
-        
+
         // ⭐ Mise à jour des données selon la structure de l'API
         setParent(data.parent);
-        
+        setEnfants(data.enfants || []);
+
         // ⭐ S'assurer que les reçus ont les bons champs
         const formattedRecus = (data.recus || []).map((recu: any) => ({
           numero_recu: recu.numero_recu || recu.numero_recu,
@@ -83,7 +117,7 @@ export default function ParentRecusDetailPage() {
           source_id: recu.source_id || recu.id || 0,
           preinscription_id: recu.preinscription_id || null
         }));
-        
+
         setRecus(formattedRecus);
         setStatistiques(data.statistiques || {
           total_recus: formattedRecus.length,
@@ -103,10 +137,10 @@ export default function ParentRecusDetailPage() {
 
   const filteredRecus = search
     ? recus.filter(r =>
-        r.enfant?.toLowerCase().includes(search.toLowerCase()) ||
-        r.numero_recu?.toLowerCase().includes(search.toLowerCase()) ||
-        r.reference?.toLowerCase().includes(search.toLowerCase())
-      )
+      r.enfant?.toLowerCase().includes(search.toLowerCase()) ||
+      r.numero_recu?.toLowerCase().includes(search.toLowerCase()) ||
+      r.reference?.toLowerCase().includes(search.toLowerCase())
+    )
     : recus;
 
   const totalMontant = filteredRecus.reduce((acc, r) => acc + Number(r.montant), 0);
@@ -131,7 +165,7 @@ export default function ParentRecusDetailPage() {
             href="/dashboard/admin/finances/recus"
             className="p-2 hover:bg-gray-100 rounded-lg transition"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-gray-900" />
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -157,7 +191,7 @@ export default function ParentRecusDetailPage() {
             onClick={fetchParentRecus}
             className="p-2 hover:bg-gray-100 rounded-lg transition"
           >
-            <RefreshCw className="w-4 h-4 text-gray-600" />
+            <RefreshCw className="w-4 h-4 text-gray-900" />
           </button>
         </div>
       </div>
@@ -233,13 +267,13 @@ export default function ParentRecusDetailPage() {
       {/* Liste des reçus */}
       {!hasRecus ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
           <p className="text-gray-900">Aucun reçu trouvé</p>
           <p className="text-sm text-gray-900 mt-1">
             {recus.length === 0 ? 'Aucun paiement enregistré pour ce parent' : 'Aucun reçu correspondant à votre recherche'}
           </p>
           {recus.length === 0 && (
-            <div className="mt-4 text-sm text-gray-500">
+            <div className="mt-4 text-sm text-gray-900">
               <p> Vérifiez que des paiements ont été effectués pour ce parent</p>
               <p className="mt-1">Essayez de changer l'année sélectionnée</p>
             </div>
@@ -247,7 +281,7 @@ export default function ParentRecusDetailPage() {
         </div>
       ) : filteredRecus.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
           <p className="text-gray-900">Aucun reçu trouvé</p>
           <p className="text-sm text-gray-900 mt-1">Aucun reçu ne correspond à votre recherche</p>
         </div>
@@ -288,31 +322,43 @@ export default function ParentRecusDetailPage() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">
                         {recu.mode_paiement === 'especes' ? 'Espèces' :
-                         recu.mode_paiement === 'orange_money' ? 'Orange Money' :
-                         recu.mode_paiement === 'mtn_money' ? 'MTN Money' :
-                         recu.mode_paiement || '—'}
+                          recu.mode_paiement === 'orange_money' ? 'Orange Money' :
+                            recu.mode_paiement === 'mtn_money' ? 'MTN Money' :
+                              recu.mode_paiement || '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">
                         {recu.date_paiement ? new Date(recu.date_paiement).toLocaleDateString('fr-FR') : '-'}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => {
-                            setSelectedRecu(recu);
-                            setShowRecuModal(true);
-                          }}
-                          className="inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition font-medium"
-                        >
-                          <Printer className="w-3 h-3" />
-                          Imprimer
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedRecu(recu);
+                              setShowRecuModal(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition font-medium"
+                          >
+                            <Printer className="w-3 h-3" />
+                            Imprimer
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeleteError(null);
+                              setRecuToDelete(recu);
+                            }}
+                            className="inline-flex items-center gap-1.5 bg-red-100 text-red-700 text-xs px-3 py-1.5 rounded-lg hover:bg-red-200 transition font-medium border border-red-200"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            Supprimer
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot className="bg-gray-50 border-t">
                   <tr>
-                    <td colSpan={4} className="px-4 py-3 font-bold text-gray-700">
+                    <td colSpan={4} className="px-4 py-3 font-bold text-gray-900">
                       Total ({filteredRecus.length} reçus)
                     </td>
                     <td className="px-4 py-3 text-right font-bold text-green-700">
@@ -351,13 +397,79 @@ export default function ParentRecusDetailPage() {
             montant_total: selectedRecu.montant_total,
             reste_a_payer: selectedRecu.reste_a_payer,
             preinscription_id: selectedRecu.preinscription_id || undefined,
-            paiement_id: selectedRecu.source_id
+            paiement_id: selectedRecu.source_id,
+            enfants_liste: enfants
           }}
           onClose={() => {
             setShowRecuModal(false);
             setSelectedRecu(null);
           }}
+          onDeleted={() => {
+            setShowRecuModal(false);
+            setSelectedRecu(null);
+            fetchParentRecus();
+          }}
         />
+      )}
+
+      {/* Modal de confirmation de suppression directe */}
+      {recuToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">Supprimer ce reçu ?</h3>
+                <p className="text-sm text-gray-900">Cette action est irréversible</p>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 text-sm">
+              <p className="font-semibold text-red-800 mb-1">⚠️ Attention !</p>
+              <p className="text-red-700">La suppression de ce reçu entraînera :</p>
+              <ul className="list-disc ml-4 mt-1 text-red-700 space-y-0.5">
+                <li>La suppression du paiement associé ({Number(recuToDelete.montant).toLocaleString()} GNF)</li>
+                <li>Le recalcul du solde restant de l'élève</li>
+              </ul>
+              <p className="text-red-700 mt-2">Le parent et l'élève ne seront <strong>pas</strong> supprimés.</p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-3 mb-4 text-sm">
+              <p className="text-gray-900"><span className="font-semibold">Reçu :</span> {recuToDelete.numero_recu}</p>
+              <p className="text-gray-900"><span className="font-semibold">Élève :</span> {recuToDelete.enfant}</p>
+              <p className="text-gray-900"><span className="font-semibold">Montant :</span> {Number(recuToDelete.montant).toLocaleString()} GNF</p>
+            </div>
+
+            {deleteError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-sm text-red-700">
+                ❌ {deleteError}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setRecuToDelete(null); setDeleteError(null); }}
+                disabled={deletingRecu}
+                className="flex-1 py-2.5 px-4 border border-gray-300 text-gray-900 rounded-xl hover:bg-gray-50 transition font-medium text-sm"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteRecu}
+                disabled={deletingRecu}
+                className="flex-1 py-2.5 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition font-semibold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deletingRecu ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Suppression...</>
+                ) : (
+                  <><Trash2 className="w-4 h-4" /> Confirmer la suppression</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

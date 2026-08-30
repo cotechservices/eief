@@ -246,7 +246,7 @@ export default function NouveauQuizPage() {
           <div className="p-6 space-y-6">
             {/* ⭐ Sélection de la classe - comme pour les évaluations */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <label className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                 <School className="w-4 h-4" /> Classe *
                 <span className="text-xs font-normal text-gray-900">
                   (le quiz sera disponible pour tous les élèves de cette classe)
@@ -274,7 +274,7 @@ export default function NouveauQuizPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Titre du quiz *</label>
+                <label className="text-sm font-semibold text-gray-900">Titre du quiz *</label>
                 <input
                   type="text"
                   value={formData.titre}
@@ -285,7 +285,7 @@ export default function NouveauQuizPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                <label className="text-sm font-semibold text-gray-900 flex items-center gap-1">
                   <Clock className="w-4 h-4" /> Durée (minutes)
                 </label>
                 <input
@@ -299,7 +299,7 @@ export default function NouveauQuizPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Description</label>
+              <label className="text-sm font-semibold text-gray-900">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -331,7 +331,7 @@ export default function NouveauQuizPage() {
                     className="hidden"
                   />
                   <Upload className="w-10 h-10 text-gray-900 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600">Cliquez pour sélectionner un fichier</p>
+                  <p className="text-sm text-gray-900">Cliquez pour sélectionner un fichier</p>
                   <p className="text-xs text-gray-900 mt-1">Formats acceptés : JPG, PNG, GIF, PDF</p>
                 </div>
               ) : (
@@ -343,7 +343,7 @@ export default function NouveauQuizPage() {
                       <FileText className="w-8 h-8 text-purple-600" />
                     )}
                     <div>
-                      <p className="font-medium text-gray-800 truncate max-w-[200px]">{fichierName}</p>
+                      <p className="font-medium text-gray-900 truncate max-w-[200px]">{fichierName}</p>
                       <p className="text-xs text-gray-900">
                         {(fichier.size / 1024).toFixed(1)} KB • {fichier.type}
                       </p>
@@ -361,7 +361,7 @@ export default function NouveauQuizPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-900 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.est_actif}
@@ -370,7 +370,7 @@ export default function NouveauQuizPage() {
                 />
                 Quiz actif
               </label>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-900 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.est_aleatoire}
@@ -379,7 +379,7 @@ export default function NouveauQuizPage() {
                 />
                 Mélanger les questions
               </label>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-900 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.afficher_resultats}
@@ -484,7 +484,7 @@ export default function NouveauQuizPage() {
                         </span>
                         <span className="text-xs text-gray-900">{q.points} pts</span>
                       </div>
-                      <p className="text-sm text-gray-800 mt-0.5">{q.question}</p>
+                      <p className="text-sm text-gray-900 mt-0.5">{q.question}</p>
                     </div>
                   </button>
                 ))}
@@ -501,7 +501,7 @@ export default function NouveauQuizPage() {
         <div className="flex justify-end gap-3">
           <Link
             href="/dashboard/enseignant/quiz"
-            className="px-6 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition font-medium"
+            className="px-6 py-3 rounded-xl text-gray-900 hover:bg-gray-100 transition font-medium"
           >
             Annuler
           </Link>

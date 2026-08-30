@@ -104,7 +104,7 @@ export default function PaiementsPage() {
       case 'carte':
         return <CreditCard className="w-4 h-4 text-purple-600" />;
       default:
-        return <Wallet className="w-4 h-4 text-gray-600" />;
+        return <Wallet className="w-4 h-4 text-gray-900" />;
     }
   };
 
@@ -214,7 +214,7 @@ export default function PaiementsPage() {
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            <span className="ml-3 text-gray-600">Chargement des paiements...</span>
+            <span className="ml-3 text-gray-900">Chargement des paiements...</span>
           </div>
         ) : error ? (
           <div className="text-center py-12 text-red-600">
@@ -318,8 +318,8 @@ export default function PaiementsPage() {
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
                       className={`px-3 py-2 border rounded-lg ${currentPage === pageNum
-                          ? 'bg-blue-600 text-white'
-                          : 'hover:bg-gray-50'
+                        ? 'bg-blue-600 text-white'
+                        : 'hover:bg-gray-50'
                         }`}
                     >
                       {pageNum}

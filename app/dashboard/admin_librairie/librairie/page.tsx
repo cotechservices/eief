@@ -306,7 +306,7 @@ export default function TransportLibrairiePage() {
             onClick={() => setActiveTab("articles")}
             className={`px-6 py-4 font-medium transition-colors ${activeTab === "articles"
               ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
-              : "text-gray-600 hover:bg-gray-50"
+              : "text-gray-900 hover:bg-gray-50"
               }`}
           >
             <Package className="w-4 h-4 inline mr-2" />
@@ -316,7 +316,7 @@ export default function TransportLibrairiePage() {
             onClick={() => setActiveTab("ventes")}
             className={`px-6 py-4 font-medium transition-colors ${activeTab === "ventes"
               ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
-              : "text-gray-600 hover:bg-gray-50"
+              : "text-gray-900 hover:bg-gray-50"
               }`}
           >
             <ShoppingCart className="w-4 h-4 inline mr-2" />
@@ -369,7 +369,7 @@ export default function TransportLibrairiePage() {
         {activeTab === "articles" && (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="bg-gray-50 text-gray-900">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Article</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Catégorie</th>
@@ -399,7 +399,7 @@ export default function TransportLibrairiePage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs capitalize">{a.categorie}</span>
+                      <span className="bg-gray-100 text-gray-900 px-2 py-1 rounded-full text-xs capitalize">{a.categorie}</span>
                     </td>
                     <td className="px-6 py-4 text-right font-medium text-gray-900">
                       {formatPrix(a.prix_unitaire)} GNF
@@ -428,7 +428,7 @@ export default function TransportLibrairiePage() {
             </table>
             {filteredArticles.length === 0 && (
               <div className="text-center py-8 text-gray-900">
-                <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <Package className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                 <p className="font-medium">Aucun article trouvé</p>
               </div>
             )}
@@ -439,7 +439,7 @@ export default function TransportLibrairiePage() {
         {activeTab === "ventes" && (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="bg-gray-50 text-gray-900">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Article</th>
@@ -451,20 +451,20 @@ export default function TransportLibrairiePage() {
               <tbody className="divide-y">
                 {filteredVentes.map((v) => (
                   <tr key={v.id} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-gray-900">
                       {new Date(v.date_vente).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900">{v.article_nom}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{v.eleve_nom || "Vente libre"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{v.eleve_nom || "Vente libre"}</td>
                     <td className="px-6 py-4 text-center font-semibold">{v.quantite}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{v.vendeur || "Système"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{v.vendeur || "Système"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {filteredVentes.length === 0 && (
               <div className="text-center py-8 text-gray-900">
-                <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                 <p className="font-medium">Aucune vente trouvée</p>
               </div>
             )}
@@ -480,13 +480,13 @@ export default function TransportLibrairiePage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingArticle ? "Modifier l'article" : "Nouvel article"}
               </h2>
-              <button onClick={() => setShowArticleForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowArticleForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleArticleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image de l'article</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Image de l'article</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-purple-500 transition relative">
                   <input
                     ref={fileInputRef}
@@ -514,7 +514,7 @@ export default function TransportLibrairiePage() {
                   ) : (
                     <div className="text-center">
                       <ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">Cliquez pour ajouter une image</p>
+                      <p className="text-sm text-gray-900">Cliquez pour ajouter une image</p>
                       <p className="text-xs text-gray-900">PNG, JPG, WEBP</p>
                     </div>
                   )}
@@ -522,7 +522,7 @@ export default function TransportLibrairiePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'article *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Nom de l'article *</label>
                 <input
                   required
                   type="text"
@@ -532,7 +532,7 @@ export default function TransportLibrairiePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Description</label>
                 <textarea
                   rows={2}
                   value={articleData.description || ""}
@@ -542,7 +542,7 @@ export default function TransportLibrairiePage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix Unitaire (GNF) *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Prix Unitaire (GNF) *</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 text-sm">GNF</span>
                     <input
@@ -558,7 +558,7 @@ export default function TransportLibrairiePage() {
                   <p className="text-xs text-gray-900 mt-1">Saisissez uniquement des chiffres</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantité en stock *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Quantité en stock *</label>
                   <input
                     required
                     type="number"
@@ -581,7 +581,7 @@ export default function TransportLibrairiePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Catégorie</label>
                 <select
                   value={articleData.categorie || "fourniture"}
                   onChange={e => setArticleData({ ...articleData, categorie: e.target.value })}
@@ -613,13 +613,13 @@ export default function TransportLibrairiePage() {
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Nouvelle vente</h2>
-              <button onClick={() => setShowVenteForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowVenteForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleVenteSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Article *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Article *</label>
                 <select
                   required
                   value={venteData.article_id}
@@ -635,7 +635,7 @@ export default function TransportLibrairiePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Élève (Optionnel)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Élève (Optionnel)</label>
                 <select
                   value={venteData.eleve_id}
                   onChange={e => setVenteData({ ...venteData, eleve_id: e.target.value })}
@@ -650,7 +650,7 @@ export default function TransportLibrairiePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Quantité *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Quantité *</label>
                 <input
                   required
                   type="number"

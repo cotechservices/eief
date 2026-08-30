@@ -177,7 +177,7 @@ export default function BibliothequePage() {
             </div>
           ) : filteredLivres.length === 0 ? (
             <div className="text-center py-16">
-              <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <BookOpen className="w-12 h-12 text-gray-900 mx-auto mb-3" />
               <p className="text-gray-900 font-medium">Aucun livre trouvé</p>
               <p className="text-gray-900 text-xs mt-1">Recherchez avec d'autres mots clés ou une autre catégorie.</p>
             </div>
@@ -185,7 +185,7 @@ export default function BibliothequePage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-gray-50/50 border-b border-gray-100">
-                  <tr className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <tr className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
                     <th className="px-6 py-4">Livre</th>
                     <th className="px-6 py-4">Auteur</th>
                     <th className="px-6 py-4">Catégorie</th>
@@ -221,9 +221,9 @@ export default function BibliothequePage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-gray-700">{livre.auteur}</td>
+                        <td className="px-6 py-4 text-gray-900">{livre.auteur}</td>
                         <td className="px-6 py-4">
-                          <span className="text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full font-medium">
+                          <span className="text-xs bg-gray-100 text-gray-900 px-2.5 py-1 rounded-full font-medium">
                             {livre.categorie === "scolaire" && "📚 Scolaire"}
                             {livre.categorie === "litterature" && " Littérature"}
                             {livre.categorie === "histoire" && "🏛️ Histoire"}
@@ -234,7 +234,7 @@ export default function BibliothequePage() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-gray-600 font-mono text-xs">{livre.emplacement}</div>
+                          <div className="text-gray-900 font-mono text-xs">{livre.emplacement}</div>
                         </td>
                         <td className="px-6 py-4">
                           {livre.disponible ? (
@@ -250,7 +250,7 @@ export default function BibliothequePage() {
                         <td className="px-6 py-4">
                           <button
                             disabled={!livre.disponible}
-                            className="text-blue-600 hover:text-blue-800 disabled:text-gray-300 font-semibold text-xs transition"
+                            className="text-blue-600 hover:text-blue-800 disabled:text-gray-900 font-semibold text-xs transition"
                             onClick={() => alert(`Pour réserver "${livre.titre}", veuillez vous rendre à la bibliothèque avec votre identifiant élève.`)}
                           >
                             Réserver

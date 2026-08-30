@@ -430,7 +430,7 @@ export default function GestionPersonnelPage() {
             </div>
             <button
               onClick={() => setNotification(prev => ({ ...prev, visible: false }))}
-              className="flex-shrink-0 text-gray-900 hover:text-gray-600"
+              className="flex-shrink-0 text-gray-900 hover:text-gray-900"
             >
               <X className="w-4 h-4" />
             </button>
@@ -457,7 +457,7 @@ export default function GestionPersonnelPage() {
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-800 text-sm">Total</p>
+              <p className="text-gray-900 text-sm">Total</p>
               <p className="text-2xl font-bold text-blue-600 mt-1">{stats.total}</p>
             </div>
             <div className="bg-blue-50 p-3 rounded-xl"><Users className="w-6 h-6 text-blue-500" /></div>
@@ -466,7 +466,7 @@ export default function GestionPersonnelPage() {
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-800 text-sm">Actifs</p>
+              <p className="text-gray-900 text-sm">Actifs</p>
               <p className="text-2xl font-bold text-green-600 mt-1">{stats.actifs}</p>
             </div>
             <div className="bg-green-50 p-3 rounded-xl"><CheckCircle className="w-6 h-6 text-green-500" /></div>
@@ -475,7 +475,7 @@ export default function GestionPersonnelPage() {
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-purple-500">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-800 text-sm">Enseignants</p>
+              <p className="text-gray-900 text-sm">Enseignants</p>
               <p className="text-2xl font-bold text-purple-600 mt-1">{stats.enseignants}</p>
             </div>
             <div className="bg-purple-50 p-3 rounded-xl"><Award className="w-6 h-6 text-purple-500" /></div>
@@ -484,7 +484,7 @@ export default function GestionPersonnelPage() {
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-orange-500">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-gray-800 text-sm">Masse salariale</p>
+              <p className="text-gray-900 text-sm">Masse salariale</p>
               <p className="text-xl font-bold text-orange-600 mt-1">{stats.masseSalariale.toLocaleString()} <span className="text-xs">GNF</span></p>
             </div>
             <div className="bg-orange-50 p-3 rounded-xl"><CreditCard className="w-6 h-6 text-orange-500" /></div>
@@ -561,10 +561,10 @@ export default function GestionPersonnelPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-700">{getPosteLabel(agent.type)}</span>
+                    <span className="text-sm text-gray-900">{getPosteLabel(agent.type)}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{agent.departement || agent.type}</span>
+                    <span className="text-xs bg-gray-100 text-gray-900 px-2 py-1 rounded-full">{agent.departement || agent.type}</span>
                   </td>
                   <td className="px-6 py-4">
                     {agent.type?.toUpperCase().includes("ENSEIGNANT") ? (
@@ -661,7 +661,7 @@ export default function GestionPersonnelPage() {
             <div className="p-6 border-b sticky top-0 bg-white rounded-t-2xl z-10">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-900">Fiche de l'agent</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600 text-2xl leading-none">
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900 text-2xl leading-none">
                   &times;
                 </button>
               </div>
@@ -682,7 +682,7 @@ export default function GestionPersonnelPage() {
 
               {/* Infos professionnelles */}
               <div>
-                <h4 className="font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                <h4 className="font-semibold text-gray-900 mb-3 pb-2 border-b flex items-center gap-2">
                   <Briefcase className="w-4 h-4" /> Informations professionnelles
                 </h4>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -708,7 +708,7 @@ export default function GestionPersonnelPage() {
               {/* ⭐ Classes assignées (pour les enseignants) */}
               {selectedPersonnel.type?.toUpperCase().includes("ENSEIGNANT") && (
                 <div>
-                  <h4 className="font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                  <h4 className="font-semibold text-gray-900 mb-3 pb-2 border-b flex items-center gap-2">
                     <GraduationCap className="w-4 h-4" /> Classes assignées
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -728,7 +728,7 @@ export default function GestionPersonnelPage() {
 
               {/* Rémunération */}
               <div>
-                <h4 className="font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                <h4 className="font-semibold text-gray-900 mb-3 pb-2 border-b flex items-center gap-2">
                   <CreditCard className="w-4 h-4" /> Rémunération
                 </h4>
                 <div className="grid md:grid-cols-3 gap-4">
@@ -752,7 +752,7 @@ export default function GestionPersonnelPage() {
 
               {/* Contact */}
               <div>
-                <h4 className="font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                <h4 className="font-semibold text-gray-900 mb-3 pb-2 border-b flex items-center gap-2">
                   <User className="w-4 h-4" /> Contact
                 </h4>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -773,7 +773,7 @@ export default function GestionPersonnelPage() {
 
               {/* Documents */}
               <div>
-                <h4 className="font-semibold text-gray-700 mb-3 pb-2 border-b flex items-center gap-2">
+                <h4 className="font-semibold text-gray-900 mb-3 pb-2 border-b flex items-center gap-2">
                   <Download className="w-4 h-4" /> Documents
                 </h4>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -850,46 +850,46 @@ export default function GestionPersonnelPage() {
             <div className="p-6 border-b sticky top-0 bg-white rounded-t-2xl">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-900">{editingPersonnel ? "Modifier l'agent" : "Ajouter un agent"}</h2>
-                <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-900 text-2xl leading-none">&times;</button>
               </div>
             </div>
             <div className="p-6 space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Nom *</label>
                   <input type="text" value={formData.nom} onChange={e => setFormData({ ...formData, nom: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Prénom *</label>
                   <input type="text" value={formData.prenom} onChange={e => setFormData({ ...formData, prenom: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Email *</label>
                   <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Téléphone</label>
                   <input type="tel" value={formData.telephone} onChange={e => setFormData({ ...formData, telephone: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Poste *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Poste *</label>
                   <select value={formData.poste} onChange={e => setFormData({ ...formData, poste: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     {POSTES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Département</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Département</label>
                   <select value={formData.departement} onChange={e => setFormData({ ...formData, departement: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     {DEPARTEMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Salaire de base (GNF)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Salaire de base (GNF)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -913,16 +913,16 @@ export default function GestionPersonnelPage() {
                 </div>
               </div>
               {/*<div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prime mensuelle (GNF)</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Prime mensuelle (GNF)</label>
                   <input type="number" min="0" value={formData.prime_mensuelle} onChange={e => setFormData({ ...formData, prime_mensuelle: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>*/}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date d'embauche</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Date d'embauche</label>
                   <input type="date" value={formData.dateEmbauche} onChange={e => setFormData({ ...formData, dateEmbauche: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Statut</label>
                   <select value={formData.statut} onChange={e => setFormData({ ...formData, statut: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="actif">Actif</option>
                     <option value="inactif">Inactif</option>
@@ -931,7 +931,7 @@ export default function GestionPersonnelPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Adresse</label>
                 <input type="text" value={formData.adresse} onChange={e => setFormData({ ...formData, adresse: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
 
@@ -939,7 +939,7 @@ export default function GestionPersonnelPage() {
                 <h4 className="font-medium text-gray-900 mb-4">Documents (Fichiers)</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Photo ID</label>
+                    <label className="block text-sm font-medium text-gray-900 mb-1">Photo ID</label>
                     {formData.photo_url ? (
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
@@ -950,7 +950,7 @@ export default function GestionPersonnelPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Carte ID / Passeport</label>
+                    <label className="block text-sm font-medium text-gray-900 mb-1">Carte ID / Passeport</label>
                     {formData.carte_id_url ? (
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
@@ -961,7 +961,7 @@ export default function GestionPersonnelPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">CV</label>
+                    <label className="block text-sm font-medium text-gray-900 mb-1">CV</label>
                     {formData.cv_url ? (
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
@@ -972,7 +972,7 @@ export default function GestionPersonnelPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Certificat de résidence (Optionnel)</label>
+                    <label className="block text-sm font-medium text-gray-900 mb-1">Certificat de résidence (Optionnel)</label>
                     {formData.certificat_residence_url ? (
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded">✓ Fichier téléchargé</span>
@@ -1008,12 +1008,12 @@ export default function GestionPersonnelPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-900">Assigner des classes</h2>
-              <button onClick={() => setShowAssignModal(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowAssignModal(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-6 h-6" />
               </button>
             </div>
             <div className="p-6">
-              <p className="text-sm text-gray-600 mb-4">Sélectionnez les classes que cet enseignant doit enseigner</p>
+              <p className="text-sm text-gray-900 mb-4">Sélectionnez les classes que cet enseignant doit enseigner</p>
 
               {/* ⭐ Affichage du nombre de classes assignées */}
               <div className={`mb-3 p-2 rounded-lg border ${selectedClasses.length > 0 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
@@ -1119,14 +1119,14 @@ export default function GestionPersonnelPage() {
                     setPersonnelToDelete(null);
                   }
                 }}
-                className="text-gray-900 hover:text-gray-600 transition"
+                className="text-gray-900 hover:text-gray-900 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
-              <p className="text-gray-700 text-sm">
+              <p className="text-gray-900 text-sm">
                 Êtes-vous sûr de vouloir supprimer cet agent ?
               </p>
               <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 flex items-center gap-3">
@@ -1151,7 +1151,7 @@ export default function GestionPersonnelPage() {
                   setPersonnelToDelete(null);
                 }}
                 disabled={deleting}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-white font-medium transition disabled:opacity-50"
+                className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg text-sm hover:bg-white font-medium transition disabled:opacity-50"
               >
                 Annuler
               </button>

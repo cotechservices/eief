@@ -52,7 +52,7 @@ const CATEGORIES = [
   { id: "art", nom: "🎨 Art", color: "bg-purple-100 text-purple-700" },
   { id: "technologie", nom: "💻 Technologie", color: "bg-blue-100 text-blue-700" },
   { id: "langue", nom: "🌍 Langue", color: "bg-yellow-100 text-yellow-700" },
-  { id: "autre", nom: "📚 Autre", color: "bg-gray-100 text-gray-700" }
+  { id: "autre", nom: "📚 Autre", color: "bg-gray-100 text-gray-900" }
 ];
 
 const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -251,10 +251,10 @@ export default function ActivitesPage() {
       {/* Onglets */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="flex border-b">
-          <button onClick={() => setActiveTab("activites")} className={`px-6 py-3 font-medium transition-colors ${activeTab === "activites" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-600 hover:bg-gray-50"}`}>
+          <button onClick={() => setActiveTab("activites")} className={`px-6 py-3 font-medium transition-colors ${activeTab === "activites" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
             📋 Activités
           </button>
-          <button onClick={() => setActiveTab("inscriptions")} className={`px-6 py-3 font-medium transition-colors ${activeTab === "inscriptions" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-600 hover:bg-gray-50"}`}>
+          <button onClick={() => setActiveTab("inscriptions")} className={`px-6 py-3 font-medium transition-colors ${activeTab === "inscriptions" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
             📝 Inscriptions
           </button>
         </div>
@@ -296,11 +296,11 @@ export default function ActivitesPage() {
                   <div className="absolute top-2 right-2">{getCategorieBadge(a.categorie)}</div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-bold text-lg text-gray-800">{a.nom}</h3>
+                  <h3 className="font-bold text-lg text-gray-900">{a.nom}</h3>
                   <p className="text-sm text-gray-900 mt-1 line-clamp-2">{a.description}</p>
                   <div className="mt-3 space-y-1 text-sm">
-                    <div className="flex items-center gap-2 text-gray-600"><Calendar className="w-4 h-4" /> {a.jour} • {a.heure_debut} - {a.heure_fin}</div>
-                    <div className="flex items-center gap-2 text-gray-600"><Users className="w-4 h-4" /> Âge: {a.age_min}-{a.age_max} ans | Max: {a.capacite_max}</div>
+                    <div className="flex items-center gap-2 text-gray-900"><Calendar className="w-4 h-4" /> {a.jour} • {a.heure_debut} - {a.heure_fin}</div>
+                    <div className="flex items-center gap-2 text-gray-900"><Users className="w-4 h-4" /> Âge: {a.age_min}-{a.age_max} ans | Max: {a.capacite_max}</div>
                     <div className="flex items-center gap-2 text-green-600 font-semibold"><Wallet className="w-4 h-4" /> {a.frais_inscription.toLocaleString()} GNF</div>
                   </div>
                   <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
@@ -318,7 +318,7 @@ export default function ActivitesPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
-                <tr className="text-xs font-semibold text-gray-600 uppercase">
+                <tr className="text-xs font-semibold text-gray-900 uppercase">
                   <th className="px-6 py-3">Activité</th>
                   <th className="px-6 py-3">Élève</th>
                   <th className="px-6 py-3">Classe</th>
@@ -354,7 +354,7 @@ export default function ActivitesPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
               <h2 className="text-xl font-bold">{editingActivite ? "Modifier l'activité" : "Nouvelle activité"}</h2>
-              <button onClick={() => setShowActiviteForm(false)} className="text-gray-900 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              <button onClick={() => setShowActiviteForm(false)} className="text-gray-900 hover:text-gray-900"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleActiviteSubmit} className="p-6 space-y-4">
               <div>
@@ -363,7 +363,7 @@ export default function ActivitesPage() {
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
                   {previewUrl || activiteData.photo_url ? (
                     <div className="relative inline-block"><img src={previewUrl || activiteData.photo_url || ""} alt="Aperçu" className="w-32 h-32 object-cover rounded-lg mx-auto" /><button type="button" onClick={handleRemoveImage} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1"><X className="w-4 h-4" /></button></div>
-                  ) : (<div className="text-center"><ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" /><p className="text-sm text-gray-600">Cliquez pour ajouter une image</p></div>)}
+                  ) : (<div className="text-center"><ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" /><p className="text-sm text-gray-900">Cliquez pour ajouter une image</p></div>)}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -398,7 +398,7 @@ export default function ActivitesPage() {
       {showDetailModal && selectedInscription && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
-            <div className="p-6 border-b sticky top-0 bg-white flex justify-between items-center"><h2 className="text-xl font-bold">Détail de l'inscription</h2><button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-600"><X className="w-5 h-5" /></button></div>
+            <div className="p-6 border-b sticky top-0 bg-white flex justify-between items-center"><h2 className="text-xl font-bold">Détail de l'inscription</h2><button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900"><X className="w-5 h-5" /></button></div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-sm text-gray-900">Activité</p><p className="font-semibold">{selectedInscription.activite_nom}</p>{getCategorieBadge(selectedInscription.categorie)}</div>

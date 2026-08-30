@@ -309,7 +309,7 @@ export default function PaiementUnifieModal({
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-bold text-black">💳 Paiement - {typeLabel}</h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-900">
                 {enfantPrenom} {enfantNom}
                 {niveau ? ` - ${niveau}` : ''}
                 {classe ? ` (${classe})` : ''}
@@ -321,7 +321,7 @@ export default function PaiementUnifieModal({
                 {typeLabel}
               </span>
             </div>
-            <button onClick={onClose} className="text-gray-900 hover:text-gray-700">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-900">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -331,7 +331,7 @@ export default function PaiementUnifieModal({
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-              <span className="ml-2 text-gray-600">Chargement du plan...</span>
+              <span className="ml-2 text-gray-900">Chargement du plan...</span>
             </div>
           ) : error && !data ? (
             <div className="bg-red-50 p-4 rounded-lg text-center text-red-700">
@@ -348,7 +348,7 @@ export default function PaiementUnifieModal({
             <>
               {/* ⭐ Barre de progression */}
               <div className="mb-6">
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <div className="flex justify-between text-sm text-gray-900 mb-1">
                   <span>Progression du paiement</span>
                   <span className="font-medium">{totals.pourcentage_paye}% payé</span>
                 </div>
@@ -443,7 +443,7 @@ export default function PaiementUnifieModal({
                   {/* ⭐ Zone de saisie du montant */}
                   <div className="bg-gray-50 p-4 rounded-lg mb-6">
                     <div className="flex justify-between items-center mb-2">
-                      <label className="font-semibold text-gray-700">
+                      <label className="font-semibold text-gray-900">
                         Montant à payer
                       </label>
                       <span className="text-sm text-gray-900">
@@ -504,7 +504,7 @@ export default function PaiementUnifieModal({
 
                   {/* ⭐ Mode de paiement */}
                   <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-2">Mode de paiement *</label>
+                    <label className="block text-gray-900 font-medium mb-2">Mode de paiement *</label>
                     <div className="grid grid-cols-3 gap-3">
                       {[
                         { value: 'especes', label: 'Espèces', icon: Wallet, color: 'green' },
@@ -530,7 +530,7 @@ export default function PaiementUnifieModal({
                   {/* ⭐ Référence transaction */}
                   {(modePaiement === 'orange_money' || modePaiement === 'carte') && (
                     <div className="mb-4">
-                      <label className="block text-gray-700 font-medium mb-2">Numéro de transaction</label>
+                      <label className="block text-gray-900 font-medium mb-2">Numéro de transaction</label>
                       <input
                         type="text"
                         value={reference}
@@ -596,7 +596,7 @@ export default function PaiementUnifieModal({
               {/* ⭐ Liste des échéances */}
               {echeances.length > 0 && (
                 <div className="mt-6 border-t pt-4">
-                  <h4 className="font-semibold text-gray-700 mb-2">Détail des échéances</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Détail des échéances</h4>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {echeances.map((echeance) => {
                       const estPaye = echeance.statut === 'paye';

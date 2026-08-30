@@ -273,7 +273,7 @@ export default function ListeElevesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-700 transition"
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -296,7 +296,7 @@ export default function ListeElevesPage() {
         <div className="flex flex-wrap gap-4">
           <Link
             href="/dashboard/admin/eleves"
-            className="flex items-center hover:bg-gray-100 hover:border-sm rounded-lg gap-2 text-gray-700 hover:text-gray-900 transition"
+            className="flex items-center hover:bg-gray-100 hover:border-sm rounded-lg gap-2 text-gray-900 hover:text-gray-900 transition"
           >
             <ArrowLeft className="w-5 h-5" />
             Retour
@@ -312,7 +312,7 @@ export default function ListeElevesPage() {
                   setSearchTerm(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-9 pr-4 text-gray-700 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-4 text-gray-900 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -322,7 +322,7 @@ export default function ListeElevesPage() {
               setSelectedClasse(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 text-gray-900 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {classes.map(c => (
               <option key={c} value={c}>{c === "all" ? "Toutes les classes" : c}</option>
@@ -362,7 +362,7 @@ export default function ListeElevesPage() {
                         <p className="text-xs text-gray-900 mt-1">Inscrit: {new Date(e.date_inscription).toLocaleDateString()}</p>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="font-mono text-sm font-medium text-gray-800">{e.matricule}</span>
+                        <span className="font-mono text-sm font-medium text-gray-900">{e.matricule}</span>
                       </td>
                       <td className="px-4 py-4">
                         {e.photo_url ? (
@@ -386,7 +386,7 @@ export default function ListeElevesPage() {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <p className="text-sm text-gray-700">{e.parent_prenom} {e.parent_nom}</p>
+                        <p className="text-sm text-gray-900">{e.parent_prenom} {e.parent_nom}</p>
                         <div className="flex items-center gap-1 mt-1">
                           <Mail className="w-3 h-3 text-gray-900" />
                           <span className="text-xs text-blue-600">{e.parent_email}</span>
@@ -399,7 +399,7 @@ export default function ListeElevesPage() {
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-1">
                           <GraduationCap className="w-4 h-4 text-gray-900" />
-                          <span className="text-gray-700">{e.classe_nom}</span>
+                          <span className="text-gray-900">{e.classe_nom}</span>
                         </div>
                         <p className="text-xs text-gray-900">{e.niveau}</p>
                       </td>
@@ -441,9 +441,9 @@ export default function ListeElevesPage() {
             <div className="bg-white rounded-xl shadow-sm p-4">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <p className="text-sm text-gray-900">
-                  Affichage de <span className="font-medium text-gray-700">{startIndex + 1}</span> à{' '}
-                  <span className="font-medium text-gray-700">{Math.min(endIndex, filteredByClasse.length)}</span>{' '}
-                  sur <span className="font-medium text-gray-700">{filteredByClasse.length}</span> élèves
+                  Affichage de <span className="font-medium text-gray-900">{startIndex + 1}</span> à{' '}
+                  <span className="font-medium text-gray-900">{Math.min(endIndex, filteredByClasse.length)}</span>{' '}
+                  sur <span className="font-medium text-gray-900">{filteredByClasse.length}</span> élèves
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -452,7 +452,7 @@ export default function ListeElevesPage() {
                     disabled={currentPage === 1}
                     className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
-                    <ChevronLeft className="w-4 h-4 text-gray-700" />
+                    <ChevronLeft className="w-4 h-4 text-gray-900" />
                   </button>
 
                   <div className="flex gap-1">
@@ -465,7 +465,7 @@ export default function ListeElevesPage() {
                           onClick={() => setCurrentPage(page as number)}
                           className={`px-3 py-1 rounded-lg text-sm font-medium transition ${currentPage === page
                             ? 'bg-blue-600 text-white'
-                            : 'text-gray-700 hover:bg-gray-100'
+                            : 'text-gray-900 hover:bg-gray-100'
                             }`}
                         >
                           {page}
@@ -479,7 +479,7 @@ export default function ListeElevesPage() {
                     disabled={currentPage === totalPages}
                     className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
-                    <ChevronRight className="w-4 h-4 text-gray-700" />
+                    <ChevronRight className="w-4 h-4 text-gray-900" />
                   </button>
                 </div>
               </div>
@@ -495,7 +495,7 @@ export default function ListeElevesPage() {
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-900">Fiche élève</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-700">
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -650,7 +650,7 @@ export default function ListeElevesPage() {
                 <h2 className="text-xl font-bold text-gray-900">Modifier le statut</h2>
                 <button
                   onClick={() => setShowStatutModal(false)}
-                  className="text-gray-900 hover:text-gray-700"
+                  className="text-gray-900 hover:text-gray-900"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -665,7 +665,7 @@ export default function ListeElevesPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nouveau statut</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Nouveau statut</label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'actif', label: 'Actif', color: 'green' },
@@ -695,7 +695,7 @@ export default function ListeElevesPage() {
               </div>
 
               <div className="mt-6 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-900">
                   <span className="font-semibold">Statut actuel:</span>{' '}
                   {getStatutBadge(selectedEleve.statut)}
                 </p>
@@ -710,7 +710,7 @@ export default function ListeElevesPage() {
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => setShowStatutModal(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-100 transition text-gray-700"
+                className="px-4 py-2 border rounded-lg hover:bg-gray-100 transition text-gray-900"
                 disabled={updatingStatut}
               >
                 Annuler

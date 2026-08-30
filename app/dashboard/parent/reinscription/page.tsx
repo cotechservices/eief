@@ -468,7 +468,7 @@ export default function ReinscriptionParentPage() {
               {notification.type === "error" && <XCircle className="w-5 h-5 text-red-500" />}
             </div>
             <p className="text-sm font-medium">{notification.message}</p>
-            <button onClick={() => removeNotification(notification.id)} className="ml-4 text-gray-900 hover:text-gray-700 transition">
+            <button onClick={() => removeNotification(notification.id)} className="ml-4 text-gray-900 hover:text-gray-900 transition">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -544,7 +544,7 @@ export default function ReinscriptionParentPage() {
               Nouvelle demande de réinscription
             </h2>
             <button onClick={() => { setShowForm(false); setSelectedEnfant(null); setSelectedClasseId(null); setSelectedNiveau(""); }}
-              className="text-gray-900 hover:text-gray-700">
+              className="text-gray-900 hover:text-gray-900">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -552,11 +552,11 @@ export default function ReinscriptionParentPage() {
           {/* Étape 1 : Sélection de l'enfant */}
           {!selectedEnfant ? (
             <div className="space-y-4">
-              <p className="text-gray-700 mb-4">Sélectionnez l'enfant à réinscrire :</p>
+              <p className="text-gray-900 mb-4">Sélectionnez l'enfant à réinscrire :</p>
 
               {enfants.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <Users className="w-12 h-12 text-gray-900 mx-auto mb-3" />
                   <p className="text-gray-900">Aucun enfant inscrit</p>
                 </div>
               ) : (
@@ -582,7 +582,7 @@ export default function ReinscriptionParentPage() {
                           )}
                           <div className="flex-1">
                             <h3 className="font-semibold text-black text-lg">{enfant.prenom} {enfant.nom}</h3>
-                            <p className="text-sm text-gray-600 flex items-center gap-1">
+                            <p className="text-sm text-gray-900 flex items-center gap-1">
                               <GraduationCap className="w-4 h-4" />
                               {enfant.classe_nom || "Classe non assignée"}
                             </p>
@@ -685,7 +685,7 @@ export default function ReinscriptionParentPage() {
                         {transportOptions.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded-lg border">
                             <div>
-                              <p className="text-sm font-medium text-gray-800">{item.nom}</p>
+                              <p className="text-sm font-medium text-gray-900">{item.nom}</p>
                               <p className="text-xs text-gray-900">{item.prix.toLocaleString()} GNF</p>
                               {item.horaireMatin && item.horaireSoir && (
                                 <p className="text-xs text-gray-900">Horaire: {item.horaireMatin} - {item.horaireSoir}</p>
@@ -696,7 +696,7 @@ export default function ReinscriptionParentPage() {
                               onClick={() => toggleTransport(idx)}
                               className={`px-4 py-1.5 rounded-lg text-sm transition ${item.selected
                                 ? "bg-green-600 text-white hover:bg-green-700"
-                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                : "bg-gray-200 text-gray-900 hover:bg-gray-300"
                                 }`}
                             >
                               {item.selected ? "✓ Sélectionné" : "Ajouter"}
@@ -718,7 +718,7 @@ export default function ReinscriptionParentPage() {
                         {cantineOptions.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded-lg border">
                             <div>
-                              <p className="text-sm font-medium text-gray-800">{item.nom}</p>
+                              <p className="text-sm font-medium text-gray-900">{item.nom}</p>
                               <p className="text-xs text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
                               {item.plat && <p className="text-xs text-gray-900">{item.plat}</p>}
                             </div>
@@ -727,7 +727,7 @@ export default function ReinscriptionParentPage() {
                               onClick={() => toggleCantine(idx)}
                               className={`px-4 py-1.5 rounded-lg text-sm transition ${item.selected
                                 ? "bg-orange-600 text-white hover:bg-orange-700"
-                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                : "bg-gray-200 text-gray-900 hover:bg-gray-300"
                                 }`}
                             >
                               {item.selected ? "✓ Sélectionné" : "Ajouter"}
@@ -749,7 +749,7 @@ export default function ReinscriptionParentPage() {
                         {supplies.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded-lg border">
                             <div>
-                              <p className="text-sm font-medium text-gray-800">{item.nom}</p>
+                              <p className="text-sm font-medium text-gray-900">{item.nom}</p>
                               <p className="text-xs text-gray-900">{item.prix_unitaire.toLocaleString()} GNF</p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -885,7 +885,7 @@ export default function ReinscriptionParentPage() {
 
         {reinscriptions.length === 0 ? (
           <div className="p-12 text-center">
-            <RefreshCw className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <RefreshCw className="w-16 h-16 text-gray-900 mx-auto mb-4" />
             <p className="text-gray-900">Aucune demande de réinscription</p>
           </div>
         ) : (
@@ -907,7 +907,7 @@ export default function ReinscriptionParentPage() {
                       {/* Infos enfant */}
                       <div>
                         <h3 className="font-semibold text-black">{r.enfant_prenom} {r.enfant_nom}</h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-900">
                           {r.classe_actuelle_nom && <span>De: {r.classe_actuelle_nom} → </span>}
                           <span className="font-medium text-green-700">Vers: {r.classe_nom || "N/A"}</span>
                         </p>
@@ -1036,7 +1036,7 @@ export default function ReinscriptionParentPage() {
                     setCancelReinscriptionId(null);
                     setCancelEnfantNom("");
                   }}
-                  className="text-gray-900 hover:text-gray-700"
+                  className="text-gray-900 hover:text-gray-900"
                 >
                   <X className="w-5 h-5" />
                 </button>

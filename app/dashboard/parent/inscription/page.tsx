@@ -481,7 +481,7 @@ export default function InscriptionParentPage() {
 
         {preinscriptions.length === 0 ? (
           <div className="p-12 text-center">
-            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
             <p className="text-gray-900">Aucune pré-inscription</p>
             <p className="text-sm text-gray-900 mt-1">Cliquez sur "Nouvelle inscription" pour commencer.</p>
           </div>
@@ -501,7 +501,7 @@ export default function InscriptionParentPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-semibold text-black">{p.enfant_prenom} {p.enfant_nom}</h3>
-                        <p className="text-sm text-gray-600">{p.classe} • Dossier: <span className="font-mono text-blue-600">{p.numero_dossier}</span></p>
+                        <p className="text-sm text-gray-900">{p.classe} • Dossier: <span className="font-mono text-blue-600">{p.numero_dossier}</span></p>
                         <p className="text-xs text-gray-900 mt-1">Soumis le {new Date(p.date_preinscription).toLocaleDateString("fr-FR")}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1">

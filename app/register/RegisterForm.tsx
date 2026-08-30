@@ -69,6 +69,7 @@ export default function RegisterForm() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [classes, setClasses] = useState<Classe[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -186,7 +187,7 @@ export default function RegisterForm() {
     }
   }, [step, mandatorySuppliesMap.size, loadingMandatory, mandatoryError, supplies.length, loadingSupplies, suppliesError, transportOptions.length, cantineOptions.length]);
 
-  // ✅ Fonction pour charger les fournitures obligatoires (avec niveaux cibles)
+  // Fonction pour charger les fournitures obligatoires (avec niveaux cibles)
   const fetchMandatorySupplies = async () => {
     try {
       setLoadingMandatory(true);
@@ -794,10 +795,10 @@ export default function RegisterForm() {
                 <h3 className="text-lg font-semibold text-blue-900">Informations du Père <span className="text-red-500">*</span></h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Nom *</label><input type="text" name="nom" value={pereInfo.nom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Nom du père" required /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Prénom *</label><input type="text" name="prenom" value={pereInfo.prenom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Prénom du père" required /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Téléphone du père *</label><input type="tel" name="phone" value={pereInfo.phone} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="+224 6XX XX XX XX" required /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Profession du père</label><input type="text" name="profession" value={pereInfo.profession} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Ex: Ingénieur, Médecin..." /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Nom *</label><input type="text" name="nom" value={pereInfo.nom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Nom du père" required /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Prénom *</label><input type="text" name="prenom" value={pereInfo.prenom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Prénom du père" required /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Téléphone du père *</label><input type="tel" name="phone" value={pereInfo.phone} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="+224 6XX XX XX XX" required /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Profession du père</label><input type="text" name="profession" value={pereInfo.profession} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Ex: Ingénieur, Médecin..." /></div>
               </div>
             </div>
 
@@ -810,10 +811,10 @@ export default function RegisterForm() {
                 <h3 className="text-lg font-semibold text-pink-900">Informations de la Mère <span className="text-gray-900 text-sm font-normal">(optionnel)</span></h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Nom</label><input type="text" name="nom" value={mereInfo.nom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Nom de la mère" /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Prénom</label><input type="text" name="prenom" value={mereInfo.prenom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Prénom de la mère" /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Téléphone de la mère</label><input type="tel" name="phone" value={mereInfo.phone} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="+224 6XX XX XX XX" /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Profession de la mère</label><input type="text" name="profession" value={mereInfo.profession} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Ex: Enseignante, Commerçante..." /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Nom</label><input type="text" name="nom" value={mereInfo.nom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Nom de la mère" /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Prénom</label><input type="text" name="prenom" value={mereInfo.prenom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Prénom de la mère" /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Téléphone de la mère</label><input type="tel" name="phone" value={mereInfo.phone} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="+224 6XX XX XX XX" /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Profession de la mère</label><input type="text" name="profession" value={mereInfo.profession} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Ex: Enseignante, Commerçante..." /></div>
               </div>
             </div>
 
@@ -830,8 +831,8 @@ export default function RegisterForm() {
                 Cet email sera utilisé par les deux parents pour se connecter à la plateforme.
               </p>
               <div className="grid md:grid-cols-2 gap-4">
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Email familial *</label><input type="email" name="email" value={compteInfo.email} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="famille@email.com" required /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Adresse familiale</label><input type="text" name="adresse" value={compteInfo.adresse} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Votre adresse complète" /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Email familial *</label><input type="email" name="email" value={compteInfo.email} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="famille@email.com" required /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Adresse familiale</label><input type="text" name="adresse" value={compteInfo.adresse} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Votre adresse complète" /></div>
               </div>
             </div>
           </div>
@@ -887,23 +888,23 @@ export default function RegisterForm() {
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Extrait d'acte de naissance <span className="text-gray-900 text-sm">(optionnel)</span></label>
+                    <label className="block text-gray-900 font-medium mb-2">Extrait d'acte de naissance <span className="text-gray-900 text-sm">(optionnel)</span></label>
                     <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" id={`acte_${idx}`} onChange={(e) => handleFileChange(idx, 'acteNaissance', e.target.files?.[0] || null)} />
-                    <button type="button" onClick={() => document.getElementById(`acte_${idx}`)?.click()} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
+                    <button type="button" onClick={() => document.getElementById(`acte_${idx}`)?.click()} className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
                     {enfant.acteNaissance && <p className="text-sm text-green-600 mt-2">✓ {enfant.acteNaissance.name}</p>}
                   </div>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Photo d'identité <span className="text-gray-900 text-sm">(optionnel)</span></label>
+                    <label className="block text-gray-900 font-medium mb-2">Photo d'identité <span className="text-gray-900 text-sm">(optionnel)</span></label>
                     <input type="file" accept=".jpg,.jpeg,.png" className="hidden" id={`photo_${idx}`} onChange={(e) => handleFileChange(idx, 'photo', e.target.files?.[0] || null)} />
-                    <button type="button" onClick={() => document.getElementById(`photo_${idx}`)?.click()} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
+                    <button type="button" onClick={() => document.getElementById(`photo_${idx}`)?.click()} className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
                     {enfant.photo && <p className="text-sm text-green-600 mt-2">✓ {enfant.photo.name}</p>}
                   </div>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Bulletin scolaire <span className="text-gray-900 text-sm">(optionnel)</span></label>
+                    <label className="block text-gray-900 font-medium mb-2">Bulletin scolaire <span className="text-gray-900 text-sm">(optionnel)</span></label>
                     <input type="file" accept=".pdf" className="hidden" id={`bulletin_${idx}`} onChange={(e) => handleFileChange(idx, 'bulletin', e.target.files?.[0] || null)} />
-                    <button type="button" onClick={() => document.getElementById(`bulletin_${idx}`)?.click()} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
+                    <button type="button" onClick={() => document.getElementById(`bulletin_${idx}`)?.click()} className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
                     {enfant.bulletin && <p className="text-sm text-green-600 mt-2">✓ {enfant.bulletin.name}</p>}
                   </div>
                 </div>
@@ -915,21 +916,96 @@ export default function RegisterForm() {
         {/* Étape 4 - Validation / Mot de passe */}
         {step === 4 && (
           <div className="space-y-6">
-            <div className="flex items-center gap-3"><Lock className="w-8 h-8 text-blue-600" /><h2 className="text-2xl font-bold text-gray-900">Confirmation</h2></div>
+            <div className="flex items-center gap-3">
+              <Lock className="w-8 h-8 text-blue-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Confirmation</h2>
+            </div>
             {!isParentLoggedIn && (
               <>
                 <p className="text-gray-900">Créez un mot de passe pour accéder à la plateforme</p>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3"><p className="text-xs font-semibold text-blue-700 mb-1">Père</p><p className="text-sm text-gray-800 font-medium">{pereInfo.prenom} {pereInfo.nom}</p><p className="text-xs text-gray-900">{pereInfo.phone}</p>{pereInfo.profession && <p className="text-xs text-gray-900">{pereInfo.profession}</p>}</div>
-                  {(mereInfo.nom || mereInfo.prenom) && (<div className="bg-pink-50 border border-pink-200 rounded-lg p-3"><p className="text-xs font-semibold text-pink-700 mb-1">Mère</p><p className="text-sm text-gray-800 font-medium">{mereInfo.prenom} {mereInfo.nom}</p><p className="text-xs text-gray-900">{mereInfo.phone}</p>{mereInfo.profession && <p className="text-xs text-gray-900">{mereInfo.profession}</p>}</div>)}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-blue-700 mb-1">Père</p>
+                    <p className="text-sm text-gray-900 font-medium">{pereInfo.prenom} {pereInfo.nom}</p>
+                    <p className="text-xs text-gray-900">{pereInfo.phone}</p>
+                    {pereInfo.profession && <p className="text-xs text-gray-900">{pereInfo.profession}</p>}
+                  </div>
+                  {(mereInfo.nom || mereInfo.prenom) && (
+                    <div className="bg-pink-50 border border-pink-200 rounded-lg p-3">
+                      <p className="text-xs font-semibold text-pink-700 mb-1">Mère</p>
+                      <p className="text-sm text-gray-900 font-medium">{mereInfo.prenom} {mereInfo.nom}</p>
+                      <p className="text-xs text-gray-900">{mereInfo.phone}</p>
+                      {mereInfo.profession && <p className="text-xs text-gray-900">{mereInfo.profession}</p>}
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm text-gray-900"> Email commun : <strong>{compteInfo.email}</strong></p>
-                <div><label className="block text-gray-900 mb-2">Mot de passe *</label><input type={showPassword ? "text" : "password"} name="password" value={compteInfo.password} onChange={handleCompteChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Minimum 6 caractères" required /></div>
-                <div><label className="block text-gray-900 mb-2">Confirmer le mot de passe *</label><input type={showPassword ? "text" : "password"} name="confirmPassword" value={compteInfo.confirmPassword} onChange={handleCompteChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Retapez votre mot de passe" required /></div>
-                {compteInfo.password !== compteInfo.confirmPassword && compteInfo.confirmPassword && <p className="text-red-500 text-sm">Les mots de passe ne correspondent pas</p>}
+                <p className="text-sm text-gray-900">Email commun : <strong>{compteInfo.email}</strong></p>
+
+                {/* ⭐ CHAMP MOT DE PASSE AVEC ŒIL */}
+                <div>
+                  <label className="block text-gray-900 mb-2">Mot de passe *</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={compteInfo.password}
+                      onChange={handleCompteChange}
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black pr-10"
+                      placeholder="Minimum 6 caractères"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-900 transition"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* ⭐ CHAMP CONFIRMER MOT DE PASSE AVEC ŒIL */}
+                <div>
+                  <label className="block text-gray-900 mb-2">Confirmer le mot de passe *</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={compteInfo.confirmPassword}
+                      onChange={handleCompteChange}
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black pr-10"
+                      placeholder="Retapez votre mot de passe"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-900 transition"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {compteInfo.password !== compteInfo.confirmPassword && compteInfo.confirmPassword && (
+                  <p className="text-red-500 text-sm">Les mots de passe ne correspondent pas</p>
+                )}
               </>
             )}
-            <div className="bg-blue-50 p-4 rounded-lg"><p className="text-sm text-blue-800">Récapitulatif : Vous allez inscrire <strong>{enfants.length}</strong> enfant(s). Après validation, vous recevrez un email de confirmation pour chaque enfant.</p></div>
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-800">
+                Récapitulatif : Vous allez inscrire <strong>{enfants.length}</strong> enfant(s).
+                Après validation, vous recevrez un email de confirmation pour chaque enfant.
+              </p>
+            </div>
           </div>
         )}
 
@@ -978,7 +1054,7 @@ export default function RegisterForm() {
                   {loadingSupplies ? (
                     <div className="flex justify-center items-center py-8">
                       <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                      <span className="ml-2 text-gray-600">Chargement des fournitures...</span>
+                      <span className="ml-2 text-gray-900">Chargement des fournitures...</span>
                     </div>
                   ) : suppliesError ? (
                     <div className="bg-yellow-50 p-4 rounded-lg text-center text-yellow-700">
@@ -991,13 +1067,13 @@ export default function RegisterForm() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-gray-600 mb-4">Fournitures optionnelles supplémentaires</p>
+                      <p className="text-sm text-gray-900 mb-4">Fournitures optionnelles supplémentaires</p>
                       <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                         {supplies.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                             <div className="flex-1">
-                              <p className="font-medium text-gray-800">{item.nom}</p>
-                              <p className="text-sm text-gray-800">{item.prix_unitaire.toLocaleString()} GNF</p>
+                              <p className="font-medium text-gray-900">{item.nom}</p>
+                              <p className="text-sm text-gray-900">{item.prix_unitaire.toLocaleString()} GNF</p>
                               <p className="text-xs text-gray-900">Stock: {item.quantite_stock}</p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -1071,7 +1147,7 @@ export default function RegisterForm() {
                   {loadingTransport ? (
                     <div className="flex justify-center items-center py-4">
                       <Loader2 className="w-6 h-6 animate-spin text-green-600" />
-                      <span className="ml-2 text-gray-600">Chargement des options de transport...</span>
+                      <span className="ml-2 text-gray-900">Chargement des options de transport...</span>
                     </div>
                   ) : transportOptions.length === 0 ? (
                     <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
@@ -1080,12 +1156,12 @@ export default function RegisterForm() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-gray-600 mb-4">Sélectionnez le transport pour vos enfants</p>
+                      <p className="text-sm text-gray-900 mb-4">Sélectionnez le transport pour vos enfants</p>
                       <div className="space-y-3 max-h-60 overflow-y-auto">
                         {transportOptions.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                             <div>
-                              <p className="font-medium text-gray-800">{item.nom}</p>
+                              <p className="font-medium text-gray-900">{item.nom}</p>
                               <p className="text-sm text-green-600 font-semibold">{item.prix.toLocaleString()} GNF</p>
                             </div>
                             <button
@@ -1093,7 +1169,7 @@ export default function RegisterForm() {
                               onClick={() => toggleTransport(idx)}
                               className={`px-4 py-2 rounded-lg transition ${item.selected
                                 ? "bg-green-600 text-white hover:bg-green-700"
-                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                : "bg-gray-200 text-gray-900 hover:bg-gray-300"
                                 }`}
                             >
                               {item.selected ? "✓ Sélectionné" : "Ajouter"}
@@ -1151,7 +1227,7 @@ export default function RegisterForm() {
                   {loadingCantine ? (
                     <div className="flex justify-center items-center py-4">
                       <Loader2 className="w-6 h-6 animate-spin text-orange-600" />
-                      <span className="ml-2 text-gray-600">Chargement des menus...</span>
+                      <span className="ml-2 text-gray-900">Chargement des menus...</span>
                     </div>
                   ) : cantineOptions.length === 0 ? (
                     <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
@@ -1160,12 +1236,12 @@ export default function RegisterForm() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-gray-600 mb-4">Sélectionnez la cantine pour vos enfants</p>
+                      <p className="text-sm text-gray-900 mb-4">Sélectionnez la cantine pour vos enfants</p>
                       <div className="space-y-3 max-h-60 overflow-y-auto">
                         {cantineOptions.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                             <div className="flex-1">
-                              <p className="font-medium text-gray-800">{item.nom}</p>
+                              <p className="font-medium text-gray-900">{item.nom}</p>
                               {item.prix_annuel > 0 ? (
                                 <p className="text-sm text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
                               ) : (
@@ -1191,7 +1267,7 @@ export default function RegisterForm() {
                               className={`px-4 py-2 rounded-lg transition ${item.selected
                                 ? "bg-orange-600 text-white hover:bg-orange-700"
                                 : item.prix_annuel > 0
-                                  ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                  ? "bg-gray-200 text-gray-900 hover:bg-gray-300"
                                   : "bg-gray-100 text-gray-900 cursor-not-allowed"
                                 }`}
                             >
@@ -1229,7 +1305,7 @@ export default function RegisterForm() {
                 {mandatorySummary.length > 0 && (
                   <>
                     {mandatorySummary.map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-xs pl-4 text-gray-600">
+                      <div key={idx} className="flex justify-between text-xs pl-4 text-gray-900">
                         <span>• {item.nom} (x{item.quantiteTotale})</span>
                         <span>{item.total.toLocaleString()} GNF</span>
                       </div>

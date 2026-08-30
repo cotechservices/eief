@@ -111,21 +111,21 @@ export default function EleveQuizPage() {
       <div className="flex gap-2 bg-gray-100 p-1 rounded-xl w-fit">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${filter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${filter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-900'
             }`}
         >
           Tous
         </button>
         <button
           onClick={() => setFilter('disponible')}
-          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${filter === 'disponible' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${filter === 'disponible' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-900'
             }`}
         >
           À faire
         </button>
         <button
           onClick={() => setFilter('termine')}
-          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${filter === 'termine' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${filter === 'termine' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-900'
             }`}
         >
           Terminés
@@ -135,7 +135,7 @@ export default function EleveQuizPage() {
       {filteredQuiz.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-900">
           <Brain className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="font-medium text-gray-600">Aucun quiz disponible</p>
+          <p className="font-medium text-gray-900">Aucun quiz disponible</p>
           <p className="text-sm mt-1">Vos enseignants n'ont pas encore créé de quiz</p>
         </div>
       ) : (

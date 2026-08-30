@@ -87,7 +87,7 @@ export default function EnseignantDevoirsPage() {
         {devoirs.length === 0 ? (
           <div className="col-span-full bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-900">
             <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="font-medium text-gray-600">Aucun devoir publié</p>
+            <p className="font-medium text-gray-900">Aucun devoir publié</p>
             <p className="text-sm mt-1">Cliquez sur "Créer un devoir" pour commencer.</p>
           </div>
         ) : (
@@ -119,7 +119,7 @@ export default function EnseignantDevoirsPage() {
 
                 <div className="bg-gray-50 p-5">
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-600 font-medium flex items-center gap-1">
+                    <span className="text-gray-900 font-medium flex items-center gap-1">
                       <Users className="w-4 h-4" /> Soumissions
                     </span>
                     <span className="font-bold text-gray-900">
@@ -151,7 +151,7 @@ export default function EnseignantDevoirsPage() {
                     </div>
                     <Link
                       href={`/dashboard/enseignant/devoirs/${devoir.id}/soumissions`}
-                      className="bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:border-orange-300 hover:text-orange-600 transition flex items-center gap-1 shadow-sm"
+                      className="bg-white border border-gray-200 text-gray-900 px-3 py-1.5 rounded-lg text-xs font-semibold hover:border-orange-300 hover:text-orange-600 transition flex items-center gap-1 shadow-sm"
                     >
                       <Eye className="w-3.5 h-3.5" /> Voir copies
                     </Link>

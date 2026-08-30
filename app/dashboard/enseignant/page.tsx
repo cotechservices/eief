@@ -176,7 +176,7 @@ export default function EnseignantDashboard() {
           <div className="relative z-10">
             <FileText className="w-8 h-8 text-orange-500 mb-3" />
             <h3 className="font-bold text-gray-900 text-lg">Gestion des Devoirs</h3>
-            <p className="text-sm text-gray-600 mt-1 mb-4">
+            <p className="text-sm text-gray-900 mt-1 mb-4">
               {stats?.total_devoirs || 0} devoir(s) publié(s)
               {stats?.soumissions_a_noter && stats.soumissions_a_noter > 0 && (
                 <span className="block text-orange-600 font-medium mt-1">
@@ -195,7 +195,7 @@ export default function EnseignantDashboard() {
           <div className="relative z-10">
             <Award className="w-8 h-8 text-purple-500 mb-3" />
             <h3 className="font-bold text-gray-900 text-lg">Évaluations</h3>
-            <p className="text-sm text-gray-600 mt-1 mb-4">
+            <p className="text-sm text-gray-900 mt-1 mb-4">
               {stats?.total_examens || 0} évaluation(s) créée(s)
               <span className="block text-purple-600 font-medium mt-1">
                 Correction automatique
@@ -212,7 +212,7 @@ export default function EnseignantDashboard() {
           <div className="relative z-10">
             <UserCheck className="w-8 h-8 text-green-500 mb-3" />
             <h3 className="font-bold text-gray-900 text-lg">Présences</h3>
-            <p className="text-sm text-gray-600 mt-1 mb-4">
+            <p className="text-sm text-gray-900 mt-1 mb-4">
               {stats?.total_eleves || 0} élèves à suivre
               <span className="block text-green-600 font-medium mt-1">
                 Gérez les présences de vos classes

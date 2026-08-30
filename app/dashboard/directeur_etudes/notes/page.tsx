@@ -310,7 +310,7 @@ export default function NotesDirecteurPage() {
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-center justify-between">
         <div className="w-full md:w-1/3 flex gap-4">
           <div className="flex-1">
-            <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+            <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
               <GraduationCap className="w-4 h-4 text-blue-600" />
               Classe
             </label>
@@ -326,7 +326,7 @@ export default function NotesDirecteurPage() {
             </select>
           </div>
           <div className="w-32">
-            <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+            <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
               <FileText className="w-4 h-4 text-indigo-600" />
               Barème
             </label>
@@ -435,7 +435,7 @@ export default function NotesDirecteurPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse border border-gray-200 text-sm">
                         <thead>
-                          <tr className="bg-gray-100 font-bold uppercase text-xs text-gray-600">
+                          <tr className="bg-gray-100 font-bold uppercase text-xs text-gray-900">
                             <th className="border border-gray-200 p-2.5 text-left">MATIERES</th>
                             <th className="border border-gray-200 p-2.5 w-32 text-center">MOYENNE</th>
                             <th className="border border-gray-200 p-2.5 w-24 text-center">COEFFICIENT</th>
@@ -452,7 +452,7 @@ export default function NotesDirecteurPage() {
 
                             return (
                               <tr key={ens.enseignement_id} className="hover:bg-gray-50/50">
-                                <td className="border border-gray-200 p-2.5 font-semibold text-gray-800 uppercase">
+                                <td className="border border-gray-200 p-2.5 font-semibold text-gray-900 uppercase">
                                   {ens.matiere_nom}
                                 </td>
                                 <td className="border border-gray-200 p-2">
@@ -477,10 +477,10 @@ export default function NotesDirecteurPage() {
                                     className="w-full p-1.5 text-center font-semibold border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
                                   />
                                 </td>
-                                <td className="border border-gray-200 p-2.5 text-center font-bold text-gray-700">
+                                <td className="border border-gray-200 p-2.5 text-center font-bold text-gray-900">
                                   {!isNaN(parseFloat(calculatedMoyCoeff)) ? calculatedMoyCoeff.replace('.0', '') : "-"}
                                 </td>
-                                <td className={`border border-gray-200 p-2.5 text-center font-bold text-xs ${mention === 'TRES BIEN' || mention === 'BIEN' ? 'text-green-600' : 'text-gray-700'
+                                <td className={`border border-gray-200 p-2.5 text-center font-bold text-xs ${mention === 'TRES BIEN' || mention === 'BIEN' ? 'text-green-600' : 'text-gray-900'
                                   }`}>
                                   {mention}
                                 </td>

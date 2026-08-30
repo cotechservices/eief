@@ -17,6 +17,7 @@ interface Props {
       fournitures: number;
     };
   };
+  soldeRestant?: number;
   parentId?: number;
 }
 
@@ -24,7 +25,7 @@ const formatMontant = (montant: number): string => {
   return Math.round(Math.max(0, montant)).toLocaleString();
 };
 
-export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde, parentId }: Props) {
+export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde, soldeRestant, parentId }: Props) {
   const [paying, setPaying] = useState(false);
   const [modePaiement, setModePaiement] = useState("");
   const [reference, setReference] = useState("");
@@ -32,9 +33,9 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
 
   // ✅ Valeur par défaut si solde n'est pas fourni
   const safeSolde = solde || {
-    total: 0,
+    total: soldeRestant || 0,
     details: {
-      inscription: 0,
+      inscription: soldeRestant || 0,
       transport: 0,
       cantine: 0,
       fournitures: 0
@@ -103,9 +104,9 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-bold text-black">Paiement Global</h2>
-              <p className="text-sm text-gray-600">Payez pour l'ensemble de vos enfants inscrits</p>
+              <p className="text-sm text-gray-900">Payez pour l'ensemble de vos enfants inscrits</p>
             </div>
-            <button onClick={onClose} className="text-gray-900 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-full">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -121,7 +122,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
 
           {/* Récapitulatif détaillé du solde global */}
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <h4 className="font-semibold text-gray-700 mb-2">Détail du solde global</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">Détail du solde global</h4>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span>Frais d'inscription</span>
@@ -129,19 +130,19 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
               </div>
               {safeSolde.details.transport > 0 && (
                 <div className="flex justify-between pl-4">
-                  <span className="text-gray-600 flex items-center gap-1"><Bus className="w-3 h-3" /> Transport</span>
+                  <span className="text-gray-900 flex items-center gap-1"><Bus className="w-3 h-3" /> Transport</span>
                   <span className="font-medium text-blue-600">{formatMontant(safeSolde.details.transport)} GNF</span>
                 </div>
               )}
               {safeSolde.details.cantine > 0 && (
                 <div className="flex justify-between pl-4">
-                  <span className="text-gray-600 flex items-center gap-1"><Utensils className="w-3 h-3" /> Cantine</span>
+                  <span className="text-gray-900 flex items-center gap-1"><Utensils className="w-3 h-3" /> Cantine</span>
                   <span className="font-medium text-orange-600">{formatMontant(safeSolde.details.cantine)} GNF</span>
                 </div>
               )}
               {safeSolde.details.fournitures > 0 && (
                 <div className="flex justify-between pl-4">
-                  <span className="text-gray-600 flex items-center gap-1"><ShoppingCart className="w-3 h-3" /> Fournitures</span>
+                  <span className="text-gray-900 flex items-center gap-1"><ShoppingCart className="w-3 h-3" /> Fournitures</span>
                   <span className="font-medium text-purple-600">{formatMontant(safeSolde.details.fournitures)} GNF</span>
                 </div>
               )}
@@ -156,10 +157,10 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
             <>
               {/* Suggestions de montant */}
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-2">Suggestions de montant</label>
+                <label className="block text-gray-900 text-sm font-medium mb-2">Suggestions de montant</label>
                 <div className="flex flex-wrap gap-2">
                   {[25, 50, 75].map(pct => (
-                    <button key={pct} onClick={() => handleSuggestion(pct)} className="px-3 py-1.5 bg-gray-100 hover:bg-indigo-100 rounded-lg text-sm font-medium text-gray-700 hover:text-indigo-700 transition flex items-center gap-1">
+                    <button key={pct} onClick={() => handleSuggestion(pct)} className="px-3 py-1.5 bg-gray-100 hover:bg-indigo-100 rounded-lg text-sm font-medium text-gray-900 hover:text-indigo-700 transition flex items-center gap-1">
                       <Percent className="w-3 h-3" /> {pct}%
                     </button>
                   ))}
@@ -171,7 +172,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
 
               {/* Saisie du montant */}
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-2">Montant à payer *</label>
+                <label className="block text-gray-900 text-sm font-medium mb-2">Montant à payer *</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 font-semibold">GNF</span>
                   <input
@@ -200,7 +201,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
 
               {/* Mode de paiement */}
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-2">Mode de paiement *</label>
+                <label className="block text-gray-900 text-sm font-medium mb-2">Mode de paiement *</label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'especes', label: 'Espèces', icon: Wallet, color: 'green' },
@@ -223,7 +224,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
               {/* Référence transaction */}
               {(modePaiement === 'orange_money' || modePaiement === 'carte') && (
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-2 text-sm font-medium">Numéro de transaction</label>
+                  <label className="block text-gray-900 mb-2 text-sm font-medium">Numéro de transaction</label>
                   <input
                     type="text"
                     value={reference}
@@ -253,7 +254,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-2">Tous vos paiements sont à jour</h3>
               <p className="text-gray-900">Vous n'avez aucun solde restant.</p>
-              <button onClick={onClose} className="mt-6 px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">Fermer</button>
+              <button onClick={onClose} className="mt-6 px-6 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 font-medium">Fermer</button>
             </div>
           )}
         </div>

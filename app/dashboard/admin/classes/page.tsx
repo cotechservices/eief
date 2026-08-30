@@ -535,7 +535,7 @@ export default function GestionClassesPage() {
                           <span className="font-medium text-blue-600">{classe.troisieme_versement?.toLocaleString()} GNF</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs border-t pt-1 mt-1">
-                          <span className="text-gray-700 font-medium w-24">Total:</span>
+                          <span className="text-gray-900 font-medium w-24">Total:</span>
                           <span className="font-bold text-green-700">{classe.total_versement?.toLocaleString()} GNF</span>
                         </div>
                       </div>
@@ -556,7 +556,7 @@ export default function GestionClassesPage() {
                           <span className="font-medium text-indigo-600">{classe.reinscription_troisieme_versement?.toLocaleString()} GNF</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs border-t pt-1 mt-1">
-                          <span className="text-gray-700 font-medium w-24">Total:</span>
+                          <span className="text-gray-900 font-medium w-24">Total:</span>
                           <span className="font-bold text-purple-700">{classe.reinscription_total_versement?.toLocaleString()} GNF</span>
                         </div>
                       </div>
@@ -784,7 +784,7 @@ export default function GestionClassesPage() {
               {/* Informations générales */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom de la classe *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Nom de la classe *</label>
                   <input
                     type="text"
                     value={formData.nom || ""}
@@ -795,7 +795,7 @@ export default function GestionClassesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Niveau *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Niveau *</label>
                   <select
                     value={formData.niveau || ""}
                     onChange={(e) => setFormData({ ...formData, niveau: e.target.value })}
@@ -812,7 +812,7 @@ export default function GestionClassesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Capacité maximale</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Capacité maximale</label>
                 <input
                   type="number"
                   value={formData.capacite_max || 30}
@@ -824,7 +824,7 @@ export default function GestionClassesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Frais de scolarité (GNF) *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Frais de scolarité (GNF) *</label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
@@ -853,7 +853,7 @@ export default function GestionClassesPage() {
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
                         1er Versement *
                       </label>
                       <div className="relative">
@@ -872,7 +872,7 @@ export default function GestionClassesPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
                         2ème Versement *
                       </label>
                       <div className="relative">
@@ -891,7 +891,7 @@ export default function GestionClassesPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
                         3ème Versement *
                       </label>
                       <div className="relative">
@@ -913,7 +913,7 @@ export default function GestionClassesPage() {
                   {/* Affichage du total */}
                   <div className="mt-4 p-3 bg-white rounded-lg border border-blue-300 flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-700">Total des versements</span>
+                      <span className="font-semibold text-gray-900">Total des versements</span>
                       <span className="text-xs text-gray-900">
                         ({formData.premier_versement?.toLocaleString() || 0} + {formData.deuxieme_versement?.toLocaleString() || 0} + {formData.troisieme_versement?.toLocaleString() || 0})
                       </span>
@@ -950,7 +950,7 @@ export default function GestionClassesPage() {
                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
                         1er Versement *
                       </label>
                       <input
@@ -964,7 +964,7 @@ export default function GestionClassesPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
                         2ème Versement *
                       </label>
                       <input
@@ -979,7 +979,7 @@ export default function GestionClassesPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
                         3ème Versement *
                       </label>
                       <input
@@ -997,7 +997,7 @@ export default function GestionClassesPage() {
                   {/* Affichage du total réinscription */}
                   <div className="mt-4 p-3 bg-white rounded-lg border border-indigo-300 flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-700">Total réinscription</span>
+                      <span className="font-semibold text-gray-900">Total réinscription</span>
                       <span className="text-xs text-gray-900">
                         ({formData.reinscription_premier_versement?.toLocaleString() || 0} + {formData.reinscription_deuxieme_versement?.toLocaleString() || 0} + {formData.reinscription_troisieme_versement?.toLocaleString() || 0})
                       </span>

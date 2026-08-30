@@ -13,9 +13,12 @@ export async function GET(request: NextRequest) {
 
     const userEmail = session.user?.email;
 
-    // Récupérer le parent_id
+    // Récupérer les infos parent
     const parentResult = await query(
-      `SELECT p.id FROM parents p JOIN utilisateurs u ON p.utilisateur_id = u.id WHERE u.email = $1`,
+      `SELECT p.id, u.nom, u.prenom, u.email 
+       FROM parents p 
+       JOIN utilisateurs u ON p.utilisateur_id = u.id 
+       WHERE u.email = $1`,
       [userEmail]
     );
 
@@ -23,11 +26,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Compte parent introuvable" }, { status: 404 });
     }
 
-    const parentId = parentResult.rows[0].id;
+    const parent = parentResult.rows[0];
+    const parentId = parent.id;
+    const parentNomComplet = `${parent.prenom || ''} ${parent.nom || ''}`.trim();
 
     // ─────────────────────────────────────────────────────────────────
     // 1. Paiements liés à une PRÉ-INSCRIPTION (preinscription_id non null)
-    //    → insérés par paiement-global, paiement-echeance, paiement-preinscription
     // ─────────────────────────────────────────────────────────────────
     const paiPreinsResult = await query(`
       SELECT
@@ -39,8 +43,11 @@ export async function GET(request: NextRequest) {
         COALESCE(pay.type_frais, 'inscription')                     AS type_frais,
         COALESCE(pay.reference_transaction, p.numero_dossier, CONCAT('PAY-', pay.id)) AS reference,
         p.classe                                                     AS classe,
+        COALESCE(p.montant_total_plan, p.frais_montant, 0)           AS montant_total,
+        COALESCE(p.montant_restant_plan, 0)                          AS reste_a_payer,
         'paiement'                                                   AS source,
-        pay.id                                                       AS source_id
+        pay.id                                                       AS source_id,
+        p.id                                                         AS preinscription_id
       FROM paiements pay
       JOIN preinscriptions p ON pay.preinscription_id = p.id
       WHERE p.parent_id = $1
@@ -51,7 +58,6 @@ export async function GET(request: NextRequest) {
 
     // ─────────────────────────────────────────────────────────────────
     // 2. Paiements liés à une RÉINSCRIPTION (reinscription_id non null)
-    //    → insérés par paiement-global, paiement-echeance, paiement-reinscription
     // ─────────────────────────────────────────────────────────────────
     const paiReinsResult = await query(`
       SELECT
@@ -63,8 +69,11 @@ export async function GET(request: NextRequest) {
         COALESCE(pay.type_frais, 'reinscription')                   AS type_frais,
         COALESCE(pay.reference_transaction, CONCAT('REIN-', r.id))  AS reference,
         COALESCE(c.nom, r.classe_nom)                               AS classe,
+        COALESCE(r.montant_total_plan, r.montant_frais, 0)          AS montant_total,
+        COALESCE(r.montant_restant_plan, 0)                          AS reste_a_payer,
         'paiement'                                                   AS source,
-        pay.id                                                       AS source_id
+        pay.id                                                       AS source_id,
+        NULL::int                                                    AS preinscription_id
       FROM paiements pay
       JOIN reinscriptions r ON pay.reinscription_id = r.id
       LEFT JOIN eleves e ON r.eleve_id = e.id
@@ -77,8 +86,7 @@ export async function GET(request: NextRequest) {
     `, [parentId]);
 
     // ─────────────────────────────────────────────────────────────────
-    // 3. Paiements directs liés à un ÉLÈVE (eleve_id non null, sans preinscription ni réinscription)
-    //    → insérés par paiement-global quand surplus imputé sur élève
+    // 3. Paiements directs liés à un ÉLÈVE
     // ─────────────────────────────────────────────────────────────────
     const paiEleveResult = await query(`
       SELECT
@@ -89,9 +97,12 @@ export async function GET(request: NextRequest) {
         COALESCE(pay.mode_paiement, 'especes')                      AS mode_paiement,
         COALESCE(pay.type_frais, 'scolarite')                       AS type_frais,
         COALESCE(pay.reference_transaction, CONCAT('PAY-', pay.id)) AS reference,
-        c.nom                                                        AS classe,
+        COALESCE(c.nom, '—')                                         AS classe,
+        COALESCE(c.total_versement, c.frais_inscription, 0)          AS montant_total,
+        0                                                            AS reste_a_payer,
         'paiement'                                                   AS source,
-        pay.id                                                       AS source_id
+        pay.id                                                       AS source_id,
+        NULL::int                                                    AS preinscription_id
       FROM paiements pay
       JOIN eleves e ON pay.eleve_id = e.id
       JOIN utilisateurs u ON e.utilisateur_id = u.id
@@ -107,7 +118,6 @@ export async function GET(request: NextRequest) {
 
     // ─────────────────────────────────────────────────────────────────
     // 4. Reçus de pré-inscriptions entièrement payées via frais_statut
-    //    (cas paiement-preinscription qui met frais_statut = 'paye' sans insérer dans paiements)
     // ─────────────────────────────────────────────────────────────────
     const preinscriptionsResult = await query(`
       SELECT
@@ -119,13 +129,15 @@ export async function GET(request: NextRequest) {
         'Frais de pré-inscription'                     AS type_frais,
         COALESCE(p.frais_reference, p.numero_dossier)  AS reference,
         p.classe                                       AS classe,
+        COALESCE(p.montant_total_plan, p.frais_montant, 0) AS montant_total,
+        COALESCE(p.montant_restant_plan, 0)            AS reste_a_payer,
         'preinscription'                               AS source,
-        p.id                                           AS source_id
+        p.id                                           AS source_id,
+        p.id                                           AS preinscription_id
       FROM preinscriptions p
       WHERE p.parent_id = $1
         AND p.frais_statut = 'paye'
         AND p.frais_date_paiement IS NOT NULL
-        -- Exclure celles déjà couvertes par un paiement dans la table paiements
         AND NOT EXISTS (
           SELECT 1 FROM paiements pay
           WHERE pay.preinscription_id = p.id AND pay.statut = 'valide'
@@ -141,13 +153,16 @@ export async function GET(request: NextRequest) {
         CONCAT('REC-RI-', LPAD(r.id::text, 5, '0'))        AS numero_recu,
         r.frais_date_paiement                               AS date_paiement,
         COALESCE(ue.prenom || ' ' || ue.nom, r.enfant_prenom || ' ' || r.enfant_nom) AS enfant,
-        r.montant_total                                     AS montant,
+        r.montant_frais                                     AS montant,
         COALESCE(r.frais_mode_paiement, 'especes')          AS mode_paiement,
         'Frais de réinscription'                            AS type_frais,
         COALESCE(r.frais_reference, CONCAT('REIN-', r.id)) AS reference,
         COALESCE(c.nom, r.classe_nom)                       AS classe,
+        COALESCE(r.montant_total_plan, r.montant_frais, 0)  AS montant_total,
+        COALESCE(r.montant_restant_plan, 0)                 AS reste_a_payer,
         'reinscription'                                     AS source,
-        r.id                                                AS source_id
+        r.id                                                AS source_id,
+        NULL::int                                           AS preinscription_id
       FROM reinscriptions r
       LEFT JOIN eleves e ON r.eleve_id = e.id
       LEFT JOIN utilisateurs ue ON e.utilisateur_id = ue.id
@@ -162,14 +177,21 @@ export async function GET(request: NextRequest) {
       ORDER BY r.frais_date_paiement DESC
     `, [parentId]);
 
-    // Fusionner toutes les sources et trier par date décroissante
+    // Fusionner toutes les sources et enrichir avec les détails du parent
     const allRecus = [
       ...paiPreinsResult.rows,
       ...paiReinsResult.rows,
       ...paiEleveResult.rows,
       ...preinscriptionsResult.rows,
       ...reinscriptionsResult.rows,
-    ].sort((a, b) => {
+    ].map(recu => ({
+      ...recu,
+      montant: Number(recu.montant) || 0,
+      montant_total: Number(recu.montant_total) || 0,
+      reste_a_payer: Number(recu.reste_a_payer) || 0,
+      parent_nom: parentNomComplet,
+      parent_email: parent.email || ''
+    })).sort((a, b) => {
       const dateA = new Date(a.date_paiement).getTime();
       const dateB = new Date(b.date_paiement).getTime();
       return dateB - dateA;

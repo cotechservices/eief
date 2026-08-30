@@ -120,7 +120,7 @@ export default function EnseignantLeconsPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        <span className="ml-2 text-gray-600">Chargement...</span>
+        <span className="ml-2 text-gray-900">Chargement...</span>
       </div>
     );
   }
@@ -156,7 +156,7 @@ export default function EnseignantLeconsPage() {
           <h3 className="text-lg font-semibold mb-4">Ajouter une leçon</h3>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Titre *</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Titre *</label>
               <input
                 type="text"
                 value={titre}
@@ -166,7 +166,7 @@ export default function EnseignantLeconsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Classe *</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Classe *</label>
               <select
                 value={enseignementId}
                 onChange={(e) => setEnseignementId(e.target.value)}
@@ -180,7 +180,7 @@ export default function EnseignantLeconsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">
+              <label className="block text-sm font-medium mb-1 text-gray-900">
                 Matière
                 <span className="text-xs text-gray-900 ml-1">(optionnel)</span>
               </label>
@@ -194,7 +194,7 @@ export default function EnseignantLeconsPage() {
               <p className="text-xs text-gray-900 mt-1">Laisse vide pour utiliser la matière par défaut de la classe</p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Fichier (PDF, Image, etc.)</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Fichier (PDF, Image, etc.)</label>
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
@@ -203,7 +203,7 @@ export default function EnseignantLeconsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Lien vidéo YouTube (optionnel)</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Lien vidéo YouTube (optionnel)</label>
               <input
                 type="url"
                 value={videoUrl}
@@ -213,7 +213,7 @@ export default function EnseignantLeconsPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1 text-gray-700">Description</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900">Description</label>
               <textarea
                 rows={3}
                 value={description}
@@ -245,7 +245,7 @@ export default function EnseignantLeconsPage() {
         <div className="overflow-x-auto">
           {lecons.length === 0 ? (
             <div className="p-8 text-center text-gray-900">
-              <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+              <FileText className="w-12 h-12 mx-auto text-gray-900 mb-3" />
               <p>Aucune leçon publiée pour le moment.</p>
               <p className="text-sm text-gray-900 mt-1">Cliquez sur "Nouvelle leçon" pour commencer</p>
             </div>
@@ -277,7 +277,7 @@ export default function EnseignantLeconsPage() {
                         {l.matiere}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {l.date || "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

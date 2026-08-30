@@ -261,7 +261,7 @@ export async function GET() {
       const fraisInscription = Number(enfant.frais_inscription_classe) || 0;
       const fraisReinscription = Number(enfant.frais_reinscription_classe) || 0;
       const montantTotalPlan = Number(enfant.montant_total_plan) || 0;
-      
+
       // ⭐ Services sélectionnés
       let fraisCantine = Number(enfant.frais_cantine_reel) || 0;
       let fraisTransport = Number(enfant.frais_transport_reel) || 0;
@@ -269,7 +269,7 @@ export async function GET() {
 
       // ⭐⭐ LOGIQUE PRINCIPALE : Déterminer le montant de base ⭐⭐
       let montantBase = 0;
-      
+
       if (enfant.est_preinscription) {
         // Pour les pré-inscriptions : utiliser montant_total_plan ou frais_inscription
         montantBase = montantTotalPlan > 0 ? montantTotalPlan : fraisInscription;
@@ -280,16 +280,16 @@ export async function GET() {
           const preFraisCantine = Number(enfant.preinscription_frais_cantine) || 0;
           const preFraisTransport = Number(enfant.preinscription_frais_transport) || 0;
           const preFraisFournitures = Number(enfant.preinscription_frais_fournitures) || 0;
-          
+
           // Calculer le total des services dans la pré-inscription
           const totalServicesPre = preFraisCantine + preFraisTransport + preFraisFournitures;
-          
+
           // Calculer le montant de la classe
           const fraisClasse = fraisReinscription > 0 ? fraisReinscription : fraisInscription;
-          
+
           // Vérifier si montant_total_plan = fraisClasse + services
           const difference = montantTotalPlan - fraisClasse;
-          
+
           console.log(`=== VÉRIFICATION SERVICES INCLUS pour ${enfant.id} ===`);
           console.log(`fraisClasse: ${fraisClasse}`);
           console.log(`montantTotalPlan: ${montantTotalPlan}`);
@@ -298,7 +298,7 @@ export async function GET() {
           console.log(`fraisCantine_reel: ${fraisCantine}`);
           console.log(`fraisTransport_reel: ${fraisTransport}`);
           console.log(`fraisFournitures: ${fraisFournitures}`);
-          
+
           // ⭐ Si la différence correspond aux services de la pré-inscription
           // Alors les services sont DÉJÀ inclus dans montant_total_plan
           if (Math.abs(difference - totalServicesPre) < 100 && totalServicesPre > 0) {
@@ -328,14 +328,14 @@ export async function GET() {
 
       // ⭐⭐ CALCUL DU TOTAL PAYÉ ⭐⭐
       let totalPaye = 0;
-      
+
       if (enfant.est_eleve) {
         // Pour les élèves : additionner toutes les sources
         const fraisPayeEleve = Number(enfant.frais_paye_eleve) || 0;
         const fraisPayePreinscription = Number(enfant.frais_paye_preinscription) || 0;
         const fraisPayeReinscription = Number(enfant.frais_paye_reinscription) || 0;
         const fraisPayeEcheances = Number(enfant.frais_paye_echeances) || 0;
-        
+
         totalPaye = fraisPayeEleve + fraisPayePreinscription + fraisPayeReinscription + fraisPayeEcheances;
       } else {
         // Pour les pré-inscriptions et réinscriptions
@@ -343,7 +343,7 @@ export async function GET() {
         const fraisPayeEcheances = Number(enfant.frais_paye_echeances) || 0;
         totalPaye = fraisPayeDirect + fraisPayeEcheances;
       }
-      
+
       let reste = Math.max(0, montantTotal - totalPaye);
 
       return {
@@ -365,16 +365,27 @@ export async function GET() {
       };
     });
 
-    // Appliquer la remise globale du parent sur le reste à payer si applicable
+    // Appliquer la remise globale du parent sur le total des frais pour chaque enfant
     if (totalRemiseParent > 0) {
       let remiseADeduire = totalRemiseParent;
       for (const e of enfantsAvecFrais) {
-        if (remiseADeduire <= 0) break;
-        const deduction = Math.min(e.frais_reste, remiseADeduire);
-        e.frais_reste -= deduction;
-        e.details_frais.reste -= deduction;
+        e.total_remise_parent = totalRemiseParent;
+        const deduction = Math.min(e.details_frais.total, remiseADeduire);
         e.details_frais.remise = (e.details_frais.remise || 0) + deduction;
-        remiseADeduire -= deduction;
+        e.details_frais.net = Math.max(0, e.details_frais.total - e.details_frais.remise);
+        e.details_frais.reste = Math.max(0, e.details_frais.net - e.details_frais.paye);
+        e.frais_reste = e.details_frais.reste;
+        if (remiseADeduire > 0) {
+          remiseADeduire -= deduction;
+        }
+      }
+    } else {
+      for (const e of enfantsAvecFrais) {
+        e.total_remise_parent = 0;
+        e.details_frais.remise = 0;
+        e.details_frais.net = e.details_frais.total;
+        e.details_frais.reste = Math.max(0, e.details_frais.total - e.details_frais.paye);
+        e.frais_reste = e.details_frais.reste;
       }
     }
 

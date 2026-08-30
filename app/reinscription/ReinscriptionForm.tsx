@@ -88,10 +88,18 @@ export default function ReinscriptionForm() {
   const [classes, setClasses] = useState<Classe[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [totalReinscription, setTotalReinscription] = useState(0);
+
+  // Recherche élève
   const [searchMatricule, setSearchMatricule] = useState("");
   const [foundEleve, setFoundEleve] = useState<any>(null);
   const [searchingEleve, setSearchingEleve] = useState(false);
   const [eleveNotFound, setEleveNotFound] = useState(false);
+
+  // Recherche parent par email
+  const [searchEmail, setSearchEmail] = useState("");
+  const [foundParent, setFoundParent] = useState<any>(null);
+  const [searchingParent, setSearchingParent] = useState(false);
+  const [parentNotFound, setParentNotFound] = useState(false);
 
   // Informations PÈRE
   const [pereInfo, setPereInfo] = useState({
@@ -166,12 +174,12 @@ export default function ReinscriptionForm() {
   const [skipTransport, setSkipTransport] = useState(false);
   const [skipCantine, setSkipCantine] = useState(false);
 
-  // ⭐ Récupération des classes
+  // Récupération des classes
   useEffect(() => {
     fetchClasses();
   }, []);
 
-  // ⭐ Recalcul du total réinscription
+  // Recalcul du total réinscription
   useEffect(() => {
     let total = 0;
     enfants.forEach(enfant => {
@@ -213,7 +221,7 @@ export default function ReinscriptionForm() {
     }
   }, [step, mandatorySuppliesMap.size, loadingMandatory, mandatoryError, supplies.length, loadingSupplies, suppliesError, transportOptions.length, cantineOptions.length]);
 
-  // ✅ Fonction pour charger les fournitures obligatoires (avec niveaux cibles)
+  // Fonction pour charger les fournitures obligatoires (avec niveaux cibles)
   const fetchMandatorySupplies = async () => {
     try {
       setLoadingMandatory(true);
@@ -236,7 +244,6 @@ export default function ReinscriptionForm() {
         items.forEach(article => {
           article.niveaux_cibles.forEach((niveau: string) => {
             if (!map.has(niveau)) map.set(niveau, []);
-            // ✅ Détermination des quantités par défaut
             let qty = 1;
             if (article.nom.includes('Tenue scolaire')) qty = 2;
             else if (article.nom.includes('Ramette')) qty = 2;
@@ -256,7 +263,7 @@ export default function ReinscriptionForm() {
     }
   };
 
-  // ✅ Fonction pour charger les fournitures optionnelles (sans niveaux cibles)
+  // Fonction pour charger les fournitures optionnelles (sans niveaux cibles)
   const fetchOptionalSupplies = async () => {
     try {
       setLoadingSupplies(true);
@@ -288,7 +295,7 @@ export default function ReinscriptionForm() {
     }
   };
 
-  // ✅ Fonction de calcul du prix unitaire effectif
+  // Fonction de calcul du prix unitaire effectif
   const getPrixUnitaireEffectif = (article: Fourniture, qty: number): number => {
     if (article.nom.includes('Tenue scolaire')) {
       if (qty === 1) {
@@ -300,7 +307,7 @@ export default function ReinscriptionForm() {
     return article.prix_unitaire;
   };
 
-  // ✅ useEffect pour recalculer les articles obligatoires
+  // useEffect pour recalculer les articles obligatoires
   useEffect(() => {
     const newMandatory: { enfantId: string; article: Fourniture }[] = [];
     enfants.forEach(enfant => {
@@ -312,7 +319,7 @@ export default function ReinscriptionForm() {
     setMandatorySupplies(newMandatory);
   }, [enfants, mandatorySuppliesMap]);
 
-  // ✅ useEffect pour recalculer le total des obligatoires
+  // useEffect pour recalculer le total des obligatoires
   useEffect(() => {
     const total = mandatorySupplies.reduce((sum, item) => {
       const prixEffectif = getPrixUnitaireEffectif(item.article, item.article.selectedQty);
@@ -321,7 +328,7 @@ export default function ReinscriptionForm() {
     setTotalMandatorySupplies(total);
   }, [mandatorySupplies]);
 
-  // ✅ Fonction pour modifier les quantités obligatoires (non utilisée mais gardée pour cohérence)
+  // Fonction pour modifier les quantités obligatoires
   const handleMandatorySupplyChange = (index: number, delta: number) => {
     setMandatorySupplies(prev => {
       const newList = [...prev];
@@ -332,7 +339,7 @@ export default function ReinscriptionForm() {
     });
   };
 
-  // ✅ Résumé des fournitures obligatoires pour l'affichage dans le récapitulatif
+  // Résumé des fournitures obligatoires pour l'affichage dans le récapitulatif
   const mandatorySummary = useMemo(() => {
     const map = new Map<number, { nom: string; quantiteTotale: number; total: number }>();
     mandatorySupplies.forEach(item => {
@@ -353,10 +360,9 @@ export default function ReinscriptionForm() {
     return Array.from(map.values());
   }, [mandatorySupplies]);
 
-  // ⭐ TRANSPORT : option unique annuelle (simulée)
+  // TRANSPORT : option unique annuelle (simulée)
   const fetchTransportOptions = () => {
     setLoadingTransport(true);
-    // Simuler une requête
     setTimeout(() => {
       setTransportOptions([
         {
@@ -526,6 +532,68 @@ export default function ReinscriptionForm() {
     }
   };
 
+  // ✅ Recherche d'un parent existant par email
+  const searchParentByEmail = async () => {
+    if (!searchEmail.trim()) return;
+
+    setSearchingParent(true);
+    setParentNotFound(false);
+    setFoundParent(null);
+
+    try {
+      const response = await fetch(`/api/public/parents/search?email=${encodeURIComponent(searchEmail.trim())}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success || !data.parent) {
+        throw new Error(data.message || "Parent non trouvé");
+      }
+
+      const parent = data.parent;
+      setFoundParent(parent);
+
+      // ✅ Pré-remplir les informations du père
+      setPereInfo(prev => ({
+        ...prev,
+        nom: prev.nom || parent.nom || "",
+        prenom: prev.prenom || parent.prenom || "",
+        phone: prev.phone || parent.telephone || "",
+        profession: prev.profession || parent.profession || "",
+      }));
+
+      // ✅ Pré-remplir les informations de la mère
+      if (parent.mere) {
+        setMereInfo(prev => ({
+          ...prev,
+          nom: prev.nom || parent.mere.nom || "",
+          prenom: prev.prenom || parent.mere.prenom || "",
+          phone: prev.phone || parent.mere.telephone || "",
+          profession: prev.profession || parent.mere.profession || "",
+        }));
+      }
+
+      // ✅ Pré-remplir l'email et l'adresse
+      setCompteInfo(prev => ({
+        ...prev,
+        email: prev.email || parent.email || "",
+        adresse: prev.adresse || parent.adresse || "",
+      }));
+
+    } catch (error) {
+      console.error("Erreur recherche parent:", error);
+      setParentNotFound(true);
+      setFoundParent(null);
+    } finally {
+      setSearchingParent(false);
+    }
+  };
+
+  // ✅ Recherche d'un élève existant par matricule
   const searchEleve = async () => {
     if (!searchMatricule.trim()) return;
     setSearchingEleve(true);
@@ -533,34 +601,78 @@ export default function ReinscriptionForm() {
     setFoundEleve(null);
     try {
       const response = await fetch(`/api/public/eleves/search?matricule=${encodeURIComponent(searchMatricule.trim())}`);
-      const data = await response.json();
-      if (data.found) {
-        setFoundEleve(data.eleve);
-        const enfant = enfants[activeEnfantIndex];
-        enfant.nom = data.eleve.nom;
-        enfant.prenom = data.eleve.prenom;
-        enfant.dateNaissance = data.eleve.date_naissance;
-        enfant.lieuNaissance = data.eleve.lieu_naissance || "";
-        enfant.sexe = data.eleve.sexe || "";
-        enfant.matricule = data.eleve.matricule;
-        enfant.ancienneClasse = data.eleve.classe_nom || "";
-        enfant.ancienNiveau = data.eleve.niveau || "";
-        if (data.eleve.niveau) {
-          const niveaux = [...new Set(classes.map(c => c.niveau))];
-          const indexActuel = niveaux.indexOf(data.eleve.niveau);
-          if (indexActuel < niveaux.length - 1 && indexActuel !== -1) {
-            enfant.niveau = niveaux[indexActuel + 1];
-          } else {
-            enfant.niveau = data.eleve.niveau;
-          }
-        }
-        setEnfants([...enfants]);
-      } else {
-        setEleveNotFound(true);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `HTTP ${response.status}`);
       }
+
+      const data = await response.json();
+
+      if (!data.success || !data.eleve) {
+        throw new Error(data.message || "Élève non trouvé");
+      }
+
+      setFoundEleve(data.eleve);
+
+      const enfant = enfants[activeEnfantIndex];
+      enfant.nom = data.eleve.nom;
+      enfant.prenom = data.eleve.prenom;
+      enfant.dateNaissance = data.eleve.date_naissance;
+      enfant.lieuNaissance = data.eleve.lieu_naissance || "";
+      enfant.sexe = data.eleve.sexe || "";
+      enfant.matricule = data.eleve.matricule;
+      enfant.ancienneClasse = data.eleve.classe_nom || "";
+      enfant.ancienNiveau = data.eleve.niveau || "";
+
+      // Pré-remplir les informations du parent si trouvées
+      if (data.eleve.parent) {
+        const parent = data.eleve.parent;
+
+        if (parent.nom || parent.prenom) {
+          setPereInfo(prev => ({
+            ...prev,
+            nom: prev.nom || parent.nom || "",
+            prenom: prev.prenom || parent.prenom || "",
+            phone: prev.phone || parent.telephone || "",
+          }));
+        }
+
+        if (parent.mere_nom || parent.mere_prenom) {
+          setMereInfo(prev => ({
+            ...prev,
+            nom: prev.nom || parent.mere_nom || "",
+            prenom: prev.prenom || parent.mere_prenom || "",
+            phone: prev.phone || parent.mere_phone || "",
+          }));
+        }
+
+        if (parent.email) {
+          setCompteInfo(prev => ({
+            ...prev,
+            email: prev.email || parent.email || "",
+            adresse: prev.adresse || parent.adresse || "",
+          }));
+        }
+      }
+
+      // Proposer le niveau supérieur
+      if (data.eleve.niveau) {
+        const niveaux = [...new Set(classes.map(c => c.niveau))];
+        const indexActuel = niveaux.indexOf(data.eleve.niveau);
+        if (indexActuel < niveaux.length - 1 && indexActuel !== -1) {
+          enfant.niveau = niveaux[indexActuel + 1];
+        } else {
+          enfant.niveau = data.eleve.niveau;
+        }
+      }
+
+      setEnfants([...enfants]);
+
     } catch (error) {
       console.error("Erreur recherche élève:", error);
       setEleveNotFound(true);
+      setFoundEleve(null);
     } finally {
       setSearchingEleve(false);
     }
@@ -618,7 +730,7 @@ export default function ReinscriptionForm() {
     window.scrollTo(0, 0);
   };
 
-  // ✅ getTotalGeneral inclut les obligatoires
+  // getTotalGeneral inclut les obligatoires
   const getTotalGeneral = () => {
     let total = totalReinscription;
     total += totalMandatorySupplies; // toujours incluses
@@ -630,7 +742,7 @@ export default function ReinscriptionForm() {
     return total;
   };
 
-  // ⭐ SUBMIT - Utilise la table REINSCRIPTIONS
+  // SUBMIT - Utilise la table REINSCRIPTIONS
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -697,10 +809,10 @@ export default function ReinscriptionForm() {
           password: compteInfo.password,
         },
         enfants: enfantsAvecUrls,
-        type: "reinscription", // ⭐ Type réinscription
+        type: "reinscription", // Type réinscription
       };
 
-      // ✅ Construction de la liste complète des fournitures
+      // Construction de la liste complète des fournitures
       const allSuppliesToSend = [
         ...mandatorySupplies.filter(s => s.article.selectedQty > 0).map(s => ({
           id: s.article.id,
@@ -738,7 +850,7 @@ export default function ReinscriptionForm() {
       requestBody.montant_inscription = totalReinscription;
       requestBody.montant_total = getTotalGeneral();
 
-      // ⭐ Appel à l'API qui gère les réinscriptions
+      // Appel à l'API qui gère les réinscriptions
       const response = await fetch("/api/reinscription", {
         method: "POST",
         headers: {
@@ -872,6 +984,49 @@ export default function ReinscriptionForm() {
               </div>
             </div>
 
+            {/* ✅ RECHERCHE PARENT EXISTANT */}
+            <div className="bg-green-50 border border-green-200 rounded-xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                  <Search className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-green-900">Vous avez déjà un compte ?</h3>
+              </div>
+              <p className="text-sm text-green-700 mb-4">
+                Entrez votre email pour récupérer automatiquement vos informations.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  placeholder="Votre email"
+                  className="flex-1 px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-black"
+                />
+                <button
+                  type="button"
+                  onClick={searchParentByEmail}
+                  disabled={searchingParent || !searchEmail.trim()}
+                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                >
+                  {searchingParent ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  Rechercher
+                </button>
+              </div>
+              {parentNotFound && (
+                <div className="mt-3 text-red-600 text-sm flex items-center gap-1">
+                  <AlertTriangle className="w-4 h-4" />
+                  Aucun parent trouvé avec cet email.
+                </div>
+              )}
+              {foundParent && (
+                <div className="mt-3 text-green-600 text-sm flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" />
+                  Parent trouvé : {foundParent.prenom} {foundParent.nom}
+                </div>
+              )}
+            </div>
+
             {/* Père */}
             <div className="border border-blue-200 rounded-xl p-5 bg-blue-50/40">
               <div className="flex items-center gap-2 mb-4">
@@ -881,10 +1036,10 @@ export default function ReinscriptionForm() {
                 <h3 className="text-lg font-semibold text-blue-900">Informations du Père <span className="text-red-500">*</span></h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Nom *</label><input type="text" name="nom" value={pereInfo.nom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Nom du père" required /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Prénom *</label><input type="text" name="prenom" value={pereInfo.prenom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Prénom du père" required /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Téléphone du père *</label><input type="tel" name="phone" value={pereInfo.phone} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="+224 6XX XX XX XX" required /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Profession du père</label><input type="text" name="profession" value={pereInfo.profession} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Ex: Ingénieur, Médecin..." /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Nom *</label><input type="text" name="nom" value={pereInfo.nom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Nom du père" required /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Prénom *</label><input type="text" name="prenom" value={pereInfo.prenom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Prénom du père" required /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Téléphone du père *</label><input type="tel" name="phone" value={pereInfo.phone} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="+224 6XX XX XX XX" required /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Profession du père</label><input type="text" name="profession" value={pereInfo.profession} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Ex: Ingénieur, Médecin..." /></div>
               </div>
             </div>
 
@@ -897,10 +1052,10 @@ export default function ReinscriptionForm() {
                 <h3 className="text-lg font-semibold text-pink-900">Informations de la Mère <span className="text-gray-900 text-sm font-normal">(optionnel)</span></h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Nom</label><input type="text" name="nom" value={mereInfo.nom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Nom de la mère" /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Prénom</label><input type="text" name="prenom" value={mereInfo.prenom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Prénom de la mère" /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Téléphone de la mère</label><input type="tel" name="phone" value={mereInfo.phone} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="+224 6XX XX XX XX" /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Profession de la mère</label><input type="text" name="profession" value={mereInfo.profession} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Ex: Enseignante, Commerçante..." /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Nom</label><input type="text" name="nom" value={mereInfo.nom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Nom de la mère" /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Prénom</label><input type="text" name="prenom" value={mereInfo.prenom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Prénom de la mère" /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Téléphone de la mère</label><input type="tel" name="phone" value={mereInfo.phone} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="+224 6XX XX XX XX" /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Profession de la mère</label><input type="text" name="profession" value={mereInfo.profession} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Ex: Enseignante, Commerçante..." /></div>
               </div>
             </div>
 
@@ -917,8 +1072,8 @@ export default function ReinscriptionForm() {
                 Cet email sera utilisé par les deux parents pour se connecter à la plateforme.
               </p>
               <div className="grid md:grid-cols-2 gap-4">
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Email familial *</label><input type="email" name="email" value={compteInfo.email} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="famille@email.com" required /></div>
-                <div><label className="block text-gray-700 mb-2 text-sm font-medium">Adresse familiale</label><input type="text" name="adresse" value={compteInfo.adresse} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Votre adresse complète" /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Email familial *</label><input type="email" name="email" value={compteInfo.email} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="famille@email.com" required /></div>
+                <div><label className="block text-gray-900 mb-2 text-sm font-medium">Adresse familiale</label><input type="text" name="adresse" value={compteInfo.adresse} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Votre adresse complète" /></div>
               </div>
             </div>
           </div>
@@ -935,14 +1090,14 @@ export default function ReinscriptionForm() {
 
             {/* Barre de recherche d'élève existant */}
             <div className="bg-gray-100 p-4 rounded-lg mb-6 border border-gray-200">
-              <h3 className="font-semibold text-gray-800 mb-2">Rechercher un élève existant</h3>
-              <p className="text-sm text-gray-600 mb-4">Saisissez le matricule de l'élève pour pré-remplir ses informations.</p>
+              <h3 className="font-semibold text-gray-900 mb-2">Rechercher un élève existant</h3>
+              <p className="text-sm text-gray-900 mb-4">Saisissez le matricule de l'élève pour pré-remplir ses informations.</p>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={searchMatricule}
                   onChange={(e) => setSearchMatricule(e.target.value)}
-                  placeholder="Ex: ELE-12345678"
+                  placeholder="Ex: 20260007"
                   className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                 />
                 <button
@@ -1011,23 +1166,23 @@ export default function ReinscriptionForm() {
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Extrait d'acte de naissance <span className="text-gray-900 text-sm">(optionnel)</span></label>
+                    <label className="block text-gray-900 font-medium mb-2">Extrait d'acte de naissance <span className="text-gray-900 text-sm">(optionnel)</span></label>
                     <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" id={`acte_${idx}`} onChange={(e) => handleFileChange(idx, 'acteNaissance', e.target.files?.[0] || null)} />
-                    <button type="button" onClick={() => document.getElementById(`acte_${idx}`)?.click()} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
+                    <button type="button" onClick={() => document.getElementById(`acte_${idx}`)?.click()} className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
                     {enfant.acteNaissance && <p className="text-sm text-green-600 mt-2">✓ {enfant.acteNaissance.name}</p>}
                   </div>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Photo d'identité <span className="text-gray-900 text-sm">(optionnel)</span></label>
+                    <label className="block text-gray-900 font-medium mb-2">Photo d'identité <span className="text-gray-900 text-sm">(optionnel)</span></label>
                     <input type="file" accept=".jpg,.jpeg,.png" className="hidden" id={`photo_${idx}`} onChange={(e) => handleFileChange(idx, 'photo', e.target.files?.[0] || null)} />
-                    <button type="button" onClick={() => document.getElementById(`photo_${idx}`)?.click()} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
+                    <button type="button" onClick={() => document.getElementById(`photo_${idx}`)?.click()} className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
                     {enfant.photo && <p className="text-sm text-green-600 mt-2">✓ {enfant.photo.name}</p>}
                   </div>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-gray-900 mx-auto mb-2" />
-                    <label className="block text-gray-700 font-medium mb-2">Bulletin scolaire <span className="text-gray-900 text-sm">(optionnel)</span></label>
+                    <label className="block text-gray-900 font-medium mb-2">Bulletin scolaire <span className="text-gray-900 text-sm">(optionnel)</span></label>
                     <input type="file" accept=".pdf" className="hidden" id={`bulletin_${idx}`} onChange={(e) => handleFileChange(idx, 'bulletin', e.target.files?.[0] || null)} />
-                    <button type="button" onClick={() => document.getElementById(`bulletin_${idx}`)?.click()} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
+                    <button type="button" onClick={() => document.getElementById(`bulletin_${idx}`)?.click()} className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-200 transition">Choisir un fichier</button>
                     {enfant.bulletin && <p className="text-sm text-green-600 mt-2">✓ {enfant.bulletin.name}</p>}
                   </div>
                 </div>
@@ -1039,21 +1194,96 @@ export default function ReinscriptionForm() {
         {/* Étape 4 - Validation / Mot de passe */}
         {step === 4 && (
           <div className="space-y-6">
-            <div className="flex items-center gap-3"><Lock className="w-8 h-8 text-blue-600" /><h2 className="text-2xl font-bold text-gray-900">Confirmation</h2></div>
+            <div className="flex items-center gap-3">
+              <Lock className="w-8 h-8 text-blue-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Confirmation</h2>
+            </div>
             {!isParentLoggedIn && (
               <>
                 <p className="text-gray-900">Créez un mot de passe pour accéder à la plateforme</p>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3"><p className="text-xs font-semibold text-blue-700 mb-1">Père</p><p className="text-sm text-gray-800 font-medium">{pereInfo.prenom} {pereInfo.nom}</p><p className="text-xs text-gray-900">{pereInfo.phone}</p>{pereInfo.profession && <p className="text-xs text-gray-900">{pereInfo.profession}</p>}</div>
-                  {(mereInfo.nom || mereInfo.prenom) && (<div className="bg-pink-50 border border-pink-200 rounded-lg p-3"><p className="text-xs font-semibold text-pink-700 mb-1">Mère</p><p className="text-sm text-gray-800 font-medium">{mereInfo.prenom} {mereInfo.nom}</p><p className="text-xs text-gray-900">{mereInfo.phone}</p>{mereInfo.profession && <p className="text-xs text-gray-900">{mereInfo.profession}</p>}</div>)}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-blue-700 mb-1">Père</p>
+                    <p className="text-sm text-gray-900 font-medium">{pereInfo.prenom} {pereInfo.nom}</p>
+                    <p className="text-xs text-gray-900">{pereInfo.phone}</p>
+                    {pereInfo.profession && <p className="text-xs text-gray-900">{pereInfo.profession}</p>}
+                  </div>
+                  {(mereInfo.nom || mereInfo.prenom) && (
+                    <div className="bg-pink-50 border border-pink-200 rounded-lg p-3">
+                      <p className="text-xs font-semibold text-pink-700 mb-1">Mère</p>
+                      <p className="text-sm text-gray-900 font-medium">{mereInfo.prenom} {mereInfo.nom}</p>
+                      <p className="text-xs text-gray-900">{mereInfo.phone}</p>
+                      {mereInfo.profession && <p className="text-xs text-gray-900">{mereInfo.profession}</p>}
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm text-gray-900"> Email commun : <strong>{compteInfo.email}</strong></p>
-                <div><label className="block text-gray-900 mb-2">Mot de passe *</label><input type={showPassword ? "text" : "password"} name="password" value={compteInfo.password} onChange={handleCompteChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Minimum 6 caractères" required /></div>
-                <div><label className="block text-gray-900 mb-2">Confirmer le mot de passe *</label><input type={showPassword ? "text" : "password"} name="confirmPassword" value={compteInfo.confirmPassword} onChange={handleCompteChange} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Retapez votre mot de passe" required /></div>
-                {compteInfo.password !== compteInfo.confirmPassword && compteInfo.confirmPassword && <p className="text-red-500 text-sm">Les mots de passe ne correspondent pas</p>}
+                <p className="text-sm text-gray-900">Email commun : <strong>{compteInfo.email}</strong></p>
+
+                {/* CHAMP MOT DE PASSE AVEC ŒIL */}
+                <div>
+                  <label className="block text-gray-900 mb-2">Mot de passe *</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={compteInfo.password}
+                      onChange={handleCompteChange}
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black pr-10"
+                      placeholder="Minimum 6 caractères"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-900 transition"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* CHAMP CONFIRMER MOT DE PASSE AVEC ŒIL */}
+                <div>
+                  <label className="block text-gray-900 mb-2">Confirmer le mot de passe *</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={compteInfo.confirmPassword}
+                      onChange={handleCompteChange}
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black pr-10"
+                      placeholder="Retapez votre mot de passe"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-900 transition"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {compteInfo.password !== compteInfo.confirmPassword && compteInfo.confirmPassword && (
+                  <p className="text-red-500 text-sm">Les mots de passe ne correspondent pas</p>
+                )}
               </>
             )}
-            <div className="bg-blue-50 p-4 rounded-lg"><p className="text-sm text-blue-800">Récapitulatif : Vous allez réinscrire <strong>{enfants.length}</strong> enfant(s). Après validation, vous recevrez un email de confirmation pour chaque enfant.</p></div>
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-800">
+                Récapitulatif : Vous allez réinscrire <strong>{enfants.length}</strong> enfant(s).
+                Après validation, vous recevrez un email de confirmation pour chaque enfant.
+              </p>
+            </div>
           </div>
         )}
 
@@ -1074,35 +1304,25 @@ export default function ReinscriptionForm() {
                 <div className="flex items-center gap-2">
                   <ShoppingCart className="w-5 h-5 text-blue-600" />
                   <h3 className="text-lg font-semibold text-blue-900">Fournitures scolaires</h3>
-                  {/* Fournitures scolaires {!skipOptionalSupplies && (totalMandatorySupplies + totalFournitures) > 0 && (
-                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-semibold">
-                      {(totalMandatorySupplies + totalFournitures).toLocaleString()} GNF
-                    </span>
-                  )}*/}
                 </div>
                 <button
                   type="button"
                   onClick={() => {
                     setSkipOptionalSupplies(!skipOptionalSupplies);
-                    if (!skipOptionalSupplies) {
-                      setSupplies(supplies.map(s => ({ ...s, selectedQty: 0 })));
-                    } else {
-                      setSupplies(supplies.map(s => ({ ...s, selectedQty: 0 })));
-                    }
+                    setSupplies(supplies.map(s => ({ ...s, selectedQty: 0 })));
                   }}
                   className={`text-sm font-medium transition ${skipOptionalSupplies ? "text-blue-600 hover:text-blue-800" : "text-red-600 hover:text-red-800"}`}
                 >
-                  {skipOptionalSupplies ? "✅ Réactiver les optionnelles" : "❌ Ignorer les fournitures optionnelles"}
+                  {skipOptionalSupplies ? "Réactiver les optionnelles" : "Ignorer les fournitures optionnelles"}
                 </button>
               </div>
 
-              {/* Fournitures optionnelles */}
               {!skipOptionalSupplies ? (
                 <>
                   {loadingSupplies ? (
                     <div className="flex justify-center items-center py-8">
                       <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                      <span className="ml-2 text-gray-600">Chargement des fournitures...</span>
+                      <span className="ml-2 text-gray-900">Chargement des fournitures...</span>
                     </div>
                   ) : suppliesError ? (
                     <div className="bg-yellow-50 p-4 rounded-lg text-center text-yellow-700">
@@ -1115,13 +1335,13 @@ export default function ReinscriptionForm() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-gray-600 mb-4">Fournitures optionnelles supplémentaires</p>
+                      <p className="text-sm text-gray-900 mb-4">Fournitures optionnelles supplémentaires</p>
                       <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                         {supplies.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                             <div className="flex-1">
-                              <p className="font-medium text-gray-800">{item.nom}</p>
-                              <p className="text-sm text-gray-800">{item.prix_unitaire.toLocaleString()} GNF</p>
+                              <p className="font-medium text-gray-900">{item.nom}</p>
+                              <p className="text-sm text-gray-900">{item.prix_unitaire.toLocaleString()} GNF</p>
                               <p className="text-xs text-gray-900">Stock: {item.quantite_stock}</p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -1156,7 +1376,7 @@ export default function ReinscriptionForm() {
                 </>
               ) : (
                 <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
-                  <p className="text-sm">✅ Vous avez choisi de ne pas commander de fournitures optionnelles.</p>
+                  <p className="text-sm">Vous avez choisi de ne pas commander de fournitures optionnelles.</p>
                 </div>
               )}
             </div>
@@ -1186,7 +1406,7 @@ export default function ReinscriptionForm() {
                   }}
                   className={`text-sm font-medium transition ${skipTransport ? "text-green-600 hover:text-green-800" : "text-red-600 hover:text-red-800"}`}
                 >
-                  {skipTransport ? "Ajouter le transport" : "❌ Ignorer le transport"}
+                  {skipTransport ? "Ajouter le transport" : "Ignorer le transport"}
                 </button>
               </div>
 
@@ -1195,7 +1415,7 @@ export default function ReinscriptionForm() {
                   {loadingTransport ? (
                     <div className="flex justify-center items-center py-4">
                       <Loader2 className="w-6 h-6 animate-spin text-green-600" />
-                      <span className="ml-2 text-gray-600">Chargement des options de transport...</span>
+                      <span className="ml-2 text-gray-900">Chargement des options de transport...</span>
                     </div>
                   ) : transportOptions.length === 0 ? (
                     <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
@@ -1204,12 +1424,12 @@ export default function ReinscriptionForm() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-gray-600 mb-4">Sélectionnez le transport pour vos enfants</p>
+                      <p className="text-sm text-gray-900 mb-4">Sélectionnez le transport pour vos enfants</p>
                       <div className="space-y-3 max-h-60 overflow-y-auto">
                         {transportOptions.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                             <div>
-                              <p className="font-medium text-gray-800">{item.nom}</p>
+                              <p className="font-medium text-gray-900">{item.nom}</p>
                               {item.prix > 0 ? (
                                 <p className="text-sm text-gray-900">{item.prix.toLocaleString()} GNF</p>
                               ) : (
@@ -1228,11 +1448,11 @@ export default function ReinscriptionForm() {
                               className={`px-4 py-2 rounded-lg transition ${item.selected
                                 ? "bg-green-600 text-white hover:bg-green-700"
                                 : item.prix > 0
-                                  ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                  ? "bg-gray-200 text-gray-900 hover:bg-gray-300"
                                   : "bg-gray-100 text-gray-900 cursor-not-allowed"
                                 }`}
                             >
-                              {item.selected ? "✓ Sélectionné" : item.prix > 0 ? "Ajouter" : "Indisponible"}
+                              {item.selected ? "Sélectionné" : item.prix > 0 ? "Ajouter" : "Indisponible"}
                             </button>
                           </div>
                         ))}
@@ -1247,7 +1467,7 @@ export default function ReinscriptionForm() {
                 </>
               ) : (
                 <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
-                  <p className="text-sm">✅ Vous avez choisi de ne pas utiliser le transport scolaire.</p>
+                  <p className="text-sm">Vous avez choisi de ne pas utiliser le transport scolaire.</p>
                   <p className="text-xs mt-1">Vous pourrez vous inscrire plus tard.</p>
                 </div>
               )}
@@ -1278,7 +1498,7 @@ export default function ReinscriptionForm() {
                   }}
                   className={`text-sm font-medium transition ${skipCantine ? "text-orange-600 hover:text-orange-800" : "text-red-600 hover:text-red-800"}`}
                 >
-                  {skipCantine ? " Ajouter la cantine" : "❌ Ignorer la cantine"}
+                  {skipCantine ? "Ajouter la cantine" : "Ignorer la cantine"}
                 </button>
               </div>
 
@@ -1287,7 +1507,7 @@ export default function ReinscriptionForm() {
                   {loadingCantine ? (
                     <div className="flex justify-center items-center py-4">
                       <Loader2 className="w-6 h-6 animate-spin text-orange-600" />
-                      <span className="ml-2 text-gray-600">Chargement des menus...</span>
+                      <span className="ml-2 text-gray-900">Chargement des menus...</span>
                     </div>
                   ) : cantineOptions.length === 0 ? (
                     <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
@@ -1296,12 +1516,12 @@ export default function ReinscriptionForm() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm text-gray-600 mb-4">Sélectionnez la cantine pour vos enfants</p>
+                      <p className="text-sm text-gray-900 mb-4">Sélectionnez la cantine pour vos enfants</p>
                       <div className="space-y-3 max-h-60 overflow-y-auto">
                         {cantineOptions.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                             <div className="flex-1">
-                              <p className="font-medium text-gray-800">{item.nom}</p>
+                              <p className="font-medium text-gray-900">{item.nom}</p>
                               {item.prix_annuel > 0 ? (
                                 <p className="text-sm text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
                               ) : (
@@ -1327,11 +1547,11 @@ export default function ReinscriptionForm() {
                               className={`px-4 py-2 rounded-lg transition ${item.selected
                                 ? "bg-orange-600 text-white hover:bg-orange-700"
                                 : item.prix_annuel > 0
-                                  ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                  ? "bg-gray-200 text-gray-900 hover:bg-gray-300"
                                   : "bg-gray-100 text-gray-900 cursor-not-allowed"
                                 }`}
                             >
-                              {item.selected ? "✓ Sélectionné" : item.prix_annuel > 0 ? "Ajouter" : "Indisponible"}
+                              {item.selected ? "Sélectionné" : item.prix_annuel > 0 ? "Ajouter" : "Indisponible"}
                             </button>
                           </div>
                         ))}
@@ -1346,7 +1566,7 @@ export default function ReinscriptionForm() {
                 </>
               ) : (
                 <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
-                  <p className="text-sm">✅ Vous avez choisi de ne pas utiliser la cantine scolaire.</p>
+                  <p className="text-sm">Vous avez choisi de ne pas utiliser la cantine scolaire.</p>
                   <p className="text-xs mt-1">Vous pourrez vous inscrire plus tard.</p>
                 </div>
               )}
@@ -1354,18 +1574,17 @@ export default function ReinscriptionForm() {
 
             {/* Récapitulatif des coûts */}
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h4 className="font-semibold text-blue-800 mb-3">📊 Récapitulatif des coûts</h4>
+              <h4 className="font-semibold text-blue-800 mb-3">Récapitulatif des coûts</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-900">Réinscription + scolarité annuelle</span>
                   <span className="font-semibold text-black">{totalReinscription.toLocaleString()} GNF</span>
                 </div>
 
-                {/* Détail des fournitures obligatoires */}
                 {mandatorySummary.length > 0 && (
                   <>
                     {mandatorySummary.map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-xs pl-4 text-gray-600">
+                      <div key={idx} className="flex justify-between text-xs pl-4 text-gray-900">
                         <span>• {item.nom} (x{item.quantiteTotale})</span>
                         <span>{item.total.toLocaleString()} GNF</span>
                       </div>
@@ -1377,7 +1596,6 @@ export default function ReinscriptionForm() {
                   </>
                 )}
 
-                {/* Fournitures optionnelles */}
                 {!skipOptionalSupplies && totalFournitures > 0 && (
                   <div className="flex justify-between">
                     <span className="text-gray-900">Fournitures optionnelles</span>
@@ -1385,7 +1603,6 @@ export default function ReinscriptionForm() {
                   </div>
                 )}
 
-                {/* Transport */}
                 {!skipTransport && totalTransport > 0 && (
                   <div className="flex justify-between">
                     <span className="text-gray-900">Transport</span>
@@ -1393,7 +1610,6 @@ export default function ReinscriptionForm() {
                   </div>
                 )}
 
-                {/* Cantine */}
                 {!skipCantine && totalCantine > 0 && (
                   <div className="flex justify-between">
                     <span className="text-gray-900">Cantine</span>

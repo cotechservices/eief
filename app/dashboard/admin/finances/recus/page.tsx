@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Search, User, Mail, Phone, Wallet,
   ChevronRight, Loader2, Calendar, Users,
-  Eye, Receipt, FileText, RefreshCw
+  Eye, Receipt, FileText, RefreshCw, Trash2, AlertTriangle
 } from "lucide-react";
 
 interface ParentRecus {
@@ -26,6 +26,11 @@ export default function ParentsRecusPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [annee, setAnnee] = useState(new Date().getFullYear().toString());
+
+  // État pour suppression par famille
+  const [parentToDelete, setParentToDelete] = useState<ParentRecus | null>(null);
+  const [deletingParent, setDeletingParent] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchParents();
@@ -49,6 +54,28 @@ export default function ParentsRecusPage() {
 
   const handleSearch = () => {
     fetchParents();
+  };
+
+  const handleDeleteParentRecus = async () => {
+    if (!parentToDelete) return;
+
+    setDeletingParent(true);
+    setDeleteError(null);
+    try {
+      const response = await fetch(`/api/admin/recus/parents/${parentToDelete.parent_id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Erreur lors de la suppression");
+      }
+      setParentToDelete(null);
+      fetchParents();
+    } catch (err: any) {
+      setDeleteError(err.message || "Erreur lors de la suppression");
+    } finally {
+      setDeletingParent(false);
+    }
   };
 
   const totalGlobal = parents.reduce((acc, p) => acc + Number(p.total_montant), 0);
@@ -141,7 +168,7 @@ export default function ParentsRecusPage() {
       {/* Liste des parents */}
       {parents.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <FileText className="w-16 h-16 text-gray-900 mx-auto mb-4" />
           <p className="text-gray-900">Aucun parent trouvé</p>
           <p className="text-sm text-gray-900 mt-1">Aucun reçu enregistré pour l'année sélectionnée</p>
         </div>
@@ -181,11 +208,11 @@ export default function ParentsRecusPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-1 text-sm">
                           <Mail className="w-3.5 h-3.5 text-gray-900" />
-                          <span className="text-gray-600">{parent.email}</span>
+                          <span className="text-gray-900">{parent.email}</span>
                         </div>
                         <div className="flex items-center gap-1 text-sm">
                           <Phone className="w-3.5 h-3.5 text-gray-900" />
-                          <span className="text-gray-600">{parent.telephone || '-'}</span>
+                          <span className="text-gray-900">{parent.telephone || '-'}</span>
                         </div>
                       </div>
                     </td>
@@ -204,19 +231,114 @@ export default function ParentsRecusPage() {
                       {parent.dernier_paiement ? new Date(parent.dernier_paiement).toLocaleDateString('fr-FR') : '-'}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <Link
-                        href={`/dashboard/admin/finances/recus/${parent.parent_id}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-                      >
-                        <Eye className="w-4 h-4" />
-                        Voir les reçus
-                        <ChevronRight className="w-4 h-4" />
-                      </Link>
+                      <div className="flex items-center justify-center gap-2">
+                        <Link
+                          href={`/dashboard/admin/finances/recus/${parent.parent_id}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Voir reçus
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </Link>
+                        <button
+                          onClick={() => {
+                            setDeleteError(null);
+                            setParentToDelete(parent);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-xs font-medium border border-red-200"
+                          title="Supprimer toutes les factures/paiements de cette famille"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Supprimer factures
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmation de suppression par famille */}
+      {parentToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-lg">
+                  Supprimer les paiements de la famille ?
+                </h3>
+                <p className="text-sm text-gray-900">
+                  Famille de {parentToDelete.prenom} {parentToDelete.nom}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 text-sm">
+              <p className="font-semibold text-red-800 mb-1">⚠️ Action irréversible pour les paiements</p>
+              <p className="text-red-700">Cette opération va :</p>
+              <ul className="list-disc ml-5 mt-1.5 text-red-700 space-y-1">
+                <li>Supprimer <strong className="font-bold">{parentToDelete.total_recus} reçu(s)</strong> et paiements associés.</li>
+                <li>Annuler le total payé de <strong className="font-bold">{Number(parentToDelete.total_montant).toLocaleString()} GNF</strong>.</li>
+                <li>Remettre à jour les soldes restants des inscriptions/réinscriptions des enfants.</li>
+              </ul>
+            </div>
+
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3.5 mb-4 text-xs text-green-800 space-y-1">
+              <p className="font-semibold flex items-center gap-1.5">
+                <span>🛡️</span> Préservation garantie des comptes :
+              </p>
+              <p>• Le compte du parent et les fiches des élèves <strong>NE SERONT PAS supprimés</strong>.</p>
+              <p>• Les inscriptions restent actives avec leur solde total à nouveau exigible.</p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-3.5 mb-5 text-sm space-y-1 border border-gray-200">
+              <p className="text-gray-900"><span className="font-semibold text-gray-900">Parent :</span> {parentToDelete.prenom} {parentToDelete.nom}</p>
+              <p className="text-gray-900"><span className="font-semibold text-gray-900">Email :</span> {parentToDelete.email}</p>
+              <p className="text-gray-900"><span className="font-semibold text-gray-900">Téléphone :</span> {parentToDelete.telephone || 'Non renseigné'}</p>
+              <p className="text-gray-900"><span className="font-semibold text-gray-900">Montant total à annuler :</span> <span className="font-bold text-red-600">{Number(parentToDelete.total_montant).toLocaleString()} GNF</span></p>
+            </div>
+
+            {deleteError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-sm text-red-700">
+                ❌ {deleteError}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setParentToDelete(null);
+                  setDeleteError(null);
+                }}
+                disabled={deletingParent}
+                className="flex-1 py-2.5 px-4 border border-gray-300 text-gray-900 rounded-xl hover:bg-gray-50 transition font-medium text-sm disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteParentRecus}
+                disabled={deletingParent}
+                className="flex-1 py-2.5 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition font-semibold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deletingParent ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Suppression en cours...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Confirmer la suppression
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

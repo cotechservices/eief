@@ -213,7 +213,7 @@ export default function BibliothequeRapportsPage() {
           </button>
           <button
             onClick={fetchData}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center gap-2"
+            className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center gap-2"
           >
             🔄 Rafraîchir
           </button>
@@ -268,7 +268,7 @@ export default function BibliothequeRapportsPage() {
           onClick={() => setViewType('global')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'global'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <PieChart className="w-4 h-4 inline mr-2" />
@@ -278,7 +278,7 @@ export default function BibliothequeRapportsPage() {
           onClick={() => setViewType('livres')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'livres'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <BookOpen className="w-4 h-4 inline mr-2" />
@@ -288,7 +288,7 @@ export default function BibliothequeRapportsPage() {
           onClick={() => setViewType('emprunts')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'emprunts'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <BookMarked className="w-4 h-4 inline mr-2" />
@@ -306,23 +306,23 @@ export default function BibliothequeRapportsPage() {
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="text-gray-600">Total livres</span>
+                <span className="text-gray-900">Total livres</span>
                 <span className="font-bold text-blue-600">{stats.totalLivres}</span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="text-gray-600">Livres disponibles</span>
+                <span className="text-gray-900">Livres disponibles</span>
                 <span className="font-bold text-green-600">{stats.livresDispos}</span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="text-gray-600">Emprunts en cours</span>
+                <span className="text-gray-900">Emprunts en cours</span>
                 <span className="font-bold text-orange-600">{stats.empruntsActifs}</span>
               </div>
               <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="text-gray-600">En retard</span>
+                <span className="text-gray-900">En retard</span>
                 <span className="font-bold text-red-600">{stats.empruntsRetard}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Taux d'occupation</span>
+                <span className="text-gray-900">Taux d'occupation</span>
                 <span className="font-bold text-purple-600">{stats.tauxOccupation}%</span>
               </div>
             </div>
@@ -334,10 +334,10 @@ export default function BibliothequeRapportsPage() {
               Dernières activités
             </h3>
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-gray-700">Derniers emprunts</h4>
+              <h4 className="text-sm font-medium text-gray-900">Derniers emprunts</h4>
               {emprunts.slice(0, 5).map((e) => (
                 <div key={e.id} className="flex justify-between items-center border-b border-gray-100 pb-2 text-sm">
-                  <span className="text-gray-600">{e.livre_titre}</span>
+                  <span className="text-gray-900">{e.livre_titre}</span>
                   <span className="text-gray-900 text-xs">{e.eleve_nom}</span>
                   <span className={`text-xs ${e.statut === 'retourne' ? 'text-green-600' :
                     e.statut === 'en_retard' ? 'text-red-600' :
@@ -364,19 +364,19 @@ export default function BibliothequeRapportsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Titre</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Auteur</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Catégorie</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Quantité</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Disponible</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Occupation</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Titre</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Auteur</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Catégorie</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Quantité</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Disponible</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Occupation</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {livres.map((l) => (
                   <tr key={l.id} className="hover:bg-gray-50 transition">
                     <td className="px-4 py-3 font-medium text-gray-900">{l.titre}</td>
-                    <td className="px-4 py-3 text-gray-600">{l.auteur}</td>
+                    <td className="px-4 py-3 text-gray-900">{l.auteur}</td>
                     <td className="px-4 py-3">
                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">{l.categorie}</span>
                     </td>
@@ -393,7 +393,7 @@ export default function BibliothequeRapportsPage() {
                 {livres.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-gray-900">
-                      <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                       <p className="font-medium">Aucun livre</p>
                     </td>
                   </tr>
@@ -411,11 +411,11 @@ export default function BibliothequeRapportsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Livre</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Élève</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date prêt</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Retour prévu</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Statut</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Livre</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Élève</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Date prêt</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Retour prévu</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Statut</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -444,7 +444,7 @@ export default function BibliothequeRapportsPage() {
                 {emprunts.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-gray-900">
-                      <BookMarked className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <BookMarked className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                       <p className="font-medium">Aucun emprunt</p>
                     </td>
                   </tr>

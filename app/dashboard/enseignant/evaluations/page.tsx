@@ -60,7 +60,7 @@ export default function EnseignantEvaluationsPage() {
         {examens.length === 0 ? (
           <div className="col-span-full bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-900">
             <Award className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="font-medium text-gray-600">Aucune évaluation créée</p>
+            <p className="font-medium text-gray-900">Aucune évaluation créée</p>
             <p className="text-sm mt-1">Cliquez sur "Créer une évaluation" pour générer votre première évaluation interactive.</p>
           </div>
         ) : (

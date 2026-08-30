@@ -261,7 +261,7 @@ export default function NouveauDevoirPage() {
             <FileText className="w-6 h-6 text-orange-600" />
             Créer un nouveau devoir
           </h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-900 mt-1">
             Publiez un exercice ou travail à la maison pour l'une de vos classes.
           </p>
         </div>
@@ -288,7 +288,7 @@ export default function NouveauDevoirPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+              <label className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-gray-900" /> Classe *
               </label>
               <select
@@ -317,7 +317,7 @@ export default function NouveauDevoirPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+              <label className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-gray-900" /> Date limite *
               </label>
               <input
@@ -334,7 +334,7 @@ export default function NouveauDevoirPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Titre du devoir *</label>
+            <label className="text-sm font-semibold text-gray-900">Titre du devoir *</label>
             <input
               type="text"
               name="titre"
@@ -348,7 +348,7 @@ export default function NouveauDevoirPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+            <label className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
               <ImageIcon className="w-4 h-4 text-gray-900" />
               Image du sujet (optionnel)
             </label>
@@ -367,7 +367,7 @@ export default function NouveauDevoirPage() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={submitLoading || uploadingImage || success}
-                  className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition text-sm text-gray-600 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition text-sm text-gray-900 disabled:opacity-50"
                 >
                   {uploadingImage ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -413,7 +413,7 @@ export default function NouveauDevoirPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Instructions et consignes</label>
+            <label className="text-sm font-semibold text-gray-900">Instructions et consignes</label>
             <textarea
               name="description"
               value={formData.description}

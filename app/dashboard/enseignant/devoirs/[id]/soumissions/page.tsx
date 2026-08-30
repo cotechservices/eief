@@ -223,8 +223,8 @@ export default function SoumissionsPage() {
               <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50">
                 {selectedSoumission.commentaire && (
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Message de l'élève</h4>
-                    <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-700 whitespace-pre-wrap">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-2">Message de l'élève</h4>
+                    <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-900 whitespace-pre-wrap">
                       {selectedSoumission.commentaire}
                     </div>
                   </div>
@@ -232,7 +232,7 @@ export default function SoumissionsPage() {
 
                 {selectedSoumission.fichier_url ? (
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Fichier joint</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-2">Fichier joint</h4>
                     <a
                       href={selectedSoumission.fichier_url}
                       target="_blank"
@@ -307,7 +307,7 @@ export default function SoumissionsPage() {
                           setNoteForm({ note: "", commentaire: "" });
                           setMessage(null);
                         }}
-                        className="text-gray-900 hover:text-gray-600 p-2.5"
+                        className="text-gray-900 hover:text-gray-900 p-2.5"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -319,7 +319,7 @@ export default function SoumissionsPage() {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-900 p-8 text-center bg-gray-50">
               <FileText className="w-16 h-16 mb-4 opacity-20" />
-              <p className="text-lg font-medium text-gray-600">Sélectionnez une copie</p>
+              <p className="text-lg font-medium text-gray-900">Sélectionnez une copie</p>
               <p className="text-sm mt-2">Choisissez un élève dans la liste à gauche pour voir son travail et le noter.</p>
             </div>
           )}

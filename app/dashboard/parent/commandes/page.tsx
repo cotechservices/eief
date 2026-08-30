@@ -183,7 +183,7 @@ export default function ParentCommandesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-700 transition"
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -284,7 +284,7 @@ export default function ParentCommandesPage() {
       {/* Liste des commandes */}
       {filteredCommandes.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <ShoppingBag className="w-16 h-16 text-gray-900 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900">Aucune commande</h3>
           <p className="text-gray-900 mt-2">
             Vous n'avez pas encore passé de commande de fournitures.
@@ -312,7 +312,7 @@ export default function ParentCommandesPage() {
                       </h3>
                       {getStatutBadge(commande.statut)}
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-900">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         {new Date(commande.date_commande).toLocaleDateString("fr-FR", {
@@ -337,7 +337,7 @@ export default function ParentCommandesPage() {
                       {commande.articles.slice(0, 3).map((article) => (
                         <span
                           key={article.id}
-                          className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+                          className="bg-gray-100 text-gray-900 text-xs px-2 py-1 rounded-full"
                         >
                           {article.nom} × {article.quantite}
                         </span>
@@ -373,11 +373,11 @@ export default function ParentCommandesPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-bold text-black">Détail de la commande</h2>
-                  <p className="text-sm text-gray-600 font-mono">{selectedCommande.numero_commande}</p>
+                  <p className="text-sm text-gray-900 font-mono">{selectedCommande.numero_commande}</p>
                 </div>
                 <button
                   onClick={() => setShowDetailModal(false)}
-                  className="text-gray-900 hover:text-gray-700 transition"
+                  className="text-gray-900 hover:text-gray-900 transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -390,7 +390,7 @@ export default function ParentCommandesPage() {
                 {getStatutIcon(selectedCommande.statut)}
                 <div>
                   <p className="font-medium text-gray-900">Statut de la commande</p>
-                  <p className="text-sm text-gray-600">{getStatutLabel(selectedCommande.statut)}</p>
+                  <p className="text-sm text-gray-900">{getStatutLabel(selectedCommande.statut)}</p>
                 </div>
               </div>
 
@@ -425,7 +425,7 @@ export default function ParentCommandesPage() {
               {selectedCommande.observations && (
                 <div>
                   <h3 className="font-semibold text-black mb-1">Observations</h3>
-                  <p className="bg-gray-50 p-3 rounded-lg text-gray-700">
+                  <p className="bg-gray-50 p-3 rounded-lg text-gray-900">
                     {selectedCommande.observations}
                   </p>
                 </div>
@@ -449,7 +449,7 @@ export default function ParentCommandesPage() {
               <div className="flex justify-end">
                 <button
                   onClick={() => setShowDetailModal(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                  className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition"
                 >
                   Fermer
                 </button>

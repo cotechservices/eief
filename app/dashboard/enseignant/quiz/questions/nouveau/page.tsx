@@ -185,7 +185,7 @@ export default function NouvelleQuestionPage() {
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Catégorie *</label>
+                <label className="text-sm font-semibold text-gray-900">Catégorie *</label>
                 <select
                   value={formData.categorie_id}
                   onChange={(e) => setFormData({ ...formData, categorie_id: e.target.value })}
@@ -200,7 +200,7 @@ export default function NouvelleQuestionPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Difficulté</label>
+                <label className="text-sm font-semibold text-gray-900">Difficulté</label>
                 <select
                   value={formData.difficulte}
                   onChange={(e) => setFormData({ ...formData, difficulte: e.target.value })}
@@ -214,7 +214,7 @@ export default function NouvelleQuestionPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Question *</label>
+              <label className="text-sm font-semibold text-gray-900">Question *</label>
               <textarea
                 value={formData.question}
                 onChange={(e) => setFormData({ ...formData, question: e.target.value })}
@@ -226,7 +226,7 @@ export default function NouvelleQuestionPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Explication (optionnel)</label>
+              <label className="text-sm font-semibold text-gray-900">Explication (optionnel)</label>
               <textarea
                 value={formData.explication}
                 onChange={(e) => setFormData({ ...formData, explication: e.target.value })}
@@ -238,7 +238,7 @@ export default function NouvelleQuestionPage() {
 
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Points</label>
+                <label className="text-sm font-semibold text-gray-900">Points</label>
                 <input
                   type="number"
                   min="1"
@@ -248,7 +248,7 @@ export default function NouvelleQuestionPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Temps (secondes)</label>
+                <label className="text-sm font-semibold text-gray-900">Temps (secondes)</label>
                 <input
                   type="number"
                   min="5"
@@ -320,7 +320,7 @@ export default function NouvelleQuestionPage() {
         <div className="flex justify-end gap-3">
           <Link
             href="/dashboard/enseignant/quiz"
-            className="px-6 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition font-medium"
+            className="px-6 py-3 rounded-xl text-gray-900 hover:bg-gray-100 transition font-medium"
           >
             Annuler
           </Link>

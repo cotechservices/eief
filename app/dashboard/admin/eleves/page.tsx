@@ -414,7 +414,7 @@ export default function GestionElevesPage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-700 transition"
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -547,7 +547,7 @@ export default function GestionElevesPage() {
                         <span className="font-mono text-sm text-blue-600">{e.numero_dossier || e.matricule}</span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="font-mono text-sm font-medium text-gray-800">{e.matricule}</span>
+                        <span className="font-mono text-sm font-medium text-gray-900">{e.matricule}</span>
                       </td>
                       <td className="px-4 py-4">
                         {e.photo_url ? (
@@ -750,7 +750,7 @@ export default function GestionElevesPage() {
             <div className="p-6 border-b sticky top-0 bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-black">Fiche élève</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-700">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">✕</button>
               </div>
             </div>
             <div className="p-6 space-y-6">
@@ -847,7 +847,7 @@ export default function GestionElevesPage() {
                         {getServiceBadge(selectedEleve.transport_inscrit, selectedEleve.transport_statut)}
                       </div>
                       {selectedEleve.transport_inscrit && selectedEleve.transport_montant > 0 && (
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-gray-900">
                           Montant: <span className="font-medium">{selectedEleve.transport_montant.toLocaleString()} GNF</span>
                         </p>
                       )}
@@ -864,7 +864,7 @@ export default function GestionElevesPage() {
                         {getServiceBadge(selectedEleve.cantine_inscrit, selectedEleve.cantine_statut)}
                       </div>
                       {selectedEleve.cantine_inscrit && selectedEleve.cantine_montant > 0 && (
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-gray-900">
                           Montant: <span className="font-medium">{selectedEleve.cantine_montant.toLocaleString()} GNF</span>
                         </p>
                       )}
@@ -929,7 +929,7 @@ export default function GestionElevesPage() {
                 <h2 className="text-xl font-bold text-gray-900">Modifier le statut</h2>
                 <button
                   onClick={() => setShowStatutModal(false)}
-                  className="text-gray-900 hover:text-gray-700"
+                  className="text-gray-900 hover:text-gray-900"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -944,7 +944,7 @@ export default function GestionElevesPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nouveau statut</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Nouveau statut</label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'actif', label: 'Actif', color: 'green' },
@@ -974,7 +974,7 @@ export default function GestionElevesPage() {
               </div>
 
               <div className="mt-6 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-900">
                   <span className="font-semibold">Statut actuel:</span>{' '}
                   {getStatutBadge(selectedEleve.statut)}
                 </p>
@@ -989,7 +989,7 @@ export default function GestionElevesPage() {
             <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => setShowStatutModal(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-100 transition text-gray-700"
+                className="px-4 py-2 border rounded-lg hover:bg-gray-100 transition text-gray-900"
                 disabled={updatingStatut}
               >
                 Annuler

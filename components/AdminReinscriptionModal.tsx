@@ -203,9 +203,9 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-bold text-black">Nouvelle réinscription</h2>
-              <p className="text-sm text-gray-600">Créez une réinscription pour un élève</p>
+              <p className="text-sm text-gray-900">Créez une réinscription pour un élève</p>
             </div>
-            <button onClick={onClose} className="text-gray-900 hover:text-gray-700">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-900">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -214,7 +214,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
         <div className="p-6 space-y-6">
           {/* Sélection de l'élève */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">
+            <label className="block text-gray-900 font-medium mb-2">
               Élève à réinscrire *
             </label>
 
@@ -237,7 +237,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                   </div>
                 ) : filteredEleves.length === 0 ? (
                   <div className="text-center py-8 text-gray-900">
-                    <User className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <User className="w-12 h-12 mx-auto mb-4 text-gray-900" />
                     <p>{searchEleve ? "Aucun élève trouvé" : "Aucun élève disponible"}</p>
                   </div>
                 ) : (
@@ -280,8 +280,8 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                   )}
                   <div>
                     <p className="font-semibold text-black text-lg">{getEleveNomComplet(selectedEleve)}</p>
-                    <p className="text-sm text-gray-600">Matricule: {selectedEleve.matricule || 'N/A'}</p>
-                    <p className="text-sm text-gray-600">Classe actuelle: {selectedEleve.classe_nom || 'Non définie'}</p>
+                    <p className="text-sm text-gray-900">Matricule: {selectedEleve.matricule || 'N/A'}</p>
+                    <p className="text-sm text-gray-900">Classe actuelle: {selectedEleve.classe_nom || 'Non définie'}</p>
                   </div>
                 </div>
                 <button
@@ -299,7 +299,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
             <>
               {/* Sélection de la classe */}
               <div>
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-gray-900 font-medium mb-2">
                   Classe pour la réinscription *
                 </label>
                 <select
@@ -340,7 +340,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                       </p>
                     </div>
                     <div className="bg-purple-100 p-3 rounded-lg border border-purple-300 text-center">
-                      <p className="text-xs text-gray-600 font-semibold">Total</p>
+                      <p className="text-xs text-gray-900 font-semibold">Total</p>
                       <p className="font-bold text-purple-700 text-lg">
                         {formatMontant(fraisReinscription)} GNF
                       </p>
@@ -352,7 +352,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
               {/* Services optionnels */}
               {selectedClasseId && (
                 <div>
-                  <h4 className="font-semibold text-gray-700 mb-3">Services optionnels</h4>
+                  <h4 className="font-semibold text-gray-900 mb-3">Services optionnels</h4>
                   <div className="space-y-3">
                     <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                       <input
@@ -366,7 +366,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                         className="w-5 h-5 text-purple-600 rounded"
                       />
                       <Bus className="w-5 h-5 text-blue-600" />
-                      <span className="flex-1 text-gray-700">Transport scolaire</span>
+                      <span className="flex-1 text-gray-900">Transport scolaire</span>
                       <input
                         type="number"
                         value={transportPrix}
@@ -390,7 +390,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                         className="w-5 h-5 text-purple-600 rounded"
                       />
                       <Utensils className="w-5 h-5 text-orange-600" />
-                      <span className="flex-1 text-gray-700">Cantine</span>
+                      <span className="flex-1 text-gray-900">Cantine</span>
                       <input
                         type="number"
                         value={cantinePrix}
@@ -414,7 +414,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                         className="w-5 h-5 text-purple-600 rounded"
                       />
                       <ShoppingCart className="w-5 h-5 text-purple-600" />
-                      <span className="flex-1 text-gray-700">Fournitures scolaires</span>
+                      <span className="flex-1 text-gray-900">Fournitures scolaires</span>
                       <input
                         type="number"
                         value={fournituresPrix}
@@ -433,7 +433,7 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
               {selectedClasseId && (
                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-700">Total général</span>
+                    <span className="font-semibold text-gray-900">Total général</span>
                     <span className="text-2xl font-bold text-green-700">
                       {formatMontant(getTotalGeneral())} GNF
                     </span>
@@ -445,19 +445,19 @@ export default function AdminReinscriptionModal({ isOpen, onClose, onSuccess }: 
                     </div>
                     {selectedServices.transport && transportPrix > 0 && (
                       <div className="flex justify-between pl-4">
-                        <span className="text-gray-600">└ Transport</span>
+                        <span className="text-gray-900">└ Transport</span>
                         <span>{formatMontant(transportPrix)} GNF</span>
                       </div>
                     )}
                     {selectedServices.cantine && cantinePrix > 0 && (
                       <div className="flex justify-between pl-4">
-                        <span className="text-gray-600">└ Cantine</span>
+                        <span className="text-gray-900">└ Cantine</span>
                         <span>{formatMontant(cantinePrix)} GNF</span>
                       </div>
                     )}
                     {selectedServices.fournitures && fournituresPrix > 0 && (
                       <div className="flex justify-between pl-4">
-                        <span className="text-gray-600">└ Fournitures</span>
+                        <span className="text-gray-900">└ Fournitures</span>
                         <span>{formatMontant(fournituresPrix)} GNF</span>
                       </div>
                     )}

@@ -91,7 +91,7 @@ export default function EleveDashboard() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement de votre tableau de bord...</p>
+          <p className="text-gray-900">Chargement de votre tableau de bord...</p>
         </div>
       </div>
     );

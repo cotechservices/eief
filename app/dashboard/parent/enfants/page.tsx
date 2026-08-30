@@ -309,7 +309,7 @@ export default function MesEnfantsPage() {
       {/* Tableau */}
       {filteredEnfants.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-200">
-          <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <Users className="w-16 h-16 text-gray-900 mx-auto mb-4" />
           <p className="text-gray-900">Aucun enfant trouvé</p>
         </div>
       ) : (
@@ -319,13 +319,13 @@ export default function MesEnfantsPage() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Matricule</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Photo</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Enfant</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Classe</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Frais</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Accès</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Matricule</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Photo</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Enfant</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Classe</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Frais</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Accès</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
@@ -409,7 +409,7 @@ export default function MesEnfantsPage() {
           {totalPages > 1 && (
             <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-900">
                   Affichage de <span className="font-semibold">{startIndex + 1}</span> à <span className="font-semibold">{Math.min(endIndex, filteredEnfants.length)}</span> sur <span className="font-semibold">{filteredEnfants.length}</span> résultats
                 </p>
                 <div className="flex items-center gap-2">
@@ -428,7 +428,7 @@ export default function MesEnfantsPage() {
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page as number)}
-                          className={`px-3 py-1 rounded-lg text-sm font-semibold transition ${currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                          className={`px-3 py-1 rounded-lg text-sm font-semibold transition ${currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-900 hover:bg-gray-100'}`}
                         >
                           {page}
                         </button>
@@ -456,7 +456,7 @@ export default function MesEnfantsPage() {
             <div className="p-6 border-b sticky top-0 bg-white z-10">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-black">Détail de l'élève</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-700 text-xl font-bold">✕</button>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900 text-xl font-bold">✕</button>
               </div>
             </div>
 
@@ -712,21 +712,21 @@ export default function MesEnfantsPage() {
                         <>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
                             <div>
-                              <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
-                              <p className="font-bold text-gray-800 text-lg">{totalAPayer.toLocaleString()} GNF</p>
+                              <p className="text-xs text-gray-900 font-semibold">Total à payer</p>
+                              <p className="font-bold text-gray-900 text-lg">{totalAPayer.toLocaleString()} GNF</p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-600">Déjà payé</p>
+                              <p className="text-xs text-gray-900">Déjà payé</p>
                               <p className="font-bold text-green-600">{dejaPaye.toLocaleString()} GNF</p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-600">Reste à payer</p>
+                              <p className="text-xs text-gray-900">Reste à payer</p>
                               <p className={`font-bold ${resteAPayer > 0 ? 'text-red-600' : 'text-green-600'}`}>
                                 {resteAPayer.toLocaleString()} GNF
                               </p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-600">Statut</p>
+                              <p className="text-xs text-gray-900">Statut</p>
                               {resteAPayer === 0 ? (
                                 <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
                                   <CheckCircle className="w-3 h-3" /> Tout payé
@@ -745,7 +745,7 @@ export default function MesEnfantsPage() {
 
                           {totalAPayer > 0 && (
                             <div className="mt-3">
-                              <div className="flex justify-between text-xs text-gray-600 mb-1">
+                              <div className="flex justify-between text-xs text-gray-900 mb-1">
                                 <span>Progression des paiements</span>
                                 <span>{Math.round((dejaPaye / totalAPayer) * 100)}%</span>
                               </div>

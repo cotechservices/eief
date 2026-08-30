@@ -118,7 +118,7 @@ export default function ResetPasswordPage() {
               <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
             <h2 className="text-xl font-semibold text-gray-900">Vérification du lien...</h2>
-            <p className="text-gray-600 mt-2">Veuillez patienter pendant que nous vérifions votre lien de réinitialisation.</p>
+            <p className="text-gray-900 mt-2">Veuillez patienter pendant que nous vérifions votre lien de réinitialisation.</p>
           </div>
         </div>
       </div>
@@ -144,7 +144,7 @@ export default function ResetPasswordPage() {
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">Lien invalide ou expiré</h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-900 mb-6">
               {error || "Ce lien de réinitialisation n'est plus valide. Veuillez faire une nouvelle demande."}
             </p>
             <Link
@@ -180,7 +180,7 @@ export default function ResetPasswordPage() {
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">✅ Mot de passe modifié !</h1>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-900 mb-6">
                 Votre mot de passe a été réinitialisé avec succès.
                 Vous allez être redirigé vers la page de connexion...
               </p>
@@ -303,7 +303,7 @@ export default function ResetPasswordPage() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   Nouveau mot de passe
                 </h1>
-                <p className="text-gray-600 mt-2">
+                <p className="text-gray-900 mt-2">
                   Choisissez un mot de passe sécurisé pour votre compte
                 </p>
               </div>
@@ -320,7 +320,7 @@ export default function ResetPasswordPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Password */}
                 <div>
-                  <label className="block text-gray-700 mb-2 font-medium">
+                  <label className="block text-gray-900 mb-2 font-medium">
                     Nouveau mot de passe
                   </label>
                   <div className="relative">
@@ -337,7 +337,7 @@ export default function ResetPasswordPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-900"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -350,7 +350,7 @@ export default function ResetPasswordPage() {
 
                 {/* Confirm Password */}
                 <div>
-                  <label className="block text-gray-700 mb-2 font-medium">
+                  <label className="block text-gray-900 mb-2 font-medium">
                     Confirmer le mot de passe
                   </label>
                   <div className="relative">

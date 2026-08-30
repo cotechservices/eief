@@ -319,7 +319,7 @@ export default function NouveauQCMPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Classe *</label>
+                <label className="text-sm font-semibold text-gray-900">Classe *</label>
                 <select
                   name="enseignement_id"
                   value={formData.enseignement_id}
@@ -337,7 +337,7 @@ export default function NouveauQCMPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                <label className="text-sm font-semibold text-gray-900 flex items-center gap-1">
                   <Clock className="w-4 h-4" /> Durée (minutes) *
                 </label>
                 <input
@@ -353,7 +353,7 @@ export default function NouveauQCMPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Titre de l'évaluation *</label>
+              <label className="text-sm font-semibold text-gray-900">Titre de l'évaluation *</label>
               <input
                 type="text"
                 name="titre"
@@ -367,7 +367,7 @@ export default function NouveauQCMPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Date/Heure de début (Optionnel)</label>
+                <label className="text-sm font-semibold text-gray-900">Date/Heure de début (Optionnel)</label>
                 <input
                   type="datetime-local"
                   name="date_debut"
@@ -377,7 +377,7 @@ export default function NouveauQCMPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Date/Heure de fin (Optionnel)</label>
+                <label className="text-sm font-semibold text-gray-900">Date/Heure de fin (Optionnel)</label>
                 <input
                   type="datetime-local"
                   name="date_fin"
@@ -410,7 +410,7 @@ export default function NouveauQCMPage() {
                     className="hidden"
                   />
                   <Upload className="w-10 h-10 text-gray-900 mx-auto mb-3" />
-                  <p className="text-sm text-gray-600">Cliquez pour sélectionner un fichier</p>
+                  <p className="text-sm text-gray-900">Cliquez pour sélectionner un fichier</p>
                   <p className="text-xs text-gray-900 mt-1">Formats acceptés : JPG, PNG, GIF, PDF</p>
                 </div>
               ) : (
@@ -422,7 +422,7 @@ export default function NouveauQCMPage() {
                       <FileText className="w-8 h-8 text-purple-600" />
                     )}
                     <div>
-                      <p className="font-medium text-gray-800 truncate max-w-[200px]">{fichierName}</p>
+                      <p className="font-medium text-gray-900 truncate max-w-[200px]">{fichierName}</p>
                       <p className="text-xs text-gray-900">
                         {(fichier.size / 1024).toFixed(1)} KB • {fichier.type}
                       </p>
@@ -479,7 +479,7 @@ export default function NouveauQCMPage() {
                       onClick={() => toggleEleve(eleve.id)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition ${elevesSelectionnes.includes(eleve.id)
                         ? "bg-purple-100 text-purple-700 border-2 border-purple-300"
-                        : "bg-white text-gray-600 border-2 border-gray-200 hover:border-purple-300"
+                        : "bg-white text-gray-900 border-2 border-gray-200 hover:border-purple-300"
                         }`}
                     >
                       <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${elevesSelectionnes.includes(eleve.id)

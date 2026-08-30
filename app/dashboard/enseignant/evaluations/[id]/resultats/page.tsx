@@ -119,7 +119,7 @@ export default function ResultatsQCMPage() {
                 Titre de l'évaluation
               </span>
               <h1 className="text-2xl font-black text-gray-900 mt-3">{examen.titre}</h1>
-              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 font-medium">
+              <div className="flex items-center gap-4 mt-2 text-sm text-gray-900 font-medium">
                 <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-purple-500" /> {examen.classe}</span>
               </div>
 
@@ -127,7 +127,7 @@ export default function ResultatsQCMPage() {
               {examen.fichier_url && (
                 <div className="mt-3 flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-purple-200 inline-flex">
                   {getFileIcon(examen.fichier_url)}
-                  <span className="text-xs font-medium text-gray-600">Fichier joint :</span>
+                  <span className="text-xs font-medium text-gray-900">Fichier joint :</span>
                   <a
                     href={examen.fichier_url}
                     target="_blank"
@@ -157,9 +157,9 @@ export default function ResultatsQCMPage() {
 
           <div className="bg-white px-6 py-4 flex flex-wrap justify-between items-center text-sm font-medium border-t border-purple-100">
             <div className="flex gap-6">
-              <span className="text-gray-600">Participants : <strong className="text-gray-900">{resultats.length}</strong></span>
-              <span className="text-gray-600">Note max : <strong className="text-green-600">{maxNote}</strong></span>
-              <span className="text-gray-600">Note min : <strong className="text-red-600">{minNote}</strong></span>
+              <span className="text-gray-900">Participants : <strong className="text-gray-900">{resultats.length}</strong></span>
+              <span className="text-gray-900">Note max : <strong className="text-green-600">{maxNote}</strong></span>
+              <span className="text-gray-900">Note min : <strong className="text-red-600">{minNote}</strong></span>
             </div>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function ResultatsQCMPage() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600 font-semibold uppercase text-xs">
+              <thead className="bg-gray-50 text-gray-900 font-semibold uppercase text-xs">
                 <tr>
                   <th className="px-6 py-4 border-b">Élève</th>
                   <th className="px-6 py-4 border-b text-center">Score exact</th>
@@ -196,11 +196,11 @@ export default function ResultatsQCMPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-center font-medium text-gray-700">
+                        <td className="px-6 py-4 text-center font-medium text-gray-900">
                           {res.score} / {res.total_points} pts
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-gray-100 text-gray-900 px-2.5 py-1 rounded-lg">
                             <CheckCircle className="w-3.5 h-3.5 text-green-500" />
                             {res.nb_correctes} / {res.nb_reponses}
                           </span>

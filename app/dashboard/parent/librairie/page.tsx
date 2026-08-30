@@ -277,7 +277,7 @@ export default function LibrairiePage() {
             <p className="text-sm font-medium">{notification.message}</p>
             <button
               onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-700 transition"
+              className="ml-4 text-gray-900 hover:text-gray-900 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -335,14 +335,14 @@ export default function LibrairiePage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 text-lg">Ajouter au panier</h3>
-                  <p className="text-xs text-gray-600">Choisissez la quantité souhaitée</p>
+                  <p className="text-xs text-gray-900">Choisissez la quantité souhaitée</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowModal(false)}
                 className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center transition"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-gray-900" />
               </button>
             </div>
 
@@ -358,7 +358,7 @@ export default function LibrairiePage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-semibold text-gray-900 text-sm line-clamp-1">{modalProduit.nom}</h4>
-                  <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{modalProduit.description || "Aucune description"}</p>
+                  <p className="text-xs text-gray-900 mt-0.5 line-clamp-2">{modalProduit.description || "Aucune description"}</p>
                   <div className="flex items-center gap-3 mt-1.5">
                     <span className="font-bold text-blue-600 text-base">{modalProduit.prix.toLocaleString()} GNF</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${modalProduit.stock > 10 ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
@@ -369,14 +369,14 @@ export default function LibrairiePage() {
               </div>
 
               <div className="bg-gray-50 rounded-xl p-4 mb-5">
-                <label className="text-sm font-medium text-gray-700 block mb-3">Quantité</label>
+                <label className="text-sm font-medium text-gray-900 block mb-3">Quantité</label>
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setModalQuantite(Math.max(1, modalQuantite - 1))}
                     disabled={modalQuantite <= 1}
                     className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
-                    <Minus className="w-4 h-4 text-gray-700" />
+                    <Minus className="w-4 h-4 text-gray-900" />
                   </button>
                   <span className="text-2xl font-bold text-gray-900 w-12 text-center">{modalQuantite}</span>
                   <button
@@ -384,16 +384,16 @@ export default function LibrairiePage() {
                     disabled={modalQuantite >= modalProduit.stock}
                     className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
-                    <Plus className="w-4 h-4 text-gray-700" />
+                    <Plus className="w-4 h-4 text-gray-900" />
                   </button>
-                  <span className="text-sm text-gray-600 ml-2">
+                  <span className="text-sm text-gray-900 ml-2">
                     Max: {modalProduit.stock}
                   </span>
                 </div>
               </div>
 
               <div className="flex justify-between items-center bg-blue-50 rounded-xl p-3 mb-5">
-                <span className="text-sm font-medium text-gray-700">Total</span>
+                <span className="text-sm font-medium text-gray-900">Total</span>
                 <span className="text-xl font-bold text-blue-600">
                   {(modalProduit.prix * modalQuantite).toLocaleString()} GNF
                 </span>
@@ -402,7 +402,7 @@ export default function LibrairiePage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium text-gray-700 text-sm"
+                  className="flex-1 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium text-gray-900 text-sm"
                 >
                   Annuler
                 </button>
@@ -484,7 +484,7 @@ export default function LibrairiePage() {
               <div className="flex flex-wrap gap-2">
                 {cart.slice(0, 3).map((item) => (
                   <div key={item.id} className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full text-sm">
-                    <span className="font-medium text-gray-700">{item.nom}</span>
+                    <span className="font-medium text-gray-900">{item.nom}</span>
                     <span className="text-gray-900">x</span>
                     <span className="font-semibold text-gray-900">{item.quantite}</span>
                     <button
@@ -606,14 +606,14 @@ export default function LibrairiePage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 text-lg">Confirmer la commande</h3>
-                  <p className="text-xs text-gray-600">Vérifiez votre panier avant de commander</p>
+                  <p className="text-xs text-gray-900">Vérifiez votre panier avant de commander</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowCommandeModal(false)}
                 className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center transition"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-gray-900" />
               </button>
             </div>
 
@@ -640,11 +640,11 @@ export default function LibrairiePage() {
               </div>
 
               {/* Informations de livraison */}
-              <div className="bg-blue-50 p-3 rounded-lg mb-4 text-sm text-gray-700 flex items-start gap-2">
+              <div className="bg-blue-50 p-3 rounded-lg mb-4 text-sm text-gray-900 flex items-start gap-2">
                 <User className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium">Livraison à l'école</p>
-                  <p className="text-xs text-gray-600">Les articles seront disponibles au bureau de la librairie.</p>
+                  <p className="text-xs text-gray-900">Les articles seront disponibles au bureau de la librairie.</p>
                 </div>
               </div>
 
@@ -652,7 +652,7 @@ export default function LibrairiePage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowCommandeModal(false)}
-                  className="flex-1 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium text-gray-700 text-sm"
+                  className="flex-1 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium text-gray-900 text-sm"
                   disabled={commandeLoading}
                 >
                   Annuler

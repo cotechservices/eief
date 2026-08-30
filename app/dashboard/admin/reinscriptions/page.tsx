@@ -858,7 +858,7 @@ export default function GestionReinscriptionsPage() {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                       {/* Frais réinscription */}
                       <div className={`p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'reinscription' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-blue-50'}`}>
-                        <p className="text-xs text-gray-600">Frais réinscription</p>
+                        <p className="text-xs text-gray-900">Frais réinscription</p>
                         <p className="font-bold text-blue-600">
                           {reinscriptionDetail.details_frais.inscription.toLocaleString()} GNF
                         </p>
@@ -876,7 +876,7 @@ export default function GestionReinscriptionsPage() {
                       {/* Cantine */}
                       {reinscriptionDetail.details_frais.cantine > 0 && (
                         <div className={`p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'cantine' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-pink-50'}`}>
-                          <p className="text-xs text-gray-600">Cantine</p>
+                          <p className="text-xs text-gray-900">Cantine</p>
                           <p className="font-bold text-pink-600">
                             {reinscriptionDetail.details_frais.cantine.toLocaleString()} GNF
                           </p>
@@ -895,7 +895,7 @@ export default function GestionReinscriptionsPage() {
                       {/* Transport */}
                       {reinscriptionDetail.details_frais.transport > 0 && (
                         <div className={`p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'transport' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-green-50'}`}>
-                          <p className="text-xs text-gray-600">Transport</p>
+                          <p className="text-xs text-gray-900">Transport</p>
                           <p className="font-bold text-green-600">
                             {reinscriptionDetail.details_frais.transport.toLocaleString()} GNF
                           </p>
@@ -914,7 +914,7 @@ export default function GestionReinscriptionsPage() {
                       {/* Fournitures */}
                       {reinscriptionDetail.details_frais.librairie > 0 && (
                         <div className={`p-3 rounded-lg border ${reinscriptionDetail.echeances_paiement?.some((e: any) => e.type === 'fournitures' && e.statut === 'paye') ? 'border-green-300 bg-green-50' : 'border-gray-200 bg-purple-50'}`}>
-                          <p className="text-xs text-gray-600">Fournitures</p>
+                          <p className="text-xs text-gray-900">Fournitures</p>
                           <p className="font-bold text-purple-600">
                             {reinscriptionDetail.details_frais.librairie.toLocaleString()} GNF
                           </p>
@@ -932,8 +932,8 @@ export default function GestionReinscriptionsPage() {
 
                       {/* Total */}
                       <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
-                        <p className="text-xs text-gray-600 font-semibold">Total à payer</p>
-                        <p className="font-bold text-gray-800 text-lg">
+                        <p className="text-xs text-gray-900 font-semibold">Total à payer</p>
+                        <p className="font-bold text-gray-900 text-lg">
                           {reinscriptionDetail.details_frais.total.toLocaleString()} GNF
                         </p>
                       </div>
@@ -942,19 +942,19 @@ export default function GestionReinscriptionsPage() {
                     {/* SUIVI DES PAIEMENTS */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
                       <div>
-                        <p className="text-xs text-gray-600">Déjà payé</p>
+                        <p className="text-xs text-gray-900">Déjà payé</p>
                         <p className="font-bold text-green-600">
                           {reinscriptionDetail.details_frais.paye.toLocaleString()} GNF
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-600">Reste à payer</p>
+                        <p className="text-xs text-gray-900">Reste à payer</p>
                         <p className={`font-bold ${reinscriptionDetail.details_frais.reste > 0 ? 'text-red-600' : 'text-green-600'}`}>
                           {reinscriptionDetail.details_frais.reste.toLocaleString()} GNF
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-600">Statut</p>
+                        <p className="text-xs text-gray-900">Statut</p>
                         {reinscriptionDetail.details_frais.reste === 0 ? (
                           <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
                             <CheckCircle className="w-3 h-3" /> Tout payé
@@ -974,7 +974,7 @@ export default function GestionReinscriptionsPage() {
                     {/* BARRE DE PROGRESSION */}
                     {reinscriptionDetail.details_frais.total > 0 && (
                       <div className="mt-3">
-                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                        <div className="flex justify-between text-xs text-gray-900 mb-1">
                           <span>Progression des paiements</span>
                           <span>
                             {Math.round((reinscriptionDetail.details_frais.paye / reinscriptionDetail.details_frais.total) * 100)}%

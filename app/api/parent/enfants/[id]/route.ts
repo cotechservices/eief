@@ -134,8 +134,8 @@ export async function GET(
 
     // ⭐ Utiliser le montant de la pré-inscription si disponible
     const montantPreinscription = Number(eleveData.montant_total_plan) || 0;
-    const fraisBase = montantPreinscription > 0 ? montantPreinscription : 
-                     (fraisReinscriptionTotal > 0 ? fraisReinscriptionTotal : fraisInscriptionTotal);
+    const fraisBase = montantPreinscription > 0 ? montantPreinscription :
+      (fraisReinscriptionTotal > 0 ? fraisReinscriptionTotal : fraisInscriptionTotal);
 
     // 5. TRANSPORT - UNIQUEMENT SI SÉLECTIONNÉ
     let totalTransport = 0;
@@ -392,7 +392,7 @@ export async function GET(
         frais_inscription_classe: fraisInscriptionTotal,
         montant_preinscription: montantPreinscription,
         moyenne_generale: 0,
-        appreciation: { text: "N/A", color: "text-gray-600", bg: "bg-gray-100" },
+        appreciation: { text: "N/A", color: "text-gray-900", bg: "bg-gray-100" },
         taux_presence: "0"
       },
       notes: notes.rows.map((row: any) => ({

@@ -306,13 +306,13 @@ export default function PresencesTransportPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Matricule</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Élève</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Classe</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Ligne / Bus</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Statut</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Heure</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Matricule</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Élève</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Classe</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Ligne / Bus</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Statut</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Heure</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -323,16 +323,16 @@ export default function PresencesTransportPage() {
 
                 return (
                   <tr key={eleve.id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                    <td className="px-4 py-3 font-mono text-xs text-gray-900">
                       {eleve.matricule}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {eleve.prenom} {eleve.nom}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-gray-900">
                       {eleve.classe}
                     </td>
-                    <td className="px-4 py-3 text-gray-600 text-xs">
+                    <td className="px-4 py-3 text-gray-900 text-xs">
                       <div>{eleve.ligne || 'Sans ligne'}</div>
                       <div className="text-gray-900">{eleve.bus || 'Sans bus'}</div>
                     </td>
@@ -391,7 +391,7 @@ export default function PresencesTransportPage() {
               {elevesFiltres.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-gray-900">
-                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                     <p className="font-medium">Aucun élève trouvé</p>
                     <p className="text-sm mt-1">Aucun élève ne correspond à vos critères</p>
                   </td>

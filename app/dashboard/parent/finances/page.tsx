@@ -404,14 +404,19 @@ export default function ParentDashboard() {
   };
 
   // ✅ CALCUL IDENTIQUE AU DASHBOARD PARENT (app/dashboard/parent/page.tsx)
-  // Source : enfants.details_frais retourné par /api/parent/enfants
-  // Ce calcul est IDENTIQUE à celui du dashboard pour garantir la cohérence
-
   const totalAPayerBrut = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.total) || 0), 0);
   const totalPaye = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.paye) || 0), 0);
-  const totalRemises = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.remise) || 0), 0);
+  const remisesAffectees = enfants.reduce((acc, e) => acc + (Number((e.details_frais as any)?.remise) || 0), 0);
+  const totalRemiseParentGlobale = enfants.length > 0 ? (Number((enfants[0] as any)?.total_remise_parent) || 0) : 0;
+  const totalRemises = Math.max(remisesAffectees, totalRemiseParentGlobale);
+
   const totalAPayerNet = Math.max(0, totalAPayerBrut - totalRemises);
   const soldeRestant = Math.max(0, totalAPayerNet - totalPaye);
+
+  const totalTransport = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.transport) || 0), 0);
+  const totalCantine = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.cantine) || 0), 0);
+  const totalFournitures = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.librairie) || 0), 0);
+  const totalScolarite = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.scolarite) || Number(e.details_frais?.inscription) || 0), 0);
 
   const statsGlobales = {
     totalEnfants: enfants.length,
@@ -424,10 +429,10 @@ export default function ParentDashboard() {
     totalAPayer: totalAPayerNet,
     totalPaye: totalPaye,
     totalRemises: totalRemises,
-    totalFraisInscription: totalAPayerNet,
-    totalTransport: 0,
-    totalCantine: 0,
-    totalFournitures: 0,
+    totalFraisInscription: totalScolarite,
+    totalTransport: totalTransport,
+    totalCantine: totalCantine,
+    totalFournitures: totalFournitures,
     totalFraisGeneral: totalAPayerNet,
     soldeRestant: soldeRestant,
   };
@@ -474,80 +479,74 @@ export default function ParentDashboard() {
       </div>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-black">Espace Parent</h1>
-        <p className="text-gray-900">Bienvenue dans votre espace de suivi scolaire</p>
+        <h1 className="text-2xl font-bold text-black">Finances & Règlement</h1>
+        <p className="text-gray-900">Aperçu financier complet et historique de vos paiements</p>
       </div>
 
-      {/* STATISTIQUES FINANCIÈRES — MÊMES MONTANTS QUE LE DASHBOARD */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-1"><Users className="w-5 h-5" /><p className="text-sm opacity-90">Enfants inscrits</p></div>
-          <p className="text-3xl font-bold">{statsGlobales.totalEnfants}</p>
-        </div>
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-          <div className="flex items-center gap-2 mb-1"><FileText className="w-5 h-5" /><p className="text-sm opacity-90">Pré-inscriptions</p></div>
-          <p className="text-3xl font-bold">{statsGlobales.totalPreinscriptions}</p>
+      {/* STATISTIQUES FINANCIÈRES COMPLÈTES */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        {/* TOTAL DÉPENSES BRUT */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-1 text-gray-700">
+            <ShoppingCart className="w-4 h-4 text-blue-600" />
+            <p className="text-xs font-semibold uppercase tracking-wider">Total dépenses (Brut)</p>
+          </div>
+          <p className="text-xl font-extrabold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</p>
+          <p className="text-[11px] text-gray-500 mt-1">Scolarité + services</p>
         </div>
 
-        {/* MONTANT TOTAL BRUT */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="flex items-center gap-2 mb-1 text-gray-600">
-            <CreditCard className="w-5 h-5 text-blue-600" />
-            <p className="text-sm">Total frais brut</p>
+        {/* REMISE ACCORDÉE */}
+        <div className="bg-white rounded-xl shadow-sm border border-indigo-200 bg-indigo-50/20 p-4">
+          <div className="flex items-center gap-2 mb-1 text-indigo-700">
+            <CreditCard className="w-4 h-4 text-indigo-600" />
+            <p className="text-xs font-semibold uppercase tracking-wider">Remise accordée</p>
           </div>
-          <p className="text-lg font-bold text-blue-600">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</p>
+          <p className="text-xl font-extrabold text-indigo-600">
+            {statsGlobales.totalRemises > 0 ? `-${statsGlobales.totalRemises.toLocaleString()} GNF` : "0 GNF"}
+          </p>
+          <p className="text-[11px] text-indigo-500 mt-1">Réduction déduite</p>
         </div>
 
-        {/* MONTANT NET À PAYER (après remises) */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="flex items-center gap-2 mb-1 text-gray-600">
-            <CreditCard className="w-5 h-5 text-indigo-600" />
-            <p className="text-sm">Montant à payer</p>
+        {/* MONTANT NET À PAYER */}
+        <div className="bg-white rounded-xl shadow-sm border border-blue-200 bg-blue-50/40 p-4">
+          <div className="flex items-center gap-2 mb-1 text-blue-800">
+            <Wallet className="w-4 h-4 text-blue-600" />
+            <p className="text-xs font-semibold uppercase tracking-wider">Net à payer</p>
           </div>
-          <p className="text-lg font-bold text-indigo-600">{statsGlobales.totalAPayer.toLocaleString()} GNF</p>
-          {statsGlobales.totalRemises > 0 && (
-            <p className="text-xs text-green-600 mt-1">Remise : -{statsGlobales.totalRemises.toLocaleString()} GNF</p>
-          )}
+          <p className="text-xl font-extrabold text-blue-700">{statsGlobales.totalAPayerNet.toLocaleString()} GNF</p>
+          <p className="text-[11px] text-blue-600 mt-1">Dépenses - Remise</p>
         </div>
 
         {/* MONTANT PAYÉ */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="flex items-center gap-2 mb-1 text-gray-600"><CreditCard className="w-5 h-5 text-green-600" /><p className="text-sm">Montant payé</p></div>
-          <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
+        <div className="bg-white rounded-xl shadow-sm border border-green-200 bg-green-50/40 p-4">
+          <div className="flex items-center gap-2 mb-1 text-green-800">
+            <CheckCircle className="w-4 h-4 text-green-600" />
+            <p className="text-xs font-semibold uppercase tracking-wider">Montant payé</p>
+          </div>
+          <p className="text-xl font-extrabold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
+          <p className="text-[11px] text-green-600 mt-1">Versements effectués</p>
         </div>
 
         {/* SOLDE RESTANT */}
-        <div className={`rounded-xl shadow-sm p-4 border ${statsGlobales.soldeRestant === 0 ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100'}`}>
-          <div className="flex items-center gap-2 mb-1 text-gray-600">
-            <CreditCard className={`w-5 h-5 ${statsGlobales.soldeRestant === 0 ? 'text-green-600' : 'text-red-600'}`} />
-            <p className="text-sm">Solde restant</p>
+        <div className={`rounded-xl shadow-sm border p-4 col-span-2 sm:col-span-1 ${
+          statsGlobales.soldeRestant === 0 ? "bg-green-100/50 border-green-300" : "bg-red-50/50 border-red-200"
+        }`}>
+          <div className="flex items-center gap-2 mb-1">
+            <Clock className={`w-4 h-4 ${statsGlobales.soldeRestant === 0 ? "text-green-600" : "text-red-600"}`} />
+            <p className={`text-xs font-semibold uppercase tracking-wider ${
+              statsGlobales.soldeRestant === 0 ? "text-green-800" : "text-red-800"
+            }`}>Reste à payer</p>
           </div>
-          <p className={`text-lg font-bold ${statsGlobales.soldeRestant === 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <p className={`text-xl font-extrabold ${
+            statsGlobales.soldeRestant === 0 ? "text-green-700" : "text-red-600"
+          }`}>
             {statsGlobales.soldeRestant.toLocaleString()} GNF
           </p>
-          {statsGlobales.soldeRestant === 0 && (
-            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" /> Tout est payé
-            </p>
-          )}
-        </div>
-
-        {/* PREINSCRIPTIONS EN ATTENTE */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="flex items-center gap-2 mb-1 text-gray-600">
-            <Clock className="w-5 h-5 text-yellow-500" />
-            <p className="text-sm">En attente</p>
-          </div>
-          <p className="text-lg font-bold text-yellow-600">{statsGlobales.preinscriptionsEnAttente}</p>
-        </div>
-
-        {/* PREINSCRIPTIONS PAYÉES */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="flex items-center gap-2 mb-1 text-gray-600">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <p className="text-sm">Dossiers payés</p>
-          </div>
-          <p className="text-lg font-bold text-green-600">{statsGlobales.preinscriptionsPayees}</p>
+          <p className={`text-[11px] mt-1 ${
+            statsGlobales.soldeRestant === 0 ? "text-green-700 font-medium" : "text-red-500"
+          }`}>
+            {statsGlobales.soldeRestant === 0 ? "✅ Totalement réglé" : "Solde restant dû"}
+          </p>
         </div>
       </div>
 
@@ -569,16 +568,16 @@ export default function ParentDashboard() {
               onClick={() => setActiveTab("apercu")}
               className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-all ${activeTab === "apercu"
                 ? "border-blue-600 text-blue-600 bg-white rounded-t-lg"
-                : "border-transparent text-gray-900 hover:text-gray-700"
+                : "border-transparent text-gray-900 hover:text-gray-900"
                 }`}
             >
-              <FileText className="w-4 h-4" /> Mes pré-inscriptions
+              <FileText className="w-4 h-4" /> Mes inscriptions
             </button>
             <button
               onClick={() => setActiveTab("recus")}
               className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-all ${activeTab === "recus"
                 ? "border-blue-600 text-blue-600 bg-white rounded-t-lg"
-                : "border-transparent text-gray-900 hover:text-gray-700"
+                : "border-transparent text-gray-900 hover:text-gray-900"
                 }`}
             >
               <Receipt className="w-4 h-4" /> Mes reçus
@@ -595,41 +594,43 @@ export default function ParentDashboard() {
           {/* Onglet : pré-inscriptions (vide pour l'instant, les cartes sont au-dessus) */}
           {activeTab === "apercu" && (
             <div className="text-center py-8 text-gray-900">
-              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="font-medium">Vos pré-inscriptions sont affichées ci-dessus</p>
+              <FileText className="w-12 h-12 text-gray-900 mx-auto mb-3" />
+              <p className="font-medium">Vos inscriptions sont affichées ci-dessus</p>
               <p className="text-sm text-gray-900 mt-1">Consultez vos statistiques et détails en haut de la page</p>
             </div>
           )}
 
           {/* Onglet : MES REÇUS */}
           {activeTab === "recus" && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 p-4 rounded-xl border border-blue-100">
                 <div>
-                  <h3 className="font-bold text-gray-800 text-lg">Mes reçus de paiement</h3>
-                  <p className="text-sm text-gray-900 mt-0.5">
-                    Historique de tous vos paiements effectués
+                  <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                    <Receipt className="w-5 h-5 text-blue-600" /> Mes reçus de paiement
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-0.5">
+                    Historique détaillé et officiel de tous vos règlements effectués
                   </p>
                 </div>
                 <button
                   onClick={fetchRecus}
                   disabled={loadingRecus}
-                  className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition"
+                  className="flex items-center gap-2 text-sm bg-white text-blue-600 hover:text-blue-800 font-medium border border-blue-200 px-3.5 py-2 rounded-lg shadow-sm hover:bg-blue-50 transition"
                 >
                   {loadingRecus ? <Loader2 className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
-                  Rafraîchir
+                  Rafraîchir les reçus
                 </button>
               </div>
 
               {/* Barre de recherche */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Rechercher un reçu, un enfant..."
+                  placeholder="Rechercher par N° de reçu, élève, type de frais ou référence..."
                   value={searchRecu}
                   onChange={(e) => setSearchRecu(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
                 />
               </div>
 
@@ -638,77 +639,94 @@ export default function ParentDashboard() {
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                 </div>
               ) : recus.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Receipt className="w-8 h-8 text-gray-900" />
+                <div className="text-center py-12 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+                  <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                    <Receipt className="w-8 h-8 text-blue-600" />
                   </div>
-                  <p className="font-semibold text-gray-600">Aucun reçu disponible</p>
-                  <p className="text-sm text-gray-900 mt-1">Vos reçus apparaîtront ici après chaque paiement</p>
+                  <p className="font-semibold text-gray-900 text-base">Aucun reçu disponible</p>
+                  <p className="text-sm text-gray-500 mt-1">Vos reçus officiels de paiement s'afficheront ici après chaque règlement.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-xl border border-gray-100">
+                <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gradient-to-r from-blue-50 to-indigo-50">
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wide">N° Reçu</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wide">Enfant</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wide">Type</th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wide">Montant</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wide">Mode</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wide">Date</th>
-                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wide">Action</th>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="px-4 py-3.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">N° Reçu</th>
+                        <th className="px-4 py-3.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Élève & Classe</th>
+                        <th className="px-4 py-3.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Type de frais</th>
+                        <th className="px-4 py-3.5 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Montant versé</th>
+                        <th className="px-4 py-3.5 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Montant total</th>
+                        <th className="px-4 py-3.5 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Solde restant</th>
+                        <th className="px-4 py-3.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Mode</th>
+                        <th className="px-4 py-3.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Date</th>
+                        <th className="px-4 py-3.5 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-gray-100">
                       {recus
                         .filter((r) =>
                           !searchRecu ||
                           r.enfant?.toLowerCase().includes(searchRecu.toLowerCase()) ||
                           r.numero_recu?.toLowerCase().includes(searchRecu.toLowerCase()) ||
-                          r.type_frais?.toLowerCase().includes(searchRecu.toLowerCase())
+                          r.type_frais?.toLowerCase().includes(searchRecu.toLowerCase()) ||
+                          r.reference?.toLowerCase().includes(searchRecu.toLowerCase())
                         )
                         .map((recu, idx) => (
                           <tr key={`${recu.source}-${recu.source_id}-${idx}`} className="hover:bg-blue-50/40 transition">
-                            <td className="px-4 py-3">
-                              <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded font-semibold text-gray-700">
+                            <td className="px-4 py-3.5">
+                              <span className="font-mono text-xs bg-gray-100 text-gray-800 px-2.5 py-1 rounded-md font-bold border border-gray-200">
                                 {recu.numero_recu}
                               </span>
                             </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
-                                  <User className="w-3.5 h-3.5 text-blue-600" />
+                            <td className="px-4 py-3.5">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                  <User className="w-4 h-4" />
                                 </div>
-                                <span className="font-medium text-gray-800">{recu.enfant || "—"}</span>
+                                <div>
+                                  <p className="font-semibold text-gray-900">{recu.enfant || "—"}</p>
+                                  {recu.classe && <p className="text-[11px] text-gray-500 font-medium">{recu.classe}</p>}
+                                </div>
                               </div>
                             </td>
-                            <td className="px-4 py-3">
-                              <span className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded-full font-medium">
+                            <td className="px-4 py-3.5">
+                              <span className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-full font-medium inline-block">
                                 {recu.type_frais}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-right">
-                              <span className="font-bold text-green-700">
-                                {Number(recu.montant).toLocaleString("fr-FR")} GNF
+                            <td className="px-4 py-3.5 text-right font-extrabold text-green-600">
+                              {Number(recu.montant).toLocaleString("fr-FR")} GNF
+                            </td>
+                            <td className="px-4 py-3.5 text-right text-gray-700 font-medium">
+                              {recu.montant_total ? `${Number(recu.montant_total).toLocaleString("fr-FR")} GNF` : "—"}
+                            </td>
+                            <td className="px-4 py-3.5 text-right">
+                              <span className={`font-semibold text-xs px-2 py-0.5 rounded-full ${
+                                Number(recu.reste_a_payer) === 0
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-50 text-red-600"
+                              }`}>
+                                {Number(recu.reste_a_payer) === 0 ? "Payé" : `${Number(recu.reste_a_payer).toLocaleString("fr-FR")} GNF`}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-gray-600 text-xs">
+                            <td className="px-4 py-3.5 text-gray-700 text-xs">
                               {recu.mode_paiement === "orange_money" ? "Orange Money" :
-                                recu.mode_paiement === "especes" ? "Espèces" :
-                                  recu.mode_paiement === "carte" ? "Carte" :
-                                    recu.mode_paiement || "—"}
+                                recu.mode_paiement === "mtn_money" ? "MTN Money" :
+                                  recu.mode_paiement === "especes" ? "Espèces" :
+                                    recu.mode_paiement === "carte" ? "Carte Bancaire" :
+                                      recu.mode_paiement || "—"}
                             </td>
-                            <td className="px-4 py-3 text-gray-900 text-xs">
+                            <td className="px-4 py-3.5 text-gray-600 text-xs font-medium">
                               {recu.date_paiement
                                 ? new Date(recu.date_paiement).toLocaleDateString("fr-FR")
                                 : "—"}
                             </td>
-                            <td className="px-4 py-3 text-center">
+                            <td className="px-4 py-3.5 text-center">
                               <button
                                 onClick={() => setSelectedRecu(recu)}
-                                className="inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 transition font-medium"
+                                className="inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 shadow-sm transition font-medium"
                               >
-                                <Printer className="w-3 h-3" /> Reçu
+                                <Printer className="w-3.5 h-3.5" /> Reçu
                               </button>
                             </td>
                           </tr>
@@ -718,9 +736,10 @@ export default function ParentDashboard() {
                   {recus.filter((r) =>
                     !searchRecu ||
                     r.enfant?.toLowerCase().includes(searchRecu.toLowerCase()) ||
-                    r.numero_recu?.toLowerCase().includes(searchRecu.toLowerCase())
+                    r.numero_recu?.toLowerCase().includes(searchRecu.toLowerCase()) ||
+                    r.type_frais?.toLowerCase().includes(searchRecu.toLowerCase())
                   ).length === 0 && (
-                      <div className="text-center py-8 text-gray-900 text-sm">
+                      <div className="text-center py-8 text-gray-500 text-sm">
                         Aucun reçu trouvé pour «&nbsp;{searchRecu}&nbsp;»
                       </div>
                     )}
@@ -731,10 +750,30 @@ export default function ParentDashboard() {
         </div>
       </div>
 
-      {/* MODAL REÇU */}
+      {/* MODAL REÇU COMPLET */}
       {selectedRecu && (
         <RecuPaiement
-          recu={selectedRecu}
+          recu={{
+            numero_recu: selectedRecu.numero_recu,
+            date_paiement: selectedRecu.date_paiement,
+            enfant: selectedRecu.enfant,
+            montant: Number(selectedRecu.montant) || 0,
+            mode_paiement: selectedRecu.mode_paiement,
+            type_frais: selectedRecu.type_frais,
+            reference: selectedRecu.reference,
+            classe: selectedRecu.classe,
+            parent_nom: selectedRecu.parent_nom || "Parent",
+            parent_email: selectedRecu.parent_email || "",
+            source: selectedRecu.source,
+            montant_total: Number(selectedRecu.montant_total) || 0,
+            reste_a_payer: Number(selectedRecu.reste_a_payer) || 0,
+            preinscription_id: selectedRecu.preinscription_id || undefined,
+            paiement_id: selectedRecu.source_id,
+            enfants_liste: enfants.map((e: any) => ({
+              nom: `${e.nom || ""} ${e.prenom || ""}`.trim() || e.enfant_nom || "Élève",
+              classe: e.classe_nom || e.classe || "Scolarité"
+            }))
+          }}
           onClose={() => setSelectedRecu(null)}
         />
       )}

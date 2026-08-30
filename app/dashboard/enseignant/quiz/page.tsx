@@ -95,7 +95,7 @@ export default function EnseignantQuizPage() {
       {filteredQuiz.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center text-gray-900">
           <Zap className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="font-medium text-gray-600">Aucun quiz créé</p>
+          <p className="font-medium text-gray-900">Aucun quiz créé</p>
           <p className="text-sm mt-1">Créez votre premier quiz pour une de vos classes</p>
           <Link
             href="/dashboard/enseignant/quiz/nouveau"
@@ -171,7 +171,7 @@ export default function EnseignantQuizPage() {
                   </Link>
                   <Link
                     href={`/dashboard/enseignant/quiz/${q.id}/edit`}
-                    className="flex-1 text-center bg-gray-50 text-gray-600 py-2.5 rounded-xl font-medium text-sm hover:bg-gray-100 transition"
+                    className="flex-1 text-center bg-gray-50 text-gray-900 py-2.5 rounded-xl font-medium text-sm hover:bg-gray-100 transition"
                   >
                     <Edit2 className="w-4 h-4 inline mr-1" /> Modifier
                   </Link>

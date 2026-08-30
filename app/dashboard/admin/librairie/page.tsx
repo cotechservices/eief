@@ -325,12 +325,12 @@ export default function LibrairiePage() {
                         )}
                         <div>
                           <p className="font-bold text-gray-900">{a.nom}</p>
-                          <p className="text-sm text-gray-600">{a.description}</p>
+                          <p className="text-sm text-gray-900">{a.description}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs capitalize">{a.categorie}</span>
+                      <span className="bg-gray-100 text-gray-900 px-2 py-1 rounded-full text-xs capitalize">{a.categorie}</span>
                     </td>
                     <td className="px-6 py-4 text-right font-medium text-gray-900">{formatPrix(a.prix_unitaire)} GNF</td>
                     <td className="px-6 py-4 text-center">
@@ -354,7 +354,7 @@ export default function LibrairiePage() {
             </table>
             {filteredArticles.length === 0 && (
               <div className="text-center py-8 text-gray-900">
-                <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <Package className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                 <p className="font-medium">Aucun article trouvé</p>
               </div>
             )}
@@ -378,19 +378,19 @@ export default function LibrairiePage() {
               <tbody className="divide-y">
                 {filteredVentes.map((v) => (
                   <tr key={v.id} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 text-sm text-gray-600">{new Date(v.date_vente).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{new Date(v.date_vente).toLocaleDateString()}</td>
                     <td className="px-6 py-4 font-medium text-gray-900">{v.article_nom}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{v.eleve_nom || "Vente libre"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{v.eleve_nom || "Vente libre"}</td>
                     <td className="px-6 py-4 text-center font-semibold">{v.quantite}</td>
                     <td className="px-6 py-4 text-right font-bold text-green-600">{formatPrix(v.montant_total)} GNF</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{v.vendeur}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{v.vendeur}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {filteredVentes.length === 0 && (
               <div className="text-center py-8 text-gray-900">
-                <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                 <p className="font-medium">Aucune vente trouvée</p>
               </div>
             )}
@@ -404,14 +404,14 @@ export default function LibrairiePage() {
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">{editingArticle ? "Modifier l'article" : "Nouvel article"}</h2>
-              <button onClick={() => setShowArticleForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowArticleForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleArticleSubmit} className="space-y-4">
               {/* Image */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image de l'article</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Image de l'article</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 transition relative">
                   <input
                     ref={fileInputRef}
@@ -431,7 +431,7 @@ export default function LibrairiePage() {
                   ) : (
                     <div className="text-center">
                       <ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">Cliquez pour ajouter une image</p>
+                      <p className="text-sm text-gray-900">Cliquez pour ajouter une image</p>
                       <p className="text-xs text-gray-900">PNG, JPG, WEBP</p>
                     </div>
                   )}
@@ -439,16 +439,16 @@ export default function LibrairiePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'article *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Nom de l'article *</label>
                 <input required type="text" value={articleData.nom || ""} onChange={e => setArticleData({ ...articleData, nom: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Description</label>
                 <textarea rows={2} value={articleData.description || ""} onChange={e => setArticleData({ ...articleData, description: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix Unitaire (GNF) *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Prix Unitaire (GNF) *</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 text-sm">GNF</span>
                     <input required type="text" inputMode="numeric" value={prixFormate || (articleData.prix_unitaire ? formatPrix(articleData.prix_unitaire) : "")} onChange={handlePrixChange} placeholder="0" className="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -456,7 +456,7 @@ export default function LibrairiePage() {
                   <p className="text-xs text-gray-900 mt-1">Saisissez uniquement des chiffres</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantité en stock *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Quantité en stock *</label>
                   <input required type="number" min="0" placeholder="0" value={articleData.quantite_stock === 0 && !editingArticle ? "" : articleData.quantite_stock ?? 0} onChange={e => {
                     const value = e.target.value;
                     if (value === "") setArticleData({ ...articleData, quantite_stock: 0 });
@@ -465,7 +465,7 @@ export default function LibrairiePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Catégorie</label>
                 <select value={articleData.categorie || "fourniture"} onChange={e => setArticleData({ ...articleData, categorie: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="fourniture">Fourniture scolaire</option>
                   <option value="uniforme">Uniforme / Tenue</option>
@@ -491,13 +491,13 @@ export default function LibrairiePage() {
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Nouvelle vente</h2>
-              <button onClick={() => setShowVenteForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowVenteForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleVenteSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Article *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Article *</label>
                 <select required value={venteData.article_id} onChange={e => setVenteData({ ...venteData, article_id: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="">Sélectionner un article</option>
                   {articles.filter(a => a.quantite_stock > 0).map(a => (
@@ -506,7 +506,7 @@ export default function LibrairiePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Élève (Optionnel)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Élève (Optionnel)</label>
                 <select value={venteData.eleve_id} onChange={e => setVenteData({ ...venteData, eleve_id: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="">Vente libre / Anonyme</option>
                   {eleves.map(e => (
@@ -515,7 +515,7 @@ export default function LibrairiePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Quantité *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Quantité *</label>
                 <input required type="number" min="1" value={venteData.quantite || 1} onChange={e => {
                   const val = parseInt(e.target.value);
                   setVenteData({ ...venteData, quantite: isNaN(val) || val < 1 ? 1 : val });

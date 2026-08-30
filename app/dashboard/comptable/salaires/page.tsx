@@ -309,7 +309,7 @@ export default function SalairesPage() {
                 <Printer className="w-5 h-5 text-blue-600" />
                 Générer Bulletin: {selectedEmpForPdf.prenom} {selectedEmpForPdf.nom}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-900 hover:bg-gray-200 hover:text-gray-700 p-2 rounded-full transition">
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-900 hover:bg-gray-200 hover:text-gray-900 p-2 rounded-full transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -345,7 +345,7 @@ export default function SalairesPage() {
 
                 {deductions.length === 0 ? (
                   <div className="py-8 text-center bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center">
-                    <CreditCard className="w-8 h-8 text-gray-300 mb-2" />
+                    <CreditCard className="w-8 h-8 text-gray-900 mb-2" />
                     <p className="text-gray-900 font-medium">Aucune déduction ajoutée</p>
                     <p className="text-gray-900 text-sm mt-1">Cliquez sur Ajouter pour inclure des avances ou bons</p>
                   </div>
@@ -354,7 +354,7 @@ export default function SalairesPage() {
                     {deductions.map((ded, index) => (
                       <div key={index} className="flex gap-3 items-start bg-white p-4 rounded-xl border shadow-sm relative group hover:border-blue-300 transition-colors">
                         <div className="flex-1 space-y-1.5">
-                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Date</label>
+                          <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide">Date</label>
                           <input
                             type="date"
                             value={ded.date}
@@ -363,7 +363,7 @@ export default function SalairesPage() {
                           />
                         </div>
                         <div className="flex-1 space-y-1.5">
-                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Type</label>
+                          <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide">Type</label>
                           <select
                             value={ded.type}
                             onChange={e => updateDeduction(index, 'type', e.target.value)}
@@ -376,7 +376,7 @@ export default function SalairesPage() {
                           </select>
                         </div>
                         <div className="flex-[2] space-y-1.5">
-                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Motif</label>
+                          <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide">Motif</label>
                           <input
                             type="text"
                             placeholder="Ex: Avance sur salaire"
@@ -386,7 +386,7 @@ export default function SalairesPage() {
                           />
                         </div>
                         <div className="flex-1 space-y-1.5">
-                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Montant (GNF)</label>
+                          <label className="text-xs font-semibold text-gray-900 uppercase tracking-wide">Montant (GNF)</label>
                           <input
                             type="number"
                             value={ded.montant}
@@ -431,7 +431,7 @@ export default function SalairesPage() {
             <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-5 py-2.5 text-gray-700 font-medium hover:bg-gray-200 rounded-xl transition"
+                className="px-5 py-2.5 text-gray-900 font-medium hover:bg-gray-200 rounded-xl transition"
                 disabled={isGenerating}
               >
                 Annuler

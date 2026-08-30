@@ -193,7 +193,7 @@ export default function BadgeEleveModal({ isOpen, onClose, eleve }: EleveBadgePr
 
 
             {/* ==================== VERSO DU BADGE ==================== */}
-            <div className="badge-card w-[340px] h-[215px] bg-white rounded-2xl shadow-xl text-gray-800 p-3.5 relative overflow-hidden border-2 border-blue-900/30 flex flex-col justify-between shrink-0">
+            <div className="badge-card w-[340px] h-[215px] bg-white rounded-2xl shadow-xl text-gray-900 p-3.5 relative overflow-hidden border-2 border-blue-900/30 flex flex-col justify-between shrink-0">
 
               {/* En-tête Verso */}
               <div className="border-b pb-1.5 flex justify-between items-center">
@@ -204,17 +204,17 @@ export default function BadgeEleveModal({ isOpen, onClose, eleve }: EleveBadgePr
               </div>
 
               {/* Infos Parent & Secours */}
-              <div className="space-y-1.5 my-auto text-[10px] text-gray-700">
+              <div className="space-y-1.5 my-auto text-[10px] text-gray-900">
                 <div className="bg-blue-50/70 p-2 rounded-lg border border-blue-100 space-y-1">
                   <p className="font-bold text-blue-950 text-[10.5px]">
                     Parent / Tuteur : <span className="font-medium text-blue-900">{eleve.parent_prenom} {eleve.parent_nom || "Non renseigné"}</span>
                   </p>
-                  <p className="flex items-center gap-1.5 text-gray-800 font-semibold">
+                  <p className="flex items-center gap-1.5 text-gray-900 font-semibold">
                     <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
                     <span>Tél: {eleve.parent_telephone || "+224 --- --- ---"}</span>
                   </p>
                   {eleve.parent_email && (
-                    <p className="text-[9px] text-gray-600 truncate">
+                    <p className="text-[9px] text-gray-900 truncate">
                       Email: {eleve.parent_email}
                     </p>
                   )}
@@ -228,7 +228,7 @@ export default function BadgeEleveModal({ isOpen, onClose, eleve }: EleveBadgePr
               {/* Cachet & Signature */}
               <div className="border-t pt-1 flex justify-between items-end">
                 <div className="text-[8px] text-gray-900">
-                  <p className="font-semibold text-gray-600">E.I.E.F Conakry</p>
+                  <p className="font-semibold text-gray-900">E.I.E.F Conakry</p>
                   <p>République de Guinée</p>
                 </div>
                 <div className="text-center">

@@ -51,7 +51,7 @@ export default function EnseignantClassesPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        <span className="ml-2 text-gray-600">Chargement de vos classes...</span>
+        <span className="ml-2 text-gray-900">Chargement de vos classes...</span>
       </div>
     );
   }
@@ -124,7 +124,7 @@ export default function EnseignantClassesPage() {
             {/* Statistiques */}
             <div className="p-4 space-y-3">
               <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-gray-900">
                   <Users className="w-4 h-4" />
                   <span className="text-sm">Élèves</span>
                 </div>

@@ -299,7 +299,7 @@ export default function AdminLibrairiePage() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Nom *</label>
+                <label className="block text-sm font-medium text-gray-900">Nom *</label>
                 <input
                   type="text"
                   value={formData.nom}
@@ -309,7 +309,7 @@ export default function AdminLibrairiePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <label className="block text-sm font-medium text-gray-900">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -319,7 +319,7 @@ export default function AdminLibrairiePage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Prix unitaire (GNF) *</label>
+                  <label className="block text-sm font-medium text-gray-900">Prix unitaire (GNF) *</label>
                   <input
                     type="number"
                     value={formData.prix_unitaire}
@@ -329,7 +329,7 @@ export default function AdminLibrairiePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Quantité en stock</label>
+                  <label className="block text-sm font-medium text-gray-900">Quantité en stock</label>
                   <input
                     type="number"
                     value={formData.quantite_stock}
@@ -339,7 +339,7 @@ export default function AdminLibrairiePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Catégorie</label>
+                <label className="block text-sm font-medium text-gray-900">Catégorie</label>
                 <select
                   value={formData.categorie}
                   onChange={(e) => setFormData({ ...formData, categorie: e.target.value })}
@@ -352,14 +352,14 @@ export default function AdminLibrairiePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Niveaux cibles (obligatoire pour ces niveaux)</label>
+                <label className="block text-sm font-medium text-gray-900">Niveaux cibles (obligatoire pour ces niveaux)</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {niveauxDisponibles.map(niveau => (
                     <button
                       key={niveau}
                       type="button"
                       onClick={() => toggleNiveau(niveau)}
-                      className={`px-3 py-1 rounded-full text-sm ${(formData.niveaux_cibles || []).includes(niveau) ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
+                      className={`px-3 py-1 rounded-full text-sm ${(formData.niveaux_cibles || []).includes(niveau) ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900"}`}
                     >
                       {niveau}
                     </button>
@@ -368,7 +368,7 @@ export default function AdminLibrairiePage() {
                 <p className="text-xs text-gray-900 mt-1">Sélectionnez les niveaux pour lesquels cet article est obligatoire.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">URL de l'image (optionnel)</label>
+                <label className="block text-sm font-medium text-gray-900">URL de l'image (optionnel)</label>
                 <input
                   type="url"
                   value={formData.image_url}

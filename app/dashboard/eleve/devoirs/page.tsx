@@ -108,7 +108,7 @@ export default function DevoirsPage() {
             onClick={() => setFiltre(f)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition ${filtre === f
               ? "bg-blue-600 text-white shadow-sm"
-              : "bg-white border border-gray-200 text-gray-600 hover:border-blue-300"
+              : "bg-white border border-gray-200 text-gray-900 hover:border-blue-300"
               }`}
           >
             {f === "tous" ? "Tous" : f === "a_rendre" ? "À rendre" : f === "en_retard" ? "En retard" : "Soumis"}

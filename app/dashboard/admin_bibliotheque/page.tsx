@@ -128,7 +128,7 @@ export default function AdminTransportBibliothequeDashboard() {
       {/* Détails supplémentaires */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-purple-600" />
             Résumé
           </h3>
@@ -153,14 +153,14 @@ export default function AdminTransportBibliothequeDashboard() {
         </div>
 
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
             <BookA className="w-4 h-4 text-purple-600" />
             Derniers emprunts
           </h3>
           <div className="space-y-2 max-h-32 overflow-y-auto">
             {emprunts.slice(0, 5).map((e) => (
               <div key={e.id} className="flex justify-between items-center border-b border-gray-100 pb-2 text-sm">
-                <span className="text-gray-600 truncate max-w-[120px]">{e.livre_titre}</span>
+                <span className="text-gray-900 truncate max-w-[120px]">{e.livre_titre}</span>
                 <span className="text-gray-900 text-xs">{e.eleve_nom}</span>
                 <span className={`text-xs ${e.statut === 'retourne' ? 'text-green-600' :
                   e.statut === 'en_retard' ? 'text-red-600' :

@@ -273,12 +273,12 @@ export default function DirecteurEtudesDashboard() {
                       <td className="py-3 font-semibold text-gray-900">
                         {note.eleve_prenom} {note.eleve_nom}
                       </td>
-                      <td className="py-3 text-gray-600 text-xs">
-                        <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md font-medium">
+                      <td className="py-3 text-gray-900 text-xs">
+                        <span className="px-2.5 py-1 bg-gray-100 text-gray-900 rounded-md font-medium">
                           {note.classe_nom || "N/A"}
                         </span>
                       </td>
-                      <td className="py-3 text-gray-700 font-medium">{note.matiere_nom}</td>
+                      <td className="py-3 text-gray-900 font-medium">{note.matiere_nom}</td>
                       <td className="py-3 font-bold text-blue-600">
                         {note.valeur}/20
                         <span className="text-[10px] text-gray-900 font-normal ml-1">(coef {note.coefficient})</span>

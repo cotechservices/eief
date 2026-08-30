@@ -30,7 +30,7 @@ const CATEGORIES = [
   { id: "art", nom: "Art", color: "bg-purple-100 text-purple-700" },
   { id: "technologie", nom: "Technologie", color: "bg-blue-100 text-blue-700" },
   { id: "langue", nom: "Langue", color: "bg-yellow-100 text-yellow-700" },
-  { id: "autre", nom: "Autre", color: "bg-gray-100 text-gray-700" }
+  { id: "autre", nom: "Autre", color: "bg-gray-100 text-gray-900" }
 ];
 
 export default function ActivitesPage() {
@@ -158,7 +158,7 @@ export default function ActivitesPage() {
                   </div>
                   <div className="p-5">
                     <h3 className="text-xl font-bold mb-2">{activite.nom}</h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    <p className="text-gray-900 text-sm mb-4 line-clamp-2">
                       {activite.description || "Une activité enrichissante pour vos enfants."}
                     </p>
                     <div className="space-y-2 text-sm">
@@ -205,7 +205,7 @@ export default function ActivitesPage() {
                   {getCategorieInfo(selectedActivite.categorie).nom}
                 </span>
               </div>
-              <p className="text-gray-600 mb-6">{selectedActivite.description || "Aucune description disponible."}</p>
+              <p className="text-gray-900 mb-6">{selectedActivite.description || "Aucune description disponible."}</p>
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-sm text-gray-900">Jour & Horaire</p>

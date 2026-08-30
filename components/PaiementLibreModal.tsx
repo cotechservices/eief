@@ -155,12 +155,12 @@ export default function PaiementLibreModal({
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-bold text-black">Paiement échelonné</h2>
-              <p className="text-sm text-gray-600">{enfantNom} - {niveau}</p>
+              <p className="text-sm text-gray-900">{enfantNom} - {niveau}</p>
               <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
                 Saisie libre du montant
               </span>
             </div>
-            <button onClick={onClose} className="text-gray-900 hover:text-gray-700">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-900">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -170,7 +170,7 @@ export default function PaiementLibreModal({
           {loading ? (
             <div className="flex justify-center items-center py-8">
               <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-              <span className="ml-2 text-gray-600">Chargement...</span>
+              <span className="ml-2 text-gray-900">Chargement...</span>
             </div>
           ) : error ? (
             <div className="bg-red-50 p-4 rounded-lg text-center text-red-700">
@@ -186,7 +186,7 @@ export default function PaiementLibreModal({
             <>
               {/* ⭐ BARRE DE PROGRESSION */}
               <div className="mb-6">
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <div className="flex justify-between text-sm text-gray-900 mb-1">
                   <span>Progression du paiement</span>
                   <span className="font-semibold">{pourcentagePaye}%</span>
                 </div>
@@ -206,18 +206,18 @@ export default function PaiementLibreModal({
               {/* ⭐ RÉCAPITULATIF DES VERSEMENTS */}
               {total > 0 && (
                 <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                  <h4 className="font-semibold text-gray-700 mb-2">Récapitulatif</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Récapitulatif</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="flex justify-between border-b pb-1">
-                      <span className="text-gray-600">Total des frais</span>
+                      <span className="text-gray-900">Total des frais</span>
                       <span className="font-bold text-black">{formatMontant(total)} GNF</span>
                     </div>
                     <div className="flex justify-between border-b pb-1">
-                      <span className="text-gray-600">Déjà payé</span>
+                      <span className="text-gray-900">Déjà payé</span>
                       <span className="font-bold text-green-600">{formatMontant(montantPaye)} GNF</span>
                     </div>
                     <div className="flex justify-between col-span-2 pt-1">
-                      <span className="text-gray-600 font-semibold">Solde restant</span>
+                      <span className="text-gray-900 font-semibold">Solde restant</span>
                       <span className="font-bold text-indigo-600 text-lg">{formatMontant(restant)} GNF</span>
                     </div>
                   </div>
@@ -227,7 +227,7 @@ export default function PaiementLibreModal({
               {/* ⭐ SUGGESTIONS DE MONTANT */}
               {restant > 0 && (
                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                  <label className="block text-gray-900 text-sm font-medium mb-2">
                     Suggestions de montant
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -235,7 +235,7 @@ export default function PaiementLibreModal({
                       <button
                         key={pct}
                         onClick={() => handleSuggestion(pct)}
-                        className="px-3 py-1.5 bg-gray-100 hover:bg-indigo-100 rounded-lg text-sm font-medium text-gray-700 hover:text-indigo-700 transition flex items-center gap-1"
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-indigo-100 rounded-lg text-sm font-medium text-gray-900 hover:text-indigo-700 transition flex items-center gap-1"
                       >
                         <Percent className="w-3 h-3" />
                         {pct}%
@@ -256,7 +256,7 @@ export default function PaiementLibreModal({
 
               {/* ⭐ CHAMP DE SAISIE DU MONTANT */}
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-2">
+                <label className="block text-gray-900 text-sm font-medium mb-2">
                   Montant à payer * <span className="text-gray-900 text-xs">(saisie libre)</span>
                 </label>
                 <div className="relative">
@@ -291,7 +291,7 @@ export default function PaiementLibreModal({
 
               {/* ⭐ MODE DE PAIEMENT */}
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-2">Mode de paiement *</label>
+                <label className="block text-gray-900 text-sm font-medium mb-2">Mode de paiement *</label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'especes', label: 'Espèces', icon: Wallet, color: 'green' },
@@ -317,7 +317,7 @@ export default function PaiementLibreModal({
               {/* ⭐ RÉFÉRENCE DE TRANSACTION */}
               {(modePaiement === 'orange_money' || modePaiement === 'carte') && (
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-2">Numéro de transaction</label>
+                  <label className="block text-gray-900 mb-2">Numéro de transaction</label>
                   <input
                     type="text"
                     value={reference}
@@ -374,7 +374,7 @@ export default function PaiementLibreModal({
               {/* ⭐ HISTORIQUE DES PAIEMENTS */}
               {echeances.length > 0 && (
                 <div className="mt-6">
-                  <h4 className="font-semibold text-gray-700 mb-2">Historique des paiements</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Historique des paiements</h4>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {echeances
                       .filter(e => e.statut === 'paye')
@@ -382,7 +382,7 @@ export default function PaiementLibreModal({
                         <div key={e.id || index} className="flex justify-between items-center p-2 bg-green-50 rounded-lg border border-green-200">
                           <div className="flex items-center gap-2">
                             <CheckCircle className="w-4 h-4 text-green-600" />
-                            <span className="text-sm text-gray-700">
+                            <span className="text-sm text-gray-900">
                               {e.echeance || `Paiement ${index + 1}`}
                             </span>
                           </div>

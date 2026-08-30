@@ -252,7 +252,7 @@ export default function HomePage() {
                   <h3 className="text-3xl md:text-5xl font-bold mb-4">
                     {slide.title}
                   </h3>
-                  <p className="text-lg md:text-xl mb-8 text-gray-200">
+                  <p className="text-lg md:text-xl mb-8 text-gray-900">
                     {slide.description}
                   </p>
                   <div className="flex flex-wrap gap-4 mt-2">
@@ -295,32 +295,32 @@ export default function HomePage() {
             <h2 className="text-3xl text-white font-bold mb-4">
               École Internationale les Enfants du Futur
             </h2>
-            <p className="text-gray-100 max-w-2xl mx-auto">
+            <p className="text-gray-400 max-w-2xl mx-auto">
               Une éducation d'excellence pour former les leaders de demain.
             </p>
           </div>
           <br />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2 text-gray-200">
+              <div className="text-4xl font-bold mb-2 text-gray-100">
                 {stats.students > 0 ? `${stats.students}+` : stats.students}
               </div>
               <div className="text-blue-100">Élèves</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2 text-gray-200">
+              <div className="text-4xl font-bold mb-2 text-gray-100">
                 {stats.teachers > 0 ? `${stats.teachers}+` : stats.teachers}
               </div>
               <div className="text-blue-100">Enseignants & Personnels</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2 text-gray-200">
+              <div className="text-4xl font-bold mb-2 text-gray-100">
                 {stats.classes > 0 ? stats.classes : stats.classes}
               </div>
               <div className="text-blue-100">Classes</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2 text-gray-200">
+              <div className="text-4xl font-bold mb-2 text-gray-100">
                 {stats.success}%  {/* ← Toujours 100% */}
               </div>
               <div className="text-blue-100">Taux de réussite</div>

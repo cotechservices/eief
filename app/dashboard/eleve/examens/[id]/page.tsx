@@ -188,7 +188,7 @@ export default function ExamenInteractifPage() {
             <div className="w-px bg-gray-200" />
             <div>
               <p className="text-sm text-gray-900">Score</p>
-              <p className="text-2xl font-bold text-gray-800 mt-2">{resultat.score} / {resultat.totalPoints}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-2">{resultat.score} / {resultat.totalPoints}</p>
             </div>
           </div>
 
@@ -196,7 +196,7 @@ export default function ExamenInteractifPage() {
             <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 inline-flex items-center gap-3">
               <FileText className="w-5 h-5 text-purple-500" />
               <div className="text-left">
-                <p className="text-sm font-medium text-gray-700">📎 Sujet de l'évaluation</p>
+                <p className="text-sm font-medium text-gray-900">📎 Sujet de l'évaluation</p>
                 <a
                   href={examen.fichier_url}
                   target="_blank"
@@ -298,7 +298,7 @@ export default function ExamenInteractifPage() {
             {answeredCount} répondues
           </div>
         </div>
-        <div className={`flex items-center gap-2 font-mono text-xl font-bold px-4 py-1.5 rounded-lg ${timeLeft < 60 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-gray-50 text-gray-800'}`}>
+        <div className={`flex items-center gap-2 font-mono text-xl font-bold px-4 py-1.5 rounded-lg ${timeLeft < 60 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-gray-50 text-gray-900'}`}>
           <Clock className="w-5 h-5" />
           {formatTime(timeLeft)}
         </div>
@@ -311,7 +311,7 @@ export default function ExamenInteractifPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-purple-600" />
-                <span className="text-sm font-medium text-gray-700">📎 Sujet de l'évaluation</span>
+                <span className="text-sm font-medium text-gray-900">📎 Sujet de l'évaluation</span>
               </div>
               <a
                 href={examen.fichier_url}
@@ -345,7 +345,7 @@ export default function ExamenInteractifPage() {
             {fileType === 'pdf' && (
               <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 text-center">
                 <FileText className="w-16 h-16 text-red-500 mx-auto mb-3" />
-                <p className="text-sm text-gray-600 font-medium">Document PDF</p>
+                <p className="text-sm text-gray-900 font-medium">Document PDF</p>
                 <p className="text-xs text-gray-900 mt-1">{getFileName(examen.fichier_url)}</p>
                 <a
                   href={examen.fichier_url}
@@ -362,7 +362,7 @@ export default function ExamenInteractifPage() {
             {fileType === 'other' && (
               <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 text-center">
                 <File className="w-16 h-16 text-gray-900 mx-auto mb-3" />
-                <p className="text-sm text-gray-600 font-medium">{getFileName(examen.fichier_url)}</p>
+                <p className="text-sm text-gray-900 font-medium">{getFileName(examen.fichier_url)}</p>
                 <a
                   href={examen.fichier_url}
                   target="_blank"
@@ -382,7 +382,7 @@ export default function ExamenInteractifPage() {
         <div className="p-8 border-b bg-gray-50">
           <div className="flex justify-between items-start gap-4 mb-4">
             <h2 className="text-xl font-medium text-gray-900 leading-relaxed">{question.question}</h2>
-            <span className="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded whitespace-nowrap">
+            <span className="bg-gray-200 text-gray-900 text-xs font-bold px-2 py-1 rounded whitespace-nowrap">
               {question.points} {question.points > 1 ? 'pts' : 'pt'}
             </span>
           </div>
@@ -400,7 +400,7 @@ export default function ExamenInteractifPage() {
                   : "border-gray-100 bg-white hover:border-purple-200 hover:bg-gray-50"
                   }`}
               >
-                <span className={`text-[15px] ${isSelected ? "text-purple-900 font-medium" : "text-gray-700"}`}>
+                <span className={`text-[15px] ${isSelected ? "text-purple-900 font-medium" : "text-gray-900"}`}>
                   {opt.option_texte}
                 </span>
                 <div className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${isSelected ? "border-purple-600 bg-purple-600" : "border-gray-300"
@@ -418,7 +418,7 @@ export default function ExamenInteractifPage() {
         <button
           onClick={handlePrev}
           disabled={currentQ === 0}
-          className="px-6 py-2.5 rounded-xl font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2.5 rounded-xl font-medium text-gray-900 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Précédent
         </button>

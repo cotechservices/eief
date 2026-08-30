@@ -321,7 +321,7 @@ export default function TransportPage() {
               </div>
               <button
                 onClick={() => setShowElevesList(false)}
-                className="text-gray-900 hover:text-gray-600 transition p-2 hover:bg-gray-100 rounded-lg"
+                className="text-gray-900 hover:text-gray-900 transition p-2 hover:bg-gray-100 rounded-lg"
               >
                 ✕
               </button>
@@ -335,14 +335,14 @@ export default function TransportPage() {
                 </div>
               ) : elevesInscrits.length === 0 ? (
                 <div className="text-center py-12 text-gray-900">
-                  <UserX className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p className="font-medium text-gray-600">Aucun élève inscrit au transport</p>
+                  <UserX className="w-12 h-12 mx-auto mb-3 text-gray-900" />
+                  <p className="font-medium text-gray-900">Aucun élève inscrit au transport</p>
                   <p className="text-sm mt-1">Les inscriptions au transport apparaîtront ici</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50 text-gray-600 font-semibold uppercase text-xs">
+                    <thead className="bg-gray-50 text-gray-900 font-semibold uppercase text-xs">
                       <tr>
                         <th className="px-4 py-3 text-left">Matricule</th>
                         <th className="px-4 py-3 text-left">Nom & Prénom</th>
@@ -354,13 +354,13 @@ export default function TransportPage() {
                     <tbody className="divide-y divide-gray-100">
                       {elevesInscrits.map((eleve) => (
                         <tr key={eleve.id} className="hover:bg-gray-50 transition">
-                          <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                          <td className="px-4 py-3 font-mono text-xs text-gray-900">
                             {eleve.matricule}
                           </td>
                           <td className="px-4 py-3 font-medium text-gray-900">
                             {eleve.prenom} {eleve.nom}
                           </td>
-                          <td className="px-4 py-3 text-gray-600">
+                          <td className="px-4 py-3 text-gray-900">
                             {eleve.classe}
                           </td>
                           <td className="px-4 py-3 text-gray-900 text-xs">
@@ -399,7 +399,7 @@ export default function TransportPage() {
       {/* Liste des bus */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-          <h3 className="font-semibold text-gray-700">Liste des bus et trajets</h3>
+          <h3 className="font-semibold text-gray-900">Liste des bus et trajets</h3>
           <div className="flex gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
@@ -414,7 +414,7 @@ export default function TransportPage() {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-900 uppercase tracking-wider">
               <tr>
                 <th className="px-6 py-3">Immatriculation</th>
                 <th className="px-6 py-3">Chauffeur</th>
@@ -443,7 +443,7 @@ export default function TransportPage() {
                         <Route className="w-3 h-3" /> {b.trajet}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-700">
+                    <td className="px-6 py-4 text-gray-900">
                       <div>Matin: {b.horaireMatin}</div>
                       <div>Soir: {b.horaireSoir}</div>
                     </td>
@@ -462,7 +462,7 @@ export default function TransportPage() {
                             style={{ width: `${Math.min(100, filledRatio)}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-600">{filledRatio}%</span>
+                        <span className="text-xs text-gray-900">{filledRatio}%</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -489,7 +489,7 @@ export default function TransportPage() {
               {bus.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center text-gray-900">
-                    <Bus className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <Bus className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                     <p className="font-medium">Aucun bus disponible</p>
                     <p className="text-sm mt-1">Cliquez sur "Ajouter un bus" pour commencer</p>
                   </td>
@@ -510,7 +510,7 @@ export default function TransportPage() {
               </h2>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-gray-900 hover:text-gray-600 transition"
+                className="text-gray-900 hover:text-gray-900 transition"
               >
                 <span className="sr-only">Fermer</span>
                 ✕
@@ -520,7 +520,7 @@ export default function TransportPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* Immatriculation */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   Plaque d'immatriculation *
                 </label>
                 <input
@@ -536,7 +536,7 @@ export default function TransportPage() {
               {/* Chauffeur et Téléphone */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Chauffeur *
                   </label>
                   <input
@@ -549,7 +549,7 @@ export default function TransportPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Téléphone
                   </label>
                   <input
@@ -565,7 +565,7 @@ export default function TransportPage() {
               {/* Capacité et Prix */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Capacité (places) *
                   </label>
                   <input
@@ -578,7 +578,7 @@ export default function TransportPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Prix abonnement (GNF) *
                   </label>
                   <input
@@ -596,7 +596,7 @@ export default function TransportPage() {
 
               {/* Trajet */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   Nom du Trajet *
                 </label>
                 <input
@@ -612,7 +612,7 @@ export default function TransportPage() {
               {/* Horaires */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Horaire Matin
                   </label>
                   <input
@@ -623,7 +623,7 @@ export default function TransportPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Horaire Soir
                   </label>
                   <input
@@ -640,7 +640,7 @@ export default function TransportPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition"
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-xl font-medium hover:bg-gray-200 transition"
                 >
                   Annuler
                 </button>

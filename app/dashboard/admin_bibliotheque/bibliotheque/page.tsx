@@ -38,7 +38,7 @@ const CATEGORIES = [
   { id: "histoire", nom: "🏛️ Histoire & Géographie", color: "bg-amber-100 text-amber-700" },
   { id: "art", nom: "🎨 Art & Musique", color: "bg-pink-100 text-pink-700" },
   { id: "langues", nom: "🌍 Langues Étrangères", color: "bg-green-100 text-green-700" },
-  { id: "dictionnaires", nom: "📘 Dictionnaires & Encylopédies", color: "bg-gray-100 text-gray-700" },
+  { id: "dictionnaires", nom: "📘 Dictionnaires & Encylopédies", color: "bg-gray-100 text-gray-900" },
   { id: "bd", nom: "🎭 Bandes Dessinées", color: "bg-orange-100 text-orange-700" },
 ];
 
@@ -311,7 +311,7 @@ export default function BibliothequePage() {
             onClick={() => setActiveTab("livres")}
             className={`px-6 py-4 font-medium transition-colors ${activeTab === "livres"
               ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
-              : "text-gray-600 hover:bg-gray-50"
+              : "text-gray-900 hover:bg-gray-50"
               }`}
           >
             <BookOpen className="w-4 h-4 inline mr-2" />
@@ -321,7 +321,7 @@ export default function BibliothequePage() {
             onClick={() => setActiveTab("emprunts")}
             className={`px-6 py-4 font-medium transition-colors ${activeTab === "emprunts"
               ? "border-b-2 border-purple-600 text-purple-600 bg-purple-50/50"
-              : "text-gray-600 hover:bg-gray-50"
+              : "text-gray-900 hover:bg-gray-50"
               }`}
           >
             <BookMarked className="w-4 h-4 inline mr-2" />
@@ -369,12 +369,12 @@ export default function BibliothequePage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Livre</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Catégorie</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Emplacement</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Quantité</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Disponible</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Livre</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Catégorie</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Emplacement</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Quantité</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Disponible</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -445,7 +445,7 @@ export default function BibliothequePage() {
                 {filteredLivres.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-gray-900">
-                      <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                       <p className="font-medium">Aucun livre trouvé</p>
                     </td>
                   </tr>
@@ -461,12 +461,12 @@ export default function BibliothequePage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Livre</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Élève</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date Prêt</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Retour Prévu</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Statut</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Livre</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Élève</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Date Prêt</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Retour Prévu</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Statut</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -509,7 +509,7 @@ export default function BibliothequePage() {
                 {filteredEmprunts.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-gray-900">
-                      <BookMarked className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <BookMarked className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                       <p className="font-medium">Aucun emprunt trouvé</p>
                     </td>
                   </tr>
@@ -528,13 +528,13 @@ export default function BibliothequePage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingLivre ? "Modifier le livre" : "Ajouter un livre"}
               </h2>
-              <button onClick={() => setShowLivreForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowLivreForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleLivreSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image du livre</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Image du livre</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-purple-500 transition relative">
                   <input
                     ref={fileInputRef}
@@ -554,7 +554,7 @@ export default function BibliothequePage() {
                   ) : (
                     <div className="text-center">
                       <ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">Cliquez pour ajouter une image</p>
+                      <p className="text-sm text-gray-900">Cliquez pour ajouter une image</p>
                       <p className="text-xs text-gray-900">PNG, JPG, WEBP</p>
                     </div>
                   )}
@@ -562,26 +562,26 @@ export default function BibliothequePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Titre *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Titre *</label>
                 <input required type="text" value={livreData.titre} onChange={e => setLivreData({ ...livreData, titre: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Auteur *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Auteur *</label>
                 <input required type="text" value={livreData.auteur} onChange={e => setLivreData({ ...livreData, auteur: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">ISBN</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">ISBN</label>
                   <input type="text" value={livreData.isbn} onChange={e => setLivreData({ ...livreData, isbn: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg" placeholder="978-2-1234-5680-4" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantité *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Quantité *</label>
                   <input required type="number" min="1" value={livreData.quantite} onChange={e => setLivreData({ ...livreData, quantite: parseInt(e.target.value) })} className="w-full border border-gray-300 p-2 rounded-lg" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Catégorie *</label>
                 <select required value={livreData.categorie} onChange={e => setLivreData({ ...livreData, categorie: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                   <option value="">Sélectionner une catégorie</option>
                   {CATEGORIES.map(cat => (
@@ -591,7 +591,7 @@ export default function BibliothequePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Emplacement *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Emplacement *</label>
                 <select required value={livreData.emplacement} onChange={e => setLivreData({ ...livreData, emplacement: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                   <option value="">Sélectionner un emplacement</option>
                   {EMPLACEMENTS.map(emp => (
@@ -603,7 +603,7 @@ export default function BibliothequePage() {
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-gray-100">
-                <button type="button" onClick={() => setShowLivreForm(false)} className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
+                <button type="button" onClick={() => setShowLivreForm(false)} className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition">
                   Annuler
                 </button>
                 <button type="submit" disabled={uploading} className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition flex items-center justify-center gap-2 disabled:opacity-50">
@@ -622,13 +622,13 @@ export default function BibliothequePage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md border border-gray-100">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-900">Nouvel emprunt</h2>
-              <button onClick={() => setShowEmpruntForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowEmpruntForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleEmpruntSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Livre *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Livre *</label>
                 <select required value={empruntData.livre_id} onChange={e => setEmpruntData({ ...empruntData, livre_id: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                   <option value="">Sélectionner un livre</option>
                   {livres.filter(l => l.disponible > 0).map(l => (
@@ -637,7 +637,7 @@ export default function BibliothequePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Élève *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Élève *</label>
                 <select required value={empruntData.eleve_id} onChange={e => setEmpruntData({ ...empruntData, eleve_id: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                   <option value="">Sélectionner un élève</option>
                   {eleves.map(e => (
@@ -646,11 +646,11 @@ export default function BibliothequePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date de retour prévue *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Date de retour prévue *</label>
                 <input required type="date" value={empruntData.date_retour_prevue} onChange={e => setEmpruntData({ ...empruntData, date_retour_prevue: e.target.value })} className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" />
               </div>
               <div className="flex gap-3 pt-4 border-t border-gray-100">
-                <button type="button" onClick={() => setShowEmpruntForm(false)} className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
+                <button type="button" onClick={() => setShowEmpruntForm(false)} className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition">
                   Annuler
                 </button>
                 <button type="submit" className="flex-1 px-4 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition">

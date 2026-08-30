@@ -52,6 +52,33 @@ export async function GET(
 
     const parent = parentResult.rows[0];
 
+    // Récupérer la liste des enfants de ce parent
+    const enfantsListeResult = await query(`
+      SELECT 
+        u.nom,
+        u.prenom,
+        COALESCE(c.nom, 'Non assigné') as classe
+      FROM lien_parent_eleve lpe
+      JOIN eleves e ON lpe.eleve_id = e.id
+      JOIN utilisateurs u ON e.utilisateur_id = u.id
+      LEFT JOIN classes c ON e.classe_id = c.id
+      WHERE lpe.parent_id = $1 AND e.deleted_at IS NULL
+      UNION
+      SELECT 
+        enfant_nom as nom,
+        enfant_prenom as prenom,
+        COALESCE(classe, niveau, 'Pré-inscription') as classe
+      FROM preinscriptions
+      WHERE parent_id = $1 AND statut IN ('en_attente', 'valide')
+      UNION
+      SELECT 
+        enfant_nom as nom,
+        enfant_prenom as prenom,
+        COALESCE(classe_nom, 'Réinscription') as classe
+      FROM reinscriptions
+      WHERE parent_id = $1 AND statut IN ('en_attente', 'valide')
+    `, [parentIdInt]);
+
     // 2. Récupérer TOUS les paiements liés au parent (pré-inscription, réinscription, élèves)
     const paiementsResult = await query(`
       SELECT 
@@ -145,6 +172,7 @@ export async function GET(
 
     return NextResponse.json({
       parent,
+      enfants: enfantsListeResult.rows,
       recus: uniqueRecus,
       statistiques: {
         total_recus: totalRecus,
@@ -157,6 +185,147 @@ export async function GET(
     console.error("Erreur API /api/admin/recus/parents/[parentId]:", error);
     return NextResponse.json(
       { error: "Erreur serveur: " + (error as Error).message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ parentId: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    }
+
+    const userRole = (session.user as any).role;
+    const allowedRoles = ["SUPER_ADMIN", "COMPTABLE", "ADMIN", "DIRECTEUR_GENERAL", "DIRECTEUR"];
+    if (!allowedRoles.includes(userRole)) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+    }
+
+    const { parentId } = await params;
+    const parentIdInt = parseInt(parentId);
+
+    if (isNaN(parentIdInt)) {
+      return NextResponse.json({ error: "ID parent invalide" }, { status: 400 });
+    }
+
+    // 1. Vérifier l'existence du parent
+    const parentRes = await query(`
+      SELECT p.id, u.nom, u.prenom
+      FROM parents p
+      JOIN utilisateurs u ON p.utilisateur_id = u.id
+      WHERE p.id = $1
+    `, [parentIdInt]);
+
+    if (parentRes.rows.length === 0) {
+      return NextResponse.json({ error: "Parent non trouvé" }, { status: 404 });
+    }
+
+    const parent = parentRes.rows[0];
+    const parentNomComplet = `${parent.prenom} ${parent.nom}`;
+
+    // 2. Récupérer les IDs des préinscriptions du parent
+    const preinscRes = await query(
+      `SELECT id FROM preinscriptions WHERE parent_id = $1`,
+      [parentIdInt]
+    );
+    const preinscIds: number[] = preinscRes.rows.map((r: any) => r.id);
+
+    // 3. Récupérer les IDs des réinscriptions du parent
+    const reinscRes = await query(
+      `SELECT id FROM reinscriptions WHERE parent_id = $1`,
+      [parentIdInt]
+    );
+    const reinscIds: number[] = reinscRes.rows.map((r: any) => r.id);
+
+    // 4. Récupérer les IDs des élèves liés au parent
+    const elevesRes = await query(
+      `SELECT eleve_id FROM lien_parent_eleve WHERE parent_id = $1`,
+      [parentIdInt]
+    );
+    const eleveIds: number[] = elevesRes.rows.map((r: any) => r.eleve_id);
+
+    // 5. Récupérer les paiements concernés
+    let paiementsIds: number[] = [];
+    const paiementsRes = await query(`
+      SELECT id FROM paiements
+      WHERE (preinscription_id = ANY($1::int[]))
+         OR (reinscription_id = ANY($2::int[]))
+         OR (eleve_id = ANY($3::int[]))
+    `, [
+      preinscIds.length > 0 ? preinscIds : [-1],
+      reinscIds.length > 0 ? reinscIds : [-1],
+      eleveIds.length > 0 ? eleveIds : [-1]
+    ]);
+    paiementsIds = paiementsRes.rows.map((r: any) => r.id);
+
+    // 6. Supprimer les reçus associés dans la table recus
+    await query(`
+      DELETE FROM recus
+      WHERE (preinscription_id = ANY($1::int[]))
+         OR (paiement_id = ANY($2::int[]))
+         OR (parent_nom ILIKE $3)
+    `, [
+      preinscIds.length > 0 ? preinscIds : [-1],
+      paiementsIds.length > 0 ? paiementsIds : [-1],
+      parentNomComplet
+    ]);
+
+    // 7. Supprimer les paiements associés dans la table paiements
+    if (paiementsIds.length > 0) {
+      await query(`
+        DELETE FROM paiements
+        WHERE id = ANY($1::int[])
+      `, [paiementsIds]);
+    }
+
+    // 8. Réinitialiser les soldes des préinscriptions (sans supprimer les dossiers d'élèves)
+    if (preinscIds.length > 0) {
+      await query(`
+        UPDATE preinscriptions
+        SET 
+          montant_restant_plan = COALESCE(montant_total_plan, 0),
+          frais_statut = 'non_paye',
+          frais_montant = 0,
+          frais_date_paiement = NULL,
+          frais_mode_paiement = NULL,
+          frais_reference = NULL
+        WHERE parent_id = $1
+      `, [parentIdInt]);
+    }
+
+    // 9. Réinitialiser les soldes des réinscriptions (sans supprimer les dossiers d'élèves)
+    if (reinscIds.length > 0) {
+      await query(`
+        UPDATE reinscriptions
+        SET 
+          montant_restant_plan = COALESCE(montant_total_plan, 0),
+          frais_statut = 'non_paye',
+          montant_frais = 0,
+          frais_date_paiement = NULL,
+          frais_mode_paiement = NULL,
+          frais_reference = NULL
+        WHERE parent_id = $1
+      `, [parentIdInt]);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `Tous les paiements et reçus de la famille de ${parentNomComplet} ont été supprimés avec succès. Les comptes parent et élèves restent intacts.`,
+      supprimes: {
+        paiements: paiementsIds.length,
+        parent: parentNomComplet
+      }
+    });
+
+  } catch (error) {
+    console.error("Erreur DELETE /api/admin/recus/parents/[parentId]:", error);
+    return NextResponse.json(
+      { error: "Erreur serveur lors de la suppression: " + (error as Error).message },
       { status: 500 }
     );
   }

@@ -144,7 +144,7 @@ export default function AdminCommandesPage() {
       {/* Tableau des commandes */}
       {commandes.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <ShoppingCart className="w-16 h-16 text-gray-900 mx-auto mb-4" />
           <p className="text-gray-900">Aucune commande trouvée</p>
         </div>
       ) : (
@@ -181,7 +181,7 @@ export default function AdminCommandesPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4 text-center">{getStatutBadge(commande.statut)}</td>
-                    <td className="px-4 py-4 text-sm text-gray-600">
+                    <td className="px-4 py-4 text-sm text-gray-900">
                       {new Date(commande.date_commande).toLocaleDateString("fr-FR")}
                     </td>
                     <td className="px-4 py-4 text-center">
@@ -211,9 +211,9 @@ export default function AdminCommandesPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-bold text-black">Détail de la commande</h2>
-                  <p className="text-sm text-gray-600 font-mono">{selectedCommande.numero_commande}</p>
+                  <p className="text-sm text-gray-900 font-mono">{selectedCommande.numero_commande}</p>
                 </div>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-700">
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -270,7 +270,7 @@ export default function AdminCommandesPage() {
               {selectedCommande.observations && (
                 <div>
                   <h3 className="font-semibold text-black mb-1">Observations</h3>
-                  <p className="bg-gray-50 p-3 rounded-lg text-gray-700">{selectedCommande.observations}</p>
+                  <p className="bg-gray-50 p-3 rounded-lg text-gray-900">{selectedCommande.observations}</p>
                 </div>
               )}
 
@@ -319,7 +319,7 @@ export default function AdminCommandesPage() {
                   <h3 className="text-lg font-bold text-gray-900">
                     {actionStatut === "valide" ? "Valider la commande" : "Rejeter la commande"}
                   </h3>
-                  <p className="text-sm text-gray-600">{selectedCommande.numero_commande}</p>
+                  <p className="text-sm text-gray-900">{selectedCommande.numero_commande}</p>
                 </div>
               </div>
             </div>
@@ -342,8 +342,8 @@ export default function AdminCommandesPage() {
                   onClick={() => handleUpdateStatut(selectedCommande.id, actionStatut)}
                   disabled={processing}
                   className={`flex-1 py-2.5 rounded-lg transition font-medium flex items-center justify-center gap-2 ${actionStatut === "valide"
-                      ? "bg-green-600 hover:bg-green-700 text-white"
-                      : "bg-red-600 hover:bg-red-700 text-white"
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-red-600 hover:bg-red-700 text-white"
                     } disabled:opacity-50`}
                 >
                   {processing ? (

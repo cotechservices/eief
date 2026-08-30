@@ -233,12 +233,12 @@ export default function ReinscriptionPaiementModal({
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-bold text-black">Plan de paiement échelonné - Réinscription</h2>
-              <p className="text-sm text-gray-600">{enfantNom} - {niveau}</p>
+              <p className="text-sm text-gray-900">{enfantNom} - {niveau}</p>
               <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
                 Paiement libre
               </span>
             </div>
-            <button onClick={onClose} className="text-gray-900 hover:text-gray-700">
+            <button onClick={onClose} className="text-gray-900 hover:text-gray-900">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -248,7 +248,7 @@ export default function ReinscriptionPaiementModal({
           {loading ? (
             <div className="flex justify-center items-center py-8">
               <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-              <span className="ml-2 text-gray-600">Chargement du plan...</span>
+              <span className="ml-2 text-gray-900">Chargement du plan...</span>
             </div>
           ) : error ? (
             <div className="bg-red-50 p-4 rounded-lg text-center text-red-700">
@@ -267,11 +267,11 @@ export default function ReinscriptionPaiementModal({
                 <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr className="bg-indigo-50">
-                      <th className="border p-2 text-left text-gray-700">Niveau</th>
-                      <th className="border p-2 text-left text-gray-700">1er Versement</th>
-                      <th className="border p-2 text-left text-gray-700">2ème Versement</th>
-                      <th className="border p-2 text-left text-gray-700">3ème Versement</th>
-                      <th className="border p-2 text-left text-gray-700">Total</th>
+                      <th className="border p-2 text-left text-gray-900">Niveau</th>
+                      <th className="border p-2 text-left text-gray-900">1er Versement</th>
+                      <th className="border p-2 text-left text-gray-900">2ème Versement</th>
+                      <th className="border p-2 text-left text-gray-900">3ème Versement</th>
+                      <th className="border p-2 text-left text-gray-900">Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -299,7 +299,7 @@ export default function ReinscriptionPaiementModal({
               {/* SERVICES OPTIONNELS */}
               {services && services.total_services > 0 && (
                 <div className="mb-6">
-                  <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <ShoppingCart className="w-4 h-4 text-purple-600" />
                     Services optionnels
                   </h4>
@@ -308,7 +308,7 @@ export default function ReinscriptionPaiementModal({
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <Bus className="w-4 h-4 text-blue-600" />
-                          <span className="text-sm text-gray-700">Transport</span>
+                          <span className="text-sm text-gray-900">Transport</span>
                         </div>
                         <span className="font-medium text-blue-600">{formatMontant(services.transport.total)} GNF</span>
                       </div>
@@ -317,7 +317,7 @@ export default function ReinscriptionPaiementModal({
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <Utensils className="w-4 h-4 text-orange-600" />
-                          <span className="text-sm text-gray-700">Cantine</span>
+                          <span className="text-sm text-gray-900">Cantine</span>
                         </div>
                         <span className="font-medium text-orange-600">{formatMontant(services.cantine.total)} GNF</span>
                       </div>
@@ -326,7 +326,7 @@ export default function ReinscriptionPaiementModal({
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <ShoppingCart className="w-4 h-4 text-purple-600" />
-                          <span className="text-sm text-gray-700">Fournitures</span>
+                          <span className="text-sm text-gray-900">Fournitures</span>
                         </div>
                         <span className="font-medium text-purple-600">{formatMontant(services.fournitures.total)} GNF</span>
                       </div>
@@ -341,7 +341,7 @@ export default function ReinscriptionPaiementModal({
 
               {/* BARRE DE PROGRESSION */}
               <div className="mb-6">
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <div className="flex justify-between text-sm text-gray-900 mb-1">
                   <span>Progression du paiement</span>
                   <span className="font-semibold">{Math.max(0, pourcentagePaye)}%</span>
                 </div>
@@ -360,10 +360,10 @@ export default function ReinscriptionPaiementModal({
 
               {/* RÉCAPITULATIF DES FRAIS */}
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <h4 className="font-semibold text-gray-700 mb-2">Récapitulatif des frais</h4>
+                <h4 className="font-semibold text-gray-900 mb-2">Récapitulatif des frais</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-700">Frais de réinscription</span>
+                    <span className="text-gray-900">Frais de réinscription</span>
                     <span className="font-medium text-indigo-600">{formatMontant(totalInscription)} GNF</span>
                   </div>
 
@@ -371,19 +371,19 @@ export default function ReinscriptionPaiementModal({
                     <>
                       {services.transport.total > 0 && (
                         <div className="flex justify-between pl-4">
-                          <span className="text-gray-600">└ Transport</span>
+                          <span className="text-gray-900">└ Transport</span>
                           <span className="font-medium text-blue-600">{formatMontant(services.transport.total)} GNF</span>
                         </div>
                       )}
                       {services.cantine.total > 0 && (
                         <div className="flex justify-between pl-4">
-                          <span className="text-gray-600">└ Cantine</span>
+                          <span className="text-gray-900">└ Cantine</span>
                           <span className="font-medium text-orange-600">{formatMontant(services.cantine.total)} GNF</span>
                         </div>
                       )}
                       {services.fournitures.total > 0 && (
                         <div className="flex justify-between pl-4">
-                          <span className="text-gray-600">└ Fournitures</span>
+                          <span className="text-gray-900">└ Fournitures</span>
                           <span className="font-medium text-purple-600">{formatMontant(services.fournitures.total)} GNF</span>
                         </div>
                       )}
@@ -404,7 +404,7 @@ export default function ReinscriptionPaiementModal({
               {/* SUGGESTIONS DE MONTANT */}
               {montantRestant > 0 && (
                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                  <label className="block text-gray-900 text-sm font-medium mb-2">
                     Suggestions de montant
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -412,7 +412,7 @@ export default function ReinscriptionPaiementModal({
                       <button
                         key={pct}
                         onClick={() => handleSuggestion(pct)}
-                        className="px-3 py-1.5 bg-gray-100 hover:bg-indigo-100 rounded-lg text-sm font-medium text-gray-700 hover:text-indigo-700 transition flex items-center gap-1"
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-indigo-100 rounded-lg text-sm font-medium text-gray-900 hover:text-indigo-700 transition flex items-center gap-1"
                       >
                         <Percent className="w-3 h-3" />
                         {pct}%
@@ -433,7 +433,7 @@ export default function ReinscriptionPaiementModal({
 
               {/* CHAMP DE SAISIE DU MONTANT */}
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-2">
+                <label className="block text-gray-900 text-sm font-medium mb-2">
                   Montant à payer * <span className="text-gray-900 text-xs">(saisie libre)</span>
                 </label>
                 <div className="relative">
@@ -467,7 +467,7 @@ export default function ReinscriptionPaiementModal({
 
               {/* MODE DE PAIEMENT */}
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-2">Mode de paiement *</label>
+                <label className="block text-gray-900 text-sm font-medium mb-2">Mode de paiement *</label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'especes', label: 'Espèces', icon: Wallet, color: 'green' },
@@ -494,7 +494,7 @@ export default function ReinscriptionPaiementModal({
               {/* RÉFÉRENCE DE TRANSACTION */}
               {(modePaiement === 'orange_money' || modePaiement === 'carte') && (
                 <div className="mb-4">
-                  <label className="block text-gray-700 mb-2">Numéro de transaction</label>
+                  <label className="block text-gray-900 mb-2">Numéro de transaction</label>
                   <input
                     type="text"
                     value={reference}
@@ -556,7 +556,7 @@ export default function ReinscriptionPaiementModal({
               {/* HISTORIQUE DES PAIEMENTS */}
               {echeances.filter(e => e.statut === 'paye').length > 0 && (
                 <div className="mt-6">
-                  <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <History className="w-4 h-4" />
                     Historique des paiements
                   </h4>
@@ -572,7 +572,7 @@ export default function ReinscriptionPaiementModal({
                         <div key={e.id || index} className="flex justify-between items-center p-2 bg-green-50 rounded-lg border border-green-200">
                           <div className="flex items-center gap-2">
                             <CheckCircle className="w-4 h-4 text-green-600" />
-                            <span className="text-sm text-gray-700">
+                            <span className="text-sm text-gray-900">
                               {e.echeance || `Paiement ${index + 1}`}
                             </span>
                             {e.mode_paiement && (

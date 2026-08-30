@@ -341,7 +341,7 @@ export default function EnseignantSalairePage() {
                 className="bg-white/20 text-white border border-white/30 rounded-xl px-3 py-2 text-sm appearance-none pr-8 focus:outline-none cursor-pointer"
               >
                 {MOIS_NOMS.map((m, i) => (
-                  <option key={i + 1} value={i + 1} className="text-gray-800">{m}</option>
+                  <option key={i + 1} value={i + 1} className="text-gray-900">{m}</option>
                 ))}
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white pointer-events-none" />
@@ -353,7 +353,7 @@ export default function EnseignantSalairePage() {
                 className="bg-white/20 text-white border border-white/30 rounded-xl px-3 py-2 text-sm appearance-none pr-8 focus:outline-none cursor-pointer"
               >
                 {annees.map(a => (
-                  <option key={a} value={a} className="text-gray-800">{a}</option>
+                  <option key={a} value={a} className="text-gray-900">{a}</option>
                 ))}
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white pointer-events-none" />
@@ -448,7 +448,7 @@ export default function EnseignantSalairePage() {
             <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">Remuneration de base</span>
           </div>
           <div className="flex justify-between items-center px-6 py-3 hover:bg-gray-50">
-            <span className="text-sm text-gray-600">Salaire de base</span>
+            <span className="text-sm text-gray-900">Salaire de base</span>
             <span className="text-sm font-semibold text-gray-900">+{salaire.salaire_base.toLocaleString('fr-FR')} GNF</span>
           </div>
 
@@ -459,19 +459,19 @@ export default function EnseignantSalairePage() {
               </div>
               {salaire.prime_mensuelle > 0 && (
                 <div className="flex justify-between items-center px-6 py-3 hover:bg-gray-50">
-                  <span className="text-sm text-gray-600">Prime mensuelle</span>
+                  <span className="text-sm text-gray-900">Prime mensuelle</span>
                   <span className="text-sm font-semibold text-green-600">+{salaire.prime_mensuelle.toLocaleString('fr-FR')} GNF</span>
                 </div>
               )}
               {Number(salaire.prime_responsabilite || 0) > 0 && (
                 <div className="flex justify-between items-center px-6 py-3 hover:bg-gray-50">
-                  <span className="text-sm text-gray-600">Prime de responsabilite</span>
+                  <span className="text-sm text-gray-900">Prime de responsabilite</span>
                   <span className="text-sm font-semibold text-green-600">+{Number(salaire.prime_responsabilite).toLocaleString('fr-FR')} GNF</span>
                 </div>
               )}
               {Number(salaire.prime_craie || 0) > 0 && (
                 <div className="flex justify-between items-center px-6 py-3 hover:bg-gray-50">
-                  <span className="text-sm text-gray-600">Prime de craie</span>
+                  <span className="text-sm text-gray-900">Prime de craie</span>
                   <span className="text-sm font-semibold text-green-600">+{Number(salaire.prime_craie).toLocaleString('fr-FR')} GNF</span>
                 </div>
               )}
@@ -495,7 +495,7 @@ export default function EnseignantSalairePage() {
           )}
           {Number(salaire.retenue_sanction || 0) === 0 && Number(salaire.autres_retenues || 0) === 0 && (
             <div className="flex justify-between items-center px-6 py-3 hover:bg-gray-50">
-              <span className="text-sm text-gray-600">Retenues / Sanctions</span>
+              <span className="text-sm text-gray-900">Retenues / Sanctions</span>
               <span className="text-sm text-gray-900">0 GNF</span>
             </div>
           )}
@@ -528,7 +528,7 @@ export default function EnseignantSalairePage() {
                     {item.mois}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{MOIS_NOMS[item.mois - 1]} {item.annee}</p>
+                    <p className="text-sm font-medium text-gray-900">{MOIS_NOMS[item.mois - 1]} {item.annee}</p>
                     {item.date_paiement && (
                       <p className="text-xs text-gray-900">
                         Paye le {new Date(item.date_paiement).toLocaleDateString('fr-FR')}
@@ -538,7 +538,7 @@ export default function EnseignantSalairePage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-gray-800">{item.montant.toLocaleString('fr-FR')} GNF</span>
+                  <span className="text-sm font-semibold text-gray-900">{item.montant.toLocaleString('fr-FR')} GNF</span>
                   {item.statut === 'paye'
                     ? <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium"><CheckCircle className="w-3 h-3" /> Paye</span>
                     : <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs font-medium"><Clock className="w-3 h-3" /> En attente</span>

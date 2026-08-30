@@ -809,10 +809,10 @@
                   <h3 className="text-lg font-semibold text-blue-900">Informations du Père <span className="text-red-500">*</span></h3>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Nom *</label><input type="text" name="nom" value={pereInfo.nom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Nom du père" required /></div>
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Prénom *</label><input type="text" name="prenom" value={pereInfo.prenom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Prénom du père" required /></div>
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Téléphone du père *</label><input type="tel" name="phone" value={pereInfo.phone} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="+224 6XX XX XX XX" required /></div>
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Profession du père</label><input type="text" name="profession" value={pereInfo.profession} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Ex: Ingénieur, Médecin..." /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Nom *</label><input type="text" name="nom" value={pereInfo.nom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Nom du père" required /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Prénom *</label><input type="text" name="prenom" value={pereInfo.prenom} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Prénom du père" required /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Téléphone du père *</label><input type="tel" name="phone" value={pereInfo.phone} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="+224 6XX XX XX XX" required /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Profession du père</label><input type="text" name="profession" value={pereInfo.profession} onChange={handlePereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Ex: Ingénieur, Médecin..." /></div>
                 </div>
               </div>
 
@@ -825,10 +825,10 @@
                   <h3 className="text-lg font-semibold text-pink-900">Informations de la Mère <span className="text-gray-900 text-sm font-normal">(optionnel)</span></h3>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Nom</label><input type="text" name="nom" value={mereInfo.nom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Nom de la mère" /></div>
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Prénom</label><input type="text" name="prenom" value={mereInfo.prenom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Prénom de la mère" /></div>
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Téléphone de la mère</label><input type="tel" name="phone" value={mereInfo.phone} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="+224 6XX XX XX XX" /></div>
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Profession de la mère</label><input type="text" name="profession" value={mereInfo.profession} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Ex: Enseignante, Commerçante..." /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Nom</label><input type="text" name="nom" value={mereInfo.nom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Nom de la mère" /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Prénom</label><input type="text" name="prenom" value={mereInfo.prenom} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Prénom de la mère" /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Téléphone de la mère</label><input type="tel" name="phone" value={mereInfo.phone} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="+224 6XX XX XX XX" /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Profession de la mère</label><input type="text" name="profession" value={mereInfo.profession} onChange={handleMereChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-black" placeholder="Ex: Enseignante, Commerçante..." /></div>
                 </div>
               </div>
 
@@ -845,8 +845,8 @@
                   Cet email sera utilisé par les deux parents pour se connecter à la plateforme.
                 </p>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Email familial *</label><input type="email" name="email" value={compteInfo.email} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="famille@email.com" required /></div>
-                  <div><label className="block text-gray-700 mb-2 text-sm font-medium">Adresse familiale</label><input type="text" name="adresse" value={compteInfo.adresse} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Votre adresse complète" /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Email familial *</label><input type="email" name="email" value={compteInfo.email} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="famille@email.com" required /></div>
+                  <div><label className="block text-gray-900 mb-2 text-sm font-medium">Adresse familiale</label><input type="text" name="adresse" value={compteInfo.adresse} onChange={handleCompteChange} className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" placeholder="Votre adresse complète" /></div>
                 </div>
               </div>
             </div>
@@ -953,7 +953,7 @@
                       <button
                         type="button"
                         onClick={() => setShowSearch(false)}
-                        className="text-sm text-gray-900 hover:text-gray-700 underline mt-2"
+                        className="text-sm text-gray-900 hover:text-gray-900 underline mt-2"
                       >
                         Saisir manuellement les informations
                       </button>
@@ -1113,14 +1113,14 @@
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <p className="text-xs font-semibold text-blue-700 mb-1">Père</p>
-                      <p className="text-sm text-gray-800 font-medium">{pereInfo.prenom} {pereInfo.nom}</p>
+                      <p className="text-sm text-gray-900 font-medium">{pereInfo.prenom} {pereInfo.nom}</p>
                       <p className="text-xs text-gray-900">{pereInfo.phone}</p>
                       {pereInfo.profession && <p className="text-xs text-gray-900">{pereInfo.profession}</p>}
                     </div>
                     {(mereInfo.nom || mereInfo.prenom) && (
                       <div className="bg-pink-50 border border-pink-200 rounded-lg p-3">
                         <p className="text-xs font-semibold text-pink-700 mb-1">Mère</p>
-                        <p className="text-sm text-gray-800 font-medium">{mereInfo.prenom} {mereInfo.nom}</p>
+                        <p className="text-sm text-gray-900 font-medium">{mereInfo.prenom} {mereInfo.nom}</p>
                         <p className="text-xs text-gray-900">{mereInfo.phone}</p>
                         {mereInfo.profession && <p className="text-xs text-gray-900">{mereInfo.profession}</p>}
                       </div>
@@ -1142,7 +1142,7 @@
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-700"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900 hover:text-gray-900"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -1220,7 +1220,7 @@
                     {loadingSupplies ? (
                       <div className="flex justify-center items-center py-8">
                         <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                        <span className="ml-2 text-gray-600">Chargement des fournitures...</span>
+                        <span className="ml-2 text-gray-900">Chargement des fournitures...</span>
                       </div>
                     ) : suppliesError ? (
                       <div className="bg-yellow-50 p-4 rounded-lg text-center text-yellow-700">
@@ -1239,15 +1239,15 @@
                         {supplies.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                             <div className="flex-1">
-                              <p className="font-medium text-gray-800">{item.nom}</p>
-                              <p className="text-sm text-gray-800">{item.prix_unitaire.toLocaleString()} GNF</p>
+                              <p className="font-medium text-gray-900">{item.nom}</p>
+                              <p className="text-sm text-gray-900">{item.prix_unitaire.toLocaleString()} GNF</p>
                               <p className="text-xs text-gray-900">Stock: {item.quantite_stock}</p>
                             </div>
                             <div className="flex items-center gap-3">
                               <button
                                 type="button"
                                 onClick={() => handleSupplyChange(idx, -1)}
-                                className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 text-gray-700"
+                                className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 text-gray-900"
                                 disabled={item.selectedQty === 0}
                               >
                                 <Minus className="w-4 h-4" />
@@ -1256,7 +1256,7 @@
                               <button
                                 type="button"
                                 onClick={() => handleSupplyChange(idx, 1)}
-                                className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 text-gray-700"
+                                className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 text-gray-900"
                                 disabled={item.selectedQty >= item.quantite_stock}
                               >
                                 <Plus className="w-4 h-4" />
@@ -1309,7 +1309,7 @@
                     {loadingTransport ? (
                       <div className="flex justify-center items-center py-4">
                         <Loader2 className="w-6 h-6 animate-spin text-green-600" />
-                        <span className="ml-2 text-gray-600">Chargement des options de transport...</span>
+                        <span className="ml-2 text-gray-900">Chargement des options de transport...</span>
                       </div>
                     ) : transportOptions.length === 0 ? (
                       <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
@@ -1321,7 +1321,7 @@
                         {transportOptions.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                             <div>
-                              <p className="font-medium text-gray-800">{item.nom}</p>
+                              <p className="font-medium text-gray-900">{item.nom}</p>
                               {item.prix > 0 ? (
                                 <p className="text-sm text-gray-900">{item.prix.toLocaleString()} GNF</p>
                               ) : (
@@ -1335,7 +1335,7 @@
                               type="button"
                               onClick={() => toggleTransport(idx)}
                               disabled={item.prix <= 0}
-                              className={`px-4 py-2 rounded-lg transition ${item.selected ? "bg-green-600 text-white hover:bg-green-700" : item.prix > 0 ? "bg-gray-200 text-gray-600 hover:bg-gray-300" : "bg-gray-100 text-gray-900 cursor-not-allowed"}`}
+                              className={`px-4 py-2 rounded-lg transition ${item.selected ? "bg-green-600 text-white hover:bg-green-700" : item.prix > 0 ? "bg-gray-200 text-gray-900 hover:bg-gray-300" : "bg-gray-100 text-gray-900 cursor-not-allowed"}`}
                             >
                               {item.selected ? "✓ Sélectionné" : item.prix > 0 ? "Ajouter" : "Indisponible"}
                             </button>
@@ -1386,7 +1386,7 @@
                     {loadingCantine ? (
                       <div className="flex justify-center items-center py-4">
                         <Loader2 className="w-6 h-6 animate-spin text-orange-600" />
-                        <span className="ml-2 text-gray-600">Chargement des menus...</span>
+                        <span className="ml-2 text-gray-900">Chargement des menus...</span>
                       </div>
                     ) : cantineOptions.length === 0 ? (
                       <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-900">
@@ -1398,7 +1398,7 @@
                         {cantineOptions.map((item, idx) => (
                           <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg border hover:shadow-md transition">
                             <div className="flex-1">
-                              <p className="font-medium text-gray-800">{item.nom}</p>
+                              <p className="font-medium text-gray-900">{item.nom}</p>
                               {item.prix_annuel > 0 ? (
                                 <p className="text-sm text-orange-600 font-semibold">{item.prix_annuel.toLocaleString()} GNF</p>
                               ) : (
@@ -1415,7 +1415,7 @@
                               type="button"
                               onClick={() => toggleCantine(idx)}
                               disabled={item.prix_annuel <= 0}
-                              className={`px-4 py-2 rounded-lg transition ${item.selected ? "bg-orange-600 text-white hover:bg-orange-700" : item.prix_annuel > 0 ? "bg-gray-200 text-gray-600 hover:bg-gray-300" : "bg-gray-100 text-gray-900 cursor-not-allowed"}`}
+                              className={`px-4 py-2 rounded-lg transition ${item.selected ? "bg-orange-600 text-white hover:bg-orange-700" : item.prix_annuel > 0 ? "bg-gray-200 text-gray-900 hover:bg-gray-300" : "bg-gray-100 text-gray-900 cursor-not-allowed"}`}
                             >
                               {item.selected ? "✓ Sélectionné" : item.prix_annuel > 0 ? "Ajouter" : "Indisponible"}
                             </button>

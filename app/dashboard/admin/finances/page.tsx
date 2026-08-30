@@ -289,7 +289,7 @@ export default function FinancesPage() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition ${activeTab === tab.id
                   ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-900 hover:text-gray-700'
+                  : 'border-transparent text-gray-900 hover:text-gray-900'
                   }`}
               >
                 {tab.label}
@@ -304,7 +304,7 @@ export default function FinancesPage() {
             <div className="space-y-6">
               {/* Évolution graphique */}
               <div>
-                <h3 className="font-semibold text-gray-700 mb-4">Évolution financière (6 derniers mois)</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">Évolution financière (6 derniers mois)</h3>
                 <div className="space-y-4">
                   {evolutionRecettes?.map((item: any, idx: number) => {
                     const pctRec = maxMontant > 0 ? (item.recettes / maxMontant) * 100 : 0;
@@ -365,7 +365,7 @@ export default function FinancesPage() {
           {/* === RECETTES === */}
           {activeTab === "recettes" && (
             <div className="space-y-6">
-              <h3 className="font-semibold text-gray-700">Répartition des recettes par catégorie</h3>
+              <h3 className="font-semibold text-gray-900">Répartition des recettes par catégorie</h3>
               <div className="space-y-3">
                 {categoriesRecettes?.length === 0 ? (
                   <p className="text-gray-900 text-sm">Aucune recette enregistrée.</p>
@@ -378,7 +378,7 @@ export default function FinancesPage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="font-medium text-gray-700">{cat.name}</span>
+                          <span className="font-medium text-gray-900">{cat.name}</span>
                           <span className="text-gray-900 font-semibold">{cat.montant.toLocaleString()} GNF ({cat.pourcentage}%)</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -392,7 +392,7 @@ export default function FinancesPage() {
 
               {/* Derniers paiements */}
               <div>
-                <h3 className="font-semibold text-gray-700 mb-3">10 dernières rentrées de caisse</h3>
+                <h3 className="font-semibold text-gray-900 mb-3">10 dernières rentrées de caisse</h3>
                 <div className="overflow-x-auto rounded-lg border">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 border-b">
@@ -476,7 +476,7 @@ export default function FinancesPage() {
                   <div key={idx} className="flex items-center gap-3 bg-red-50 rounded-lg p-3">
                     <div className="flex-1">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-700">{cat.name}</span>
+                        <span className="text-gray-900">{cat.name}</span>
                         <span className="font-semibold text-red-700">{cat.montant?.toLocaleString()} GNF</span>
                       </div>
                       <div className="w-full bg-red-100 rounded-full h-1.5">
@@ -536,7 +536,7 @@ export default function FinancesPage() {
           {/* === JOURNAL === */}
           {activeTab === "journal" && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-700">Journal de caisse (Recettes + Dépenses)</h3>
+              <h3 className="font-semibold text-gray-900">Journal de caisse (Recettes + Dépenses)</h3>
               <p className="text-sm text-gray-900">Résumé de tous les mouvements de caisse.</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-green-50 border border-green-100 rounded-xl p-4">
@@ -555,10 +555,10 @@ export default function FinancesPage() {
                 </div>
                 <div className={`${stats.solde >= 0 ? 'bg-blue-50 border-blue-100' : 'bg-gray-50 border-gray-100'} border rounded-xl p-4`}>
                   <div className="flex items-center gap-2 mb-2">
-                    <Wallet className={`w-5 h-5 ${stats.solde >= 0 ? 'text-blue-600' : 'text-gray-600'}`} />
-                    <span className={`font-medium ${stats.solde >= 0 ? 'text-blue-700' : 'text-gray-700'}`}>Solde net</span>
+                    <Wallet className={`w-5 h-5 ${stats.solde >= 0 ? 'text-blue-600' : 'text-gray-900'}`} />
+                    <span className={`font-medium ${stats.solde >= 0 ? 'text-blue-700' : 'text-gray-900'}`}>Solde net</span>
                   </div>
-                  <p className={`text-2xl font-bold ${stats.solde >= 0 ? 'text-blue-800' : 'text-gray-800'}`}>{stats.solde?.toLocaleString()} GNF</p>
+                  <p className={`text-2xl font-bold ${stats.solde >= 0 ? 'text-blue-800' : 'text-gray-900'}`}>{stats.solde?.toLocaleString()} GNF</p>
                 </div>
               </div>
               <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-100">
@@ -570,12 +570,12 @@ export default function FinancesPage() {
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="rounded-lg border p-4">
-                  <h4 className="font-semibold text-sm text-gray-700 mb-3">Personnel actif</h4>
+                  <h4 className="font-semibold text-sm text-gray-900 mb-3">Personnel actif</h4>
                   <p className="text-3xl font-bold text-gray-900">{stats.nombrePersonnel}</p>
                   <p className="text-xs text-gray-900">agents</p>
                 </div>
                 <div className="rounded-lg border p-4">
-                  <h4 className="font-semibold text-sm text-gray-700 mb-3">Élèves inscrits</h4>
+                  <h4 className="font-semibold text-sm text-gray-900 mb-3">Élèves inscrits</h4>
                   <p className="text-3xl font-bold text-gray-900">{stats.nombreEleves}</p>
                   <p className="text-xs text-gray-900">élèves</p>
                 </div>
@@ -608,7 +608,7 @@ export default function FinancesPage() {
               {/* Filtres par nombre d'enfants et barre de recherche */}
               <div className="flex flex-wrap gap-3 items-center justify-between">
                 <div className="flex items-center gap-2 text-xs font-semibold">
-                  <span className="text-gray-600">Filtrer par :</span>
+                  <span className="text-gray-900">Filtrer par :</span>
                   {[
                     { count: 2, label: "👨‍👩‍👧‍👦 2 enfants et +" },
                     { count: 3, label: "⭐ 3 enfants et +" },
@@ -620,7 +620,7 @@ export default function FinancesPage() {
                       onClick={() => setFilterMinEnfants(f.count)}
                       className={`px-3 py-1.5 rounded-lg border transition ${filterMinEnfants === f.count
                         ? "bg-indigo-600 text-white border-indigo-600 font-bold shadow-sm"
-                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                        : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
                         }`}
                     >
                       {f.label}
@@ -665,7 +665,7 @@ export default function FinancesPage() {
                             <td className="p-4 font-semibold text-black">
                               {p.prenom} {p.nom}
                             </td>
-                            <td className="p-4 text-xs text-gray-600">
+                            <td className="p-4 text-xs text-gray-900">
                               <div>{p.email}</div>
                               <div className="text-gray-900">{p.telephone}</div>
                             </td>
@@ -674,12 +674,12 @@ export default function FinancesPage() {
                                 ? 'bg-purple-100 text-purple-700 border border-purple-200'
                                 : p.nb_enfants === 2
                                   ? 'bg-blue-100 text-blue-700'
-                                  : 'bg-gray-100 text-gray-600'
+                                  : 'bg-gray-100 text-gray-900'
                                 }`}>
                                 {p.nb_enfants} {p.nb_enfants > 1 ? 'enfants' : 'enfant'}
                               </span>
                             </td>
-                            <td className="p-4 text-right font-medium text-gray-800">
+                            <td className="p-4 text-right font-medium text-gray-900">
                               {Number(p.total_a_payer).toLocaleString()} GNF
                             </td>
                             <td className="p-4 text-right font-bold text-indigo-600">
@@ -721,7 +721,7 @@ export default function FinancesPage() {
               {/* En-tête avec lien vers la nouvelle vue */}
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                  <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
                     <Receipt className="w-5 h-5 text-blue-600" />
                     Reçus par Parent
                   </h3>
@@ -747,8 +747,8 @@ export default function FinancesPage() {
                       <Users className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Nouvelle vue disponible</p>
-                      <p className="font-semibold text-gray-800">
+                      <p className="text-sm text-gray-900">Nouvelle vue disponible</p>
+                      <p className="font-semibold text-gray-900">
                         Consultez tous les reçus regroupés par parent/famille
                       </p>
                     </div>
@@ -766,7 +766,7 @@ export default function FinancesPage() {
 
               {/* Derniers reçus (aperçu) */}
               <div>
-                <h4 className="font-semibold text-gray-700 mb-3">📋 Derniers reçus émis</h4>
+                <h4 className="font-semibold text-gray-900 mb-3">📋 Derniers reçus émis</h4>
                 <div className="overflow-x-auto rounded-lg border">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50 border-b">
@@ -832,6 +832,11 @@ export default function FinancesPage() {
         <RecuPaiement
           recu={selectedRecu}
           onClose={() => setSelectedRecu(null)}
+          onDelete={() => {
+            setSelectedRecu(null);
+            fetchDashboard();
+            fetchRecusAdmin();
+          }}
         />
       )}
 
@@ -841,7 +846,7 @@ export default function FinancesPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-900">Enregistrer une sortie de caisse</h2>
-              <button onClick={() => setShowDepenseForm(false)} className="text-gray-900 hover:text-gray-600 text-2xl">&times;</button>
+              <button onClick={() => setShowDepenseForm(false)} className="text-gray-900 hover:text-gray-900 text-2xl">&times;</button>
             </div>
             <form onSubmit={handleAjoutDepense} className="p-6 space-y-4">
               <div>
@@ -910,10 +915,10 @@ export default function FinancesPage() {
                   Parent: <span className="font-semibold">{selectedParentRemise.prenom} {selectedParentRemise.nom}</span> ({selectedParentRemise.nb_enfants} enfants)
                 </p>
               </div>
-              <button onClick={() => setShowRemiseModal(false)} className="text-gray-900 hover:text-gray-600 text-2xl">&times;</button>
+              <button onClick={() => setShowRemiseModal(false)} className="text-gray-900 hover:text-gray-900 text-2xl">&times;</button>
             </div>
             <form onSubmit={handleApplyRemise} className="p-6 space-y-4">
-              <div className="bg-gray-50 p-3 rounded-lg text-xs space-y-1 text-gray-600">
+              <div className="bg-gray-50 p-3 rounded-lg text-xs space-y-1 text-gray-900">
                 <div className="flex justify-between">
                   <span>Scolarité totale :</span>
                   <span className="font-semibold text-gray-900">{Number(selectedParentRemise.total_a_payer).toLocaleString()} GNF</span>
@@ -930,7 +935,7 @@ export default function FinancesPage() {
 
               {/* Shortcuts pour le montant */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Suggestions de pourcentage</label>
+                <label className="block text-xs font-semibold text-gray-900 mb-1.5">Suggestions de pourcentage</label>
                 <div className="grid grid-cols-4 gap-2">
                   {[5, 10, 15, 20].map((pct) => {
                     const montantSuggere = Math.round((Number(selectedParentRemise.total_a_payer) * pct) / 100);
@@ -949,7 +954,7 @@ export default function FinancesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Montant de la remise (GNF) *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Montant de la remise (GNF) *</label>
                 <input
                   type="number"
                   required
@@ -968,7 +973,7 @@ export default function FinancesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Motif / Description</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Motif / Description</label>
                 <input
                   type="text"
                   value={motifRemise}

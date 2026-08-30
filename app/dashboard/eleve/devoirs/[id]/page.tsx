@@ -279,7 +279,7 @@ export default function DevoirDetailPage() {
           {devoir.description && (
             <div className="mb-6">
               <h3 className="font-semibold text-gray-900 mb-2">Instructions</h3>
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-gray-900 text-sm leading-relaxed whitespace-pre-wrap">
                 {devoir.description}
               </div>
             </div>
@@ -318,7 +318,7 @@ export default function DevoirDetailPage() {
                 {devoir.commentaire_soumission && (
                   <div className="flex-1 bg-white rounded-xl p-3 border border-green-100">
                     <p className="text-xs text-gray-900 mb-1">Commentaire de l'enseignant</p>
-                    <p className="text-sm text-gray-700">{devoir.commentaire_soumission}</p>
+                    <p className="text-sm text-gray-900">{devoir.commentaire_soumission}</p>
                   </div>
                 )}
               </div>
@@ -359,7 +359,7 @@ export default function DevoirDetailPage() {
               <div className="space-y-4">
                 {/* Upload de fichier */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Votre fichier (image ou PDF) <span className="text-red-500">*</span>
                   </label>
                   <div className="flex items-center gap-4">
@@ -376,7 +376,7 @@ export default function DevoirDetailPage() {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadingFile || submitLoading}
-                        className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition text-sm text-gray-600 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition text-sm text-gray-900 disabled:opacity-50"
                       >
                         {uploadingFile ? (
                           <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -423,7 +423,7 @@ export default function DevoirDetailPage() {
 
                 {/* Commentaire */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Votre réponse / commentaire <span className="text-gray-900 font-normal">optionnel</span>
                   </label>
                   <textarea

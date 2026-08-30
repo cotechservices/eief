@@ -187,7 +187,7 @@ export default function ComptableDashboard() {
           <div className="space-y-3">
             {recettesParMois.map((item, idx) => (
               <div key={idx}>
-                <div className="flex justify-between text-sm mb-1">
+                <div className="flex justify-between text-sm mb-1 text-gray-900">
                   <span>{item.mois}</span>
                   <span>{item.montant.toLocaleString()} GNF</span>
                 </div>
@@ -207,7 +207,7 @@ export default function ComptableDashboard() {
           <h3 className="font-semibold text-gray-900 mb-4">Répartition des recettes</h3>
           <div className="space-y-3">
             {categoriesRecettes.map((cat, idx) => (
-              <div key={idx} className="flex items-center gap-3">
+              <div key={idx} className="flex items-center gap-3 text-gray-900">
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                   <cat.icon className="w-4 h-4 text-gray-900" />
                 </div>

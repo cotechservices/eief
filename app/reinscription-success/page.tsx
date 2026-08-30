@@ -123,7 +123,7 @@ export default function RegisterSuccessPage() {
           <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
             <div className="flex justify-center items-center py-8">
               <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <span className="ml-2 text-gray-600">Chargement...</span>
+              <span className="ml-2 text-gray-900">Chargement...</span>
             </div>
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function RegisterSuccessPage() {
 
           {session?.user && (
             <div className="bg-blue-50 p-3 rounded-lg mb-4">
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-900">
                 Redirection vers votre dashboard dans {countdown} secondes...
               </p>
               <p className="text-xs text-gray-900 mt-1">

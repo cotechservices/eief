@@ -36,7 +36,7 @@ const CATEGORIES = [
   { id: "histoire", nom: "🏛️ Histoire & Géographie", color: "bg-amber-100 text-amber-700" },
   { id: "art", nom: "🎨 Art & Musique", color: "bg-pink-100 text-pink-700" },
   { id: "langues", nom: "🌍 Langues Étrangères", color: "bg-green-100 text-green-700" },
-  { id: "dictionnaires", nom: "📘 Dictionnaires & Encylopédies", color: "bg-gray-100 text-gray-700" },
+  { id: "dictionnaires", nom: "📘 Dictionnaires & Encylopédies", color: "bg-gray-100 text-gray-900" },
   { id: "bd", nom: "🎭 Bandes Dessinées", color: "bg-orange-100 text-orange-700" },
 ];
 
@@ -424,7 +424,7 @@ export default function BibliothequeAdminPage() {
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">{editingLivre ? "Modifier le livre" : "Ajouter un livre"}</h2>
-              <button onClick={() => setShowLivreForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowLivreForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -458,7 +458,7 @@ export default function BibliothequeAdminPage() {
                   ) : (
                     <div className="text-center">
                       <ImageIcon className="w-10 h-10 text-gray-900 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">Cliquez pour ajouter une image</p>
+                      <p className="text-sm text-gray-900">Cliquez pour ajouter une image</p>
                       <p className="text-xs text-gray-900">PNG, JPG, WEBP</p>
                     </div>
                   )}
@@ -536,7 +536,7 @@ export default function BibliothequeAdminPage() {
           <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Nouvel emprunt</h2>
-              <button onClick={() => setShowEmpruntForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowEmpruntForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>

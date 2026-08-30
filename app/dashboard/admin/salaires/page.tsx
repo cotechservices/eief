@@ -483,7 +483,7 @@ export default function SalairesPage() {
               {toast.type === "info" && <Clock className="w-5 h-5 text-blue-500" />}
             </div>
             <p className="text-sm font-medium flex-1">{toast.message}</p>
-            <button onClick={() => removeToast(toast.id)} className="flex-shrink-0 text-gray-900 hover:text-gray-600">
+            <button onClick={() => removeToast(toast.id)} className="flex-shrink-0 text-gray-900 hover:text-gray-900">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -623,7 +623,7 @@ export default function SalairesPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{agent.poste}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{agent.poste}</td>
                       <td className="px-6 py-4 text-right text-sm">{Number(agent.salaire_base || 0).toLocaleString()} GNF</td>
                       <td className="px-6 py-4 text-right text-sm text-green-600">
                         {primesTotal > 0 ? `+${primesTotal.toLocaleString()} GNF` : '-'}
@@ -672,7 +672,7 @@ export default function SalairesPage() {
               {filteredSalaires.length > 0 && (
                 <tfoot className="bg-gray-50 border-t">
                   <tr>
-                    <td colSpan={5} className="px-6 py-3 text-sm font-semibold text-gray-700">Total</td>
+                    <td colSpan={5} className="px-6 py-3 text-sm font-semibold text-gray-900">Total</td>
                     <td className="px-6 py-3 text-right font-bold text-gray-900">{totalMasse.toLocaleString()} GNF</td>
                     <td colSpan={3}></td>
                   </tr>
@@ -692,7 +692,7 @@ export default function SalairesPage() {
                 <h2 className="text-xl font-bold text-gray-900">Formulaire de Paie Détaillée</h2>
                 <p className="text-xs text-gray-900 mt-0.5">Saisie des primes, avances, bons, sanctions et déductions</p>
               </div>
-              <button onClick={() => setShowModal(false)} className="text-gray-900 hover:text-gray-600 text-2xl leading-none">&times;</button>
+              <button onClick={() => setShowModal(false)} className="text-gray-900 hover:text-gray-900 text-2xl leading-none">&times;</button>
             </div>
 
             <div className="p-6 space-y-6 overflow-y-auto flex-1">
@@ -713,7 +713,7 @@ export default function SalairesPage() {
                 <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">1. Rémunération de base & Primes</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Salaire de base (GNF)</label>
+                    <label className="block text-xs font-medium text-gray-900 mb-1">Salaire de base (GNF)</label>
                     <input
                       type="number"
                       value={formSalaireBase}
@@ -723,7 +723,7 @@ export default function SalairesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Prime mensuelle (GNF)</label>
+                    <label className="block text-xs font-medium text-gray-900 mb-1">Prime mensuelle (GNF)</label>
                     <input
                       type="number"
                       value={formPrimeMensuelle}
@@ -848,7 +848,7 @@ export default function SalairesPage() {
 
               {/* Mode de paiement */}
               <div className="pt-3 border-t">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Mode de paiement</label>
+                <label className="block text-xs font-medium text-gray-900 mb-1">Mode de paiement</label>
                 <select
                   value={modePaiement}
                   onChange={e => setModePaiement(e.target.value)}

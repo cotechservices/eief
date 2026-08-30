@@ -79,7 +79,7 @@ export default function CoursElevePage() {
 
       {toutesLesLecons.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
-          <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <BookOpen className="w-12 h-12 text-gray-900 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun cours disponible</h3>
           <p className="text-gray-900">Vos professeurs n'ont pas encore publié de leçons pour votre classe.</p>
         </div>
@@ -102,10 +102,10 @@ export default function CoursElevePage() {
                   </div>
                 </div>
                 {lecon.description && (
-                  <p className="text-gray-600 text-sm mt-3">{lecon.description}</p>
+                  <p className="text-gray-900 text-sm mt-3">{lecon.description}</p>
                 )}
                 {lecon.contenu && (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-700 whitespace-pre-wrap">
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-900 whitespace-pre-wrap">
                     {lecon.contenu}
                   </div>
                 )}
@@ -119,7 +119,7 @@ export default function CoursElevePage() {
                       href={lecon.fichier_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 text-sm font-medium rounded-lg text-gray-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 text-sm font-medium rounded-lg text-gray-900 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition"
                     >
                       <FileText className="w-4 h-4 text-blue-500" />
                       Document joint
@@ -131,7 +131,7 @@ export default function CoursElevePage() {
                       href={lecon.video_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 text-sm font-medium rounded-lg text-gray-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 text-sm font-medium rounded-lg text-gray-900 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition"
                     >
                       <Video className="w-4 h-4 text-red-500" />
                       Voir la vidéo

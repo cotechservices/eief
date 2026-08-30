@@ -92,7 +92,7 @@ export default function BulletinsDirecteurPage() {
       {/* Filtres (écran) */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-6 items-end print:hidden">
         <div className="flex-1 min-w-[250px]">
-          <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+          <label className="block text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
             <GraduationCap className="w-4 h-4" />
             Classe
           </label>
@@ -133,7 +133,7 @@ export default function BulletinsDirecteurPage() {
 
       {!loading && selectedClasse && bulletins.length === 0 && !error && (
         <div className="bg-white p-12 text-center rounded-2xl border border-gray-100 print:hidden">
-          <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <Users className="w-12 h-12 text-gray-900 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900">Aucun bulletin disponible</h3>
         </div>
       )}
@@ -170,7 +170,7 @@ export default function BulletinsDirecteurPage() {
               >
                 <div>
                   <h3 className="font-bold text-lg">{bulletin.eleve.nom} {bulletin.eleve.prenom}</h3>
-                  <p className="text-sm text-gray-600">Moyenne: {bulletin.moyenneGenerale.toFixed(2)}/20 - Rang: {bulletin.rang}e</p>
+                  <p className="text-sm text-gray-900">Moyenne: {bulletin.moyenneGenerale.toFixed(2)}/20 - Rang: {bulletin.rang}e</p>
                 </div>
                 {expandedBulletin === index ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </div>

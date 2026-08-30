@@ -326,7 +326,7 @@ export default function AdminCantineDashboard() {
       case 'rejete':
         return <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium">❌ Rejetée</span>;
       default:
-        return <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">{statut}</span>;
+        return <span className="bg-gray-100 text-gray-900 px-2 py-1 rounded-full text-xs font-medium">{statut}</span>;
     }
   };
 
@@ -401,20 +401,20 @@ export default function AdminCantineDashboard() {
           <div className="flex items-center justify-between">
             <div className="flex gap-6">
               <div>
-                <p className="text-xs text-gray-600">Total</p>
+                <p className="text-xs text-gray-900">Total</p>
                 <p className="text-2xl font-bold text-green-700">{stats.totalValidees}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-600">👦 Garçons</p>
+                <p className="text-xs text-gray-900">👦 Garçons</p>
                 <p className="text-xl font-bold text-blue-600">{stats.garconsValidees}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-600">👧 Filles</p>
+                <p className="text-xs text-gray-900">👧 Filles</p>
                 <p className="text-xl font-bold text-pink-600">{stats.fillesValidees}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-600">Taux</p>
+              <p className="text-xs text-gray-900">Taux</p>
               <p className="text-lg font-bold text-green-700">
                 {stats.totalInscrits > 0 ? Math.round((stats.totalValidees / stats.totalInscrits) * 100) : 0}%
               </p>
@@ -442,20 +442,20 @@ export default function AdminCantineDashboard() {
           <div className="flex items-center justify-between">
             <div className="flex gap-6">
               <div>
-                <p className="text-xs text-gray-600">Total</p>
+                <p className="text-xs text-gray-900">Total</p>
                 <p className="text-2xl font-bold text-blue-700">{stats.totalPayees}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-600">👦 Garçons</p>
+                <p className="text-xs text-gray-900">👦 Garçons</p>
                 <p className="text-xl font-bold text-blue-600">{stats.garconsPayees}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-600">👧 Filles</p>
+                <p className="text-xs text-gray-900">👧 Filles</p>
                 <p className="text-xl font-bold text-pink-600">{stats.fillesPayees}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-600">Taux paiement</p>
+              <p className="text-xs text-gray-900">Taux paiement</p>
               <p className="text-lg font-bold text-blue-700">{stats.tauxPaiement}%</p>
             </div>
           </div>
@@ -477,7 +477,7 @@ export default function AdminCantineDashboard() {
       {/* Répartition par sexe */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
             <Users className="w-4 h-4 text-blue-600" />
             Répartition par sexe
           </h3>
@@ -515,7 +515,7 @@ export default function AdminCantineDashboard() {
           </div>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
             <Utensils className="w-4 h-4 text-purple-600" />
             Menus
           </h3>
@@ -544,7 +544,7 @@ export default function AdminCantineDashboard() {
               <DollarSign className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Montant total payé</p>
+              <p className="text-sm text-gray-900">Montant total payé</p>
               <p className="text-xl font-bold text-green-700">{formatPrix(stats.montantTotalPaye)} GNF</p>
               <p className="text-xs text-gray-900">{stats.pourcentagePaye}% du total</p>
             </div>
@@ -556,7 +556,7 @@ export default function AdminCantineDashboard() {
               <Clock className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">En attente</p>
+              <p className="text-sm text-gray-900">En attente</p>
               <p className="text-xl font-bold text-yellow-700">{formatPrix(stats.montantTotalEnAttente)} GNF</p>
               <p className="text-xs text-gray-900">{stats.pourcentageEnAttente}% du total</p>
             </div>
@@ -568,7 +568,7 @@ export default function AdminCantineDashboard() {
               <X className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Non payé</p>
+              <p className="text-sm text-gray-900">Non payé</p>
               <p className="text-xl font-bold text-red-700">{formatPrix(stats.montantTotalNonPaye)} GNF</p>
               <p className="text-xs text-gray-900">{stats.pourcentageNonPaye}% du total</p>
             </div>
@@ -586,7 +586,7 @@ export default function AdminCantineDashboard() {
                 onClick={() => setActiveTab('preinscriptions')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${activeTab === 'preinscriptions'
                   ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
               >
                 <UserCheck className="w-4 h-4" />
@@ -596,7 +596,7 @@ export default function AdminCantineDashboard() {
                 onClick={() => setActiveTab('inscriptions')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${activeTab === 'inscriptions'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
               >
                 <Users className="w-4 h-4" />
@@ -606,7 +606,7 @@ export default function AdminCantineDashboard() {
                 onClick={() => setActiveTab('reinscriptions')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${activeTab === 'reinscriptions'
                   ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
               >
                 <RefreshCw className="w-4 h-4" />
@@ -620,7 +620,7 @@ export default function AdminCantineDashboard() {
           {/* Pré-inscriptions */}
           {activeTab === 'preinscriptions' && (
             <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-600 uppercase">
+              <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-900 uppercase">
                 <tr>
                   <th className="px-6 py-3">Dossier</th>
                   <th className="px-6 py-3">Élève</th>
@@ -661,7 +661,7 @@ export default function AdminCantineDashboard() {
           {/* Inscriptions */}
           {activeTab === 'inscriptions' && (
             <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-600 uppercase">
+              <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-900 uppercase">
                 <tr>
                   <th className="px-6 py-3">Matricule</th>
                   <th className="px-6 py-3">Élève</th>
@@ -706,7 +706,7 @@ export default function AdminCantineDashboard() {
           {/* Réinscriptions */}
           {activeTab === 'reinscriptions' && (
             <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-600 uppercase">
+              <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-900 uppercase">
                 <tr>
                   <th className="px-6 py-3">Dossier</th>
                   <th className="px-6 py-3">Élève</th>
@@ -762,7 +762,7 @@ export default function AdminCantineDashboard() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-600 uppercase">
+            <thead className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-900 uppercase">
               <tr>
                 <th className="px-6 py-3">Plat principal</th>
                 <th className="px-6 py-3">Accompagnement</th>
@@ -813,7 +813,7 @@ export default function AdminCantineDashboard() {
               {menus.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-gray-900">
-                    <Utensils className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <Utensils className="w-12 h-12 mx-auto mb-3 text-gray-900" />
                     <p className="font-medium">Aucun menu disponible</p>
                     <p className="text-sm mt-1">Cliquez sur "Ajouter un menu" pour commencer</p>
                   </td>
@@ -832,13 +832,13 @@ export default function AdminCantineDashboard() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingMenu ? "Modifier le menu" : "Ajouter un menu"}
               </h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Plat principal *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Plat principal *</label>
                 <input
                   required
                   type="text"
@@ -849,7 +849,7 @@ export default function AdminCantineDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Accompagnement *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Accompagnement *</label>
                 <input
                   required
                   type="text"
@@ -860,7 +860,7 @@ export default function AdminCantineDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Dessert *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Dessert *</label>
                 <input
                   required
                   type="text"
@@ -871,7 +871,7 @@ export default function AdminCantineDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prix annuel (GNF)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Prix annuel (GNF)</label>
                 <input
                   type="number"
                   min="0"
@@ -891,7 +891,7 @@ export default function AdminCantineDashboard() {
                   onChange={e => setFormData({ ...formData, regime_special: e.target.checked })}
                   className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
-                <label htmlFor="regime_special" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
+                <label htmlFor="regime_special" className="text-sm font-medium text-gray-900 select-none cursor-pointer">
                   Régime spécial disponible (végétarien, allergies...)
                 </label>
               </div>
@@ -899,7 +899,7 @@ export default function AdminCantineDashboard() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
+                  className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition"
                 >
                   Annuler
                 </button>

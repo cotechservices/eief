@@ -155,7 +155,7 @@ export default function ParentEnfantDashboard() {
       <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <AlertCircle className="w-8 h-8 text-red-500" />
       </div>
-      <h2 className="text-xl font-bold text-gray-800 mb-2">Accès refusé</h2>
+      <h2 className="text-xl font-bold text-gray-900 mb-2">Accès refusé</h2>
       <p className="text-gray-900 mb-6">{error}</p>
       <Link href="/dashboard/parent/enfants" className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition font-medium">
         <ArrowLeft className="w-4 h-4" /> Retour à mes enfants
@@ -187,7 +187,7 @@ export default function ParentEnfantDashboard() {
           <ArrowLeft className="w-4 h-4" /> Mes Enfants
         </Link>
         <span>/</span>
-        <span className="text-gray-800 font-semibold">{profil?.prenom} {profil?.nom}</span>
+        <span className="text-gray-900 font-semibold">{profil?.prenom} {profil?.nom}</span>
       </div>
 
       {/* Header enfant */}
@@ -241,7 +241,7 @@ export default function ParentEnfantDashboard() {
                 <button key={tab.id} onClick={() => loadTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-3.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-all ${activeTab === tab.id
                     ? "border-blue-600 text-blue-600 bg-white rounded-t-lg"
-                    : "border-transparent text-gray-900 hover:text-gray-700"
+                    : "border-transparent text-gray-900 hover:text-gray-900"
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -268,7 +268,7 @@ export default function ParentEnfantDashboard() {
               {activeTab === "apercu" && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <ClipboardList className="w-5 h-5 text-orange-500" /> Devoirs à rendre
                       {devoirsUrgents.length > 0 && <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full">{devoirsUrgents.length}</span>}
                     </h3>
@@ -282,7 +282,7 @@ export default function ParentEnfantDashboard() {
                         {devoirsUrgents.slice(0, 3).map(d => (
                           <div key={d.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                             <div>
-                              <p className="font-semibold text-gray-800 text-sm">{d.titre}</p>
+                              <p className="font-semibold text-gray-900 text-sm">{d.titre}</p>
                               <p className="text-xs text-gray-900 mt-0.5">
                                 <Calendar className="w-3 h-3 inline mr-1" />
                                 {new Date(d.date_limite).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
@@ -302,7 +302,7 @@ export default function ParentEnfantDashboard() {
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <Award className="w-5 h-5 text-yellow-500" /> Notes par matière
                     </h3>
                     {matieres.length === 0 ? (
@@ -315,7 +315,7 @@ export default function ParentEnfantDashboard() {
                           <div key={m.matiere} className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
                             <div className="flex items-start justify-between">
                               <div>
-                                <p className="font-semibold text-gray-800 text-sm">{m.matiere}</p>
+                                <p className="font-semibold text-gray-900 text-sm">{m.matiere}</p>
                                 <p className="text-xs text-gray-900 mt-0.5">{m.enseignant}</p>
                               </div>
                               <div className="text-right">
@@ -339,7 +339,7 @@ export default function ParentEnfantDashboard() {
               {activeTab === "devoirs" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-gray-800 text-lg">{devoirs.length} devoir{devoirs.length > 1 ? "s" : ""}</h3>
+                    <h3 className="font-bold text-gray-900 text-lg">{devoirs.length} devoir{devoirs.length > 1 ? "s" : ""}</h3>
                     <div className="flex gap-2 text-xs">
                       <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full">{devoirsUrgents.length} à faire</span>
                       <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">{devoirsRendus.length} rendus</span>
@@ -347,7 +347,7 @@ export default function ParentEnfantDashboard() {
                   </div>
                   {devoirs.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
-                      <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <ClipboardList className="w-12 h-12 text-gray-900 mx-auto mb-3" />
                       <p className="text-gray-900 font-medium">Aucun devoir assigné</p>
                     </div>
                   ) : (
@@ -357,7 +357,7 @@ export default function ParentEnfantDashboard() {
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-gray-800">{d.titre}</p>
+                                <p className="font-semibold text-gray-900">{d.titre}</p>
                                 <StatutDevoir statut={d.statut} jours={d.joursRestants} />
                                 {d.note_soumission !== null && d.note_soumission !== undefined && (
                                   <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold">Note : {d.note_soumission}/20</span>
@@ -390,7 +390,7 @@ export default function ParentEnfantDashboard() {
               {activeTab === "notes" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-gray-800 text-lg">Notes & Moyennes</h3>
+                    <h3 className="font-bold text-gray-900 text-lg">Notes & Moyennes</h3>
                     {moyenneGenerale > 0 && (
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-2xl text-blue-700">{moyenneGenerale}</span>
@@ -401,7 +401,7 @@ export default function ParentEnfantDashboard() {
                   </div>
                   {matieres.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
-                      <Award className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <Award className="w-12 h-12 text-gray-900 mx-auto mb-3" />
                       <p className="text-gray-900 font-medium">Aucune note disponible</p>
                     </div>
                   ) : (
@@ -415,7 +415,7 @@ export default function ParentEnfantDashboard() {
                                 {m.moyenne.toFixed(1)}
                               </div>
                               <div>
-                                <p className="font-semibold text-gray-800">{m.matiere}</p>
+                                <p className="font-semibold text-gray-900">{m.matiere}</p>
                                 <p className="text-xs text-gray-900">{m.enseignant} · {m.notes.length} note{m.notes.length > 1 ? "s" : ""}</p>
                               </div>
                             </div>
@@ -452,10 +452,10 @@ export default function ParentEnfantDashboard() {
               {/* ═══ EXAMENS ═══ */}
               {activeTab === "examens" && (
                 <div className="space-y-4">
-                  <h3 className="font-bold text-gray-800 text-lg">Évaluations assignées</h3>
+                  <h3 className="font-bold text-gray-900 text-lg">Évaluations assignées</h3>
                   {examens.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
-                      <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <FileText className="w-12 h-12 text-gray-900 mx-auto mb-3" />
                       <p className="text-gray-900 font-medium">Aucune évaluation disponible</p>
                     </div>
                   ) : (
@@ -465,7 +465,7 @@ export default function ParentEnfantDashboard() {
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-gray-800">{ex.titre}</p>
+                                <p className="font-semibold text-gray-900">{ex.titre}</p>
                                 {ex.deja_passe
                                   ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Passé</span>
                                   : <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" /> À passer</span>
@@ -495,10 +495,10 @@ export default function ParentEnfantDashboard() {
               {/* ═══ COURS ═══ */}
               {activeTab === "cours" && (
                 <div className="space-y-4">
-                  <h3 className="font-bold text-gray-800 text-lg">Cours & Leçons</h3>
+                  <h3 className="font-bold text-gray-900 text-lg">Cours & Leçons</h3>
                   {cours.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
-                      <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <BookOpen className="w-12 h-12 text-gray-900 mx-auto mb-3" />
                       <p className="text-gray-900 font-medium">Aucun cours disponible</p>
                     </div>
                   ) : (
@@ -506,14 +506,14 @@ export default function ParentEnfantDashboard() {
                       {cours.map((c, ci) => (
                         <div key={ci} className="border border-gray-100 rounded-xl overflow-hidden">
                           <div className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-100">
-                            <p className="font-bold text-gray-800">{c.matiere}</p>
+                            <p className="font-bold text-gray-900">{c.matiere}</p>
                             <p className="text-xs text-gray-900 mt-0.5">{c.enseignant} · {c.lecons.length} leçon{c.lecons.length > 1 ? "s" : ""}</p>
                           </div>
                           <div className="divide-y divide-gray-50">
                             {c.lecons.map(l => (
                               <div key={l.id} className="p-4 flex items-start justify-between gap-3 hover:bg-gray-50 transition">
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-gray-800 text-sm">{l.titre}</p>
+                                  <p className="font-medium text-gray-900 text-sm">{l.titre}</p>
                                   {l.description && <p className="text-xs text-gray-900 mt-0.5 line-clamp-2">{l.description}</p>}
                                   <p className="text-xs text-gray-900 mt-1"><Calendar className="w-3 h-3 inline mr-1" />{new Date(l.date_publication).toLocaleDateString("fr-FR")}</p>
                                 </div>
@@ -545,7 +545,7 @@ export default function ParentEnfantDashboard() {
               {activeTab === "bulletin" && (
                 <div className="space-y-5">
                   <div className="flex items-center justify-between flex-wrap gap-3">
-                    <h3 className="font-bold text-gray-800 text-lg">Bulletin de Notes</h3>
+                    <h3 className="font-bold text-gray-900 text-lg">Bulletin de Notes</h3>
                     {bulletin && (
                       <div className="flex items-center gap-3">
                         <div className="text-center">
@@ -558,7 +558,7 @@ export default function ParentEnfantDashboard() {
                   </div>
                   {!bulletin || bulletin.lignes.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
-                      <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <GraduationCap className="w-12 h-12 text-gray-900 mx-auto mb-3" />
                       <p className="text-gray-900 font-medium">Bulletin non disponible</p>
                     </div>
                   ) : (
@@ -566,21 +566,21 @@ export default function ParentEnfantDashboard() {
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wide">Matière</th>
-                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wide">Coeff.</th>
-                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wide">Notes</th>
-                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wide">Moyenne</th>
-                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wide">Appréciation</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">Matière</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase tracking-wide">Coeff.</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase tracking-wide">Notes</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase tracking-wide">Moyenne</th>
+                            <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase tracking-wide">Appréciation</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                           {bulletin.lignes.map((l, i) => (
                             <tr key={i} className="hover:bg-blue-50/30 transition">
                               <td className="px-4 py-3">
-                                <p className="font-semibold text-gray-800">{l.matiere}</p>
+                                <p className="font-semibold text-gray-900">{l.matiere}</p>
                                 <p className="text-xs text-gray-900">{l.enseignant}</p>
                               </td>
-                              <td className="px-4 py-3 text-center text-gray-600">{l.coefficient}</td>
+                              <td className="px-4 py-3 text-center text-gray-900">{l.coefficient}</td>
                               <td className="px-4 py-3 text-center text-gray-900 text-xs">{l.nbNotes}</td>
                               <td className="px-4 py-3 text-center">
                                 <span className={`font-extrabold text-lg ${l.moyenne >= 10 ? "text-green-600" : "text-red-600"}`}>{l.moyenne}</span>
@@ -610,12 +610,12 @@ export default function ParentEnfantDashboard() {
               {/* ═══ FINANCES ═══ */}
               {activeTab === "finances" && (
                 <div className="space-y-5">
-                  <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                  <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-blue-600" /> Situation financière
                   </h3>
                   {!frais ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
-                      <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <CreditCard className="w-12 h-12 text-gray-900 mx-auto mb-3" />
                       <p className="text-gray-900 font-medium">Aucune donnée financière</p>
                     </div>
                   ) : (
@@ -623,7 +623,7 @@ export default function ParentEnfantDashboard() {
                       {/* Barre de progression */}
                       <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
                         <div className="flex justify-between items-center mb-3">
-                          <span className="font-semibold text-gray-700">Progression du paiement</span>
+                          <span className="font-semibold text-gray-900">Progression du paiement</span>
                           <span className={`text-sm font-bold px-3 py-1 rounded-full ${pctPaye >= 100 ? "bg-green-100 text-green-700" : pctPaye >= 50 ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}`}>
                             {pctPaye}% payé
                           </span>
@@ -637,7 +637,7 @@ export default function ParentEnfantDashboard() {
                         <div className="grid grid-cols-3 gap-4 mt-4">
                           <div className="text-center">
                             <p className="text-xs text-gray-900">Total</p>
-                            <p className="font-bold text-gray-800 text-sm">{Number(frais.total).toLocaleString()} GNF</p>
+                            <p className="font-bold text-gray-900 text-sm">{Number(frais.total).toLocaleString()} GNF</p>
                           </div>
                           <div className="text-center border-x border-gray-100">
                             <p className="text-xs text-gray-900">Payé</p>
@@ -669,7 +669,7 @@ export default function ParentEnfantDashboard() {
                               </div>
                               <div>
                                 <p className="text-xs text-gray-900">{item.label}</p>
-                                <p className="font-bold text-gray-800 text-sm">{Number(item.value).toLocaleString()} GNF</p>
+                                <p className="font-bold text-gray-900 text-sm">{Number(item.value).toLocaleString()} GNF</p>
                               </div>
                             </div>
                           );

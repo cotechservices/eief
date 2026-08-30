@@ -751,7 +751,7 @@ export default function AdminParentsPage() {
 
                 {filteredParents.length === 0 && (
                     <div className="text-center py-12">
-                        <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <Users className="w-12 h-12 text-gray-900 mx-auto mb-4" />
                         <p className="text-gray-900">Aucun parent trouvé</p>
                         {searchTerm && (
                             <p className="text-sm text-gray-900 mt-1">
@@ -885,7 +885,7 @@ export default function AdminParentsPage() {
 
                                     {parentDetail.enfants.length === 0 ? (
                                         <div className="text-center py-8 bg-gray-50 rounded-lg">
-                                            <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                                            <Users className="w-12 h-12 text-gray-900 mx-auto mb-2" />
                                             <p className="text-gray-900">Aucun enfant associé à ce parent</p>
                                         </div>
                                     ) : (
@@ -995,7 +995,7 @@ export default function AdminParentsPage() {
                                                         <p className="text-sm text-gray-900">{preins.classe} • {preins.niveau}</p>
                                                     </div>
                                                     <div className="flex items-center gap-3">
-                                                        <span className="text-sm text-gray-600">
+                                                        <span className="text-sm text-gray-900">
                                                             {preins.montant_total_plan?.toLocaleString() || 0} GNF
                                                         </span>
                                                         <span className={`px-2 py-1 rounded-full text-xs ${preins.statut === 'en_attente' ? 'bg-yellow-100 text-yellow-700' :
@@ -1049,20 +1049,20 @@ export default function AdminParentsPage() {
                         <div className="flex border-b px-4 mt-2">
                             <button
                                 onClick={() => setActiveTab('eleve')}
-                                className={`px-4 py-2 font-medium text-sm border-b-2 transition ${activeTab === 'eleve' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-900 hover:text-gray-700'}`}
+                                className={`px-4 py-2 font-medium text-sm border-b-2 transition ${activeTab === 'eleve' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-900 hover:text-gray-900'}`}
                             >
                                 Informations Élève
                             </button>
                             <button
                                 onClick={() => setActiveTab('parent')}
-                                className={`px-4 py-2 font-medium text-sm border-b-2 transition ${activeTab === 'parent' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-900 hover:text-gray-700'}`}
+                                className={`px-4 py-2 font-medium text-sm border-b-2 transition ${activeTab === 'parent' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-900 hover:text-gray-900'}`}
                             >
                                 Informations Parent
                             </button>
                             {!eleveToEdit.cantine_inscrit && (
                                 <button
                                     onClick={() => setActiveTab('cantine')}
-                                    className={`px-4 py-2 font-medium text-sm border-b-2 transition ${activeTab === 'cantine' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-900 hover:text-gray-700'}`}
+                                    className={`px-4 py-2 font-medium text-sm border-b-2 transition ${activeTab === 'cantine' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-900 hover:text-gray-900'}`}
                                 >
                                     Cantine
                                 </button>
@@ -1070,7 +1070,7 @@ export default function AdminParentsPage() {
                             {!eleveToEdit.transport_inscrit && (
                                 <button
                                     onClick={() => setActiveTab('transport')}
-                                    className={`px-4 py-2 font-medium text-sm border-b-2 transition ${activeTab === 'transport' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-900 hover:text-gray-700'}`}
+                                    className={`px-4 py-2 font-medium text-sm border-b-2 transition ${activeTab === 'transport' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-900 hover:text-gray-900'}`}
                                 >
                                     Transport
                                 </button>
@@ -1083,35 +1083,35 @@ export default function AdminParentsPage() {
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Nom</label>
                                             <input type="text" value={editEleveData.nom} onChange={e => setEditEleveData({ ...editEleveData, nom: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Prénom</label>
                                             <input type="text" value={editEleveData.prenom} onChange={e => setEditEleveData({ ...editEleveData, prenom: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Sexe</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Sexe</label>
                                             <select value={editEleveData.sexe} onChange={e => setEditEleveData({ ...editEleveData, sexe: e.target.value })} className="w-full border rounded-lg p-2 bg-white">
                                                 <option value="M">Garçon</option>
                                                 <option value="F">Fille</option>
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Date de naissance</label>
                                             <input type="date" value={editEleveData.date_naissance} onChange={e => setEditEleveData({ ...editEleveData, date_naissance: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Lieu de naissance</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Lieu de naissance</label>
                                             <input type="text" value={editEleveData.lieu_naissance} onChange={e => setEditEleveData({ ...editEleveData, lieu_naissance: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Matricule</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Matricule</label>
                                             <input type="text" value={editEleveData.matricule} onChange={e => setEditEleveData({ ...editEleveData, matricule: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                     </div>
                                     <div className="mt-6 pt-4 border-t border-gray-200">
-                                        <h4 className="font-semibold text-sm mb-3 text-gray-700">Documents et Photo</h4>
+                                        <h4 className="font-semibold text-sm mb-3 text-gray-900">Documents et Photo</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div className="border border-dashed rounded-lg p-4 text-center bg-gray-50 flex flex-col items-center justify-center">
                                                 {editEleveData.photo_url ? (
@@ -1183,47 +1183,47 @@ export default function AdminParentsPage() {
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Nom</label>
                                             <input type="text" value={editParentData.nom} onChange={e => setEditParentData({ ...editParentData, nom: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Prénom</label>
                                             <input type="text" value={editParentData.prenom} onChange={e => setEditParentData({ ...editParentData, prenom: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Téléphone</label>
                                             <input type="text" value={editParentData.telephone} onChange={e => setEditParentData({ ...editParentData, telephone: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Email</label>
                                             <input type="email" value={editParentData.email} onChange={e => setEditParentData({ ...editParentData, email: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div className="col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Profession</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Profession</label>
                                             <input type="text" value={editParentData.profession} onChange={e => setEditParentData({ ...editParentData, profession: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div className="col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Adresse</label>
                                             <input type="text" value={editParentData.adresse} onChange={e => setEditParentData({ ...editParentData, adresse: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                     </div>
                                     <div className="mt-4 pt-4 border-t border-gray-200">
-                                        <h4 className="font-semibold text-sm mb-2 text-gray-700">Informations de la mère</h4>
+                                        <h4 className="font-semibold text-sm mb-2 text-gray-900">Informations de la mère</h4>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-1">Prénom</label>
+                                                <label className="block text-xs font-medium text-gray-900 mb-1">Prénom</label>
                                                 <input type="text" value={editParentData.situation_matrimoniale?.merePrenom || ""} onChange={e => setEditParentData({ ...editParentData, situation_matrimoniale: { ...editParentData.situation_matrimoniale, merePrenom: e.target.value } })} className="w-full border rounded-lg p-2 text-sm bg-white" />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-1">Nom</label>
+                                                <label className="block text-xs font-medium text-gray-900 mb-1">Nom</label>
                                                 <input type="text" value={editParentData.situation_matrimoniale?.mereNom || ""} onChange={e => setEditParentData({ ...editParentData, situation_matrimoniale: { ...editParentData.situation_matrimoniale, mereNom: e.target.value } })} className="w-full border rounded-lg p-2 text-sm bg-white" />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-1">Téléphone</label>
+                                                <label className="block text-xs font-medium text-gray-900 mb-1">Téléphone</label>
                                                 <input type="text" value={editParentData.situation_matrimoniale?.merePhone || ""} onChange={e => setEditParentData({ ...editParentData, situation_matrimoniale: { ...editParentData.situation_matrimoniale, merePhone: e.target.value } })} className="w-full border rounded-lg p-2 text-sm bg-white" />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-1">Profession</label>
+                                                <label className="block text-xs font-medium text-gray-900 mb-1">Profession</label>
                                                 <input type="text" value={editParentData.situation_matrimoniale?.mereProfession || ""} onChange={e => setEditParentData({ ...editParentData, situation_matrimoniale: { ...editParentData.situation_matrimoniale, mereProfession: e.target.value } })} className="w-full border rounded-lg p-2 text-sm bg-white" />
                                             </div>
                                         </div>
@@ -1265,7 +1265,7 @@ export default function AdminParentsPage() {
                                     {cantineData.inscrire && (
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="block text-sm font-medium text-gray-900 mb-1">
                                                     Montant Mensuel (GNF)
                                                 </label>
                                                 <div className="flex items-center gap-2">
@@ -1282,13 +1282,13 @@ export default function AdminParentsPage() {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-1">
+                                                <p className="text-xs text-gray-900 mt-1">
                                                     {cantineData.montantAuto ? ' Prix récupéré automatiquement' : ' Modifiable manuellement'}
                                                 </p>
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="block text-sm font-medium text-gray-900 mb-1">
                                                     Nombre de mois
                                                 </label>
                                                 <div className="flex items-center gap-2">
@@ -1326,22 +1326,22 @@ export default function AdminParentsPage() {
                                                         +
                                                     </button>
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-1">
+                                                <p className="text-xs text-gray-900 mt-1">
                                                     {cantineData.mois === 0 ? '🚫 Non abonné' : `De 1 à 9 mois (${cantineData.mois}/9)`}
                                                 </p>
                                             </div>
 
                                             <div className="col-span-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                                 {cantineData.mois === 0 ? (
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-sm text-gray-900">
                                                         Aucun abonnement sélectionné (0 mois)
                                                     </p>
                                                 ) : (
-                                                    <p className="text-sm text-gray-600">
+                                                    <p className="text-sm text-gray-900">
                                                         Total à payer : <span className="font-bold text-gray-900 text-lg">
                                                             {(cantineData.montantMensuel * cantineData.mois).toLocaleString()} GNF
                                                         </span>
-                                                        <span className="text-xs text-gray-500 ml-2">
+                                                        <span className="text-xs text-gray-900 ml-2">
                                                             ({cantineData.mois} mois × {cantineData.montantMensuel.toLocaleString()} GNF)
                                                         </span>
                                                     </p>
@@ -1398,7 +1398,7 @@ export default function AdminParentsPage() {
                                     {transportData.inscrire && (
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Ligne de Transport</label>
+                                                <label className="block text-sm font-medium text-gray-900 mb-1">Ligne de Transport</label>
                                                 <select
                                                     value={transportData.ligneId}
                                                     onChange={e => {
@@ -1436,7 +1436,7 @@ export default function AdminParentsPage() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="block text-sm font-medium text-gray-900 mb-1">
                                                     Montant Mensuel (GNF)
                                                 </label>
                                                 <div className="flex items-center gap-2">
@@ -1457,12 +1457,12 @@ export default function AdminParentsPage() {
                                                         </span>
                                                     )}
                                                     {!transportData.ligneId && (
-                                                        <span className="text-xs text-gray-500 whitespace-nowrap font-medium">
+                                                        <span className="text-xs text-gray-900 whitespace-nowrap font-medium">
                                                             Aucune ligne
                                                         </span>
                                                     )}
                                                     {transportData.mois === 0 && transportData.ligneId && (
-                                                        <span className="text-xs text-gray-500 whitespace-nowrap font-medium">
+                                                        <span className="text-xs text-gray-900 whitespace-nowrap font-medium">
                                                             Non abonné
                                                         </span>
                                                     )}
@@ -1479,7 +1479,7 @@ export default function AdminParentsPage() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                <label className="block text-sm font-medium text-gray-900 mb-1">
                                                     Nombre de mois
                                                 </label>
                                                 <div className="flex items-center gap-2">
@@ -1495,8 +1495,8 @@ export default function AdminParentsPage() {
                                                             }
                                                         }}
                                                         className={`w-8 h-8 rounded-full flex items-center justify-center transition ${transportData.ligneId && transportData.mois > 0
-                                                                ? 'bg-gray-200 hover:bg-gray-300 text-black'
-                                                                : 'bg-gray-100 text-gray-900 cursor-not-allowed'
+                                                            ? 'bg-gray-200 hover:bg-gray-300 text-black'
+                                                            : 'bg-gray-100 text-gray-900 cursor-not-allowed'
                                                             }`}
                                                         disabled={!transportData.ligneId || transportData.mois <= 0}
                                                     >
@@ -1533,15 +1533,15 @@ export default function AdminParentsPage() {
                                                             }
                                                         }}
                                                         className={`w-8 h-8 rounded-full flex items-center justify-center transition ${transportData.ligneId && transportData.mois < 9
-                                                                ? 'bg-gray-200 hover:bg-gray-300 text-black'
-                                                                : 'bg-gray-100 text-gray-900 cursor-not-allowed'
+                                                            ? 'bg-gray-200 hover:bg-gray-300 text-black'
+                                                            : 'bg-gray-100 text-gray-900 cursor-not-allowed'
                                                             }`}
                                                         disabled={!transportData.ligneId || transportData.mois >= 9}
                                                     >
                                                         +
                                                     </button>
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-1">
+                                                <p className="text-xs text-gray-900 mt-1">
                                                     {!transportData.ligneId ? 'Sélectionnez une ligne' :
                                                         transportData.mois === 0 ? '🚫 Non abonné' : `De 1 à 9 mois (${transportData.mois}/9)`}
                                                 </p>
@@ -1549,19 +1549,19 @@ export default function AdminParentsPage() {
 
                                             <div className="col-span-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                                 {!transportData.ligneId ? (
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-sm text-gray-900">
                                                         ⚠️ Veuillez sélectionner une ligne de transport
                                                     </p>
                                                 ) : transportData.mois === 0 ? (
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-sm text-gray-900">
                                                         ⚠️ Aucun abonnement sélectionné (0 mois)
                                                     </p>
                                                 ) : (
-                                                    <p className="text-sm text-gray-600">
+                                                    <p className="text-sm text-gray-900">
                                                         Total à payer : <span className="font-bold text-gray-900 text-lg">
                                                             {(transportData.montantMensuel * transportData.mois).toLocaleString()} GNF
                                                         </span>
-                                                        <span className="text-xs text-gray-500 ml-2">
+                                                        <span className="text-xs text-gray-900 ml-2">
                                                             ({transportData.mois} mois × {transportData.montantMensuel.toLocaleString()} GNF)
                                                         </span>
                                                     </p>
@@ -1574,7 +1574,7 @@ export default function AdminParentsPage() {
                         </div>
 
                         <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
-                            <button onClick={closeEditEleveModal} className="px-4 py-2 text-gray-700 border rounded-lg hover:bg-gray-100 transition">
+                            <button onClick={closeEditEleveModal} className="px-4 py-2 text-gray-900 border rounded-lg hover:bg-gray-100 transition">
                                 Annuler
                             </button>
                             <button

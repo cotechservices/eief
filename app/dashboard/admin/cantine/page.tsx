@@ -462,7 +462,7 @@ export default function CantinePage() {
               <DollarSign className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Montant total payé</p>
+              <p className="text-sm text-gray-900">Montant total payé</p>
               <p className="text-xl font-bold text-green-700">
                 {paymentStats.montantTotalPaye.toLocaleString()} GNF
               </p>
@@ -476,7 +476,7 @@ export default function CantinePage() {
               <Clock className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">En attente</p>
+              <p className="text-sm text-gray-900">En attente</p>
               <p className="text-xl font-bold text-yellow-700">
                 {paymentStats.montantTotalEnAttente.toLocaleString()} GNF
               </p>
@@ -490,7 +490,7 @@ export default function CantinePage() {
               <X className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Non payé</p>
+              <p className="text-sm text-gray-900">Non payé</p>
               <p className="text-xl font-bold text-red-700">
                 {paymentStats.montantTotalNonPaye.toLocaleString()} GNF
               </p>
@@ -504,7 +504,7 @@ export default function CantinePage() {
               <PieChart className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Taux de paiement</p>
+              <p className="text-sm text-gray-900">Taux de paiement</p>
               <p className="text-2xl font-bold text-indigo-700">{paymentStats.tauxPaiement}%</p>
               <p className="text-xs text-gray-900">Global</p>
             </div>
@@ -520,7 +520,7 @@ export default function CantinePage() {
               onClick={() => setActiveTab('menus')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${activeTab === 'menus'
                 ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-900 hover:text-gray-700'
+                : 'border-transparent text-gray-900 hover:text-gray-900'
                 }`}
             >
               <Utensils className="w-4 h-4 inline mr-2" />
@@ -530,7 +530,7 @@ export default function CantinePage() {
               onClick={() => setActiveTab('inscriptions')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${activeTab === 'inscriptions'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-900 hover:text-gray-700'
+                : 'border-transparent text-gray-900 hover:text-gray-900'
                 }`}
             >
               <Users className="w-4 h-4 inline mr-2" />
@@ -540,7 +540,7 @@ export default function CantinePage() {
               onClick={() => setActiveTab('preinscriptions')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${activeTab === 'preinscriptions'
                 ? 'border-purple-600 text-purple-600'
-                : 'border-transparent text-gray-900 hover:text-gray-700'
+                : 'border-transparent text-gray-900 hover:text-gray-900'
                 }`}
             >
               <ClipboardList className="w-4 h-4 inline mr-2" />
@@ -550,7 +550,7 @@ export default function CantinePage() {
               onClick={() => setActiveTab('reinscriptions')}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${activeTab === 'reinscriptions'
                 ? 'border-orange-600 text-orange-600'
-                : 'border-transparent text-gray-900 hover:text-gray-700'
+                : 'border-transparent text-gray-900 hover:text-gray-900'
                 }`}
             >
               <RefreshCw className="w-4 h-4 inline mr-2" />
@@ -591,8 +591,8 @@ export default function CantinePage() {
                   {menusFiltres.map((m) => (
                     <tr key={m.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-blue-900">{m.plat}</td>
-                      <td className="px-6 py-4 text-gray-600">{m.accompagnement || '-'}</td>
-                      <td className="px-6 py-4 text-gray-600">{m.dessert || '-'}</td>
+                      <td className="px-6 py-4 text-gray-900">{m.accompagnement || '-'}</td>
+                      <td className="px-6 py-4 text-gray-900">{m.dessert || '-'}</td>
                       <td className="px-6 py-4 text-purple-600 font-medium">
                         {m.prix_mensuel ? `${m.prix_mensuel.toLocaleString()} GNF` : "—"}
                       </td>
@@ -797,7 +797,7 @@ export default function CantinePage() {
                 <UserPlus className="w-5 h-5 text-green-600" />
                 Inscription à la cantine
               </h2>
-              <button onClick={() => setShowInscriptionModal(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowInscriptionModal(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -805,7 +805,7 @@ export default function CantinePage() {
             <div className="p-6 space-y-6">
               {/* Recherche élève */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Élève *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Élève *</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
                   <input
@@ -851,7 +851,7 @@ export default function CantinePage() {
 
               {/* Nombre de mois */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de mois (sur 9 mois scolaires)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Nombre de mois (sur 9 mois scolaires)</label>
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
@@ -881,7 +881,7 @@ export default function CantinePage() {
 
               {/* Prix mensuel */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prix mensuel (GNF)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Prix mensuel (GNF)</label>
                 <input
                   type="number"
                   value={prixMensuel}
@@ -894,18 +894,18 @@ export default function CantinePage() {
 
               {/* Récapitulatif */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
-                <h3 className="font-semibold text-gray-700 mb-3">Récapitulatif</h3>
+                <h3 className="font-semibold text-gray-900 mb-3">Récapitulatif</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Prix mensuel</span>
+                    <span className="text-gray-900">Prix mensuel</span>
                     <span className="font-medium">{prixMensuel.toLocaleString()} GNF</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Nombre de mois</span>
+                    <span className="text-gray-900">Nombre de mois</span>
                     <span className="font-medium">{nombreMois} mois</span>
                   </div>
                   <div className="border-t border-blue-200 pt-2 flex justify-between text-lg font-bold">
-                    <span className="text-gray-700">Total à payer</span>
+                    <span className="text-gray-900">Total à payer</span>
                     <span className="text-green-700">{totalAPayer.toLocaleString()} GNF</span>
                   </div>
                 </div>
@@ -916,7 +916,7 @@ export default function CantinePage() {
                 <button
                   type="button"
                   onClick={() => setShowInscriptionModal(false)}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition"
                 >
                   Annuler
                 </button>
@@ -942,13 +942,13 @@ export default function CantinePage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingMenu ? "Modifier le menu" : "Ajouter un menu"}
               </h2>
-              <button onClick={() => setShowMenuForm(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowMenuForm(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSubmitMenu} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Plat principal *</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Plat principal *</label>
                 <input
                   required
                   type="text"
@@ -959,7 +959,7 @@ export default function CantinePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Accompagnement</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Accompagnement</label>
                 <input
                   type="text"
                   placeholder="Ex: Frites ou Salade"
@@ -969,7 +969,7 @@ export default function CantinePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Dessert</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Dessert</label>
                 <input
                   type="text"
                   placeholder="Ex: Yaourt ou Fruit"
@@ -979,7 +979,7 @@ export default function CantinePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prix mensuel (GNF)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Prix mensuel (GNF)</label>
                 <input
                   type="number"
                   min="0"
@@ -991,7 +991,7 @@ export default function CantinePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prix annuel (GNF)</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Prix annuel (GNF)</label>
                 <input
                   type="number"
                   min="0"
@@ -1010,7 +1010,7 @@ export default function CantinePage() {
                   onChange={e => setMenuForm({ ...menuForm, regime_special: e.target.checked })}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="regime_special" className="text-sm font-medium text-gray-700">
+                <label htmlFor="regime_special" className="text-sm font-medium text-gray-900">
                   Régime spécial disponible
                 </label>
               </div>
@@ -1018,7 +1018,7 @@ export default function CantinePage() {
                 <button
                   type="button"
                   onClick={() => setShowMenuForm(false)}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition"
                 >
                   Annuler
                 </button>
@@ -1044,18 +1044,18 @@ export default function CantinePage() {
                 <Pencil className="w-5 h-5 text-blue-600" />
                 Modifier l'inscription
               </h2>
-              <button onClick={() => setShowEditModal(false)} className="text-gray-900 hover:text-gray-600">
+              <button onClick={() => setShowEditModal(false)} className="text-gray-900 hover:text-gray-900">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div className="p-3 bg-blue-50 rounded-lg">
                 <p className="font-medium">{editingInscription.eleve_prenom} {editingInscription.eleve_nom}</p>
-                <p className="text-sm text-gray-600">{editingInscription.classe_nom}</p>
+                <p className="text-sm text-gray-900">{editingInscription.classe_nom}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de mois</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Nombre de mois</label>
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
@@ -1081,7 +1081,7 @@ export default function CantinePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Prix mensuel</label>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Prix mensuel</label>
                 <input
                   type="number"
                   value={prixMensuel}
@@ -1094,7 +1094,7 @@ export default function CantinePage() {
 
               <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Total</span>
+                  <span className="text-gray-900">Total</span>
                   <span className="font-bold text-green-700">{totalAPayer.toLocaleString()} GNF</span>
                 </div>
               </div>
@@ -1103,7 +1103,7 @@ export default function CantinePage() {
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition"
                 >
                   Annuler
                 </button>

@@ -71,7 +71,7 @@ export default function ExamensPage() {
       {/* Examens à passer */}
       {aFaire.length > 0 && (
         <div>
-          <h2 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <Clock className="w-4 h-4 text-orange-500" />
             À passer ({aFaire.length})
           </h2>
@@ -122,7 +122,7 @@ export default function ExamensPage() {
       {/* Examens passés */}
       {passes.length > 0 && (
         <div>
-          <h2 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-500" />
             Examens terminés ({passes.length})
           </h2>
@@ -149,7 +149,7 @@ export default function ExamensPage() {
                         </span>
                       )}
                     </div>
-                    <h3 className="font-medium text-gray-700">{examen.titre}</h3>
+                    <h3 className="font-medium text-gray-900">{examen.titre}</h3>
                     <p className="text-xs text-gray-900 mt-1">{examen.nb_questions} questions</p>
                   </div>
                   <span className="text-xs text-gray-900 flex items-center gap-1 flex-shrink-0">

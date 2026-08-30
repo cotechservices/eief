@@ -251,7 +251,7 @@ export default function TransportRapportsPage() {
           </button>
           <button
             onClick={fetchRapports}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center gap-2"
+            className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center gap-2"
           >
             🔄 Rafraîchir
           </button>
@@ -283,7 +283,7 @@ export default function TransportRapportsPage() {
           <p className={`text-2xl font-bold ${stats.tauxRemplissage > 80 ? 'text-green-600' : stats.tauxRemplissage > 50 ? 'text-orange-600' : 'text-red-600'}`}>
             {stats.tauxRemplissage}%
           </p>
-          <TrendingUp className="w-4 h-4 text-gray-300 mt-1" />
+          <TrendingUp className="w-4 h-4 text-gray-900 mt-1" />
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <p className="text-gray-900 text-xs">Trajets</p>
@@ -303,7 +303,7 @@ export default function TransportRapportsPage() {
           onClick={() => setViewType('global')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'global'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <BarChart3 className="w-4 h-4 inline mr-2" />
@@ -313,7 +313,7 @@ export default function TransportRapportsPage() {
           onClick={() => setViewType('bus')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'bus'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <Bus className="w-4 h-4 inline mr-2" />
@@ -323,7 +323,7 @@ export default function TransportRapportsPage() {
           onClick={() => setViewType('mensuel')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition ${viewType === 'mensuel'
             ? 'bg-purple-100 text-purple-700'
-            : 'text-gray-600 hover:bg-gray-100'
+            : 'text-gray-900 hover:bg-gray-100'
             }`}
         >
           <Calendar className="w-4 h-4 inline mr-2" />
@@ -369,15 +369,15 @@ export default function TransportRapportsPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm">
                   <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                  <span className="text-gray-600">Places occupées: {stats.totalInscrits}</span>
+                  <span className="text-gray-900">Places occupées: {stats.totalInscrits}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="w-3 h-3 bg-gray-200 rounded-full"></span>
-                  <span className="text-gray-600">Places libres: {Math.max(0, Math.round(stats.totalInscrits / (stats.tauxRemplissage / 100) - stats.totalInscrits))}</span>
+                  <span className="text-gray-900">Places libres: {Math.max(0, Math.round(stats.totalInscrits / (stats.tauxRemplissage / 100) - stats.totalInscrits))}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="w-3 h-3 bg-purple-500 rounded-full"></span>
-                  <span className="text-gray-600">Capacité totale: {Math.round(stats.totalInscrits / (stats.tauxRemplissage / 100))}</span>
+                  <span className="text-gray-900">Capacité totale: {Math.round(stats.totalInscrits / (stats.tauxRemplissage / 100))}</span>
                 </div>
               </div>
             </div>
@@ -392,21 +392,21 @@ export default function TransportRapportsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Bus</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Chauffeur</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Trajet</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Capacité</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Inscrits</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Taux</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Bus</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Chauffeur</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Trajet</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Capacité</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Inscrits</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Taux</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {busDetails.map((b) => (
                   <tr key={b.id} className="hover:bg-gray-50 transition">
                     <td className="px-4 py-3 font-medium text-gray-900">{b.immatriculation}</td>
-                    <td className="px-4 py-3 text-gray-600">{b.chauffeur}</td>
-                    <td className="px-4 py-3 text-gray-600">{b.trajet}</td>
-                    <td className="px-4 py-3 text-center text-gray-600">{b.capacite}</td>
+                    <td className="px-4 py-3 text-gray-900">{b.chauffeur}</td>
+                    <td className="px-4 py-3 text-gray-900">{b.trajet}</td>
+                    <td className="px-4 py-3 text-center text-gray-900">{b.capacite}</td>
                     <td className="px-4 py-3 text-center font-semibold">{b.inscrits}</td>
                     <td className="px-4 py-3 text-center">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${b.taux > 80 ? 'bg-green-100 text-green-700' :
@@ -442,9 +442,9 @@ export default function TransportRapportsPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Mois</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Inscrits</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Taux remplissage</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">Mois</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Inscrits</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-900 uppercase">Taux remplissage</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
