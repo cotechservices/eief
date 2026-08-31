@@ -38,11 +38,11 @@ export async function GET() {
 
     const parents = parentsResult.rows;
 
-    // Pour chaque parent, récupérer ses enfants ET ses pré-inscriptions
+    // Pour chaque parent, récupérer ses enfants inscrits + pré-inscriptions en attente
     const parentsWithEnfants = await Promise.all(
       parents.map(async (parent) => {
         try {
-          // Récupérer les enfants inscrits
+          // 1. Récupérer les enfants DÉJÀ INSCRITS (dans la table eleves)
           const enfantsResult = await query(`
             SELECT 
               e.id,
@@ -54,7 +54,9 @@ export async function GET() {
               e.sexe,
               c.nom as classe_nom,
               c.niveau,
-              c.id as classe_id
+              c.id as classe_id,
+              e.date_inscription,
+              e.est_inscrit
             FROM eleves e
             JOIN utilisateurs u ON e.utilisateur_id = u.id
             LEFT JOIN classes c ON e.classe_id = c.id
@@ -63,35 +65,60 @@ export async function GET() {
             ORDER BY u.nom, u.prenom
           `, [parent.id]);
 
-          // ⭐ Récupérer le nombre de pré-inscriptions pour ce parent
-          // On utilise parent.id qui correspond à preinscriptions.parent_id
-          const preinscriptionsResult = await query(`
-            SELECT COUNT(*) as total_preinscriptions
+          // 2. Récupérer les pré-inscriptions EN ATTENTE (dans la table preinscriptions)
+          const preinscriptionsEnAttenteResult = await query(`
+            SELECT 
+              p.id,
+              p.enfant_nom as nom,
+              p.enfant_prenom as prenom,
+              p.date_naissance,
+              p.niveau,
+              p.classe as classe_nom,
+              p.numero_dossier,
+              p.photo_url,
+              p.statut,
+              'preinscription' as type_dossier
+            FROM preinscriptions p
+            WHERE p.parent_id = $1
+              AND p.statut = 'en_attente'
+              AND NOT EXISTS (
+                SELECT 1 
+                FROM inscriptions i 
+                JOIN eleves e ON i.eleve_id = e.id
+                WHERE i.parent_id = $1 
+                  AND TRIM(e.matricule) = TRIM(p.id::text)
+              )
+          `, [parent.id]);
+
+          // 3. Combiner les deux listes : enfants inscrits + pré-inscriptions en attente
+          const tousEnfants = [
+            ...(enfantsResult.rows || []),
+            ...(preinscriptionsEnAttenteResult.rows || []).map((preins: any) => ({
+              ...preins,
+              id: undefined, // pas d'ID élève pour une pré-inscription
+              matricule: preins.numero_dossier || `PRE-${preins.id}`,
+              classe_id: null,
+              est_inscrit: false,
+              est_preinscription: true,
+              preinscription_id: preins.id
+            }))
+          ];
+
+          // 4. Récupérer le nombre total de pré-inscriptions
+          const totalPreinscriptionsResult = await query(`
+            SELECT COUNT(*) as total
             FROM preinscriptions p
             WHERE p.parent_id = $1
           `, [parent.id]);
+          const totalPreinscriptions = parseInt(totalPreinscriptionsResult.rows[0]?.total) || 0;
 
-          const totalPreinscriptions = parseInt(preinscriptionsResult.rows[0]?.total_preinscriptions) || 0;
-
-          console.log(`📋 Parent ${parent.id} (${parent.prenom} ${parent.nom}): ${totalPreinscriptions} pré-inscriptions`);
-
-          // ⭐ Récupérer les pré-inscriptions en attente
-          const preinscriptionsEnAttente = await query(`
+          // 5. Récupérer les pré-inscriptions en attente
+          const preinscriptionsEnAttenteCount = await query(`
             SELECT COUNT(*) as en_attente
             FROM preinscriptions p
             WHERE p.parent_id = $1 AND p.statut = 'en_attente'
           `, [parent.id]);
-
-          const totalEnAttente = parseInt(preinscriptionsEnAttente.rows[0]?.en_attente) || 0;
-
-          // ⭐ DEBUG : Récupérer toutes les pré-inscriptions pour vérifier
-          const allPreinscriptions = await query(`
-            SELECT p.id, p.parent_id, p.enfant_prenom, p.enfant_nom, p.statut
-            FROM preinscriptions p
-            WHERE p.parent_id = $1
-          `, [parent.id]);
-
-          console.log(`📋 Détail pré-inscriptions pour parent ${parent.id}:`, allPreinscriptions.rows);
+          const totalEnAttente = parseInt(preinscriptionsEnAttenteCount.rows[0]?.en_attente) || 0;
 
           return {
             ...parent,
@@ -100,11 +127,13 @@ export async function GET() {
                   ? JSON.parse(parent.situation_matrimoniale) 
                   : parent.situation_matrimoniale)
               : null,
-            enfants: enfantsResult.rows || [],
-            totalEnfants: enfantsResult.rows.length,
-            // ⭐ Nouveaux champs
-            totalPreinscriptions: totalPreinscriptions,
+            // ✅ Liste complète : enfants inscrits + pré-inscriptions en attente
+            enfants: tousEnfants,
+            totalEnfants: tousEnfants.length,
+            // ✅ Anciens champs conservés
+            enfantsInscrits: enfantsResult.rows.length,
             preinscriptionsEnAttente: totalEnAttente,
+            totalPreinscriptions: totalPreinscriptions,
             aDesPreinscriptions: totalPreinscriptions > 0,
           };
         } catch (error) {
@@ -118,6 +147,7 @@ export async function GET() {
               : null,
             enfants: [],
             totalEnfants: 0,
+            enfantsInscrits: 0,
             totalPreinscriptions: 0,
             preinscriptionsEnAttente: 0,
             aDesPreinscriptions: false,
@@ -125,13 +155,6 @@ export async function GET() {
         }
       })
     );
-
-    // ⭐ DEBUG GLOBAL : Afficher toutes les pré-inscriptions
-    const allPreins = await query(`
-      SELECT p.id, p.parent_id, p.enfant_prenom, p.enfant_nom, p.statut
-      FROM preinscriptions p
-    `);
-    console.log("📋 TOUTES les pré-inscriptions:", allPreins.rows);
 
     return NextResponse.json(parentsWithEnfants);
   } catch (error) {

@@ -201,7 +201,7 @@ export default function ParentCommandesPage() {
           <p className="text-gray-900">Suivez l'état de vos commandes de fournitures</p>
         </div>
         <Link
-          href="/librairie"
+          href="/dashboard/parent/librairie"
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
         >
           <ShoppingBag className="w-4 h-4" />
@@ -290,7 +290,7 @@ export default function ParentCommandesPage() {
             Vous n'avez pas encore passé de commande de fournitures.
           </p>
           <Link
-            href="/librairie"
+            href="/dashboard/parent/librairie"
             className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
           >
             Commander des fournitures

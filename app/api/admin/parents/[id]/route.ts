@@ -64,7 +64,7 @@ export async function GET(
 
     const parent = parentResult.rows[0];
 
-    // Récupérer les enfants avec plus de détails
+    // Récupérer les enfants inscrits avec plus de détails
     const enfantsResult = await query(`
       SELECT 
         e.id,
@@ -94,6 +94,49 @@ export async function GET(
       ORDER BY u.nom, u.prenom
     `, [parentId]);
 
+    // ⭐ Récupérer les pré-inscriptions en attente du parent (non encore validées en élèves)
+    const preinscriptionsEnAttenteResult = await query(`
+      SELECT 
+        p.id as preinscription_id,
+        p.numero_dossier,
+        p.enfant_nom as nom,
+        p.enfant_prenom as prenom,
+        p.date_naissance,
+        p.lieu_naissance,
+        p.sexe,
+        p.niveau,
+        p.classe as classe_nom,
+        p.photo_url,
+        p.acte_naissance_url,
+        p.bulletin_url,
+        p.statut,
+        'preinscription' as type_dossier
+      FROM preinscriptions p
+      WHERE p.parent_id = $1
+        AND p.statut = 'en_attente'
+        AND NOT EXISTS (
+          SELECT 1 
+          FROM inscriptions i 
+          JOIN eleves e ON i.eleve_id = e.id
+          WHERE i.parent_id = $1 
+            AND TRIM(e.matricule) = TRIM(p.id::text)
+        )
+    `, [parentId]);
+
+    // ⭐ Combiner la liste complète : élèves inscrits + pré-inscriptions en attente
+    const tousEnfants = [
+      ...(enfantsResult.rows || []),
+      ...(preinscriptionsEnAttenteResult.rows || []).map((preins: any) => ({
+        ...preins,
+        id: undefined,
+        matricule: preins.numero_dossier || `PRE-${preins.preinscription_id}`,
+        classe_id: null,
+        est_inscrit: false,
+        est_preinscription: true,
+        preinscription_id: preins.preinscription_id
+      }))
+    ];
+
     // Récupérer les pré-inscriptions du parent
     const preinscriptionsResult = await query(`
       SELECT 
@@ -102,6 +145,11 @@ export async function GET(
         p.enfant_nom,
         p.enfant_prenom,
         p.date_naissance,
+        p.lieu_naissance,
+        p.sexe,
+        p.photo_url,
+        p.acte_naissance_url,
+        p.bulletin_url,
         p.niveau,
         p.classe,
         p.statut,
@@ -174,7 +222,7 @@ export async function GET(
           ? JSON.parse(parent.situation_matrimoniale)
           : parent.situation_matrimoniale)
         : null,
-      enfants: enfantsResult.rows || [],
+      enfants: tousEnfants,
       preinscriptions: allDossiers,
       solde_restant_total: soldeRestantTotal,
     });

@@ -54,6 +54,16 @@ interface Enfant {
     classe_id?: number;
     frais_inscription?: number;
     lien_parent?: string;
+    // ⭐ NOUVEAUX CHAMPS POUR LES PRÉ-INSCRIPTIONS
+    est_preinscription?: boolean;
+    preinscription_id?: number;
+    statut?: string;
+    numero_dossier?: string;
+    type_dossier?: 'inscrit' | 'preinscription';
+    acte_naissance_url?: string;
+    bulletin_url?: string;
+    cantine_inscrit?: boolean;
+    transport_inscrit?: boolean;
 }
 
 interface ParentDetail {
@@ -88,6 +98,8 @@ interface Parent {
     totalPreinscriptions?: number;
     preinscriptionsEnAttente?: number;
     aDesPreinscriptions?: boolean;
+    // ⭐ NOUVEAU CHAMP
+    enfantsInscrits?: number;
 }
 
 // Interface pour les notifications
@@ -341,20 +353,33 @@ export default function AdminParentsPage() {
         }
     };
 
-    // Ouvrir le modal d'édition de l'élève
+    // ⭐ Ouvrir le modal d'édition de l'élève (gère les deux cas)
     const openEditEleveModal = (enfant: Enfant) => {
         setEleveToEdit(enfant);
+        
+        // ⭐ Détecter si c'est une pré-inscription
+        const isPreinscription = enfant.est_preinscription === true;
+        
         setEditEleveData({
+            id: enfant.id || enfant.preinscription_id,
             nom: enfant.nom || "",
             prenom: enfant.prenom || "",
             sexe: enfant.sexe || "M",
             date_naissance: enfant.date_naissance ? enfant.date_naissance.substring(0, 10) : "",
             lieu_naissance: enfant.lieu_naissance || "",
-            matricule: enfant.matricule || "",
+            matricule: enfant.matricule || enfant.numero_dossier || "",
             classe_id: enfant.classe_id || "",
+            classe_nom: enfant.classe_nom || "",
+            niveau: enfant.niveau || "",
             photo_url: enfant.photo_url || "",
             acte_naissance_url: (enfant as any).acte_naissance_url || "",
-            bulletin_url: (enfant as any).bulletin_url || ""
+            bulletin_url: (enfant as any).bulletin_url || "",
+            // ⭐ Champs pour les pré-inscriptions
+            est_preinscription: isPreinscription,
+            preinscription_id: enfant.preinscription_id,
+            statut: enfant.statut || 'en_attente',
+            numero_dossier: enfant.numero_dossier || "",
+            type_dossier: enfant.type_dossier || (isPreinscription ? 'preinscription' : 'inscrit'),
         });
 
         if (parentDetail) {
@@ -371,6 +396,40 @@ export default function AdminParentsPage() {
 
         setCantineData({ inscrire: false, mois: 0, montantMensuel: 0, montantAuto: false });
         setTransportData({ inscrire: false, ligneId: "", mois: 0, montantMensuel: 0, montantAuto: false });
+
+        // ⭐ Si c'est une pré-inscription, charger la cantine et le transport existants
+        if (isPreinscription) {
+            const preinsId = enfant.preinscription_id || enfant.id;
+            if (preinsId) {
+                fetch(`/api/admin/preinscriptions?id=${preinsId}`)
+                    .then(r => r.ok ? r.json() : null)
+                    .then(data => {
+                        if (data) {
+                            if (data.cantine_selectionnee && data.cantine_selectionnee.length > 0) {
+                                const totalCantine = Number(data.cantine_montant) || 0;
+                                setCantineData({
+                                    inscrire: true,
+                                    mois: 9,
+                                    montantMensuel: totalCantine > 0 ? Math.round(totalCantine / 9) : 0,
+                                    montantAuto: true
+                                });
+                            }
+                            if (data.transport_selectionne && data.transport_selectionne.length > 0) {
+                                const transportItem = data.transport_selectionne[0];
+                                const totalTransport = Number(data.transport_montant) || 0;
+                                setTransportData({
+                                    inscrire: true,
+                                    ligneId: transportItem.ligne_id ? String(transportItem.ligne_id) : "",
+                                    mois: 9,
+                                    montantMensuel: totalTransport > 0 ? Math.round(totalTransport / 9) : 0,
+                                    montantAuto: true
+                                });
+                            }
+                        }
+                    })
+                    .catch(e => console.error("Erreur pré-chargement services pré-inscription:", e));
+            }
+        }
 
         if (transportLignes.length === 0) {
             fetchTransportLignes();
@@ -412,77 +471,119 @@ export default function AdminParentsPage() {
         }
     };
 
+    // ⭐ Sauvegarder les modifications (gère les deux cas)
     const handleSaveEleveDetails = async () => {
         if (!eleveToEdit || !parentDetail) return;
 
         setSavingEleve(true);
         try {
-            // 1. Sauvegarder l'élève
-            const resEleve = await fetch(`/api/admin/eleves/${eleveToEdit.id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(editEleveData)
-            });
-            if (!resEleve.ok) {
-                const errorData = await resEleve.json();
-                throw new Error("Erreur modification élève: " + (errorData.error || ""));
+            const isPreinscription = editEleveData.est_preinscription;
+            
+            if (isPreinscription) {
+                // ⭐ CAS PRÉ-INSCRIPTION : sauvegarder dans la table preinscriptions avec Cantine & Transport
+                const preinscriptionId = eleveToEdit.preinscription_id || eleveToEdit.id;
+                
+                const resPreinscription = await fetch(`/api/admin/preinscriptions/${preinscriptionId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        enfant_nom: editEleveData.nom,
+                        enfant_prenom: editEleveData.prenom,
+                        date_naissance: editEleveData.date_naissance,
+                        lieu_naissance: editEleveData.lieu_naissance,
+                        sexe: editEleveData.sexe,
+                        classe: editEleveData.classe_nom,
+                        niveau: editEleveData.niveau,
+                        photo_url: editEleveData.photo_url,
+                        acte_naissance_url: editEleveData.acte_naissance_url,
+                        bulletin_url: editEleveData.bulletin_url,
+                        statut: editEleveData.statut || 'en_attente',
+                        cantineData: cantineData,
+                        transportData: transportData,
+                    })
+                });
+                
+                if (!resPreinscription.ok) {
+                    const errorData = await resPreinscription.json();
+                    throw new Error("Erreur modification pré-inscription: " + (errorData.error || ""));
+                }
+                addNotification("success", "Pré-inscription et options mises à jour avec succès");
+                
+            } else {
+                // ⭐ CAS ENFANT INSCRIT : sauvegarder dans la table eleves
+                const resEleve = await fetch(`/api/admin/eleves/${eleveToEdit.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        nom: editEleveData.nom,
+                        prenom: editEleveData.prenom,
+                        sexe: editEleveData.sexe,
+                        date_naissance: editEleveData.date_naissance,
+                        lieu_naissance: editEleveData.lieu_naissance,
+                        matricule: editEleveData.matricule,
+                        classe_id: editEleveData.classe_id,
+                        photo_url: editEleveData.photo_url,
+                        acte_naissance_url: editEleveData.acte_naissance_url,
+                        bulletin_url: editEleveData.bulletin_url,
+                    })
+                });
+                
+                if (!resEleve.ok) {
+                    const errorData = await resEleve.json();
+                    throw new Error("Erreur modification élève: " + (errorData.error || ""));
+                }
+                
+                // ✅ Gérer cantine et transport (uniquement pour les enfants inscrits)
+                if (cantineData.inscrire && cantineData.mois > 0) {
+                    const resCantine = await fetch("/api/admin/cantine/inscrire", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            eleveId: eleveToEdit.id,
+                            mois: cantineData.mois,
+                            montantMensuel: cantineData.montantMensuel,
+                            montantTotal: cantineData.mois * cantineData.montantMensuel
+                        })
+                    });
+                    if (!resCantine.ok) {
+                        const errorData = await resCantine.json();
+                        addNotification("error", `Erreur cantine: ${errorData.error}`);
+                    }
+                }
+
+                if (transportData.inscrire && transportData.ligneId && transportData.mois > 0) {
+                    const resTransport = await fetch("/api/admin/transport/inscrire", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            eleveId: eleveToEdit.id,
+                            ligneId: transportData.ligneId,
+                            mois: transportData.mois,
+                            montantMensuel: transportData.montantMensuel
+                        })
+                    });
+                    if (!resTransport.ok) {
+                        const errorData = await resTransport.json();
+                        addNotification("error", `Erreur transport: ${errorData.error}`);
+                    }
+                }
+                
+                addNotification("success", "Élève mis à jour avec succès");
             }
 
-            // 2. Sauvegarder le parent
+            // ⭐ Toujours sauvegarder les informations du parent
             const resParent = await fetch(`/api/admin/parents/${parentDetail.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(editParentData)
             });
+            
             if (!resParent.ok) {
                 const errorData = await resParent.json();
-                throw new Error("Erreur modification parent: " + (errorData.error || ""));
+                addNotification("error", `Erreur modification parent: ${errorData.error}`);
             }
 
-            // 3. Cantine - uniquement si inscrit ET mois > 0
-            if (cantineData.inscrire && cantineData.mois > 0) {
-                const resCantine = await fetch("/api/admin/cantine/inscrire", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        eleveId: eleveToEdit.id,
-                        mois: cantineData.mois,
-                        montantMensuel: cantineData.montantMensuel,
-                        montantTotal: cantineData.mois * cantineData.montantMensuel
-                    })
-                });
-                if (!resCantine.ok) {
-                    const errorData = await resCantine.json();
-                    addNotification("error", `Erreur cantine: ${errorData.error}`);
-                }
-            } else if (cantineData.inscrire && cantineData.mois === 0) {
-                addNotification("info", "Aucun abonnement cantine sélectionné (0 mois)");
-            }
-
-            // 4. Transport - uniquement si inscrit, ligneId ET mois > 0
-            if (transportData.inscrire && transportData.ligneId && transportData.mois > 0) {
-                const resTransport = await fetch("/api/admin/transport/inscrire", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        eleveId: eleveToEdit.id,
-                        ligneId: transportData.ligneId,
-                        mois: transportData.mois,
-                        montantMensuel: transportData.montantMensuel
-                    })
-                });
-                if (!resTransport.ok) {
-                    const errorData = await resTransport.json();
-                    addNotification("error", `Erreur transport: ${errorData.error}`);
-                }
-            } else if (transportData.inscrire && transportData.mois === 0) {
-                addNotification("info", "Aucun abonnement transport sélectionné (0 mois)");
-            }
-
-            addNotification("success", "Informations mises à jour avec succès");
             setShowEditEleveModal(false);
-
-            // Recharger les détails
             loadParentDetail(parentDetail.id);
             fetchParents();
 
@@ -606,7 +707,7 @@ export default function AdminParentsPage() {
                         <div>
                             <p className="text-sm text-gray-900">Total enfants inscrits</p>
                             <p className="text-2xl font-bold text-gray-900">
-                                {parents.reduce((acc, p) => acc + p.totalEnfants, 0)}
+                                {parents.reduce((acc, p) => acc + (p.enfantsInscrits || 0), 0)}
                             </p>
                         </div>
                         <GraduationCap className="w-8 h-8 text-green-500" />
@@ -722,8 +823,21 @@ export default function AdminParentsPage() {
                                     <td className="px-6 py-4">
                                         <p className="text-gray-900">{parent.profession || "Non renseigné"}</p>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-900">
-                                        {parent.totalEnfants} {parent.totalEnfants > 1 ? "enfants" : "enfant"}
+                                    <td className="px-6 py-4">
+                                        {parent.enfantsInscrits !== undefined && parent.enfantsInscrits > 0 && (
+                                            <span className="text-gray-900">{parent.enfantsInscrits} inscrit{parent.enfantsInscrits > 1 ? 's' : ''}</span>
+                                        )}
+                                        {parent.enfantsInscrits !== undefined && parent.enfantsInscrits > 0 && parent.preinscriptionsEnAttente !== undefined && parent.preinscriptionsEnAttente > 0 && (
+                                            <span className="text-gray-900"> • </span>
+                                        )}
+                                        {parent.preinscriptionsEnAttente !== undefined && parent.preinscriptionsEnAttente > 0 && (
+                                            <span className="text-yellow-600">
+                                                {parent.preinscriptionsEnAttente} en attente
+                                            </span>
+                                        )}
+                                        {(!parent.enfantsInscrits || parent.enfantsInscrits === 0) && (!parent.preinscriptionsEnAttente || parent.preinscriptionsEnAttente === 0) && (
+                                            <span className="text-gray-400">Aucun</span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
@@ -892,12 +1006,16 @@ export default function AdminParentsPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {parentDetail.enfants.map((enfant) => (
                                                 <div
-                                                    key={enfant.id}
-                                                    className="bg-white border rounded-lg p-4 hover:shadow-md transition"
+                                                    key={enfant.id || enfant.preinscription_id || `preins-${Math.random()}`}
+                                                    className={`bg-white border rounded-lg p-4 hover:shadow-md transition ${
+                                                        enfant.est_preinscription ? 'border-yellow-200 bg-yellow-50/30' : 'border-gray-200'
+                                                    }`}
                                                 >
                                                     <div className="flex items-start gap-4">
                                                         <div className="flex-shrink-0">
-                                                            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+                                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                                                enfant.est_preinscription ? 'bg-yellow-100' : 'bg-green-100'
+                                                            }`}>
                                                                 {enfant.photo_url ? (
                                                                     <img
                                                                         src={enfant.photo_url}
@@ -905,20 +1023,38 @@ export default function AdminParentsPage() {
                                                                         className="w-14 h-14 rounded-full object-cover"
                                                                     />
                                                                 ) : (
-                                                                    <GraduationCap className="w-7 h-7 text-green-600" />
+                                                                    <GraduationCap className={`w-7 h-7 ${
+                                                                        enfant.est_preinscription ? 'text-yellow-600' : 'text-green-600'
+                                                                    }`} />
                                                                 )}
                                                             </div>
                                                         </div>
                                                         <div className="flex-1">
                                                             <div className="flex justify-between items-start">
                                                                 <div>
-                                                                    <h4 className="font-bold text-black">
+                                                                    <h4 className="font-bold text-black flex items-center gap-2">
                                                                         {enfant.prenom} {enfant.nom}
+                                                                        {enfant.est_preinscription && (
+                                                                            <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
+                                                                                 Pré-inscription
+                                                                            </span>
+                                                                        )}
+                                                                        {enfant.est_inscrit && !enfant.est_preinscription && (
+                                                                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                                                                ✅ Inscrit
+                                                                            </span>
+                                                                        )}
                                                                     </h4>
                                                                     <p className="text-sm text-gray-900">
                                                                         {enfant.classe_nom || "Non assigné"} • {enfant.niveau || "Niveau non défini"}
+                                                                        {enfant.numero_dossier && (
+                                                                            <span className="ml-2 text-xs text-gray-500">
+                                                                                Dossier: {enfant.numero_dossier}
+                                                                            </span>
+                                                                        )}
                                                                     </p>
                                                                 </div>
+                                                                {/* ⭐ BOUTON DÉTAILS POUR TOUS */}
                                                                 <button
                                                                     onClick={() => openEditEleveModal(enfant)}
                                                                     className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 bg-blue-50 px-2 py-1 rounded transition"
@@ -930,12 +1066,16 @@ export default function AdminParentsPage() {
 
                                                             <div className="mt-3 grid grid-cols-2 gap-2 text-xs bg-gray-50 p-2 rounded-lg">
                                                                 <div>
-                                                                    <p className="text-gray-900">Matricule</p>
-                                                                    <p className="font-mono text-black font-medium">{enfant.matricule}</p>
+                                                                    <p className="text-gray-900">Matricule/Dossier</p>
+                                                                    <p className="font-mono text-black font-medium">
+                                                                        {enfant.matricule || enfant.numero_dossier || 'N/A'}
+                                                                    </p>
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-gray-900">Date de naissance</p>
-                                                                    <p className="text-black font-medium">{new Date(enfant.date_naissance).toLocaleDateString()}</p>
+                                                                    <p className="text-black font-medium">
+                                                                        {enfant.date_naissance ? new Date(enfant.date_naissance).toLocaleDateString() : 'Non renseignée'}
+                                                                    </p>
                                                                 </div>
                                                                 {enfant.lieu_naissance && (
                                                                     <div>
@@ -949,16 +1089,30 @@ export default function AdminParentsPage() {
                                                                         <p className="text-black font-medium">{enfant.sexe === "M" ? "Garçon" : "Fille"}</p>
                                                                     </div>
                                                                 )}
-                                                                {enfant.est_inscrit !== undefined && (
+                                                                {enfant.est_preinscription && enfant.statut && (
                                                                     <div>
                                                                         <p className="text-gray-900">Statut</p>
-                                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${enfant.est_inscrit ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                                                            }`}>
+                                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                                            enfant.statut === 'en_attente' ? 'bg-yellow-100 text-yellow-700' :
+                                                                            enfant.statut === 'valide' ? 'bg-green-100 text-green-700' :
+                                                                            'bg-red-100 text-red-700'
+                                                                        }`}>
+                                                                            {enfant.statut === 'en_attente' ? 'En attente' :
+                                                                             enfant.statut === 'valide' ? 'Validée' : 'Rejetée'}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                                {enfant.est_inscrit !== undefined && !enfant.est_preinscription && (
+                                                                    <div>
+                                                                        <p className="text-gray-900">Statut</p>
+                                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                                            enfant.est_inscrit ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                                        }`}>
                                                                             {enfant.est_inscrit ? '✅ Inscrit' : '❌ Non inscrit'}
                                                                         </span>
                                                                     </div>
                                                                 )}
-                                                                {enfant.date_inscription && (
+                                                                {enfant.date_inscription && !enfant.est_preinscription && (
                                                                     <div>
                                                                         <p className="text-gray-900">Date d'inscription</p>
                                                                         <p className="text-black font-medium">{new Date(enfant.date_inscription).toLocaleDateString()}</p>
@@ -980,43 +1134,70 @@ export default function AdminParentsPage() {
                                 </div>
 
                                 {parentDetail.preinscriptions && parentDetail.preinscriptions.length > 0 && (
-                                    <div>
-                                        <h3 className="font-semibold text-black mb-3 flex items-center gap-2 border-b pb-2">
-                                            <FileText className="w-5 h-5 text-purple-600" />
-                                            Pré-inscriptions ({parentDetail.preinscriptions.length})
-                                        </h3>
-                                        <div className="space-y-2">
-                                            {parentDetail.preinscriptions.map((preins) => (
-                                                <div key={preins.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                                                    <div>
-                                                        <p className="font-medium text-black">
-                                                            {preins.enfant_prenom} {preins.enfant_nom}
-                                                        </p>
-                                                        <p className="text-sm text-gray-900">{preins.classe} • {preins.niveau}</p>
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-sm text-gray-900">
-                                                            {preins.montant_total_plan?.toLocaleString() || 0} GNF
-                                                        </span>
-                                                        <span className={`px-2 py-1 rounded-full text-xs ${preins.statut === 'en_attente' ? 'bg-yellow-100 text-yellow-700' :
-                                                            preins.statut === 'valide' ? 'bg-green-100 text-green-700' :
-                                                                'bg-red-100 text-red-700'
-                                                            }`}>
-                                                            {preins.statut === 'en_attente' ? 'En attente' :
-                                                                preins.statut === 'valide' ? 'Validée' : 'Rejetée'}
-                                                        </span>
-                                                        <Link
-                                                            href={`/dashboard/admin/preinscriptions`}
-                                                            className="text-blue-600 hover:text-blue-800 text-sm"
-                                                        >
-                                                            <Eye className="w-4 h-4" />
-                                                        </Link>
-                                                    </div>
+                                <div>
+                                    <h3 className="font-semibold text-black mb-3 flex items-center gap-2 border-b pb-2">
+                                        <FileText className="w-5 h-5 text-purple-600" />
+                                        Inscriptions ({parentDetail.preinscriptions.length})
+                                    </h3>
+                                    <div className="space-y-2">
+                                        {parentDetail.preinscriptions.map((preins) => (
+                                            <div key={preins.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                                                <div>
+                                                    <p className="font-medium text-black">
+                                                        {preins.enfant_prenom} {preins.enfant_nom}
+                                                    </p>
+                                                    <p className="text-sm text-gray-900">{preins.classe} • {preins.niveau}</p>
                                                 </div>
-                                            ))}
-                                        </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-sm text-gray-900">
+                                                        {preins.montant_total_plan?.toLocaleString() || 0} GNF
+                                                    </span>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        preins.statut === 'en_attente' ? 'bg-yellow-100 text-yellow-700' :
+                                                        preins.statut === 'valide' ? 'bg-green-100 text-green-700' :
+                                                        'bg-red-100 text-red-700'
+                                                    }`}>
+                                                        {preins.statut === 'en_attente' ? 'En attente' :
+                                                        preins.statut === 'valide' ? 'Validée' : 'Rejetée'}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => openEditEleveModal({
+                                                            id: undefined,
+                                                            preinscription_id: preins.id,
+                                                            nom: preins.enfant_nom,
+                                                            prenom: preins.enfant_prenom,
+                                                            sexe: (preins as any).sexe || 'M',
+                                                            date_naissance: preins.date_naissance,
+                                                            lieu_naissance: (preins as any).lieu_naissance,
+                                                            matricule: preins.numero_dossier,
+                                                            classe_nom: preins.classe,
+                                                            niveau: preins.niveau,
+                                                            photo_url: (preins as any).photo_url,
+                                                            acte_naissance_url: (preins as any).acte_naissance_url,
+                                                            bulletin_url: (preins as any).bulletin_url,
+                                                            est_preinscription: true,
+                                                            statut: preins.statut,
+                                                            numero_dossier: preins.numero_dossier,
+                                                            type_dossier: 'preinscription'
+                                                        } as any)}
+                                                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 bg-blue-50 px-2 py-1 rounded transition font-medium"
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                        Détails
+                                                    </button>
+                                                    <Link
+                                                        href={`/dashboard/admin/preinscriptions`}
+                                                        className="text-gray-500 hover:text-gray-700 text-sm p-1"
+                                                        title="Voir la gestion des pré-inscriptions"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
+                                </div>
+                            )}
                             </div>
                         )}
 
@@ -1039,7 +1220,21 @@ export default function AdminParentsPage() {
                         <div className="p-4 border-b flex justify-between items-center bg-gray-50">
                             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                 <GraduationCap className="w-6 h-6 text-blue-600" />
-                                Détails & Inscription de {eleveToEdit.prenom}
+                                {editEleveData.est_preinscription ? (
+                                    <span>Modifier la pré-inscription de <span className="text-blue-600">{eleveToEdit.prenom}</span></span>
+                                ) : (
+                                    <span>Modifier l'élève <span className="text-blue-600">{eleveToEdit.prenom}</span></span>
+                                )}
+                                {editEleveData.est_preinscription && (
+                                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full ml-2">
+                                        En attente
+                                    </span>
+                                )}
+                                {!editEleveData.est_preinscription && eleveToEdit.est_inscrit && (
+                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-2">
+                                        ✅ Inscrit
+                                    </span>
+                                )}
                             </h2>
                             <button onClick={closeEditEleveModal} className="text-gray-900 hover:text-gray-900 transition p-2">
                                 <X className="w-5 h-5" />
@@ -1106,7 +1301,7 @@ export default function AdminParentsPage() {
                                             <input type="text" value={editEleveData.lieu_naissance} onChange={e => setEditEleveData({ ...editEleveData, lieu_naissance: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-900 mb-1">Matricule</label>
+                                            <label className="block text-sm font-medium text-gray-900 mb-1">Matricule / Dossier</label>
                                             <input type="text" value={editEleveData.matricule} onChange={e => setEditEleveData({ ...editEleveData, matricule: e.target.value })} className="w-full border rounded-lg p-2 bg-white" />
                                         </div>
                                     </div>
@@ -1550,11 +1745,11 @@ export default function AdminParentsPage() {
                                             <div className="col-span-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                                 {!transportData.ligneId ? (
                                                     <p className="text-sm text-gray-900">
-                                                        ⚠️ Veuillez sélectionner une ligne de transport
+                                                         Veuillez sélectionner une ligne de transport
                                                     </p>
                                                 ) : transportData.mois === 0 ? (
                                                     <p className="text-sm text-gray-900">
-                                                        ⚠️ Aucun abonnement sélectionné (0 mois)
+                                                         Aucun abonnement sélectionné (0 mois)
                                                     </p>
                                                 ) : (
                                                     <p className="text-sm text-gray-900">
@@ -1571,6 +1766,8 @@ export default function AdminParentsPage() {
                                     )}
                                 </div>
                             )}
+
+
                         </div>
 
                         <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
@@ -1612,7 +1809,10 @@ export default function AdminParentsPage() {
                                     {parentToDelete.prenom} {parentToDelete.nom}
                                 </p>
                                 <p className="text-sm text-red-600 mt-1">
-                                    {parentToDelete.totalEnfants} enfant(s) associé(s)
+                                    {parentToDelete.enfantsInscrits || 0} enfant(s) inscrit(s)
+                                    {parentToDelete.preinscriptionsEnAttente && parentToDelete.preinscriptionsEnAttente > 0 && (
+                                        <span> + {parentToDelete.preinscriptionsEnAttente} pré-inscription(s)</span>
+                                    )}
                                 </p>
                                 <p className="text-xs text-red-500 mt-2">
                                     Email: {parentToDelete.email}
@@ -1627,12 +1827,18 @@ export default function AdminParentsPage() {
                                 </p>
                                 <ul className="text-sm text-yellow-700 list-disc list-inside mt-1 ml-4 space-y-1">
                                     <li>Le parent et son compte utilisateur</li>
-                                    <li>Tous les enfants associés à ce parent</li>
-                                    <li>Les liens parent-enfant</li>
-                                    <li>Toutes les pré-inscriptions associées</li>
-                                    <li>Toutes les réinscriptions associées</li>
-                                    <li>Toutes les inscriptions</li>
-                                    <li>Les présences et notes des enfants</li>
+                                    {parentToDelete.enfantsInscrits && parentToDelete.enfantsInscrits > 0 && (
+                                        <>
+                                            <li>Tous les enfants associés à ce parent ({parentToDelete.enfantsInscrits})</li>
+                                            <li>Les liens parent-enfant</li>
+                                            <li>Toutes les inscriptions associées</li>
+                                            <li>Toutes les réinscriptions associées</li>
+                                            <li>Les présences et notes des enfants</li>
+                                        </>
+                                    )}
+                                    {parentToDelete.preinscriptionsEnAttente && parentToDelete.preinscriptionsEnAttente > 0 && (
+                                        <li>Toutes les pré-inscriptions en attente ({parentToDelete.preinscriptionsEnAttente})</li>
+                                    )}
                                 </ul>
                             </div>
                         </div>

@@ -53,17 +53,25 @@ export default function LibrairiePage() {
   // État pour le prix formaté (avec séparateur de milliers)
   const [prixFormate, setPrixFormate] = useState("");
 
+  const [commandesCount, setCommandesCount] = useState({ total: 0, enAttente: 0 });
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [resArticles, resVentes, resEleves] = await Promise.all([
+      const [resArticles, resVentes, resEleves, resCmd] = await Promise.all([
         fetch('/api/admin/librairie/articles'),
         fetch('/api/admin/librairie/ventes'),
-        fetch('/api/admin/eleves')
+        fetch('/api/admin/eleves'),
+        fetch('/api/admin/librairie/commandes')
       ]);
       if (resArticles.ok) setArticles(await resArticles.json());
       if (resVentes.ok) setVentes(await resVentes.json());
       if (resEleves.ok) setEleves(await resEleves.json());
+      if (resCmd.ok) {
+        const cmdData = await resCmd.json();
+        const enAttente = Array.isArray(cmdData) ? cmdData.filter((c: any) => c.statut === "en_attente").length : 0;
+        setCommandesCount({ total: Array.isArray(cmdData) ? cmdData.length : 0, enAttente });
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -232,7 +240,7 @@ export default function LibrairiePage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 flex items-center justify-between">
           <div><p className="text-sm text-gray-900">Articles en stock</p><p className="text-2xl font-bold text-gray-900">{stats.totalArticles}</p></div>
           <Box className="text-blue-200 w-10 h-10" />
@@ -249,26 +257,40 @@ export default function LibrairiePage() {
           <div><p className="text-sm text-gray-900">Recettes</p><p className="text-2xl font-bold text-orange-600">{stats.recettesVentes.toLocaleString()} GNF</p></div>
           <CreditCard className="text-orange-200 w-10 h-10" />
         </div>
-        {/* ⭐ Nouvelle carte "Articles vendus" */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-indigo-500 flex items-center justify-between">
-          <div><p className="text-sm text-gray-900">Articles vendus</p><p className="text-2xl font-bold text-indigo-600">{stats.totalQuantiteVendue}</p></div>
-          <BookOpen className="text-indigo-200 w-10 h-10" />
-        </div>
+        {/* ⭐ Carte Commandes Parents */}
+        <Link href="/dashboard/admin/librairie/commandes" className="block">
+          <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-yellow-500 flex items-center justify-between hover:bg-yellow-50/40 transition">
+            <div>
+              <p className="text-sm text-gray-900">Commandes en attente</p>
+              <p className="text-2xl font-bold text-yellow-600">{commandesCount.enAttente}</p>
+            </div>
+            <ShoppingCart className="text-yellow-400 w-10 h-10" />
+          </div>
+        </Link>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
-        <div className="flex border-b flex-wrap">
-          <button onClick={() => setActiveTab("articles")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "articles" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
-            <Package className="w-4 h-4 inline mr-2" />
-            Inventaire
-          </button>
-          <button onClick={() => setActiveTab("ventes")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "ventes" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
-            <ShoppingCart className="w-4 h-4 inline mr-2" />
-            Historique des ventes
-          </button>
-          <Link href="/dashboard/admin/librairie/commandes" className="block">
-            <button className="bg-white text-blue-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5" />Voir les commandes
+        <div className="flex border-b flex-wrap items-center justify-between px-2">
+          <div className="flex">
+            <button onClick={() => setActiveTab("articles")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "articles" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
+              <Package className="w-4 h-4 inline mr-2" />
+              Inventaire
+            </button>
+            <button onClick={() => setActiveTab("ventes")} className={`px-6 py-4 font-medium transition-colors ${activeTab === "ventes" ? "border-b-2 border-blue-600 text-blue-600 bg-blue-50/50" : "text-gray-900 hover:bg-gray-50"}`}>
+              <ShoppingCart className="w-4 h-4 inline mr-2" />
+              Historique des ventes
+            </button>
+          </div>
+
+          <Link href="/dashboard/admin/librairie/commandes" className="my-2 mr-2">
+            <button className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 text-sm shadow-sm">
+              <ShoppingCart className="w-4 h-4" />
+              Gérer les commandes parents
+              {commandesCount.enAttente > 0 && (
+                <span className="bg-yellow-400 text-black text-xs font-extrabold px-2 py-0.5 rounded-full ml-1 animate-pulse">
+                  {commandesCount.enAttente}
+                </span>
+              )}
             </button>
           </Link>
         </div>

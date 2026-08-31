@@ -1341,8 +1341,8 @@ export default function RegisterForm() {
                   </div>
                 )}
 
-                <div className="border-t pt-2 flex justify-between font-bold">
-                  <span>Total</span>
+                <div className="border-t pt-2 flex justify-between font-bold text-gray-900">
+                  <span>Total à payer</span>
                   <span className="text-lg">{getTotalGeneral().toLocaleString()} GNF</span>
                 </div>
               </div>
@@ -1373,7 +1373,7 @@ export default function RegisterForm() {
               disabled={loading}
               className={`flex items-center gap-2 px-6 py-2 rounded-lg transition ml-auto ${!loading ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-300 text-gray-900 cursor-not-allowed"}`}
             >
-              {loading ? (uploadProgress.total > 0 ? `Upload... ${uploadProgress.current}/${uploadProgress.total}` : "Envoi en cours...") : "Envoyer ma pré-inscription"}
+              {loading ? (uploadProgress.total > 0 ? `Upload... ${uploadProgress.current}/${uploadProgress.total}` : "Envoi en cours...") : "Envoyer la demande d'inscription"}
               <GraduationCap className="w-4 h-4" />
             </button>
           )}

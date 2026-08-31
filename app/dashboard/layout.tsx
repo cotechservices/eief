@@ -41,7 +41,7 @@ const menuItems = {
     { name: "Classes", href: "/dashboard/admin/classes", icon: GraduationCap },
     { name: "Personnel", href: "/dashboard/admin/personnel", icon: Users },
     { name: "Salaires", href: "/dashboard/admin/salaires", icon: Users },
-    { name: "Rapports", href: "/dashboard/admin/rapports", icon: FileText },
+    //{ name: "Rapports", href: "/dashboard/admin/rapports", icon: FileText },
     { name: "Cantine", href: "/dashboard/admin/cantine", icon: Utensils },
     { name: "Transport", href: "/dashboard/admin/transport", icon: Bus },
     { name: "Bibliothèque", href: "/dashboard/admin/bibliotheque", icon: Library },

@@ -1617,8 +1617,8 @@ export default function ReinscriptionForm() {
                   </div>
                 )}
 
-                <div className="border-t pt-2 flex justify-between font-bold">
-                  <span>Total</span>
+                <div className="border-t pt-2 flex justify-between font-bold text-gray-900">
+                  <span>Total à payer</span>
                   <span className="text-lg">{getTotalGeneral().toLocaleString()} GNF</span>
                 </div>
               </div>
