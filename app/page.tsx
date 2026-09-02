@@ -252,7 +252,7 @@ export default function HomePage() {
                   <h3 className="text-3xl md:text-5xl font-bold mb-4">
                     {slide.title}
                   </h3>
-                  <p className="text-lg md:text-xl mb-8 text-gray-900">
+                  <p className="text-lg md:text-xl mb-8 text-gray-400">
                     {slide.description}
                   </p>
                   <div className="flex flex-wrap gap-4 mt-2">
@@ -489,7 +489,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Témoignages */}
+      {/* Témoignages*/}
       <div className="container mx-auto px-4 mt-10 mb-10">
         <div className="text-center mb-10">
           <h3 className="text-2xl font-bold text-gray-900 mb-2">Ils nous font confiance</h3>
