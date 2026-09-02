@@ -110,42 +110,48 @@ export async function GET() {
       pourcentage: totalRecettes > 0 ? Math.round((Number(cat.montant) / totalRecettes) * 100) : 0
     }));
 
-    // 8. Évolution mensuelle (6 derniers mois) - ✅ CORRIGÉ : dateDepense → date_depense
-    const evolutionResult = await query(`
-      SELECT
-        TO_CHAR(date_serie, 'Mon YYYY') as mois,
-        EXTRACT(MONTH FROM date_serie) as num_mois,
-        EXTRACT(YEAR FROM date_serie) as num_annee,
-        COALESCE((
-          SELECT SUM(montant) FROM paiements 
-          WHERE statut = 'valide'
-          AND EXTRACT(MONTH FROM date_paiement) = EXTRACT(MONTH FROM date_serie)
-          AND EXTRACT(YEAR FROM date_paiement) = EXTRACT(YEAR FROM date_serie)
-        ), 0) as recettes,
-        COALESCE((
-          SELECT SUM(montant) FROM depenses 
-          WHERE COALESCE(statut, 'valide') = 'valide'
-          AND EXTRACT(MONTH FROM COALESCE(date_depense, NOW())) = EXTRACT(MONTH FROM date_serie)
-          AND EXTRACT(YEAR FROM COALESCE(date_depense, NOW())) = EXTRACT(YEAR FROM date_serie)
-        ), 0) + COALESCE((
-          SELECT SUM(montant) FROM paiements_salaires
-          WHERE statut = 'paye'
-          AND mois = EXTRACT(MONTH FROM date_serie)
-          AND annee = EXTRACT(YEAR FROM date_serie)
-        ), 0) as depenses
-      FROM generate_series(
-        date_trunc('month', NOW()) - INTERVAL '5 months',
-        date_trunc('month', NOW()),
-        INTERVAL '1 month'
-      ) as date_serie
-      ORDER BY date_serie ASC
-    `);
+    // 8. Évolution mensuelle (Systématiquement les 12 mois de Janvier à Décembre de l'année en cours)
+    const MOIS_NOMS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+    const monthsArray = Array.from({ length: 12 }, (_, i) => i + 1);
 
-    const evolutionRecettes = evolutionResult.rows.map(row => ({
-      mois: row.mois,
-      recettes: Number(row.recettes),
-      depenses: Number(row.depenses)
-    }));
+    const evolutionRecettes = await Promise.all(
+      monthsArray.map(async (m) => {
+        const recettesRes = await query(`
+          SELECT COALESCE(SUM(montant), 0) as total
+          FROM paiements 
+          WHERE statut IN ('valide', 'paye')
+            AND EXTRACT(MONTH FROM date_paiement) = $1
+            AND EXTRACT(YEAR FROM date_paiement) = $2
+        `, [m, currentYear]);
+
+        const depensesRes = await query(`
+          SELECT COALESCE(SUM(montant), 0) as total
+          FROM depenses 
+          WHERE COALESCE(statut, 'valide') = 'valide'
+            AND EXTRACT(MONTH FROM COALESCE(date_depense, NOW())) = $1
+            AND EXTRACT(YEAR FROM COALESCE(date_depense, NOW())) = $2
+        `, [m, currentYear]);
+
+        const salairesRes = await query(`
+          SELECT COALESCE(SUM(montant), 0) as total
+          FROM paiements_salaires
+          WHERE statut = 'paye'
+            AND mois = $1
+            AND annee = $2
+        `, [m, currentYear]);
+
+        const totalRecettesMois = Number(recettesRes.rows[0]?.total || 0);
+        const totalDepensesMois = Number(depensesRes.rows[0]?.total || 0) + Number(salairesRes.rows[0]?.total || 0);
+
+        return {
+          mois: `${MOIS_NOMS_FR[m - 1]} ${currentYear}`,
+          num_mois: m,
+          num_annee: currentYear,
+          recettes: totalRecettesMois,
+          depenses: totalDepensesMois
+        };
+      })
+    );
 
     // 9. Statistiques masse salariale
     const masseSalarialeMoisResult = await query(`
