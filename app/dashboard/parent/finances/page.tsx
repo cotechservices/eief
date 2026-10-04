@@ -493,6 +493,30 @@ export default function ParentDashboard() {
           </div>
           <p className="text-xl font-extrabold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</p>
           <p className="text-[11px] text-gray-500 mt-1">Scolarité + services</p>
+          <div className="mt-2 pt-2 border-t border-gray-100 text-[10px] text-gray-500 space-y-0.5">
+            <div className="flex justify-between">
+              <span>Scolarité:</span>
+              <span className="font-medium">{statsGlobales.totalFraisInscription.toLocaleString()} GNF</span>
+            </div>
+            {statsGlobales.totalTransport > 0 && (
+              <div className="flex justify-between">
+                <span>Transport:</span>
+                <span className="font-medium">{statsGlobales.totalTransport.toLocaleString()} GNF</span>
+              </div>
+            )}
+            {statsGlobales.totalCantine > 0 && (
+              <div className="flex justify-between">
+                <span>Cantine:</span>
+                <span className="font-medium">{statsGlobales.totalCantine.toLocaleString()} GNF</span>
+              </div>
+            )}
+            {statsGlobales.totalFournitures > 0 && (
+              <div className="flex justify-between">
+                <span>Fournitures:</span>
+                <span className="font-medium">{statsGlobales.totalFournitures.toLocaleString()} GNF</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* REMISE ACCORDÉE */}

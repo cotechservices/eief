@@ -18,13 +18,63 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { eleveId, mois, montantMensuel, montantTotal } = body;
+    const { eleveId, preinscriptionId, mois, montantMensuel, montantTotal } = body;
 
-    if (!eleveId || !mois || !montantMensuel) {
+    if ((!eleveId && !preinscriptionId) || !mois || !montantMensuel) {
       return NextResponse.json({ error: "Données incomplètes" }, { status: 400 });
     }
 
-    // Vérifier que l'élève existe
+    // ⭐ CAS PRÉ-INSCRIPTION (en_attente) : inscrire dans preinscription_cantine
+    if (preinscriptionId && !eleveId) {
+      const preinscriptionCheck = await query(`
+        SELECT p.id, p.enfant_nom as nom, p.enfant_prenom as prenom
+        FROM preinscriptions p
+        WHERE p.id = $1 AND p.statut = 'en_attente'
+      `, [preinscriptionId]);
+
+      if (preinscriptionCheck.rows.length === 0) {
+        return NextResponse.json({ error: "Pré-inscription non trouvée ou déjà validée" }, { status: 404 });
+      }
+
+      const preins = preinscriptionCheck.rows[0];
+      const prixTotal = (Number(mois) || 0) * (Number(montantMensuel) || 0);
+      const defaultMenuRes = await query(`SELECT id FROM cantine_menus ORDER BY id LIMIT 1`);
+      const menuId = defaultMenuRes.rows[0]?.id || 1;
+
+      // Vérifier si déjà inscrit → mettre à jour au lieu de refuser
+      const existingPreins = await query(`
+        SELECT id FROM preinscription_cantine WHERE preinscription_id = $1
+      `, [preinscriptionId]);
+
+      if (existingPreins.rows.length > 0) {
+        await query(`
+          UPDATE preinscription_cantine SET prix = $1, menu_id = $2 WHERE preinscription_id = $3
+        `, [prixTotal, menuId, preinscriptionId]);
+        return NextResponse.json({
+          success: true,
+          message: `Inscription cantine mise à jour pour ${preins.prenom} ${preins.nom}`,
+        });
+      }
+
+      await query(`
+        INSERT INTO preinscription_cantine (preinscription_id, menu_id, prix)
+        VALUES ($1, $2, $3)
+      `, [preinscriptionId, menuId, prixTotal]);
+
+      // Mettre à jour le montant_total_plan de la pré-inscription
+      await query(`
+        UPDATE preinscriptions
+        SET montant_total_plan = COALESCE(montant_total_plan, frais_montant, 0) + $1
+        WHERE id = $2
+      `, [prixTotal, preinscriptionId]);
+
+      return NextResponse.json({
+        success: true,
+        message: `${preins.prenom} ${preins.nom} inscrit à la cantine (dossier en attente)`,
+      });
+    }
+
+    // ⭐ CAS ÉLÈVE INSCRIT : inscrire dans inscriptions_cantine
     const eleveCheck = await query(`
       SELECT e.id, u.nom, u.prenom, c.nom as classe_nom
       FROM eleves e
@@ -55,7 +105,6 @@ export async function POST(request: Request) {
     await query('BEGIN');
 
     try {
-      // 1. Créer l'inscription
       const result = await query(`
         INSERT INTO inscriptions_cantine (
           eleve_id,
@@ -72,40 +121,9 @@ export async function POST(request: Request) {
 
       const inscriptionId = result.rows[0].id;
 
-      // 2. Créer le paiement
-      await query(`
-        INSERT INTO paiements (
-          eleve_id,
-          montant,
-          type_frais,
-          mode_paiement,
-          statut,
-          date_paiement,
-          mois,
-          annee,
-          saisie_par
-        ) VALUES (
-          $1,
-          $2,
-          'cantine',
-          'especes',
-          'valide',
-          NOW(),
-          EXTRACT(MONTH FROM NOW()),
-          EXTRACT(YEAR FROM NOW()),
-          $3
-        )
-      `, [eleveId, montantTotal, parseInt((session.user as any).id)]);
-
-      // 3. Ajouter le menu cantine par défaut si besoin
-      // Récupérer ou créer un menu cantine
-      const menuResult = await query(`
-        SELECT id FROM cantine_menus ORDER BY id DESC LIMIT 1
-      `);
-
+      // Ajouter au menu du jour si disponible
+      const menuResult = await query(`SELECT id FROM cantine_menus ORDER BY id DESC LIMIT 1`);
       if (menuResult.rows.length > 0) {
-        const menuId = menuResult.rows[0].id;
-        // Ajouter l'élève au menu du jour
         await query(`
           INSERT INTO reserves_cantine (eleve_id, date, est_present, date_reservation)
           VALUES ($1, CURRENT_DATE, true, CURRENT_DATE)

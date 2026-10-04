@@ -103,6 +103,7 @@ interface DashboardStats {
     totalCantine: number;
     totalFournitures: number;
     totalAPayer: number;
+    totalRemises?: number;
     totalPaye: number;
     soldeRestant: number;
   };
@@ -132,6 +133,7 @@ export default function AdminDashboard() {
       totalCantine: 0,
       totalFournitures: 0,
       totalAPayer: 0,
+      totalRemises: 0,
       totalPaye: 0,
       soldeRestant: 0
     }
@@ -164,8 +166,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const general = stats.general || {};
-  const financieres = stats.financieres || {};
+  const general = stats.general;
+  const financieres = stats.financieres;
   const derniersPaiements = financieres.derniersPaiements || [];
   const categoriesRecettes = financieres.categoriesRecettes || [];
 
@@ -266,7 +268,7 @@ export default function AdminDashboard() {
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-900"><DollarSign className="w-5 h-5" /><p className="text-sm">Paiements année</p></div>
-          <p className="text-lg font-bold text-green-600">{(financieres.totalRecettes / 1000000).toFixed(1)}M GNF</p>
+          <p className="text-lg font-bold text-green-600"> {(financieres.totalRecettes || 0).toLocaleString()} GNF</p>
         </div>
       </div>
 
@@ -530,7 +532,7 @@ export default function AdminDashboard() {
                   y: {
                     beginAtZero: true,
                     ticks: {
-                      callback: (value) => `${(value / 1000000).toFixed(0)}M`,
+                      callback: (value) => `${(Number(value) / 1000000).toFixed(0)}M`,
                     },
                   },
                 },

@@ -30,6 +30,29 @@ export async function GET(request: NextRequest) {
     const parentId = parent.id;
     const parentNomComplet = `${parent.prenom || ''} ${parent.nom || ''}`.trim();
 
+    // Rétablir montant_total_plan de préinscription uniquement pour les échéances de scolarité ('inscription')
+    try {
+      await query(`
+        UPDATE preinscriptions p
+        SET montant_total_plan = sub.scolarite_ech,
+            montant_restant_plan = GREATEST(0, sub.scolarite_ech - COALESCE(sub.scolarite_paye, 0))
+        FROM (
+          SELECT 
+            ep.preinscription_id,
+            SUM(CASE WHEN ep.type = 'inscription' THEN ep.montant ELSE 0 END) as scolarite_ech,
+            (SELECT COALESCE(SUM(montant), 0) FROM paiements pay WHERE pay.preinscription_id = ep.preinscription_id AND pay.type_frais = 'inscription' AND pay.statut = 'valide') as scolarite_paye
+          FROM echeances_paiement ep
+          WHERE ep.preinscription_id IS NOT NULL
+          GROUP BY ep.preinscription_id
+        ) sub
+        WHERE p.id = sub.preinscription_id
+          AND sub.scolarite_ech > 0
+          AND (COALESCE(p.montant_total_plan, 0) != sub.scolarite_ech OR COALESCE(p.montant_restant_plan, 0) != GREATEST(0, sub.scolarite_ech - sub.scolarite_paye))
+      `);
+    } catch (syncErr) {
+      console.warn("Avertissement synchro preinscriptions echeances:", syncErr);
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // 1. Paiements liés à une PRÉ-INSCRIPTION (preinscription_id non null)
     // ─────────────────────────────────────────────────────────────────
@@ -43,8 +66,19 @@ export async function GET(request: NextRequest) {
         COALESCE(pay.type_frais, 'inscription')                     AS type_frais,
         COALESCE(pay.reference_transaction, p.numero_dossier, CONCAT('PAY-', pay.id)) AS reference,
         p.classe                                                     AS classe,
-        COALESCE(p.montant_total_plan, p.frais_montant, 0)           AS montant_total,
-        COALESCE(p.montant_restant_plan, 0)                          AS reste_a_payer,
+        -- Total réel = somme de TOUTES les échéances (scolarité, fournitures, cantine, transport, etc.)
+        COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.preinscription_id = p.id
+        ), p.montant_total_plan, p.frais_montant, 0)                 AS montant_total,
+        -- Reste à payer réel = total des échéances - total des paiements validés
+        GREATEST(0, COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.preinscription_id = p.id
+        ), p.montant_total_plan, p.frais_montant, 0) - COALESCE((
+          SELECT SUM(pp.montant) FROM paiements pp
+          WHERE pp.preinscription_id = p.id AND pp.statut = 'valide'
+        ), 0))                                                       AS reste_a_payer,
         'paiement'                                                   AS source,
         pay.id                                                       AS source_id,
         p.id                                                         AS preinscription_id
@@ -69,8 +103,17 @@ export async function GET(request: NextRequest) {
         COALESCE(pay.type_frais, 'reinscription')                   AS type_frais,
         COALESCE(pay.reference_transaction, CONCAT('REIN-', r.id))  AS reference,
         COALESCE(c.nom, r.classe_nom)                               AS classe,
-        COALESCE(r.montant_total_plan, r.montant_frais, 0)          AS montant_total,
-        COALESCE(r.montant_restant_plan, 0)                          AS reste_a_payer,
+        COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.reinscription_id = r.id
+        ), r.montant_total_plan, r.montant_frais, 0)                AS montant_total,
+        GREATEST(0, COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.reinscription_id = r.id
+        ), r.montant_total_plan, r.montant_frais, 0) - COALESCE((
+          SELECT SUM(pp.montant) FROM paiements pp
+          WHERE pp.reinscription_id = r.id AND pp.statut = 'valide'
+        ), 0))                                                       AS reste_a_payer,
         'paiement'                                                   AS source,
         pay.id                                                       AS source_id,
         NULL::int                                                    AS preinscription_id
@@ -129,8 +172,14 @@ export async function GET(request: NextRequest) {
         'Frais de pré-inscription'                     AS type_frais,
         COALESCE(p.frais_reference, p.numero_dossier)  AS reference,
         p.classe                                       AS classe,
-        COALESCE(p.montant_total_plan, p.frais_montant, 0) AS montant_total,
-        COALESCE(p.montant_restant_plan, 0)            AS reste_a_payer,
+        COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.preinscription_id = p.id
+        ), p.montant_total_plan, p.frais_montant, 0)   AS montant_total,
+        GREATEST(0, COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.preinscription_id = p.id
+        ), p.montant_total_plan, p.frais_montant, 0) - COALESCE(p.frais_montant, 0)) AS reste_a_payer,
         'preinscription'                               AS source,
         p.id                                           AS source_id,
         p.id                                           AS preinscription_id
@@ -158,8 +207,14 @@ export async function GET(request: NextRequest) {
         'Frais de réinscription'                            AS type_frais,
         COALESCE(r.frais_reference, CONCAT('REIN-', r.id)) AS reference,
         COALESCE(c.nom, r.classe_nom)                       AS classe,
-        COALESCE(r.montant_total_plan, r.montant_frais, 0)  AS montant_total,
-        COALESCE(r.montant_restant_plan, 0)                 AS reste_a_payer,
+        COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.reinscription_id = r.id
+        ), r.montant_total_plan, r.montant_frais, 0)        AS montant_total,
+        GREATEST(0, COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.reinscription_id = r.id
+        ), r.montant_total_plan, r.montant_frais, 0) - COALESCE(r.montant_frais, 0)) AS reste_a_payer,
         'reinscription'                                     AS source,
         r.id                                                AS source_id,
         NULL::int                                           AS preinscription_id

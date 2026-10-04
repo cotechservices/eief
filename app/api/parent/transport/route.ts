@@ -13,8 +13,8 @@ export async function GET() {
 
     const userEmail = session.user?.email;
 
-    // Récupérer les enfants du parent avec leurs inscriptions au transport
-    const enfants = await query(`
+    // Récupérer les enfants inscrits avec leurs inscriptions au transport
+    const elevesResult = await query(`
       SELECT 
         e.id,
         e.matricule,
@@ -29,21 +29,50 @@ export async function GET() {
         b.immatriculation,
         b.chauffeur_nom,
         b.chauffeur_tel,
-        b.capacite
+        b.capacite,
+        'eleve' as source
       FROM eleves e
       JOIN utilisateurs u ON e.utilisateur_id = u.id
-      JOIN classes c ON e.classe_id = c.id
+      LEFT JOIN classes c ON e.classe_id = c.id
       LEFT JOIN inscriptions_transport it ON e.id = it.eleve_id AND it.est_actif = true
       LEFT JOIN lignes_transport lt ON it.ligne_id = lt.id
       LEFT JOIN bus b ON lt.bus_id = b.id
       JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id
       JOIN parents p ON lpe.parent_id = p.id
       JOIN utilisateurs pu ON p.utilisateur_id = pu.id
-      WHERE pu.email = $1 AND e.est_inscrit = true
+      WHERE pu.email = $1 AND e.deleted_at IS NULL
       ORDER BY e.id
     `, [userEmail]);
 
-    const enfantsData = enfants.rows.map(e => ({
+    // Récupérer aussi les pré-inscriptions en attente
+    const preinscriptionsResult = await query(`
+      SELECT 
+        pr.id,
+        pr.numero_dossier as matricule,
+        pr.enfant_nom as nom,
+        pr.enfant_prenom as prenom,
+        pr.classe as classe_nom,
+        pt.id as inscription_transport_id,
+        (pt.id IS NOT NULL) as transport_actif,
+        NULL as ligne_nom,
+        NULL as horaire_matin,
+        NULL as horaire_soir,
+        NULL as immatriculation,
+        NULL as chauffeur_nom,
+        NULL as chauffeur_tel,
+        NULL as capacite,
+        'preinscription' as source
+      FROM preinscriptions pr
+      JOIN parents par ON pr.parent_id = par.id
+      JOIN utilisateurs pu ON par.utilisateur_id = pu.id
+      LEFT JOIN preinscription_transport pt ON pt.preinscription_id = pr.id
+      WHERE pu.email = $1 AND pr.statut = 'en_attente'
+      ORDER BY pr.id
+    `, [userEmail]);
+
+    const tousEnfants = [...elevesResult.rows, ...preinscriptionsResult.rows];
+
+    const enfantsData = tousEnfants.map((e: any) => ({
       id: e.id,
       matricule: e.matricule,
       nom: e.nom,
@@ -51,12 +80,14 @@ export async function GET() {
       classe: e.classe_nom,
       inscritTransport: e.transport_actif === true,
       ligne: e.ligne_nom,
-      arret: "Arrêt principal", // À définir selon vos données
+      arret: "Arrêt principal",
       heureMatin: e.horaire_matin ? e.horaire_matin.substring(0, 5) : null,
       heureSoir: e.horaire_soir ? e.horaire_soir.substring(0, 5) : null,
       chauffeur: e.chauffeur_nom,
       chauffeurTel: e.chauffeur_tel,
-      immatriculation: e.immatriculation
+      immatriculation: e.immatriculation,
+      source: e.source || 'eleve',
+      statut: e.source === 'preinscription' ? 'en_attente' : 'inscrit'
     }));
 
     // Simuler la position du bus (à remplacer par des données réelles plus tard)

@@ -25,13 +25,16 @@ interface Menu {
 }
 
 interface Eleve {
-  id: number;
+  id: number | null;
   matricule: string;
   nom: string;
   prenom: string;
   classe_nom: string;
-  sexe: string;
-  photo_url: string | null;
+  sexe?: string;
+  photo_url?: string | null;
+  source?: "eleve" | "preinscription";
+  preinscription_id?: number | null;
+  ref_id?: number;
 }
 
 interface InscriptionCantineDetail {
@@ -215,7 +218,8 @@ export default function CantinePage() {
 
   const fetchEleves = async () => {
     try {
-      const response = await fetch('/api/admin/eleves');
+      // ⭐ Charger élèves inscrits + pré-inscriptions en attente
+      const response = await fetch('/api/admin/eleves-et-preinscriptions');
       if (response.ok) {
         const data = await response.json();
         setEleves(data);
@@ -311,19 +315,31 @@ export default function CantinePage() {
     }
 
     try {
+      // ⭐ Détecter le type : élève inscrit ou pré-inscription en attente
+      const isPreinscription = selectedEleve.source === 'preinscription';
+      
+      const payload: any = {
+        mois: nombreMois,
+        montantMensuel: prixMensuel,
+        montantTotal: totalAPayer
+      };
+
+      if (isPreinscription) {
+        payload.preinscriptionId = selectedEleve.preinscription_id;
+      } else {
+        payload.eleveId = selectedEleve.id;
+      }
+
       const response = await fetch('/api/admin/cantine/inscrire', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eleveId: selectedEleve.id,
-          mois: nombreMois,
-          montantMensuel: prixMensuel,
-          montantTotal: totalAPayer
-        })
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
-        alert(`✅ ${selectedEleve.prenom} ${selectedEleve.nom} inscrit à la cantine pour ${nombreMois} mois`);
+        alert(`✅ ${selectedEleve.prenom} ${selectedEleve.nom} inscrit à la cantine pour ${nombreMois} mois${
+          isPreinscription ? ' (dossier en attente)' : ''
+        }`);
         setShowInscriptionModal(false);
         setSelectedEleve(null);
         setNombreMois(9);
@@ -570,7 +586,7 @@ export default function CantinePage() {
                   placeholder="Rechercher un menu..."
                   value={searchMenu}
                   onChange={(e) => setSearchMenu(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-black pl-9 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -593,13 +609,13 @@ export default function CantinePage() {
                       <td className="px-6 py-4 font-medium text-blue-900">{m.plat}</td>
                       <td className="px-6 py-4 text-gray-900">{m.accompagnement || '-'}</td>
                       <td className="px-6 py-4 text-gray-900">{m.dessert || '-'}</td>
-                      <td className="px-6 py-4 text-purple-600 font-medium">
+                      <td className="px-6 py-4 text-blue-900 font-medium">
                         {m.prix_mensuel ? `${m.prix_mensuel.toLocaleString()} GNF` : "—"}
                       </td>
-                      <td className="px-6 py-4 text-purple-600 font-medium">
+                      <td className="px-6 py-4 text-blue-900 font-medium">
                         {m.prix_annuel ? `${m.prix_annuel.toLocaleString()} GNF` : "—"}
                       </td>
-                      <td className="px-6 py-4 text-center">{m.inscrits || 0}</td>
+                      <td className="px-6 py-4 text-center text-black">{m.inscrits || 0}</td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           <button onClick={() => handleOpenEditMenu(m)} className="text-blue-600 hover:text-blue-800 p-1">
@@ -694,9 +710,9 @@ export default function CantinePage() {
                     stats.preinscriptions.map((p: PreinscriptionCantine) => (
                       <tr key={p.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 font-mono text-xs text-blue-600">{p.numero_dossier || '-'}</td>
-                        <td className="px-6 py-4 font-medium">{p.enfant_prenom} {p.enfant_nom}</td>
-                        <td className="px-6 py-4">{p.classe || '-'}</td>
-                        <td className="px-6 py-4">{p.menu_plat || '-'}</td>
+                        <td className="px-6 py-4 text-black font-medium">{p.enfant_prenom} {p.enfant_nom}</td>
+                        <td className="px-6 py-4 text-black">{p.classe || '-'}</td>
+                        <td className="px-6 py-4 text-black">{p.menu_plat || '-'}</td>
                         <td className="px-6 py-4 font-medium text-orange-600">
                           {(p.prix_cantine || 0).toLocaleString()} GNF
                         </td>
@@ -751,9 +767,9 @@ export default function CantinePage() {
                     stats.reinscriptions.map((r: ReinscriptionCantine) => (
                       <tr key={r.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 font-mono text-xs text-purple-600">{r.numero_dossier || '-'}</td>
-                        <td className="px-6 py-4 font-medium">{r.enfant_prenom} {r.enfant_nom}</td>
-                        <td className="px-6 py-4">{r.classe_nom || '-'}</td>
-                        <td className="px-6 py-4 font-medium text-orange-600">
+                        <td className="px-6 py-4 text-black font-medium">{r.enfant_prenom} {r.enfant_nom}</td>
+                        <td className="px-6 py-4 text-black">{r.classe_nom || '-'}</td>
+                        <td className="px-6 py-4 text-black font-medium text-orange-600">
                           {(r.montant_cantine || 0).toLocaleString()} GNF
                         </td>
                         <td className="px-6 py-4">
@@ -813,11 +829,11 @@ export default function CantinePage() {
                     placeholder="Rechercher par nom, prénom ou matricule..."
                     value={searchEleve}
                     onChange={(e) => setSearchEleve(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="text-gray-900 w-full pl-9 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 {searchEleve && (
-                  <div className="mt-2 border rounded-lg max-h-40 overflow-y-auto">
+                  <div className="text-gray-900 mt-2 border rounded-lg max-h-40 overflow-y-auto">
                     {elevesFiltres.slice(0, 5).map((eleve) => (
                       <button
                         key={eleve.id}
@@ -825,7 +841,7 @@ export default function CantinePage() {
                           setSelectedEleve(eleve);
                           setSearchEleve(`${eleve.prenom} ${eleve.nom} (${eleve.matricule})`);
                         }}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 border-b last:border-b-0"
+                        className="text-gray-900 w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 border-b last:border-b-0"
                       >
                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                           <User className="w-4 h-4 text-blue-600" />
@@ -857,9 +873,9 @@ export default function CantinePage() {
                     type="button"
                     onClick={handleRetirerMois}
                     disabled={nombreMois <= 1}
-                    className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-gray-900 w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Minus className="w-4 h-4" />
+                    <Minus className="w-4 h-4 text-gray-900" />
                   </button>
                   <div className="text-center">
                     <span className="text-3xl font-bold text-blue-600">{nombreMois}</span>
@@ -871,7 +887,7 @@ export default function CantinePage() {
                     disabled={nombreMois >= MOIS_MAX}
                     className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <PlusIcon className="w-4 h-4" />
+                    <PlusIcon className="w-4 h-4 text-gray-900" />
                   </button>
                 </div>
                 <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
@@ -886,7 +902,7 @@ export default function CantinePage() {
                   type="number"
                   value={prixMensuel}
                   onChange={(e) => setPrixMensuel(Number(e.target.value) || 0)}
-                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="text-gray-900 w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                   min="0"
                   step="10000"
                 />
@@ -898,11 +914,11 @@ export default function CantinePage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-900">Prix mensuel</span>
-                    <span className="font-medium">{prixMensuel.toLocaleString()} GNF</span>
+                    <span className="font-medium text-gray-900">{prixMensuel.toLocaleString()} GNF</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-900">Nombre de mois</span>
-                    <span className="font-medium">{nombreMois} mois</span>
+                    <span className="font-medium text-gray-900">{nombreMois} mois</span>
                   </div>
                   <div className="border-t border-blue-200 pt-2 flex justify-between text-lg font-bold">
                     <span className="text-gray-900">Total à payer</span>
@@ -923,7 +939,7 @@ export default function CantinePage() {
                 <button
                   onClick={handleInscrire}
                   disabled={!selectedEleve}
-                  className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-green-700 text-white rounded-lg font-medium hover:bg-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <UserPlus className="w-4 h-4" />
                   Inscrire à la cantine

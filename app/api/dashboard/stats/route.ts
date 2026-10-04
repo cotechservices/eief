@@ -29,7 +29,6 @@ export async function GET() {
     const reinscriptionsEnAttente = await query("SELECT COUNT(*) as total FROM reinscriptions WHERE statut = 'en_attente'");
 
     // ========== STATISTIQUES FINANCIÈRES ==========
-    // (inchangé)
     const recettesResult = await query(`
       SELECT COALESCE(SUM(montant), 0) as total_recettes
       FROM paiements
@@ -50,17 +49,35 @@ export async function GET() {
     `);
     const totalDepenses = Number(depensesResult.rows[0]?.total_depenses) || 0;
 
+    // Scolarité des élèves inscrits
+    const elevesScolariteResult = await query(`
+      SELECT 
+        e.id,
+        c.total_versement,
+        c.frais_inscription
+      FROM eleves e
+      LEFT JOIN classes c ON e.classe_id = c.id
+      WHERE e.est_inscrit = true AND e.deleted_at IS NULL
+    `);
+
+    let totalScolariteEleves = 0;
+    for (const eleve of elevesScolariteResult.rows) {
+      const inscr = Number(eleve.total_versement) || Number(eleve.frais_inscription) || 0;
+      totalScolariteEleves += inscr;
+    }
+
     const totalAPayerInscriptionResult = await query(`
       SELECT COALESCE(SUM(montant_total_plan), 0) as total_a_payer
       FROM preinscriptions
-      WHERE statut IN ('en_attente', 'valide')
+      WHERE statut = 'en_attente'
     `);
-    const totalAPayerInscription = Number(totalAPayerInscriptionResult.rows[0]?.total_a_payer) || 0;
+    const totalAPayerInscriptionPlan = Number(totalAPayerInscriptionResult.rows[0]?.total_a_payer) || 0;
+    const totalAPayerInscription = totalAPayerInscriptionPlan;
 
     const totalAPayerReinscriptionResult = await query(`
       SELECT COALESCE(SUM(montant_total_plan), 0) as total_a_payer
       FROM reinscriptions
-      WHERE statut IN ('en_attente', 'valide')
+      WHERE statut = 'en_attente'
     `);
     const totalAPayerReinscription = Number(totalAPayerReinscriptionResult.rows[0]?.total_a_payer) || 0;
 
@@ -80,40 +97,57 @@ export async function GET() {
     `);
     const totalPayeReinscription = Number(totalPayeReinscriptionResult.rows[0]?.total_paye) || 0;
 
+    const transportResult = await query(`
+      SELECT COALESCE(
+        (SELECT SUM(pt.prix)
+         FROM preinscriptions p
+         JOIN preinscription_transport pt ON pt.preinscription_id = p.id
+         WHERE p.statut = 'en_attente'), 0) +
+        COALESCE(
+        (SELECT SUM(it.montant_mensuel * it.mois_total)
+         FROM inscriptions_transport it
+         JOIN eleves e ON it.eleve_id = e.id
+         WHERE e.est_inscrit = true AND e.deleted_at IS NULL), 0) as total_transport
+    `);
+    const totalTransport = Number(transportResult.rows[0]?.total_transport) || 0;
+
+    const cantineResult = await query(`
+      SELECT COALESCE(
+        (SELECT SUM(pc.prix)
+         FROM preinscriptions p
+         JOIN preinscription_cantine pc ON pc.preinscription_id = p.id
+         WHERE p.statut = 'en_attente'), 0) +
+        COALESCE(
+        (SELECT SUM(montant_total)
+         FROM inscriptions_cantine ic
+         JOIN eleves e ON ic.eleve_id = e.id
+         WHERE e.est_inscrit = true AND e.deleted_at IS NULL), 0) as total_cantine
+    `);
+    const totalCantine = Number(cantineResult.rows[0]?.total_cantine) || 0;
+
+    const fournituresResult = await query(`
+      SELECT COALESCE(
+        (SELECT SUM(cf.quantite * cf.prix_unitaire)
+         FROM preinscriptions p
+         JOIN commandes_fournitures cf ON cf.preinscription_id = p.id
+         WHERE p.statut IN ('en_attente', 'valide')), 0) +
+        COALESCE(
+        (SELECT SUM(total)
+         FROM commandes_librairie
+         WHERE statut = 'valide'), 0) as total_fournitures
+    `);
+    const totalFournitures = Number(fournituresResult.rows[0]?.total_fournitures) || 0;
+
     const remisesResult = await query(`
       SELECT COALESCE(SUM(montant), 0) as total_remises
       FROM remises_familles
     `);
     const totalRemises = Number(remisesResult.rows[0]?.total_remises) || 0;
 
-    const totalAPayerBrut = totalAPayerInscription + totalAPayerReinscription;
+    const totalAPayerBrut = totalScolariteEleves + totalAPayerInscriptionPlan + totalAPayerReinscription + totalTransport + totalCantine + totalFournitures;
     const totalAPayer = Math.max(0, totalAPayerBrut - totalRemises);
-    const totalPaye = totalPayeInscription + totalPayeReinscription;
+    const totalPaye = totalRecettes;
     const soldeRestant = Math.max(0, totalAPayer - totalPaye);
-
-    const transportResult = await query(`
-      SELECT COALESCE(SUM(pt.prix), 0) as total_transport
-      FROM preinscriptions p
-      JOIN preinscription_transport pt ON pt.preinscription_id = p.id
-      WHERE p.statut IN ('en_attente', 'valide')
-    `);
-    const totalTransport = Number(transportResult.rows[0]?.total_transport) || 0;
-
-    const cantineResult = await query(`
-      SELECT COALESCE(SUM(pc.prix), 0) as total_cantine
-      FROM preinscriptions p
-      JOIN preinscription_cantine pc ON pc.preinscription_id = p.id
-      WHERE p.statut IN ('en_attente', 'valide')
-    `);
-    const totalCantine = Number(cantineResult.rows[0]?.total_cantine) || 0;
-
-    const fournituresResult = await query(`
-      SELECT COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total_fournitures
-      FROM preinscriptions p
-      JOIN commandes_fournitures cf ON cf.preinscription_id = p.id
-      WHERE p.statut IN ('en_attente', 'valide')
-    `);
-    const totalFournitures = Number(fournituresResult.rows[0]?.total_fournitures) || 0;
 
     const tauxRecouvrement = totalAPayer > 0 ? Math.round((totalPaye / totalAPayer) * 100) : 0;
 
@@ -264,7 +298,7 @@ export async function GET() {
     return NextResponse.json({
       general: {
         totalEleves: parseInt(eleves.rows[0]?.total || 0),
-        totalPersonnels: parseInt(personnels.rows[0]?.total || 0), // ← clé modifiée
+        totalPersonnels: parseInt(personnels.rows[0]?.total || 0),
         totalClasses: parseInt(classes.rows[0]?.total || 0),
         totalParents: parseInt(parents.rows[0]?.total || 0),
         preinscriptionsEnAttente: parseInt(preinscriptions.rows[0]?.total || 0),

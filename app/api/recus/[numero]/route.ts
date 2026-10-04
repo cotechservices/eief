@@ -27,9 +27,18 @@ export async function GET(
         pu.prenom as parent_prenom,
         pu.email as parent_email,
         pu.telephone as parent_telephone,
-        -- ⭐ Récupérer le montant total et le reste à payer depuis la pré-inscription
-        COALESCE(r.montant_total, p.montant_total_plan, 0) as montant_total,
-        COALESCE(r.reste_a_payer, p.montant_restant_plan, 0) as reste_a_payer,
+        -- ⭐ Récupérer le montant total et le reste à payer réels
+        COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.preinscription_id = p.id
+        ), r.montant_total, p.montant_total_plan, 0) as montant_total,
+        GREATEST(0, COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.preinscription_id = p.id
+        ), r.montant_total, p.montant_total_plan, 0) - COALESCE((
+          SELECT SUM(pp.montant) FROM paiements pp
+          WHERE pp.preinscription_id = p.id AND pp.statut = 'valide'
+        ), 0)) as reste_a_payer,
         COALESCE(r.classe_nom, p.classe, c.nom) as classe_nom
       FROM recus r
       LEFT JOIN eleves e ON r.eleve_id = e.id

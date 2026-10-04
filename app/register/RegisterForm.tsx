@@ -1080,7 +1080,7 @@ export default function RegisterForm() {
                               <button
                                 type="button"
                                 onClick={() => handleSupplyChange(idx, -1)}
-                                className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                                className="w-8 h-8 text-black rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                                 disabled={item.selectedQty === 0}
                               >
                                 <Minus className="w-4 h-4" />
@@ -1089,7 +1089,7 @@ export default function RegisterForm() {
                               <button
                                 type="button"
                                 onClick={() => handleSupplyChange(idx, 1)}
-                                className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                                className="w-8 h-8 text-black rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                                 disabled={item.selectedQty >= item.quantite_stock}
                               >
                                 <Plus className="w-4 h-4" />

@@ -151,28 +151,28 @@ export default function FinancesPage() {
   };
 
   // Dans finances/page.tsx, la fonction fetchParentsFinances
-const fetchParentsFinances = async () => {
-  setLoadingParentsFinances(true);
-  try {
-    let url = "/api/admin/finances/parents";
-    if (searchParentFinance.trim()) {
-      url += `?search=${encodeURIComponent(searchParentFinance.trim())}`;
+  const fetchParentsFinances = async () => {
+    setLoadingParentsFinances(true);
+    try {
+      let url = "/api/admin/finances/parents";
+      if (searchParentFinance.trim()) {
+        url += `?search=${encodeURIComponent(searchParentFinance.trim())}`;
+      }
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        console.log("Parents finances reçus:", data); // ⭐ Vérifier les données
+        setParentsFinances(data);
+      } else {
+        console.error("Erreur API:", await res.text());
+      }
+    } catch (e) {
+      console.error("Erreur fetchParentsFinances:", e);
     }
-    const res = await fetch(url);
-    if (res.ok) {
-      const data = await res.json();
-      console.log("Parents finances reçus:", data); // ⭐ Vérifier les données
-      setParentsFinances(data);
-    } else {
-      console.error("Erreur API:", await res.text());
+    finally {
+      setLoadingParentsFinances(false);
     }
-  } catch (e) { 
-    console.error("Erreur fetchParentsFinances:", e); 
-  }
-  finally { 
-    setLoadingParentsFinances(false); 
-  }
-};
+  };
 
   const handleAjoutDepense = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -390,7 +390,7 @@ const fetchParentsFinances = async () => {
                         <div className="flex justify-between text-xs text-gray-900">
                           <span className="font-semibold">{r.num_mois ? `${MOIS_NOMS[r.num_mois - 1]} ${r.num_annee || ''}` : r.mois}</span>
                           <span>
-                            Recettes: <strong className="text-green-600 font-bold">{(r.recettes || 0).toLocaleString()} GNF</strong> | 
+                            Recettes: <strong className="text-green-600 font-bold">{(r.recettes || 0).toLocaleString()} GNF</strong> |
                             Dépenses: <strong className="text-red-600 font-bold">{(r.depenses || 0).toLocaleString()} GNF</strong>
                           </span>
                         </div>
@@ -531,9 +531,9 @@ const fetchParentsFinances = async () => {
                               )}
                             </div>
                             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-900 mt-1">
-                              <span>📧 {p.email || "Non renseigné"}</span>
-                              <span>📞 {p.telephone || "Non renseigné"}</span>
-                              {p.profession && <span>💼 {p.profession}</span>}
+                              <span>{p.email || "Non renseigné"}</span>
+                              <span>{p.telephone || "Non renseigné"}</span>
+                              {p.profession && <span>{p.profession}</span>}
                             </div>
                             {/* Liste des enfants */}
                             <div className="flex flex-wrap gap-1.5 mt-2">
@@ -559,7 +559,7 @@ const fetchParentsFinances = async () => {
                               }}
                               className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm"
                             >
-                              <Wallet className="w-4 h-4" /> Paiement Global Libre
+                              <Wallet className="w-4 h-4" /> Paiement Global
                             </button>
                             <button
                               onClick={() => {
@@ -705,25 +705,25 @@ const fetchParentsFinances = async () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {derniersPaiements?.map((p: any, index: number) => (
-                    <tr key={`p-${p.id || index}`} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-green-600 font-semibold text-xs">RECETTE</td>
-                      <td className="px-4 py-3 text-gray-900 font-medium">
-                        Paiement {p.type_frais || 'N/A'} - {(p.enfant_prenom || "")} {(p.enfant_nom || "")} ({p.parent_nom || ''})
-                      </td>
-                      <td className="px-4 py-3 text-right font-bold text-green-600">+{(p.montant || 0).toLocaleString()} GNF</td>
-                      <td className="px-4 py-3 text-right text-gray-900">-</td>
-                      <td className="px-4 py-3 text-gray-900">{p.date_paiement ? new Date(p.date_paiement).toLocaleDateString('fr-FR') : "N/A"}</td>
-                    </tr>
-                  ))}
-                  {depenses?.map((d: any, index: number) => (
-                    <tr key={`d-${d.id || index}`} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-red-600 font-semibold text-xs">DÉPENSE</td>
-                      <td className="px-4 py-3 text-gray-900 font-medium">{d.categorie || 'N/A'} - {d.description || ''}</td>
-                      <td className="px-4 py-3 text-right text-gray-900">-</td>
-                      <td className="px-4 py-3 text-right font-bold text-red-600">-{(Number(d.montant) || 0).toLocaleString()} GNF</td>
-                      <td className="px-4 py-3 text-gray-900">{d.date_depense ? new Date(d.date_depense).toLocaleDateString('fr-FR') : "N/A"}</td>
-                    </tr>
-                  ))}
+                      <tr key={`p-${p.id || index}`} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-green-600 font-semibold text-xs">RECETTE</td>
+                        <td className="px-4 py-3 text-gray-900 font-medium">
+                          Paiement {p.type_frais || 'N/A'} - {(p.enfant_prenom || "")} {(p.enfant_nom || "")} ({p.parent_nom || ''})
+                        </td>
+                        <td className="px-4 py-3 text-right font-bold text-green-600">+{(p.montant || 0).toLocaleString()} GNF</td>
+                        <td className="px-4 py-3 text-right text-gray-900">-</td>
+                        <td className="px-4 py-3 text-gray-900">{p.date_paiement ? new Date(p.date_paiement).toLocaleDateString('fr-FR') : "N/A"}</td>
+                      </tr>
+                    ))}
+                    {depenses?.map((d: any, index: number) => (
+                      <tr key={`d-${d.id || index}`} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-red-600 font-semibold text-xs">DÉPENSE</td>
+                        <td className="px-4 py-3 text-gray-900 font-medium">{d.categorie || 'N/A'} - {d.description || ''}</td>
+                        <td className="px-4 py-3 text-right text-gray-900">-</td>
+                        <td className="px-4 py-3 text-right font-bold text-red-600">-{(Number(d.montant) || 0).toLocaleString()} GNF</td>
+                        <td className="px-4 py-3 text-gray-900">{d.date_depense ? new Date(d.date_depense).toLocaleDateString('fr-FR') : "N/A"}</td>
+                      </tr>
+                    ))}
                     {depenses?.map((d) => (
                       <tr key={`d-${d.id}`} className="hover:bg-gray-50">
                         <td className="px-4 py-3 text-red-600 font-semibold text-xs">DÉPENSE</td>
@@ -924,10 +924,10 @@ const fetchParentsFinances = async () => {
             <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Détail Financier : {selectedParentPaiement.prenom} {selectedParentPaiement.nom}
+                  Détail Financier de : {selectedParentPaiement.prenom} {selectedParentPaiement.nom}
                 </h2>
                 <p className="text-xs text-gray-900 mt-0.5">
-                  📞 {selectedParentPaiement.telephone || "N/A"} • 📧 {selectedParentPaiement.email || "N/A"}
+                  {selectedParentPaiement.telephone || "N/A"} • {selectedParentPaiement.email || "N/A"}
                 </p>
               </div>
               <button
@@ -943,22 +943,26 @@ const fetchParentsFinances = async () => {
 
             <div className="p-6 space-y-6">
               {/* Récapitulatif du Solde */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gradient-to-br from-gray-50 to-blue-50 p-4 rounded-xl border border-blue-100">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 bg-gradient-to-br from-gray-50 to-blue-50 p-4 rounded-xl border border-blue-100">
                 <div>
                   <span className="text-xs text-gray-900 block">Dépenses Brutes</span>
-                  <span className="font-bold text-gray-900">{selectedParentPaiement.totaux.depenses_brutes.toLocaleString()} GNF</span>
+                  <span className="font-bold text-gray-900 text-sm">{selectedParentPaiement.totaux.depenses_brutes.toLocaleString()} GNF</span>
                 </div>
                 <div>
                   <span className="text-xs text-gray-900 block">Remise Déduite</span>
-                  <span className="font-bold text-purple-600">-{selectedParentPaiement.totaux.remise_accordee.toLocaleString()} GNF</span>
+                  <span className="font-bold text-purple-600 text-sm">-{selectedParentPaiement.totaux.remise_accordee.toLocaleString()} GNF</span>
                 </div>
                 <div>
-                  <span className="text-xs text-gray-900 block">Net Payé</span>
-                  <span className="font-bold text-green-600">{selectedParentPaiement.totaux.total_paye.toLocaleString()} GNF</span>
+                  <span className="text-xs text-gray-900 block">Net à Payer</span>
+                  <span className="font-bold text-blue-600 text-sm">{(selectedParentPaiement.totaux.total_net ?? (selectedParentPaiement.totaux.depenses_brutes - selectedParentPaiement.totaux.remise_accordee)).toLocaleString()} GNF</span>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-900 block">Déjà Payé</span>
+                  <span className="font-bold text-green-600 text-sm">{selectedParentPaiement.totaux.total_paye.toLocaleString()} GNF</span>
                 </div>
                 <div>
                   <span className="text-xs text-gray-900 block">Reste à Payer</span>
-                  <span className={`font-bold ${selectedParentPaiement.totaux.solde_restant > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  <span className={`font-bold text-sm ${selectedParentPaiement.totaux.solde_restant > 0 ? 'text-red-600' : 'text-green-600'}`}>
                     {selectedParentPaiement.totaux.solde_restant.toLocaleString()} GNF
                   </span>
                 </div>
@@ -966,10 +970,15 @@ const fetchParentsFinances = async () => {
 
               {/* 1. Échéances Scolarité */}
               <div>
-                <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2 border-b pb-2">
-                  <GraduationCap className="w-5 h-5 text-blue-600" />
-                  🎓 Scolarité & Échéances de Paiement
-                </h3>
+                <div className="flex justify-between items-center border-b pb-2 mb-3">
+                  <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-blue-600" />
+                    Scolarité & Échéances de Paiement
+                  </h3>
+                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                    Total Scolarité: {(selectedParentPaiement.services_breakdown?.scolarite?.total || 0).toLocaleString()} GNF
+                  </span>
+                </div>
                 {selectedParentPaiement.echeances && selectedParentPaiement.echeances.length > 0 ? (
                   <div className="space-y-2">
                     {selectedParentPaiement.echeances.map((ech: any) => (
@@ -977,6 +986,7 @@ const fetchParentsFinances = async () => {
                         <div>
                           <p className="font-semibold text-sm text-gray-900 capitalize">
                             {ech.echeance?.replace('_', ' ')} ({ech.type || 'Scolarité'})
+                            {ech.enfant_nom && <span className="text-blue-700 font-medium ml-1">• {ech.enfant_nom}</span>}
                           </p>
                           <p className="text-xs text-gray-900">
                             Montant: <span className="font-medium text-blue-600">{Number(ech.montant).toLocaleString()} GNF</span> •
@@ -1004,7 +1014,7 @@ const fetchParentsFinances = async () => {
                               }}
                               className="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
                             >
-                              💳 Régler
+                              Régler
                             </button>
                           )}
                         </div>
@@ -1022,7 +1032,7 @@ const fetchParentsFinances = async () => {
               <div>
                 <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2 border-b pb-2">
                   <Utensils className="w-5 h-5 text-orange-600" />
-                  🍽️ Cantine Scolaire
+                  Cantine Scolaire
                 </h3>
                 <div className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
                   <div>
@@ -1044,7 +1054,7 @@ const fetchParentsFinances = async () => {
                     }}
                     className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
                   >
-                    💳 Régler la Cantine
+                    Régler la Cantine
                   </button>
                 </div>
               </div>
@@ -1053,7 +1063,7 @@ const fetchParentsFinances = async () => {
               <div>
                 <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2 border-b pb-2">
                   <Bus className="w-5 h-5 text-blue-600" />
-                  🚌 Transport Scolaire
+                  Transport Scolaire
                 </h3>
                 <div className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
                   <div>
@@ -1075,16 +1085,16 @@ const fetchParentsFinances = async () => {
                     }}
                     className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
                   >
-                    💳 Régler le Transport
+                    Régler le Transport
                   </button>
                 </div>
               </div>
 
-              {/* 4. Fournitures */}
+              {/* 4. Fournitures & Librairie */}
               <div>
                 <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2 border-b pb-2">
-                  <ShoppingCart className="w-5 h-5 text-purple-600" />
-                  📚 Fournitures & Manuels
+                  <CreditCard className="w-5 h-5 text-purple-600" />
+                  Fournitures Scolaires
                 </h3>
                 <div className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
                   <div>
@@ -1106,7 +1116,7 @@ const fetchParentsFinances = async () => {
                     }}
                     className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
                   >
-                    💳 Régler les Fournitures
+                    Régler les Fournitures
                   </button>
                 </div>
               </div>

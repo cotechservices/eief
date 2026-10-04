@@ -69,29 +69,48 @@ export async function GET(request: NextRequest) {
         SELECT 
           e.id as eleve_id,
           COALESCE(c.total_versement, c.frais_inscription, 0) as frais_inscription_classe,
-          COALESCE(c.reinscription_total_versement, c.total_versement, 0) as frais_reinscription_classe,
           COALESCE((SELECT SUM(pai.montant) FROM paiements pai WHERE pai.eleve_id = e.id AND pai.statut = 'valide'), 0) as frais_paye_eleve,
           COALESCE((SELECT SUM(pai.montant) FROM paiements pai WHERE pai.preinscription_id IN (SELECT i.preinscription_id FROM inscriptions i WHERE i.eleve_id = e.id) AND pai.statut = 'valide'), 0) as frais_paye_preinscription,
-          COALESCE((SELECT SUM(pai.montant) FROM paiements pai WHERE pai.reinscription_id IN (SELECT id FROM reinscriptions WHERE eleve_id = e.id) AND pai.statut = 'valide'), 0) as frais_paye_reinscription,
-          (SELECT p.montant_total_plan FROM preinscriptions p JOIN inscriptions i ON i.preinscription_id = p.id WHERE i.eleve_id = e.id LIMIT 1) as montant_total_plan
+          COALESCE((SELECT SUM(pai.montant) FROM paiements pai WHERE pai.reinscription_id IN (SELECT id FROM reinscriptions WHERE eleve_id = e.id) AND pai.statut = 'valide'), 0) as frais_paye_reinscription
         FROM eleves e
         LEFT JOIN classes c ON e.classe_id = c.id
         JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id
         WHERE lpe.parent_id = $1 AND e.deleted_at IS NULL
       `, [parentId]);
 
-      let totalAPayer = 0;
+      // Preinscriptions & Reinscriptions en attente
+      const preinsPending = await query(`
+        SELECT COALESCE(SUM(COALESCE(montant_total_plan, frais_montant)), 0) as total
+        FROM preinscriptions
+        WHERE parent_id = $1 AND statut = 'en_attente'
+      `, [parentId]);
+      const preinsTotal = Number(preinsPending.rows[0]?.total) || 0;
+
+      const reinscrPending = await query(`
+        SELECT COALESCE(SUM(COALESCE(montant_total_plan, montant_frais)), 0) as total
+        FROM reinscriptions
+        WHERE parent_id = $1 AND statut = 'en_attente'
+      `, [parentId]);
+      const reinscrTotal = Number(reinscrPending.rows[0]?.total) || 0;
+
+      // Cantine + Transport + Librairie
+      const servicesRes = await query(`
+        SELECT 
+          COALESCE((SELECT SUM(montant_total) FROM inscriptions_cantine WHERE eleve_id IN (SELECT eleve_id FROM lien_parent_eleve WHERE parent_id = $1)), 0) +
+          COALESCE((SELECT SUM(montant_mensuel * mois_total) FROM inscriptions_transport WHERE eleve_id IN (SELECT eleve_id FROM lien_parent_eleve WHERE parent_id = $1)), 0) +
+          COALESCE((SELECT SUM(total) FROM commandes_librairie WHERE parent_id = $1 AND statut = 'valide'), 0) as total_services
+      `, [parentId]);
+      const totalServices = Number(servicesRes.rows[0]?.total_services) || 0;
+
+      let scolariteEleves = 0;
       let totalPaye = 0;
 
       for (const row of elevesFraisResult.rows) {
-        const fraisClasse = Number(row.frais_reinscription_classe) > 0 ? Number(row.frais_reinscription_classe) : Number(row.frais_inscription_classe);
-        const montantTotal = Number(row.montant_total_plan) > 0 ? Number(row.montant_total_plan) : fraisClasse;
-        const paye = Number(row.frais_paye_eleve) + Number(row.frais_paye_preinscription) + Number(row.frais_paye_reinscription);
-        
-        totalAPayer += montantTotal;
-        totalPaye += paye;
+        scolariteEleves += Number(row.frais_inscription_classe) || 0;
+        totalPaye += Number(row.frais_paye_eleve) + Number(row.frais_paye_preinscription) + Number(row.frais_paye_reinscription);
       }
 
+      const totalAPayer = scolariteEleves + preinsTotal + reinscrTotal + totalServices;
       const totalRemises = Number(parent.total_remises) || 0;
       const soldeRestant = Math.max(0, totalAPayer - totalPaye - totalRemises);
 

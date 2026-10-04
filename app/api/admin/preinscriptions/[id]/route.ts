@@ -1,9 +1,84 @@
 // app/api/admin/preinscriptions/[id]/route.ts
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+
+// GET - Récupérer le détail des frais d'une pré-inscription (accessible aux admins)
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    }
+    const role = (session.user as any).role;
+    const allowedRoles = ["SUPER_ADMIN", "ADMIN", "COMPTABLE", "DIRECTEUR_GENERAL", "DIRECTEUR"];
+    if (!allowedRoles.includes(role)) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+    }
+
+    const preinscriptionId = parseInt(params.id);
+    if (isNaN(preinscriptionId)) {
+      return NextResponse.json({ error: "ID invalide" }, { status: 400 });
+    }
+
+    // Récupérer les montants depuis echeances_paiement (source de vérité), groupés par type
+    const fraisRes = await query(`
+      SELECT
+        COALESCE(SUM(CASE WHEN type = 'inscription'  THEN montant ELSE 0 END), 0) AS inscription,
+        COALESCE(SUM(CASE WHEN type = 'cantine'      THEN montant ELSE 0 END), 0) AS cantine,
+        COALESCE(SUM(CASE WHEN type = 'transport'    THEN montant ELSE 0 END), 0) AS transport,
+        COALESCE(SUM(CASE WHEN type = 'fournitures'  THEN montant ELSE 0 END), 0) AS fournitures,
+        COALESCE(SUM(CASE WHEN type NOT IN ('inscription','cantine','transport','fournitures') THEN montant ELSE 0 END), 0) AS autres
+      FROM echeances_paiement
+      WHERE preinscription_id = $1
+    `, [preinscriptionId]);
+
+    // Paiements déjà effectués
+    const paiementsRes = await query(`
+      SELECT COALESCE(SUM(montant), 0) AS paye
+      FROM paiements
+      WHERE preinscription_id = $1 AND statut = 'valide'
+    `, [preinscriptionId]);
+
+    if (fraisRes.rows.length === 0) {
+      return NextResponse.json({ error: "Pré-inscription non trouvée" }, { status: 404 });
+    }
+
+    const row       = fraisRes.rows[0];
+    const inscription = Number(row.inscription);
+    const cantine     = Number(row.cantine);
+    const transport   = Number(row.transport);
+    const fournitures = Number(row.fournitures);
+    const autres      = Number(row.autres);
+    const total       = inscription + cantine + transport + fournitures + autres;
+    const paye        = Number(paiementsRes.rows[0]?.paye || 0);
+
+    return NextResponse.json({
+      details_frais: {
+        inscription,
+        cantine,
+        transport,
+        librairie: fournitures,
+        fournitures,
+        autres,
+        scolarite: 0,
+        total,
+        paye,
+        reste: Math.max(0, total - paye)
+      }
+    });
+
+  } catch (error) {
+    console.error("Erreur GET détail frais preinscription (admin):", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
 
 export async function PUT(
     request: Request,

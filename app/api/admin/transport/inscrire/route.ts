@@ -18,10 +18,66 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { eleveId, ligneId, mois, montantMensuel } = body;
+    const { eleveId, preinscriptionId, ligneId, mois, montantMensuel } = body;
 
-    if (!eleveId || !ligneId || !mois || !montantMensuel) {
+    if ((!eleveId && !preinscriptionId) || !mois || !montantMensuel) {
       return NextResponse.json({ error: "Données incomplètes" }, { status: 400 });
+    }
+
+    // ⭐ CAS PRÉ-INSCRIPTION (en_attente) : inscrire dans preinscription_transport
+    if (preinscriptionId && !eleveId) {
+      const preinscriptionCheck = await query(`
+        SELECT p.id, p.enfant_nom as nom, p.enfant_prenom as prenom
+        FROM preinscriptions p
+        WHERE p.id = $1 AND p.statut = 'en_attente'
+      `, [preinscriptionId]);
+
+      if (preinscriptionCheck.rows.length === 0) {
+        return NextResponse.json({ error: "Pré-inscription non trouvée ou déjà validée" }, { status: 404 });
+      }
+
+      const preins = preinscriptionCheck.rows[0];
+      const prixTotal = (Number(mois) || 0) * (Number(montantMensuel) || 0);
+      const ligneIdToUse = ligneId || null;
+
+      // Vérifier si déjà inscrit → mettre à jour au lieu de refuser
+      const existingPreins = await query(`
+        SELECT id FROM preinscription_transport WHERE preinscription_id = $1
+      `, [preinscriptionId]);
+
+      if (existingPreins.rows.length > 0) {
+        await query(`
+          UPDATE preinscription_transport 
+          SET prix = $1, ligne_id = $2 
+          WHERE preinscription_id = $3
+        `, [prixTotal, ligneIdToUse, preinscriptionId]);
+        return NextResponse.json({
+          success: true,
+          message: `Inscription transport mise à jour pour ${preins.prenom} ${preins.nom}`,
+        });
+      }
+
+      await query(`
+        INSERT INTO preinscription_transport (preinscription_id, ligne_id, prix)
+        VALUES ($1, $2, $3)
+      `, [preinscriptionId, ligneIdToUse, prixTotal]);
+
+      // Mettre à jour le montant_total_plan de la pré-inscription
+      await query(`
+        UPDATE preinscriptions
+        SET montant_total_plan = COALESCE(montant_total_plan, frais_montant, 0) + $1
+        WHERE id = $2
+      `, [prixTotal, preinscriptionId]);
+
+      return NextResponse.json({
+        success: true,
+        message: `${preins.prenom} ${preins.nom} inscrit au transport (dossier en attente)`,
+      });
+    }
+
+    // ⭐ CAS ÉLÈVE INSCRIT : inscrire dans inscriptions_transport
+    if (!ligneId) {
+      return NextResponse.json({ error: "Ligne de transport requise" }, { status: 400 });
     }
 
     // Vérifier que l'élève existe
@@ -66,7 +122,6 @@ export async function POST(request: Request) {
     await query('BEGIN');
 
     try {
-      // Créer l'inscription
       const result = await query(`
         INSERT INTO inscriptions_transport (
           eleve_id,
@@ -83,31 +138,6 @@ export async function POST(request: Request) {
       `, [eleveId, ligneId, total, moisInt, prixMensuel, total]);
 
       const inscriptionId = result.rows[0].id;
-
-      // Créer le paiement
-      await query(`
-        INSERT INTO paiements (
-          eleve_id,
-          montant,
-          type_frais,
-          mode_paiement,
-          statut,
-          date_paiement,
-          mois,
-          annee,
-          saisie_par
-        ) VALUES (
-          $1,
-          $2,
-          'transport',
-          'especes',
-          'valide',
-          NOW(),
-          EXTRACT(MONTH FROM NOW()),
-          EXTRACT(YEAR FROM NOW()),
-          $3
-        )
-      `, [eleveId, total, parseInt((session.user as any).id)]);
 
       await query('COMMIT');
 

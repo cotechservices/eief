@@ -52,11 +52,14 @@ interface InscriptionTransport {
 }
 
 interface Eleve {
-  id: number;
+  id: number | null;
   nom: string;
   prenom: string;
   matricule: string;
   classe_nom: string;
+  source: "eleve" | "preinscription";
+  preinscription_id: number | null;
+  ref_id: number;
 }
 
 interface LigneTransport {
@@ -91,6 +94,7 @@ export default function TransportPage() {
   const [lignes, setLignes] = useState<LigneTransport[]>([]);
   const [showInscriptionForm, setShowInscriptionForm] = useState(false);
   const [editingInscription, setEditingInscription] = useState<InscriptionTransport | null>(null);
+  const [selectedEleve, setSelectedEleve] = useState<Eleve | null>(null);
   const [inscriptionForm, setInscriptionForm] = useState({
     eleveId: "",
     ligneId: "",
@@ -141,11 +145,12 @@ export default function TransportPage() {
 
   const fetchEleves = async () => {
     try {
-      const res = await fetch("/api/admin/eleves");
+      // ⭐ Charger élèves inscrits + pré-inscriptions en attente
+      const res = await fetch("/api/admin/eleves-et-preinscriptions");
       if (res.ok) {
         const data = await res.json();
         setEleves(data);
-        setFilteredEleves(data); // initialisation
+        setFilteredEleves(data);
       }
     } catch (error) {
       console.error("Erreur chargement élèves:", error);
@@ -298,8 +303,12 @@ export default function TransportPage() {
   }, [eleveSearch, eleves]);
 
   const handleSelectEleve = (eleve: Eleve) => {
-    setInscriptionForm({ ...inscriptionForm, eleveId: eleve.id.toString() });
-    setEleveSearch(`${eleve.prenom} ${eleve.nom} (${eleve.matricule})`);
+    setSelectedEleve(eleve);
+    // Pour les élèves inscrits, on utilise eleve.id ; pour les pré-inscriptions, on met null
+    setInscriptionForm({ ...inscriptionForm, eleveId: eleve.ref_id.toString() });
+    setEleveSearch(`${eleve.prenom} ${eleve.nom} (${eleve.matricule})${
+      eleve.source === 'preinscription' ? ' ⏳ En attente' : ''
+    }`);
     setShowEleveDropdown(false);
   };
 
@@ -336,18 +345,30 @@ export default function TransportPage() {
         : "/api/admin/transport/inscrire";
       const method = editingInscription ? "PUT" : "POST";
 
-      const body = editingInscription
-        ? {
-            mois: inscriptionForm.mois,
-            montantMensuel: inscriptionForm.montantMensuel,
-            montantTotal: inscriptionForm.montantTotal,
-          }
-        : {
-            eleveId: parseInt(inscriptionForm.eleveId),
-            ligneId: parseInt(inscriptionForm.ligneId),
-            mois: inscriptionForm.mois,
-            montantMensuel: inscriptionForm.montantMensuel,
-          };
+      let body: any;
+      if (editingInscription) {
+        body = {
+          mois: inscriptionForm.mois,
+          montantMensuel: inscriptionForm.montantMensuel,
+          montantTotal: inscriptionForm.montantTotal,
+        };
+      } else if (selectedEleve?.source === 'preinscription') {
+        // ⭐ Pré-inscription (en_attente) → envoyer preinscriptionId
+        body = {
+          preinscriptionId: selectedEleve.preinscription_id,
+          ligneId: parseInt(inscriptionForm.ligneId),
+          mois: inscriptionForm.mois,
+          montantMensuel: inscriptionForm.montantMensuel,
+        };
+      } else {
+        // Élève inscrit → envoyer eleveId
+        body = {
+          eleveId: parseInt(inscriptionForm.eleveId),
+          ligneId: parseInt(inscriptionForm.ligneId),
+          mois: inscriptionForm.mois,
+          montantMensuel: inscriptionForm.montantMensuel,
+        };
+      }
 
       const response = await fetch(url, {
         method,
@@ -357,6 +378,7 @@ export default function TransportPage() {
 
       if (response.ok) {
         setShowInscriptionForm(false);
+        setSelectedEleve(null);
         fetchInscriptions();
         fetchTransport();
         setTimeout(fetchTransport, 500);

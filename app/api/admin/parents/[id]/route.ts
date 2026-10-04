@@ -137,7 +137,7 @@ export async function GET(
       }))
     ];
 
-    // Récupérer les pré-inscriptions du parent
+    // Récupérer les pré-inscriptions du parent avec montants détaillés (scolarité, fournitures, cantine, transport, paiements)
     const preinscriptionsResult = await query(`
       SELECT 
         p.id,
@@ -158,13 +158,17 @@ export async function GET(
         p.date_preinscription,
         p.montant_total_plan,
         p.montant_restant_plan,
-        'preinscription' as type_dossier
+        'preinscription' as type_dossier,
+        COALESCE((SELECT SUM(cf.quantite * cf.prix_unitaire) FROM commandes_fournitures cf WHERE cf.preinscription_id = p.id), 0) as fournitures_montant,
+        COALESCE((SELECT SUM(pc.prix) FROM preinscription_cantine pc WHERE pc.preinscription_id = p.id), 0) as cantine_montant,
+        COALESCE((SELECT SUM(pt.prix) FROM preinscription_transport pt WHERE pt.preinscription_id = p.id), 0) as transport_montant,
+        COALESCE((SELECT SUM(pai.montant) FROM paiements pai WHERE pai.preinscription_id = p.id AND pai.statut IN ('valide', 'paye')), 0) as paye_montant
       FROM preinscriptions p
       WHERE p.parent_id = $1
       ORDER BY p.date_preinscription DESC
     `, [parentId]);
 
-    // Récupérer les réinscriptions du parent
+    // Récupérer les réinscriptions du parent avec montants détaillés
     const reinscriptionsResult = await query(`
       SELECT 
         r.id,
@@ -173,47 +177,170 @@ export async function GET(
         r.enfant_prenom,
         NULL as date_naissance,
         r.niveau,
-        r.classe_id as classe,
+        r.classe_nom as classe,
         r.statut,
         r.frais_statut,
         r.montant_frais as frais_montant,
         r.date_reinscription as date_preinscription,
         r.montant_total_plan,
         r.montant_restant_plan,
-        'reinscription' as type_dossier
+        'reinscription' as type_dossier,
+        0 as fournitures_montant,
+        COALESCE((SELECT SUM(ic.montant_total) FROM inscriptions_cantine ic WHERE ic.eleve_id = r.eleve_id), 0) as cantine_montant,
+        COALESCE((SELECT SUM(it.montant_mensuel * it.mois_total) FROM inscriptions_transport it WHERE it.eleve_id = r.eleve_id), 0) as transport_montant,
+        COALESCE((SELECT SUM(pai.montant) FROM paiements pai WHERE pai.reinscription_id = r.id AND pai.statut IN ('valide', 'paye')), 0) as paye_montant
       FROM reinscriptions r
       WHERE r.parent_id = $1
       ORDER BY r.date_reinscription DESC
     `, [parentId]);
 
-    // ⭐ Calculer le solde restant exact pour les élèves du parent (identique à /api/parent/enfants)
-    const elevesFraisResult = await query(`
-      SELECT 
-        e.id as eleve_id,
-        COALESCE(c.total_versement, c.frais_inscription, 0) as frais_inscription_classe,
-        COALESCE(c.reinscription_total_versement, c.total_versement, 0) as frais_reinscription_classe,
-        COALESCE((SELECT SUM(pai.montant) FROM paiements pai WHERE pai.eleve_id = e.id AND pai.statut = 'valide'), 0) as frais_paye_eleve,
-        COALESCE((SELECT SUM(pai.montant) FROM paiements pai WHERE pai.preinscription_id IN (SELECT i.preinscription_id FROM inscriptions i WHERE i.eleve_id = e.id) AND pai.statut = 'valide'), 0) as frais_paye_preinscription,
-        COALESCE((SELECT SUM(pai.montant) FROM paiements pai WHERE pai.reinscription_id IN (SELECT id FROM reinscriptions WHERE eleve_id = e.id) AND pai.statut = 'valide'), 0) as frais_paye_reinscription,
-        (SELECT p.montant_total_plan FROM preinscriptions p JOIN inscriptions i ON i.preinscription_id = p.id WHERE i.eleve_id = e.id LIMIT 1) as montant_total_plan
-      FROM eleves e
-      LEFT JOIN classes c ON e.classe_id = c.id
-      JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id
-      WHERE lpe.parent_id = $1 AND e.deleted_at IS NULL
-    `, [parentId]);
-
-    let soldeElevesTotal = 0;
-    for (const row of elevesFraisResult.rows) {
-      const fraisClasse = Number(row.frais_reinscription_classe) > 0 ? Number(row.frais_reinscription_classe) : Number(row.frais_inscription_classe);
-      const montantTotal = Number(row.montant_total_plan) > 0 ? Number(row.montant_total_plan) : fraisClasse;
-      const totalPaye = Number(row.frais_paye_eleve) + Number(row.frais_paye_preinscription) + Number(row.frais_paye_reinscription);
-      soldeElevesTotal += Math.max(0, montantTotal - totalPaye);
+    // ⭐ Calcul complet et précis de la scolarité et des services
+    let totalScolarite = 0;
+    for (const eleve of enfantsResult.rows) {
+      const inscr = Number(eleve.total_versement) || Number(eleve.frais_inscription) || 0;
+      totalScolarite += inscr;
+    }
+    for (const pre of preinscriptionsResult.rows) {
+      if (pre.statut === 'en_attente') {
+        totalScolarite += Number(pre.montant_total_plan) || Number(pre.frais_montant) || 0;
+      }
+    }
+    for (const rein of reinscriptionsResult.rows) {
+      if (rein.statut === 'en_attente') {
+        totalScolarite += Number(rein.montant_total_plan) || Number(rein.frais_montant) || 0;
+      }
     }
 
-    const allDossiers = [...(preinscriptionsResult.rows || []), ...(reinscriptionsResult.rows || [])];
-    const soldeDossiersTotal = allDossiers.reduce((acc, p) => acc + (Number(p.montant_restant_plan) || 0), 0);
+    // Cantine totale (élèves + préinscriptions en attente)
+    const cantineTotalRes = await query(`
+      SELECT 
+        COALESCE((SELECT SUM(ic.montant_total) FROM inscriptions_cantine ic JOIN eleves e ON ic.eleve_id = e.id JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id WHERE lpe.parent_id = $1 AND e.deleted_at IS NULL), 0) +
+        COALESCE((SELECT SUM(pc.prix) FROM preinscription_cantine pc JOIN preinscriptions p ON pc.preinscription_id = p.id WHERE p.parent_id = $1 AND p.statut = 'en_attente'), 0) as total_cantine
+    `, [parentId]);
+    const totalCantine = Number(cantineTotalRes.rows[0]?.total_cantine) || 0;
 
-    const soldeRestantTotal = soldeElevesTotal > 0 ? soldeElevesTotal : soldeDossiersTotal;
+    // Transport total (élèves + préinscriptions en attente)
+    const transportTotalRes = await query(`
+      SELECT 
+        COALESCE((SELECT SUM(it.montant_mensuel * it.mois_total) FROM inscriptions_transport it JOIN eleves e ON it.eleve_id = e.id JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id WHERE lpe.parent_id = $1 AND e.deleted_at IS NULL), 0) +
+        COALESCE((SELECT SUM(pt.prix) FROM preinscription_transport pt JOIN preinscriptions p ON pt.preinscription_id = p.id WHERE p.parent_id = $1 AND p.statut = 'en_attente'), 0) as total_transport
+    `, [parentId]);
+    const totalTransport = Number(transportTotalRes.rows[0]?.total_transport) || 0;
+
+    // Fournitures totales (commandes_fournitures + commandes_librairie)
+    const fournituresTotalRes = await query(`
+      SELECT 
+        COALESCE((SELECT SUM(cf.quantite * cf.prix_unitaire) FROM commandes_fournitures cf JOIN preinscriptions p ON cf.preinscription_id = p.id WHERE p.parent_id = $1), 0) +
+        COALESCE((SELECT SUM(cl.total) FROM commandes_librairie cl WHERE cl.parent_id = $1 AND cl.statut = 'valide'), 0) as total_fournitures
+    `, [parentId]);
+    const totalFournitures = Number(fournituresTotalRes.rows[0]?.total_fournitures) || 0;
+
+    // Remise accordée à la famille
+    const remiseResult = await query(`
+      SELECT COALESCE(SUM(montant), 0) as total_remise
+      FROM remises_familles
+      WHERE parent_id = $1
+    `, [parentId]);
+    const remiseAccordee = Number(remiseResult.rows[0]?.total_remise) || 0;
+
+    // Total des paiements reçus
+    const paiementsRes = await query(`
+      SELECT COALESCE(SUM(montant), 0) as total_paye
+      FROM (
+        SELECT p.id, p.montant FROM paiements p WHERE p.statut IN ('valide', 'paye') AND p.eleve_id IN (SELECT eleve_id FROM lien_parent_eleve WHERE parent_id = $1)
+        UNION ALL
+        SELECT p.id, p.montant FROM paiements p WHERE p.statut IN ('valide', 'paye') AND p.preinscription_id IN (SELECT id FROM preinscriptions WHERE parent_id = $1)
+        UNION ALL
+        SELECT p.id, p.montant FROM paiements p WHERE p.statut IN ('valide', 'paye') AND p.reinscription_id IN (SELECT id FROM reinscriptions WHERE parent_id = $1)
+      ) paiements_uniques
+    `, [parentId]);
+    const totalPaye = Number(paiementsRes.rows[0]?.total_paye) || 0;
+
+    // Répartition des paiements par catégorie
+    const paiementsParCatRes = await query(`
+      SELECT 
+        CASE 
+          WHEN type_frais IN ('cantine') THEN 'cantine'
+          WHEN type_frais IN ('transport') THEN 'transport'
+          WHEN type_frais IN ('fournitures', 'librairie') THEN 'fournitures'
+          ELSE 'inscription'
+        END as cat,
+        COALESCE(SUM(montant), 0) as montant
+      FROM paiements
+      WHERE statut IN ('valide', 'paye')
+        AND (
+          eleve_id IN (SELECT eleve_id FROM lien_parent_eleve WHERE parent_id = $1)
+          OR preinscription_id IN (SELECT id FROM preinscriptions WHERE parent_id = $1)
+          OR reinscription_id IN (SELECT id FROM reinscriptions WHERE parent_id = $1)
+        )
+      GROUP BY 1
+    `, [parentId]);
+
+    let payeScolarite = 0;
+    let payeCantine = 0;
+    let payeTransport = 0;
+    let payeFournitures = 0;
+    for (const r of paiementsParCatRes.rows) {
+      if (r.cat === 'cantine') payeCantine = Number(r.montant) || 0;
+      else if (r.cat === 'transport') payeTransport = Number(r.montant) || 0;
+      else if (r.cat === 'fournitures') payeFournitures = Number(r.montant) || 0;
+      else payeScolarite += Number(r.montant) || 0;
+    }
+
+    const totalDepensesBrutes = totalScolarite + totalCantine + totalTransport + totalFournitures;
+    const totalNetAPayer = Math.max(0, totalDepensesBrutes - remiseAccordee);
+    const soldeRestantTotal = Math.max(0, totalNetAPayer - totalPaye);
+
+    const soldeGlobal = {
+      total: soldeRestantTotal,
+      details: {
+        inscription: Math.max(0, totalScolarite - payeScolarite),
+        transport: Math.max(0, totalTransport - payeTransport),
+        cantine: Math.max(0, totalCantine - payeCantine),
+        fournitures: Math.max(0, totalFournitures - payeFournitures)
+      }
+    };
+
+    const allDossiers = [
+      ...preinscriptionsResult.rows.map((p: any) => {
+        const scolarite = Number(p.montant_total_plan) || Number(p.frais_montant) || 0;
+        const fournitures = Number(p.fournitures_montant) || 0;
+        const cantine = Number(p.cantine_montant) || 0;
+        const transport = Number(p.transport_montant) || 0;
+        const totalGlobal = scolarite + fournitures + cantine + transport;
+        const paye = Number(p.paye_montant) || 0;
+        const restant = Math.max(0, totalGlobal - paye);
+        return {
+          ...p,
+          scolarite_montant: scolarite,
+          fournitures_montant: fournitures,
+          cantine_montant: cantine,
+          transport_montant: transport,
+          montant_total_global: totalGlobal,
+          paye_montant: paye,
+          montant_restant_global: restant
+        };
+      }),
+      ...reinscriptionsResult.rows.map((r: any) => {
+        const scolarite = Number(r.montant_total_plan) || Number(r.frais_montant) || 0;
+        const fournitures = Number(r.fournitures_montant) || 0;
+        const cantine = Number(r.cantine_montant) || 0;
+        const transport = Number(r.transport_montant) || 0;
+        const totalGlobal = scolarite + fournitures + cantine + transport;
+        const paye = Number(r.paye_montant) || 0;
+        const restant = Math.max(0, totalGlobal - paye);
+        return {
+          ...r,
+          scolarite_montant: scolarite,
+          fournitures_montant: fournitures,
+          cantine_montant: cantine,
+          transport_montant: transport,
+          montant_total_global: totalGlobal,
+          paye_montant: paye,
+          montant_restant_global: restant
+        };
+      })
+    ];
 
     return NextResponse.json({
       ...parent,
@@ -225,6 +352,20 @@ export async function GET(
       enfants: tousEnfants,
       preinscriptions: allDossiers,
       solde_restant_total: soldeRestantTotal,
+      solde_global: soldeGlobal,
+      totaux: {
+        depenses_brutes: totalDepensesBrutes,
+        remise_accordee: remiseAccordee,
+        total_net: totalNetAPayer,
+        total_paye: totalPaye,
+        solde_restant: soldeRestantTotal
+      },
+      services_breakdown: {
+        scolarite: totalScolarite,
+        cantine: totalCantine,
+        transport: totalTransport,
+        fournitures: totalFournitures
+      }
     });
   } catch (error) {
     console.error("Erreur récupération parent:", error);

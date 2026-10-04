@@ -57,21 +57,21 @@ export async function GET() {
 
     // ===================== 2. STATISTIQUES GLOBALES =====================
 
-    // ⭐ TOTAL INSCRITS À LA CANTINE (depuis paiements)
+    // ⭐ TOTAL INSCRITS À LA CANTINE (depuis inscriptions_cantine)
     const inscritsTotal = await query(`
       SELECT COUNT(DISTINCT eleve_id) as total 
-      FROM paiements 
-      WHERE type_frais = 'cantine' AND statut = 'valide'
+      FROM inscriptions_cantine 
+      WHERE est_actif = true
     `);
 
-    // ⭐ INSCRITS PAR SEXE (depuis paiements)
+    // ⭐ INSCRITS PAR SEXE (depuis inscriptions_cantine)
     const inscritsParSexe = await query(`
       SELECT 
         e.sexe,
         COUNT(DISTINCT e.id) as total
-      FROM paiements p
-      JOIN eleves e ON p.eleve_id = e.id
-      WHERE p.type_frais = 'cantine' AND p.statut = 'valide'
+      FROM inscriptions_cantine ic
+      JOIN eleves e ON ic.eleve_id = e.id
+      WHERE ic.est_actif = true
       GROUP BY e.sexe
     `);
 

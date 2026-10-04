@@ -124,7 +124,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
             <h4 className="font-semibold text-gray-900 mb-2">Détail du solde global</h4>
             <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
+              <div className="flex justify-between text-black">
                 <span>Frais d'inscription</span>
                 <span className="font-medium text-indigo-600">{formatMontant(safeSolde.details.inscription)} GNF</span>
               </div>

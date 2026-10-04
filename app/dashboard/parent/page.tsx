@@ -44,6 +44,9 @@ interface DetailsFrais {
   total: number;
   paye: number;
   reste: number;
+  total_brut?: number;
+  remise?: number;
+  net?: number;
 }
 
 interface Enfant {
@@ -57,6 +60,8 @@ interface Enfant {
   frais_inscription_classe: number;
   photo_url: string | null;
   details_frais?: DetailsFrais;
+  remise_globale?: number;
+  total_remise_parent?: number;
 }
 
 interface Preinscription {
@@ -171,7 +176,6 @@ export default function ParentDashboard() {
   // État pour les notifications
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // ⭐ AJOUTER UN ÉTAT POUR LE RAFRAÎCHISSEMENT
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Fonction pour ajouter une notification
@@ -188,12 +192,10 @@ export default function ParentDashboard() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // ⭐ MODIFIER useEffect pour dépendre de refreshTrigger
   useEffect(() => {
     fetchData();
   }, [refreshTrigger]);
 
-  // ⭐ FONCTION POUR FORCER LE RAFRAÎCHISSEMENT
   const triggerRefresh = () => {
     setRefreshTrigger(prev => prev + 1);
   };
@@ -201,38 +203,84 @@ export default function ParentDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Récupérer les enfants et les pré-inscriptions
-      const [enfantsRes, preinscriptionsRes] = await Promise.all([
-        fetch("/api/parent/enfants"),
-        fetch("/api/parent/preinscriptions")
-      ]);
+      // 1. Récupérer les enfants
+      const enfantsRes = await fetch("/api/parent/enfants");
+      
+      // ⭐⭐⭐ VÉRIFIER LA RÉPONSE ⭐⭐⭐
+      if (!enfantsRes.ok) {
+        console.error("❌ Erreur API enfants:", enfantsRes.status);
+        addNotification("error", "Erreur lors du chargement des enfants");
+        setLoading(false);
+        return;
+      }
 
       const enfantsData = await enfantsRes.json();
-      const preinscriptionsData = await preinscriptionsRes.json();
+      console.log("📋 Enfants reçus (brut):", enfantsData);
 
-      console.log("Enfants reçus:", enfantsData);
-      console.log("Pré-inscriptions reçues:", preinscriptionsData);
+      // ⭐⭐⭐ S'ASSURER QUE C'EST UN TABLEAU ⭐⭐⭐
+      let enfantsArray: Enfant[] = [];
+      if (Array.isArray(enfantsData)) {
+        enfantsArray = enfantsData;
+      } else if (enfantsData && typeof enfantsData === 'object') {
+        // Si c'est un objet, essayer d'extraire un tableau
+        if (Array.isArray(enfantsData.data)) {
+          enfantsArray = enfantsData.data;
+        } else if (Array.isArray(enfantsData.enfants)) {
+          enfantsArray = enfantsData.enfants;
+        } else if (enfantsData.error) {
+          console.error("❌ Erreur API:", enfantsData.error);
+          addNotification("error", enfantsData.error);
+          setLoading(false);
+          return;
+        } else {
+          // Si c'est un objet avec des propriétés, le convertir en tableau
+          const values = Object.values(enfantsData).filter(item => 
+            typeof item === 'object' && item !== null && !Array.isArray(item)
+          );
+          if (values.length > 0) {
+            enfantsArray = values as Enfant[];
+          }
+        }
+      }
 
-      setEnfants(enfantsData);
+      console.log("✅ Enfants après validation:", enfantsArray);
+      setEnfants(enfantsArray);
 
-      // GARDER TOUTES LES PRÉ-INSCRIPTIONS (même en attente)
-      setPreinscriptions(preinscriptionsData);
+      // 2. Récupérer les pré-inscriptions
+      try {
+        const preinscriptionsRes = await fetch("/api/parent/preinscriptions");
+        if (preinscriptionsRes.ok) {
+          const preinscriptionsData = await preinscriptionsRes.json();
+          if (Array.isArray(preinscriptionsData)) {
+            setPreinscriptions(preinscriptionsData);
+          }
+        }
+      } catch (e) {
+        console.error("Erreur pré-inscriptions:", e);
+      }
 
-      // 2. Charger les statistiques pour chaque enfant
-      const statsPromises = enfantsData.map(async (enfant: Enfant) => {
+      // 3. Si aucun enfant, arrêter
+      if (enfantsArray.length === 0) {
+        console.log("ℹ️ Aucun enfant trouvé");
+        setLoading(false);
+        return;
+      }
+
+      // 4. Charger les statistiques pour chaque enfant
+      const statsPromises = enfantsArray.map(async (enfant: Enfant) => {
         try {
-          console.log(` Chargement des stats pour l'enfant ${enfant.eleve_id} (${enfant.prenom} ${enfant.nom})`);
-          const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
+          const enfantId = enfant.eleve_id || enfant.id;
+          console.log(`📊 Chargement des stats pour l'enfant ${enfantId} (${enfant.prenom} ${enfant.nom})`);
+          const statsResponse = await fetch(`/api/parent/enfants/${enfantId}/stats`);
 
           if (!statsResponse.ok) {
-            console.error(`❌ Erreur HTTP ${statsResponse.status} pour l'enfant ${enfant.eleve_id}`);
-            return { eleveId: enfant.eleve_id, stats: { ...DEFAULT_STATS } };
+            console.error(`❌ Erreur HTTP ${statsResponse.status} pour l'enfant ${enfantId}`);
+            return { eleveId: enfantId, stats: { ...DEFAULT_STATS } };
           }
 
           const statsData = await statsResponse.json();
           console.log(`✅ Stats pour ${enfant.prenom}:`, statsData);
 
-          // Valider et nettoyer les données
           const validatedStats: Stats = {
             notes: statsData.notes || [],
             presences: statsData.presences || { total: 0, presents: 0, absents: 0, retards: 0 },
@@ -251,23 +299,23 @@ export default function ParentDashboard() {
             solde_restant: Number(statsData.solde_restant) || 0
           };
 
-          return { eleveId: enfant.eleve_id, stats: validatedStats };
+          return { eleveId: enfantId, stats: validatedStats };
         } catch (error) {
-          console.error(`❌ Erreur chargement stats pour enfant ${enfant.eleve_id}:`, error);
-          return { eleveId: enfant.eleve_id, stats: { ...DEFAULT_STATS } };
+          const enfantId = enfant.eleve_id || enfant.id;
+          console.error(`❌ Erreur stats pour enfant ${enfantId}:`, error);
+          return { eleveId: enfantId, stats: { ...DEFAULT_STATS } };
         }
       });
 
       const statsResults = await Promise.all(statsPromises);
 
-      // Mettre à jour les stats
       const newStatsEnfant: { [key: number]: Stats } = {};
       statsResults.forEach(({ eleveId, stats }) => {
         newStatsEnfant[eleveId] = stats;
       });
       setStatsEnfant(newStatsEnfant);
 
-      console.log(" Statistiques finales:", newStatsEnfant);
+      console.log("📊 Statistiques finales:", newStatsEnfant);
 
     } catch (error) {
       console.error("❌ Erreur globale:", error);
@@ -286,7 +334,6 @@ export default function ParentDashboard() {
       }
       const data = await response.json();
       console.log(" Détails pré-inscription reçus:", data);
-
       setPreinscriptionDetail(data);
     } catch (error) {
       console.error("Erreur:", error);
@@ -311,7 +358,7 @@ export default function ParentDashboard() {
         addNotification("success", `Pré-inscription de ${preinscriptionToCancel.enfant_prenom} ${preinscriptionToCancel.enfant_nom} annulée avec succès`);
         setShowConfirmModal(false);
         setPreinscriptionToCancel(null);
-        triggerRefresh(); // ⭐ RAFRAÎCHIR
+        triggerRefresh();
       } else {
         addNotification("error", data.error || "Erreur lors de l'annulation");
       }
@@ -351,40 +398,74 @@ export default function ParentDashboard() {
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
-  // CALCUL DES STATISTIQUES GLOBALES
-  const totalAPayerBrut = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.total) || 0), 0);
-  const totalPaye = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.paye) || 0), 0);
-  const remisesAffectees = enfants.reduce((acc, e) => acc + (Number((e.details_frais as any)?.remise) || 0), 0);
-  const totalRemiseParentGlobale = enfants.length > 0 ? (Number((enfants[0] as any)?.total_remise_parent) || 0) : 0;
-  const totalRemises = Math.max(remisesAffectees, totalRemiseParentGlobale);
+  // ⭐⭐⭐ CALCUL DES STATISTIQUES GLOBALES ⭐⭐⭐
+  
+  // 1. Calcul du total brut par enfant
+  const totalAPayerBrut = enfants.reduce((acc, e) => {
+    const totalBrutEnfant = Number(e.details_frais?.total_brut) || Number(e.details_frais?.total) || 0;
+    return acc + totalBrutEnfant;
+  }, 0);
 
-  const totalAPayerNet = Math.max(0, totalAPayerBrut - totalRemises);
-  const soldeRestant = Math.max(0, totalAPayerNet - totalPaye);
-
+  // 2. Totaux par catégorie
+  const totalScolarite = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.scolarite) || Number(e.details_frais?.inscription) || 0), 0);
   const totalTransport = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.transport) || 0), 0);
   const totalCantine = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.cantine) || 0), 0);
   const totalFournitures = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.librairie) || 0), 0);
-  const totalScolarite = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.scolarite) || Number(e.details_frais?.inscription) || 0), 0);
 
+  // 3. Récupérer la remise globale
+  const remisesAffectees = enfants.reduce((acc, e) => acc + (Number((e.details_frais as any)?.remise) || 0), 0);
+  const totalRemiseParentGlobale = enfants.length > 0 ? (Number((enfants[0] as any)?.total_remise_parent) || Number((enfants[0] as any)?.remise_globale) || 0) : 0;
+  const totalRemises = Math.max(remisesAffectees, totalRemiseParentGlobale);
+
+  // 4. Montant total payé
+  const totalPaye = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.paye) || 0), 0);
+
+  // 5. Calculs finaux
+  const totalAPayerNet = Math.max(0, totalAPayerBrut - totalRemises);
+  const soldeRestant = Math.max(0, totalAPayerNet - totalPaye);
+
+  const finalTotalBrut = totalAPayerBrut;
+  const finalRemise = totalRemises;
+  const finalTotalNet = totalAPayerNet;
+  const finalSoldeRestant = soldeRestant;
+
+  console.log("📊 STATS GLOBALES PARENT:", {
+    totalAPayerBrut: finalTotalBrut,
+    remiseGlobale: finalRemise,
+    totalAPayerNet: finalTotalNet,
+    totalPaye: totalPaye,
+    soldeRestant: finalSoldeRestant,
+    detail: {
+      scolarite: totalScolarite,
+      transport: totalTransport,
+      cantine: totalCantine,
+      fournitures: totalFournitures
+    }
+  });
+
+  // ⭐ Statistiques globales à afficher
   const statsGlobales = {
     totalEnfants: enfants.length,
     totalPreinscriptions: preinscriptions.length,
     preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
     preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
     totalRetards: Object.values(statsEnfant).reduce((acc, s) => acc + (Number(s.presences?.retards) || 0), 0),
-    totalAPayerBrut: totalAPayerBrut,
-    totalAPayerNet: totalAPayerNet,
-    totalAPayer: totalAPayerNet,
+    
+    totalAPayerBrut: finalTotalBrut,
+    totalAPayerNet: finalTotalNet,
+    totalAPayer: finalTotalNet,
     totalPaye: totalPaye,
-    totalRemises: totalRemises,
+    totalRemises: finalRemise,
+    
     totalFraisInscription: totalScolarite,
     totalTransport: totalTransport,
     totalCantine: totalCantine,
     totalFournitures: totalFournitures,
-    totalFraisGeneral: totalAPayerNet,
-    soldeRestant: soldeRestant,
+    totalFraisGeneral: finalTotalNet,
+    soldeRestant: finalSoldeRestant,
+    
     soldeDetaille: {
-      total: soldeRestant,
+      total: finalSoldeRestant,
       details: {
         inscription: Math.max(0, totalScolarite - totalPaye),
         transport: totalTransport,
@@ -440,7 +521,7 @@ export default function ParentDashboard() {
         <p className="text-gray-900">Bienvenue dans votre espace de suivi scolaire</p>
       </div>
 
-      {/* ⭐ BANNIÈRE DE REMISE SI APPLICABLE */}
+      {/* Bannière de remise */}
       {statsGlobales.totalRemises > 0 && (
         <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-center justify-between text-indigo-900 mb-6 shadow-sm">
           <div className="flex items-center gap-3">
@@ -462,9 +543,9 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {/* STATISTIQUES GLOBALES & FINANCIAL BREAKDOWN */}
+      {/* Statistiques globales */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        {/* TOTAL TOUTES DÉPENSES */}
+        {/* Total dépenses (Brut) */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1 text-gray-700">
             <ShoppingCart className="w-4 h-4 text-blue-600" />
@@ -472,9 +553,33 @@ export default function ParentDashboard() {
           </div>
           <p className="text-xl font-extrabold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</p>
           <p className="text-[11px] text-gray-500 mt-1">Scolarité + services</p>
+          <div className="mt-2 pt-2 border-t border-gray-100 text-[10px] text-gray-500 space-y-0.5">
+            <div className="flex justify-between">
+              <span>Scolarité:</span>
+              <span className="font-medium">{statsGlobales.totalFraisInscription.toLocaleString()} GNF</span>
+            </div>
+            {statsGlobales.totalTransport > 0 && (
+              <div className="flex justify-between">
+                <span>Transport:</span>
+                <span className="font-medium">{statsGlobales.totalTransport.toLocaleString()} GNF</span>
+              </div>
+            )}
+            {statsGlobales.totalCantine > 0 && (
+              <div className="flex justify-between">
+                <span>Cantine:</span>
+                <span className="font-medium">{statsGlobales.totalCantine.toLocaleString()} GNF</span>
+              </div>
+            )}
+            {statsGlobales.totalFournitures > 0 && (
+              <div className="flex justify-between">
+                <span>Fournitures:</span>
+                <span className="font-medium">{statsGlobales.totalFournitures.toLocaleString()} GNF</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* REMISE ACCORDÉE */}
+        {/* Remise accordée */}
         <div className="bg-white rounded-xl shadow-sm border border-indigo-200 bg-indigo-50/20 p-4">
           <div className="flex items-center gap-2 mb-1 text-indigo-700">
             <CreditCard className="w-4 h-4 text-indigo-600" />
@@ -484,9 +589,12 @@ export default function ParentDashboard() {
             {statsGlobales.totalRemises > 0 ? `-${statsGlobales.totalRemises.toLocaleString()} GNF` : "0 GNF"}
           </p>
           <p className="text-[11px] text-indigo-500 mt-1">Réduction déduite</p>
+          {statsGlobales.totalRemises > 0 && (
+            <p className="text-[10px] text-indigo-400 mt-1">Famille nombreuse ({statsGlobales.totalEnfants} enfants)</p>
+          )}
         </div>
 
-        {/* MONTANT NET À PAYER */}
+        {/* Net à payer */}
         <div className="bg-white rounded-xl shadow-sm border border-blue-200 bg-blue-50/40 p-4">
           <div className="flex items-center gap-2 mb-1 text-blue-800">
             <Wallet className="w-4 h-4 text-blue-600" />
@@ -496,7 +604,7 @@ export default function ParentDashboard() {
           <p className="text-[11px] text-blue-600 mt-1">Dépenses - Remise</p>
         </div>
 
-        {/* MONTANT PAYÉ */}
+        {/* Montant payé */}
         <div className="bg-white rounded-xl shadow-sm border border-green-200 bg-green-50/40 p-4">
           <div className="flex items-center gap-2 mb-1 text-green-800">
             <CheckCircle className="w-4 h-4 text-green-600" />
@@ -506,7 +614,7 @@ export default function ParentDashboard() {
           <p className="text-[11px] text-green-600 mt-1">Versements effectués</p>
         </div>
 
-        {/* SOLDE RESTANT */}
+        {/* Solde restant */}
         <div className={`rounded-xl shadow-sm border p-4 col-span-2 sm:col-span-1 ${
           statsGlobales.soldeRestant === 0 ? "bg-green-100/50 border-green-300" : "bg-red-50/50 border-red-200"
         }`}>
@@ -877,12 +985,7 @@ export default function ParentDashboard() {
                           </p>
                         </div>
                       )}
-                      <div className={`bg-gray-100 p-3 rounded-lg border border-gray-300 ${preinscriptionDetail.details_frais.cantine === 0 &&
-                        preinscriptionDetail.details_frais.transport === 0 &&
-                        preinscriptionDetail.details_frais.librairie === 0 &&
-                        preinscriptionDetail.details_frais.scolarite === 0
-                        ? 'col-span-2 md:col-span-1' : ''
-                        }`}>
+                      <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
                         <p className="text-xs text-gray-900 font-semibold">Total à payer</p>
                         <p className="font-bold text-gray-900 text-lg">
                           {preinscriptionDetail.details_frais.total.toLocaleString()} GNF
@@ -916,12 +1019,6 @@ export default function ParentDashboard() {
                             <CheckCircle className="w-4 h-4 text-orange-600" /> Scolarité
                           </span>
                         )}
-                        {preinscriptionDetail.details_frais.cantine === 0 &&
-                          preinscriptionDetail.details_frais.transport === 0 &&
-                          preinscriptionDetail.details_frais.librairie === 0 &&
-                          preinscriptionDetail.details_frais.scolarite === 0 && (
-                            <span className="text-gray-900 text-xs italic">Aucun service optionnel</span>
-                          )}
                       </div>
                     </div>
 
@@ -1053,7 +1150,7 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {/* ⭐ MODAL PAIEMENT AVEC onPaymentComplete */}
+      {/* Modal paiement */}
       {showPaiementModal && selectedPreinscription && (
         <PaiementPlanModal
           isOpen={showPaiementModal}
@@ -1062,17 +1159,17 @@ export default function ParentDashboard() {
             setSelectedPreinscription(null);
           }}
           onSuccess={() => {
-            triggerRefresh(); // ⭐ RAFRAÎCHIR
+            triggerRefresh();
             addNotification("success", "Paiement effectué avec succès !");
           }}
-          onPaymentComplete={triggerRefresh} // ⭐ PROP SUPPLEMENTAIRE
+          onPaymentComplete={triggerRefresh}
           preinscriptionId={selectedPreinscription.id}
           enfantNom={`${selectedPreinscription.enfant_prenom} ${selectedPreinscription.enfant_nom}`}
           niveau={selectedPreinscription.niveau}
         />
       )}
 
-      {/* MODAL PAIEMENT GLOBAL */}
+      {/* Modal paiement global */}
       <PaiementGlobalModal
         isOpen={showGlobalPaiementModal}
         onClose={() => setShowGlobalPaiementModal(false)}

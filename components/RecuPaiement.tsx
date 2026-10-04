@@ -110,11 +110,8 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
 
       setLoadingHistorique(true);
       try {
-        const [histRes, preinscRes] = await Promise.all([
-          fetch(`/api/parent/paiements?preinscriptionId=${recu.preinscription_id}`),
-          !detailsFrais ? fetch(`/api/parent/preinscriptions/${recu.preinscription_id}`) : Promise.resolve(null)
-        ]);
-
+        // Fetch payment history
+        const histRes = await fetch(`/api/parent/paiements?preinscriptionId=${recu.preinscription_id}`);
         if (histRes.ok) {
           const histData = await histRes.json();
           if (histData && histData.length > 0) {
@@ -122,10 +119,24 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
           }
         }
 
-        if (preinscRes && preinscRes.ok) {
-          const preinscData = await preinscRes.json();
-          if (preinscData && preinscData.details_frais) {
-            setDetailsFrais(preinscData.details_frais);
+        // Fetch fee details: try parent endpoint first, fallback to admin endpoint
+        if (!detailsFrais) {
+          // 1st try: parent endpoint
+          const parentRes = await fetch(`/api/parent/preinscriptions/${recu.preinscription_id}`);
+          if (parentRes.ok) {
+            const preinscData = await parentRes.json();
+            if (preinscData && preinscData.details_frais) {
+              setDetailsFrais(preinscData.details_frais);
+            }
+          } else if (parentRes.status === 403 || parentRes.status === 401) {
+            // 2nd try: admin endpoint (for admin users)
+            const adminRes = await fetch(`/api/admin/preinscriptions/${recu.preinscription_id}`);
+            if (adminRes.ok) {
+              const adminData = await adminRes.json();
+              if (adminData && adminData.details_frais) {
+                setDetailsFrais(adminData.details_frais);
+              }
+            }
           }
         }
       } catch (error) {
@@ -137,6 +148,7 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
 
     fetchData();
   }, [recu.preinscription_id]);
+
 
   const modeLabel = MODE_LABELS[recu.mode_paiement] || recu.mode_paiement || "Espèces";
   const typeLabel = TYPE_LABELS[recu.type_frais] || (recu.type_frais ? TYPE_LABELS[recu.type_frais.toLowerCase()] : null) || "Frais de scolarité";
@@ -156,7 +168,14 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
 
     if (detailsFrais) {
       const lignes: LignePrestation[] = [];
-      const montantScolarite = Number(detailsFrais.scolarite || detailsFrais.inscription || detailsFrais.reinscription || 0);
+
+      // Frais de scolarité = inscription (frais de base) ou reinscription
+      const montantScolarite = Number(
+        detailsFrais.inscription ||
+        detailsFrais.reinscription ||
+        detailsFrais.scolarite ||
+        0
+      );
       if (montantScolarite > 0) {
         lignes.push({
           designation: "Frais de scolarité",
@@ -186,9 +205,18 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
       const montantFournitures = Number(detailsFrais.fournitures || detailsFrais.librairie || 0);
       if (montantFournitures > 0) {
         lignes.push({
-          designation: "Fournitures scolaires & Librairie",
+          designation: "Fournitures scolaires",
           montant: montantFournitures,
           type: "fournitures"
+        });
+      }
+
+      const montantAutres = Number((detailsFrais as any).autres || 0);
+      if (montantAutres > 0) {
+        lignes.push({
+          designation: "Autres frais scolaires",
+          montant: montantAutres,
+          type: "autres"
         });
       }
 
@@ -207,8 +235,29 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
     ];
   };
 
+     
   const lignesPrestations = buildLignesPrestations();
   const totalLignes = lignesPrestations.reduce((acc, l) => acc + l.montant, 0);
+
+  // ⭐ Montants autoritatifs : detailsFrais > recu > fallback
+  // detailsFrais.total inclut inscription + cantine + transport + fournitures
+  const montantTotalAuthoritatif = detailsFrais?.total
+    ? Number(detailsFrais.total)
+    : totalLignes > 0
+      ? totalLignes
+      : Number(recu.montant_total || recu.montant || 0);
+
+  const montantPayeAuthoritatif = detailsFrais?.paye !== undefined
+    ? Number(detailsFrais.paye)
+    : totalPaye > 0
+      ? totalPaye
+      : Number(recu.montant || 0);
+
+  const resteAPayerAuthoritatif = detailsFrais?.reste !== undefined
+    ? Number(detailsFrais.reste)
+    : Math.max(0, montantTotalAuthoritatif - montantPayeAuthoritatif);
+
+  const estSoldeAuthoritatif = resteAPayerAuthoritatif <= 0;
 
   // ⭐ Fonction pour supprimer le paiement/facture sans toucher au parent ni à l'élève
   const handleDeletePaiement = async () => {
@@ -233,9 +282,6 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
       setShowDeleteModal(false);
       if (onDelete) {
         onDelete();
-      }
-      if (onDeleted) {
-        onDeleted();
       }
       onClose();
     } catch (err: any) {
@@ -414,7 +460,7 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
                       Coyah-Sanoyah, Conakry-Guinée
                     </h4>
                     <p className="contacts" style={{ fontSize: "11px", opacity: 0.95, marginTop: "3px", fontWeight: 500 }}>
-                      📞 Tél : 628 84 84 37 — 611 24 24 92 — 628 52 73 57
+                       Tél : 628 84 84 37 — 611 24 24 92 — 628 52 73 57
                     </p>
                   </div>
                 </div>
@@ -470,7 +516,7 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
                       Montant total
                     </div>
                     <div className="amount" style={{ fontSize: "18px", fontWeight: 700, color: "#2563eb" }}>
-                      {Number(recu.montant_total || recu.montant || 0).toLocaleString("fr-FR")} GNF
+                      {montantTotalAuthoritatif.toLocaleString("fr-FR")} GNF
                     </div>
                   </div>
 
@@ -485,30 +531,30 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
                       Montant payé
                     </div>
                     <div className="amount" style={{ fontSize: "18px", fontWeight: 700, color: "#15803d" }}>
-                      {(totalPaye > 0 ? totalPaye : recu.montant).toLocaleString("fr-FR")} GNF
+                      {montantPayeAuthoritatif.toLocaleString("fr-FR")} GNF
                     </div>
                   </div>
 
-                  <div className={`montant-card reste ${estSolde ? 'solde' : ''}`} style={{
-                    background: estSolde ? "#f0fdf4" : "#fef2f2",
-                    border: estSolde ? "1px solid #bbf7d0" : "1px solid #fecaca",
+                  <div className={`montant-card reste ${estSoldeAuthoritatif ? 'solde' : ''}`} style={{
+                    background: estSoldeAuthoritatif ? "#f0fdf4" : "#fef2f2",
+                    border: estSoldeAuthoritatif ? "1px solid #bbf7d0" : "1px solid #fecaca",
                     borderRadius: "8px",
                     padding: "12px 16px",
                     textAlign: "center"
                   }}>
                     <div className="label" style={{
                       fontSize: "11px",
-                      color: estSolde ? "#15803d" : "#dc2626",
+                      color: estSoldeAuthoritatif ? "#15803d" : "#dc2626",
                       fontWeight: 500
                     }}>
-                      {estSolde ? "✅ Entièrement payé" : "Reste à payer"}
+                      {estSoldeAuthoritatif ? "✅ Entièrement payé" : "Reste à payer"}
                     </div>
                     <div className="amount" style={{
                       fontSize: "18px",
                       fontWeight: 700,
-                      color: estSolde ? "#15803d" : "#dc2626"
+                      color: estSoldeAuthoritatif ? "#15803d" : "#dc2626"
                     }}>
-                      {Number(recu.reste_a_payer || 0).toLocaleString("fr-FR")} GNF
+                      {resteAPayerAuthoritatif.toLocaleString("fr-FR")} GNF
                     </div>
                   </div>
                 </div>
@@ -548,7 +594,7 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
                           Total des prestations
                         </td>
                         <td style={{ padding: "10px 14px", textAlign: "right", fontWeight: 800, color: "#1e3a5f", fontSize: "15px" }}>
-                          {(totalLignes > 0 ? totalLignes : Number(recu.montant_total || recu.montant || 0)).toLocaleString("fr-FR")} GNF
+                          {montantTotalAuthoritatif.toLocaleString("fr-FR")} GNF
                         </td>
                       </tr>
                     </tfoot>
@@ -743,7 +789,7 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
                 }}
               >
                 <p className="note" style={{ fontSize: "11px", color: "#94a3b8", maxWidth: "320px", lineHeight: 1.4 }}>
-                  Document officiel de l'École Internationale les Enfants du Futur (EIEF).
+                  <span style={{ fontWeight: 700, color: "#1e3a5f" }}>NB : Tout paiement effectué n'est ni remboursable ni échangeable.</span>
                 </p>
                 <p className="date" style={{ fontSize: "11px", color: "#94a3b8" }}>
                   Édité le {new Date().toLocaleDateString("fr-FR")}

@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Email utilisateur non trouvé" }, { status: 400 });
     }
 
-    // Récupérer les enfants avec leurs inscriptions à la cantine
+    // Récupérer les enfants inscrits avec leurs inscriptions à la cantine
     const enfantsResult = await query(`
       SELECT 
         e.id,
@@ -29,20 +29,45 @@ export async function GET(request: Request) {
         ic.est_actif as cantine_actif,
         ic.solde,
         ic.preferences_alimentaires,
-        ic.allergies
+        ic.allergies,
+        'eleve' as source
       FROM eleves e
       JOIN utilisateurs u ON e.utilisateur_id = u.id
-      JOIN classes c ON e.classe_id = c.id
+      LEFT JOIN classes c ON e.classe_id = c.id
       LEFT JOIN inscriptions_cantine ic ON e.id = ic.eleve_id AND ic.est_actif = true
       JOIN lien_parent_eleve lpe ON e.id = lpe.eleve_id
       JOIN parents p ON lpe.parent_id = p.id
       JOIN utilisateurs pu ON p.utilisateur_id = pu.id
-      WHERE pu.email = $1 AND e.est_inscrit = true
+      WHERE pu.email = $1 AND e.deleted_at IS NULL
       ORDER BY e.id
     `, [userEmail]);
 
+    // Récupérer aussi les pré-inscriptions en attente (enfants pas encore validés)
+    const preinscriptionsResult = await query(`
+      SELECT 
+        p.id,
+        p.numero_dossier as matricule,
+        p.enfant_nom as nom,
+        p.enfant_prenom as prenom,
+        p.classe as classe_nom,
+        pc.id as inscription_cantine_id,
+        (pc.id IS NOT NULL) as cantine_actif,
+        0 as solde,
+        NULL as preferences_alimentaires,
+        NULL as allergies,
+        'preinscription' as source
+      FROM preinscriptions p
+      JOIN parents par ON p.parent_id = par.id
+      JOIN utilisateurs pu ON par.utilisateur_id = pu.id
+      LEFT JOIN preinscription_cantine pc ON pc.preinscription_id = p.id
+      WHERE pu.email = $1 AND p.statut = 'en_attente'
+      ORDER BY p.id
+    `, [userEmail]);
+
+    const tousEnfants = [...enfantsResult.rows, ...preinscriptionsResult.rows];
+
     // Si aucun enfant trouvé, retourner des données vides
-    if (enfantsResult.rows.length === 0) {
+    if (tousEnfants.length === 0) {
       return NextResponse.json({
         enfants: [],
         menus: [],
@@ -67,9 +92,9 @@ export async function GET(request: Request) {
       ORDER BY date
     `);
 
-    // Récupérer les réservations existantes
-    const enfantIds = enfantsResult.rows.map((e: any) => e.id);
-    let reservationsResult = { rows: [] };
+    // Récupérer les réservations existantes (uniquement pour les élèves inscrits ayant un vrai ID)
+    const enfantIds = enfantsResult.rows.map((e: any) => e.id).filter(Boolean);
+    let reservationsResult = { rows: [] as any[] };
 
     if (enfantIds.length > 0) {
       reservationsResult = await query(`
@@ -88,7 +113,7 @@ export async function GET(request: Request) {
     }
 
     // Formater les données
-    const enfantsData = enfantsResult.rows.map((e: any) => ({
+    const enfantsData = tousEnfants.map((e: any) => ({
       id: e.id,
       matricule: e.matricule,
       nom: e.nom,
@@ -98,7 +123,9 @@ export async function GET(request: Request) {
       solde: parseFloat(e.solde) || 0,
       preferences: e.preferences_alimentaires ? JSON.parse(e.preferences_alimentaires) : [],
       allergies: e.allergies ? JSON.parse(e.allergies) : [],
-      menusReserves: reservationsResult.rows.filter((r: any) => r.enfant_id === e.id).length
+      menusReserves: reservationsResult.rows.filter((r: any) => r.enfant_id === e.id).length,
+      source: e.source || 'eleve', // 'eleve' ou 'preinscription'
+      statut: e.source === 'preinscription' ? 'en_attente' : 'inscrit'
     }));
 
     const menusData = menusResult.rows.map((m: any) => ({

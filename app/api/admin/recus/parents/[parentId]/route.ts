@@ -95,11 +95,22 @@ export async function GET(
         COALESCE(pay.type_frais, 'inscription') AS type_frais,
         COALESCE(pay.reference_transaction, p.numero_dossier, CONCAT('REF-', COALESCE(pay.id, r.id, 0))) AS reference,
         COALESCE(p.classe, r.classe_nom, c.nom, 'N/A') AS classe,
-        COALESCE(p.montant_total_plan, r.montant_total_plan, c.total_versement, 0) AS montant_total,
-        COALESCE(p.montant_restant_plan, r.montant_restant_plan, 0) AS reste_a_payer,
+        COALESCE(
+          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id),
+          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id),
+          p.montant_total_plan, r.montant_total_plan, c.total_versement, 0
+        ) AS montant_total,
+        GREATEST(0, COALESCE(
+          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id),
+          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id),
+          p.montant_total_plan, r.montant_total_plan, 0
+        ) - COALESCE(
+          (SELECT SUM(pp.montant) FROM paiements pp WHERE (pp.preinscription_id = p.id OR pp.reinscription_id = r.id OR (pp.eleve_id = e.id AND pp.preinscription_id IS NULL AND pp.reinscription_id IS NULL)) AND pp.statut = 'valide'),
+          0
+        )) AS reste_a_payer,
         'paiement' AS source,
         COALESCE(pay.id, 0) AS source_id,
-        pay.preinscription_id
+        p.id AS preinscription_id
       FROM parents pa
       -- Paiements via pré-inscriptions
       LEFT JOIN preinscriptions p ON p.parent_id = pa.id

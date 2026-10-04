@@ -41,8 +41,20 @@ export async function GET(request: NextRequest) {
         'paiement'                                                   AS source,
         pay.id                                                       AS source_id,
         pay.preinscription_id,
-        COALESCE(p.montant_total_plan, 0)                            AS montant_total,
-        COALESCE(p.montant_restant_plan, 0)                          AS reste_a_payer
+        -- ⭐ Total réel = somme de TOUTES les écheances (inscription + fournitures + cantine + transport)
+        COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.preinscription_id = p.id
+        ), p.montant_total_plan, 0)                                  AS montant_total,
+        -- ⭐ Reste = total - ce qui est déjà payé (paiements valides)
+        GREATEST(0, COALESCE((
+          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          WHERE ep.preinscription_id = p.id
+        ), p.montant_total_plan, 0) - COALESCE((
+          SELECT SUM(pp.montant) FROM paiements pp
+          WHERE pp.preinscription_id = p.id AND pp.statut = 'valide'
+        ), 0))                                                       AS reste_a_payer
+
       FROM paiements pay
       JOIN preinscriptions p ON pay.preinscription_id = p.id
       JOIN parents pa ON p.parent_id = pa.id

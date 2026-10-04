@@ -35,6 +35,37 @@ export async function GET() {
     `, [parentId]);
     const totalRemiseParent = Number(remisesResult.rows[0]?.total_remise) || 0;
 
+    // Récupérer le total des commandes de librairie validées du parent
+    const librairieResult = await query(`
+      SELECT COALESCE(SUM(total), 0) as total_librairie
+      FROM commandes_librairie
+      WHERE parent_id = $1 AND statut = 'valide'
+    `, [parentId]);
+    const totalLibrairieParent = Number(librairieResult.rows[0]?.total_librairie) || 0;
+
+    // Garantir que montant_total_plan de préinscription ne compte QUE les échéances de scolarité
+    try {
+      await query(`
+        UPDATE preinscriptions p
+        SET montant_total_plan = sub.scolarite_ech,
+            montant_restant_plan = GREATEST(0, sub.scolarite_ech - COALESCE(sub.scolarite_paye, 0))
+        FROM (
+          SELECT 
+            ep.preinscription_id,
+            SUM(CASE WHEN ep.type = 'inscription' THEN ep.montant ELSE 0 END) as scolarite_ech,
+            (SELECT COALESCE(SUM(montant), 0) FROM paiements pay WHERE pay.preinscription_id = ep.preinscription_id AND pay.type_frais = 'inscription' AND pay.statut = 'valide') as scolarite_paye
+          FROM echeances_paiement ep
+          WHERE ep.preinscription_id IS NOT NULL
+          GROUP BY ep.preinscription_id
+        ) sub
+        WHERE p.id = sub.preinscription_id
+          AND sub.scolarite_ech > 0
+          AND (COALESCE(p.montant_total_plan, 0) != sub.scolarite_ech OR COALESCE(p.montant_restant_plan, 0) != GREATEST(0, sub.scolarite_ech - sub.scolarite_paye))
+      `);
+    } catch (syncErr) {
+      console.warn("Avertissement synchro preinscriptions scolarite:", syncErr);
+    }
+
     // 2️⃣ Récupérer les ÉLÈVES déjà inscrits
     const elevesResult = await query(`
       SELECT 
@@ -51,26 +82,19 @@ export async function GET() {
         COALESCE(c.total_versement, c.frais_inscription, 0) as frais_inscription_classe,
         COALESCE(c.reinscription_total_versement, c.total_versement, 0) as frais_reinscription_classe,
         e.photo_url,
-        -- ⭐ Frais optionnels RÉELS (uniquement si l'élève y est inscrit)
+        -- Frais optionnels
         COALESCE(
-          (SELECT cm.prix_annuel
+          (SELECT SUM(ic.montant_total)
            FROM inscriptions_cantine ic
-           JOIN cantine_menus cm ON cm.id = (
-             SELECT id FROM cantine_menus ORDER BY date DESC LIMIT 1
-           )
-           WHERE ic.eleve_id = e.id AND ic.est_actif = true
-           LIMIT 1),
+           WHERE ic.eleve_id = e.id),
           0
         ) as frais_cantine_reel,
         COALESCE(
-          (SELECT lt.prix_abonnement
+          (SELECT SUM(it.montant_mensuel * it.mois_total)
            FROM inscriptions_transport it
-           JOIN lignes_transport lt ON it.ligne_id = lt.id
-           WHERE it.eleve_id = e.id AND it.est_actif = true
-           LIMIT 1),
+           WHERE it.eleve_id = e.id),
           0
         ) as frais_transport_reel,
-        -- ⭐ FOURNITURES (pour les élèves, via la pré-inscription)
         COALESCE(
           (SELECT SUM(cf.quantite * cf.prix_unitaire)
            FROM commandes_fournitures cf
@@ -79,7 +103,6 @@ export async function GET() {
            WHERE i.eleve_id = e.id),
           0
         ) as frais_fournitures,
-        -- ⭐ PAIEMENTS DIRECTS (eleve_id)
         COALESCE(
           (SELECT SUM(pai.montant) 
            FROM paiements pai
@@ -87,7 +110,6 @@ export async function GET() {
            AND pai.statut = 'valide'),
           0
         ) as frais_paye_eleve,
-        -- ⭐ PAIEMENTS VIA PRÉ-INSCRIPTION
         COALESCE(
           (SELECT SUM(pai.montant) 
            FROM paiements pai
@@ -99,7 +121,6 @@ export async function GET() {
            AND pai.statut = 'valide'),
           0
         ) as frais_paye_preinscription,
-        -- ⭐ PAIEMENTS VIA RÉINSCRIPTION
         COALESCE(
           (SELECT SUM(pai.montant) 
            FROM paiements pai
@@ -109,7 +130,6 @@ export async function GET() {
            AND pai.statut = 'valide'),
           0
         ) as frais_paye_reinscription,
-        -- ⭐ ÉCHÉANCES PAYÉES VIA PRÉ-INSCRIPTION
         COALESCE(
           (SELECT SUM(eche.montant) 
            FROM echeances_paiement eche
@@ -121,7 +141,6 @@ export async function GET() {
            AND eche.statut = 'paye'),
           0
         ) as frais_paye_echeances,
-        -- ⭐ PRÉ-INSCRIPTION ID pour récupérer le montant total plan
         (SELECT i.preinscription_id 
          FROM inscriptions i 
          WHERE i.eleve_id = e.id
@@ -131,7 +150,6 @@ export async function GET() {
          JOIN inscriptions i ON i.preinscription_id = p.id
          WHERE i.eleve_id = e.id
          LIMIT 1) as montant_total_plan,
-        -- ⭐⭐⭐ CORRECTION : Utiliser 0 car les colonnes n'existent pas dans preinscriptions ⭐⭐⭐
         0 as preinscription_frais_cantine,
         0 as preinscription_frais_transport,
         0 as preinscription_frais_fournitures,
@@ -160,20 +178,28 @@ export async function GET() {
         p.sexe,
         p.date_naissance,
         p.lieu_naissance,
-        p.frais_montant as frais_inscription_classe,
+        -- Scolarité réelle (échéances de type 'inscription' uniquement, ex: 5 900 000)
+        COALESCE(
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'inscription'), 0),
+          p.frais_montant,
+          0
+        ) as frais_inscription_classe,
         0 as frais_reinscription_classe,
         p.photo_url,
-        -- ⭐ Frais optionnels pour pré-inscriptions
-        0 as frais_cantine_reel,
-        0 as frais_transport_reel,
-        -- ⭐ FOURNITURES pour les pré-inscriptions
         COALESCE(
-          (SELECT SUM(cf.quantite * cf.prix_unitaire)
-           FROM commandes_fournitures cf
-           WHERE cf.preinscription_id = p.id),
+          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'cantine'),
+          0
+        ) as frais_cantine_reel,
+        COALESCE(
+          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'transport'),
+          0
+        ) as frais_transport_reel,
+        -- Fournitures réelles depuis échéances ou commandes (ex: 660 000)
+        COALESCE(
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'fournitures'), 0),
+          (SELECT SUM(cf.quantite * cf.prix_unitaire) FROM commandes_fournitures cf WHERE cf.preinscription_id = p.id),
           0
         ) as frais_fournitures,
-        -- ⭐ Paiements pour les pré-inscriptions
         COALESCE(
           (SELECT SUM(pai.montant) 
            FROM paiements pai
@@ -181,14 +207,13 @@ export async function GET() {
            AND pai.statut = 'valide'),
           0
         ) as frais_paye_direct,
+        0 as frais_paye_echeances,
         COALESCE(
-          (SELECT SUM(eche.montant) 
-           FROM echeances_paiement eche
-           WHERE eche.preinscription_id = p.id
-           AND eche.statut = 'paye'),
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'inscription'), 0),
+          p.montant_total_plan,
+          p.frais_montant,
           0
-        ) as frais_paye_echeances,
-        p.montant_total_plan,
+        ) as montant_total_plan,
         0 as preinscription_frais_cantine,
         0 as preinscription_frais_transport,
         0 as preinscription_frais_fournitures,
@@ -216,13 +241,29 @@ export async function GET() {
         r.sexe,
         r.date_naissance,
         r.lieu_naissance,
-        r.montant_frais as frais_inscription_classe,
-        r.montant_frais as frais_reinscription_classe,
+        COALESCE(
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'reinscription'), 0),
+          r.montant_frais,
+          0
+        ) as frais_inscription_classe,
+        COALESCE(
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'reinscription'), 0),
+          r.montant_frais,
+          0
+        ) as frais_reinscription_classe,
         r.photo_url,
-        0 as frais_cantine_reel,
-        0 as frais_transport_reel,
-        0 as frais_fournitures,
-        -- ⭐ Paiements pour les réinscriptions
+        COALESCE(
+          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'cantine'),
+          0
+        ) as frais_cantine_reel,
+        COALESCE(
+          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'transport'),
+          0
+        ) as frais_transport_reel,
+        COALESCE(
+          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'fournitures'),
+          0
+        ) as frais_fournitures,
         COALESCE(
           (SELECT SUM(pai.montant) 
            FROM paiements pai
@@ -230,14 +271,13 @@ export async function GET() {
            AND pai.statut = 'valide'),
           0
         ) as frais_paye_direct,
+        0 as frais_paye_echeances,
         COALESCE(
-          (SELECT SUM(eche.montant) 
-           FROM echeances_paiement eche
-           WHERE eche.reinscription_id = r.id
-           AND eche.statut = 'paye'),
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'reinscription'), 0),
+          r.montant_total_plan,
+          r.montant_frais,
           0
-        ) as frais_paye_echeances,
-        r.montant_total_plan,
+        ) as montant_total_plan,
         0 as preinscription_frais_cantine,
         0 as preinscription_frais_transport,
         0 as preinscription_frais_fournitures,
@@ -257,100 +297,67 @@ export async function GET() {
 
     // 6️⃣ Calculer les frais pour chaque enfant
     const enfantsAvecFrais = tousLesEnfants.map((enfant: any) => {
-      // Récupérer tous les montants
       const fraisInscription = Number(enfant.frais_inscription_classe) || 0;
       const fraisReinscription = Number(enfant.frais_reinscription_classe) || 0;
       const montantTotalPlan = Number(enfant.montant_total_plan) || 0;
 
-      // ⭐ Services sélectionnés
       let fraisCantine = Number(enfant.frais_cantine_reel) || 0;
       let fraisTransport = Number(enfant.frais_transport_reel) || 0;
       let fraisFournitures = Number(enfant.frais_fournitures) || 0;
 
-      // ⭐⭐ LOGIQUE PRINCIPALE : Déterminer le montant de base ⭐⭐
       let montantBase = 0;
 
       if (enfant.est_preinscription) {
-        // Pour les pré-inscriptions : utiliser montant_total_plan ou frais_inscription
         montantBase = montantTotalPlan > 0 ? montantTotalPlan : fraisInscription;
       } else if (enfant.type === 'eleve') {
-        // Pour les élèves : vérifier si les services sont déjà inclus
         if (montantTotalPlan > 0) {
-          // Récupérer les frais de la pré-inscription (maintenant toujours 0)
           const preFraisCantine = Number(enfant.preinscription_frais_cantine) || 0;
           const preFraisTransport = Number(enfant.preinscription_frais_transport) || 0;
           const preFraisFournitures = Number(enfant.preinscription_frais_fournitures) || 0;
-
-          // Calculer le total des services dans la pré-inscription
           const totalServicesPre = preFraisCantine + preFraisTransport + preFraisFournitures;
-
-          // Calculer le montant de la classe
           const fraisClasse = fraisReinscription > 0 ? fraisReinscription : fraisInscription;
-
-          // Vérifier si montant_total_plan = fraisClasse + services
           const difference = montantTotalPlan - fraisClasse;
 
-          console.log(`=== VÉRIFICATION SERVICES INCLUS pour ${enfant.id} ===`);
-          console.log(`fraisClasse: ${fraisClasse}`);
-          console.log(`montantTotalPlan: ${montantTotalPlan}`);
-          console.log(`difference: ${difference}`);
-          console.log(`totalServicesPre: ${totalServicesPre}`);
-          console.log(`fraisCantine_reel: ${fraisCantine}`);
-          console.log(`fraisTransport_reel: ${fraisTransport}`);
-          console.log(`fraisFournitures: ${fraisFournitures}`);
-
-          // ⭐ Si la différence correspond aux services de la pré-inscription
-          // Alors les services sont DÉJÀ inclus dans montant_total_plan
           if (Math.abs(difference - totalServicesPre) < 100 && totalServicesPre > 0) {
-            console.log(`✅ Services déjà inclus dans montant_total_plan`);
-            // ⭐ NE PAS AJOUTER les services séparément
             montantBase = montantTotalPlan;
             fraisCantine = 0;
             fraisTransport = 0;
             fraisFournitures = 0;
           } else {
-            // Les services ne sont pas inclus, les ajouter séparément
-            console.log(`❌ Services NON inclus dans montant_total_plan`);
             montantBase = montantTotalPlan;
-            // On garde fraisCantine, fraisTransport, fraisFournitures
           }
         } else {
-          // Pas de montant_total_plan, utiliser la classe
-          montantBase = fraisReinscription > 0 ? fraisReinscription : fraisInscription;
+          montantBase = fraisInscription > 0 ? fraisInscription : fraisReinscription;
         }
       } else {
-        // Réinscriptions
         montantBase = montantTotalPlan > 0 ? montantTotalPlan : fraisInscription;
       }
 
-      // ⭐ TOTAL = montantBase + services (si non inclus)
-      const montantTotal = montantBase + fraisCantine + fraisTransport + fraisFournitures;
+      // ⭐ TOTAL BRUT (scolarité + services)
+      const totalBrut = montantBase + fraisCantine + fraisTransport + fraisFournitures;
 
       // ⭐⭐ CALCUL DU TOTAL PAYÉ ⭐⭐
       let totalPaye = 0;
 
       if (enfant.est_eleve) {
-        // Pour les élèves : additionner toutes les sources
         const fraisPayeEleve = Number(enfant.frais_paye_eleve) || 0;
         const fraisPayePreinscription = Number(enfant.frais_paye_preinscription) || 0;
         const fraisPayeReinscription = Number(enfant.frais_paye_reinscription) || 0;
         const fraisPayeEcheances = Number(enfant.frais_paye_echeances) || 0;
-
         totalPaye = fraisPayeEleve + fraisPayePreinscription + fraisPayeReinscription + fraisPayeEcheances;
       } else {
-        // Pour les pré-inscriptions et réinscriptions
         const fraisPayeDirect = Number(enfant.frais_paye_direct) || 0;
         const fraisPayeEcheances = Number(enfant.frais_paye_echeances) || 0;
         totalPaye = fraisPayeDirect + fraisPayeEcheances;
       }
 
-      let reste = Math.max(0, montantTotal - totalPaye);
-
+      // ⭐⭐ RETOURNER LES DONNÉES COMPLÈTES ⭐⭐
       return {
         ...enfant,
-        frais_montant: montantTotal,
+        frais_montant: totalBrut,
         frais_paye: totalPaye,
-        frais_reste: reste,
+        frais_reste: Math.max(0, totalBrut - totalPaye),
+        // ⭐⭐ DÉTAILS DES FRAIS AVEC total_brut ET total ⭐⭐
         details_frais: {
           inscription: fraisInscription,
           reinscription: fraisReinscription,
@@ -358,46 +365,67 @@ export async function GET() {
           transport: fraisTransport,
           librairie: fraisFournitures,
           scolarite: montantBase,
-          total: montantTotal,
+          total_brut: totalBrut,        // ⭐ TOTAL BRUT (scolarité + services)
+          total: totalBrut,              // ⭐ Pour compatibilité, mais sera ajusté après remise
           paye: totalPaye,
-          reste: reste
+          reste: Math.max(0, totalBrut - totalPaye),
+          remise: 0,
+          net: totalBrut
         }
       };
     });
 
-    // Appliquer la remise globale du parent sur le total des frais pour chaque enfant
+    // ⭐⭐ INCLURE LES COMMANDES DE LIBRAIRIE VALIDÉES DU PARENT ⭐⭐
+    if (enfantsAvecFrais.length > 0 && totalLibrairieParent > 0) {
+      const premier = enfantsAvecFrais[0];
+      premier.details_frais.librairie = (premier.details_frais.librairie || 0) + totalLibrairieParent;
+      premier.details_frais.total_brut += totalLibrairieParent;
+      premier.details_frais.total += totalLibrairieParent;
+      premier.details_frais.net += totalLibrairieParent;
+      premier.frais_montant += totalLibrairieParent;
+    }
+
+    // ⭐⭐⭐ APPLIQUER LA REMISE GLOBALE ⭐⭐⭐
     if (totalRemiseParent > 0) {
-      let remiseADeduire = totalRemiseParent;
+      // Calculer le total brut de tous les enfants
+      const totalBrutGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.total_brut, 0);
+      
+      // Appliquer la remise proportionnellement
       for (const e of enfantsAvecFrais) {
+        const proportion = e.details_frais.total_brut / totalBrutGlobal;
+        const remiseDeduction = Math.round(totalRemiseParent * proportion);
+        
+        // Mettre à jour les champs
         e.total_remise_parent = totalRemiseParent;
-        const deduction = Math.min(e.details_frais.total, remiseADeduire);
-        e.details_frais.remise = (e.details_frais.remise || 0) + deduction;
-        e.details_frais.net = Math.max(0, e.details_frais.total - e.details_frais.remise);
+        e.details_frais.remise = remiseDeduction;
+        e.details_frais.net = Math.max(0, e.details_frais.total_brut - remiseDeduction);
+        e.details_frais.total = e.details_frais.net; // Mettre à jour total avec net après remise
         e.details_frais.reste = Math.max(0, e.details_frais.net - e.details_frais.paye);
         e.frais_reste = e.details_frais.reste;
-        if (remiseADeduire > 0) {
-          remiseADeduire -= deduction;
-        }
       }
     } else {
       for (const e of enfantsAvecFrais) {
         e.total_remise_parent = 0;
         e.details_frais.remise = 0;
-        e.details_frais.net = e.details_frais.total;
-        e.details_frais.reste = Math.max(0, e.details_frais.total - e.details_frais.paye);
+        e.details_frais.net = e.details_frais.total_brut;
+        e.details_frais.total = e.details_frais.total_brut;
+        e.details_frais.reste = Math.max(0, e.details_frais.total_brut - e.details_frais.paye);
         e.frais_reste = e.details_frais.reste;
       }
     }
 
-    // Afficher les totaux
-    const totalAPayer = enfantsAvecFrais.reduce((acc, e) => acc + e.frais_montant, 0);
-    const totalPaye = enfantsAvecFrais.reduce((acc, e) => acc + e.frais_paye, 0);
-    const totalReste = enfantsAvecFrais.reduce((acc, e) => acc + e.frais_reste, 0);
+    // Afficher les totaux pour débogage
+    const totalBrutGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.total_brut, 0);
+    const totalNetGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.total, 0);
+    const totalPayeGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.paye, 0);
+    const totalResteGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.reste, 0);
 
     console.log(`📋 Enfants trouvés: ${enfantsAvecFrais.length}`);
-    console.log(`📊 Total à payer: ${totalAPayer.toLocaleString()} GNF`);
-    console.log(`📊 Total payé: ${totalPaye.toLocaleString()} GNF`);
-    console.log(`📊 Solde restant: ${totalReste.toLocaleString()} GNF`);
+    console.log(`📊 Total BRUT global: ${totalBrutGlobal.toLocaleString()} GNF`);
+    console.log(`📊 Total Remise: ${totalRemiseParent.toLocaleString()} GNF`);
+    console.log(`📊 Total NET global: ${totalNetGlobal.toLocaleString()} GNF`);
+    console.log(`📊 Total payé: ${totalPayeGlobal.toLocaleString()} GNF`);
+    console.log(`📊 Solde restant: ${totalResteGlobal.toLocaleString()} GNF`);
 
     // ⭐⭐⭐ GARANTIR QUE LA RÉPONSE EST UN TABLEAU ⭐⭐⭐
     const result = Array.isArray(enfantsAvecFrais) ? enfantsAvecFrais : [];

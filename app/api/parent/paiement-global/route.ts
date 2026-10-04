@@ -53,18 +53,23 @@ export async function POST(request: NextRequest) {
     try {
       let restantADistribuer = montantTotal;
 
-      // 1. Récupérer les préinscriptions avec un solde restant
+      // 1. Récupérer les préinscriptions avec un solde restant (basé sur le total de toutes les échéances)
       const preinscriptions = await query(`
-        SELECT p.id, p.montant_restant_plan, p.montant_total_plan, p.enfant_nom, p.enfant_prenom
+        SELECT 
+          p.id, 
+          COALESCE((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id), p.montant_total_plan, 0) AS montant_total_reel,
+          GREATEST(0, COALESCE((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id), p.montant_total_plan, 0) - COALESCE((SELECT SUM(pp.montant) FROM paiements pp WHERE pp.preinscription_id = p.id AND pp.statut = 'valide'), 0)) AS montant_restant_reel,
+          p.enfant_nom, 
+          p.enfant_prenom
         FROM preinscriptions p
         WHERE p.parent_id = $1 AND p.statut IN ('en_attente', 'valide')
-          AND COALESCE(p.montant_restant_plan, 0) > 0
+          AND GREATEST(0, COALESCE((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id), p.montant_total_plan, 0) - COALESCE((SELECT SUM(pp.montant) FROM paiements pp WHERE pp.preinscription_id = p.id AND pp.statut = 'valide'), 0)) > 0
         ORDER BY p.id ASC
       `, [parentId]);
 
       for (const pre of preinscriptions.rows) {
         if (restantADistribuer <= 0) break;
-        const soldePre = Number(pre.montant_restant_plan);
+        const soldePre = Number(pre.montant_restant_reel);
         const montantApplique = Math.min(restantADistribuer, soldePre);
 
         // Insérer le paiement
@@ -86,28 +91,34 @@ export async function POST(request: NextRequest) {
         const nouveauSolde = Math.max(0, soldePre - montantApplique);
         await query(`
           UPDATE preinscriptions
-          SET montant_restant_plan = $1,
-              frais_statut = CASE WHEN $1 = 0 THEN 'paye' ELSE 'partiel' END,
-              updated_at = NOW()
+          SET montant_total_plan = COALESCE((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = $2 AND ep.type = 'inscription'), montant_total_plan),
+              montant_restant_plan = $1,
+              frais_statut = CASE WHEN $1 = 0 THEN 'paye' ELSE 'partiel' END
           WHERE id = $2
         `, [nouveauSolde, pre.id]);
 
         restantADistribuer -= montantApplique;
       }
 
-      // 2. Récupérer les réinscriptions avec un solde restant
+      // 2. Récupérer les réinscriptions avec un solde restant (basé sur le total des échéances)
       if (restantADistribuer > 0) {
         const reinscriptions = await query(`
-          SELECT r.id, r.eleve_id, r.montant_restant_plan, r.montant_total_plan, r.enfant_nom, r.enfant_prenom
+          SELECT 
+            r.id, 
+            r.eleve_id, 
+            COALESCE((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id), r.montant_total_plan, 0) AS montant_total_reel,
+            GREATEST(0, COALESCE((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id), r.montant_total_plan, 0) - COALESCE((SELECT SUM(pp.montant) FROM paiements pp WHERE pp.reinscription_id = r.id AND pp.statut = 'valide'), 0)) AS montant_restant_reel,
+            r.enfant_nom, 
+            r.enfant_prenom
           FROM reinscriptions r
           WHERE r.parent_id = $1 AND r.statut IN ('en_attente', 'valide')
-            AND COALESCE(r.montant_restant_plan, 0) > 0
+            AND GREATEST(0, COALESCE((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id), r.montant_total_plan, 0) - COALESCE((SELECT SUM(pp.montant) FROM paiements pp WHERE pp.reinscription_id = r.id AND pp.statut = 'valide'), 0)) > 0
           ORDER BY r.id ASC
         `, [parentId]);
 
         for (const rein of reinscriptions.rows) {
           if (restantADistribuer <= 0) break;
-          const soldeRein = Number(rein.montant_restant_plan);
+          const soldeRein = Number(rein.montant_restant_reel);
           const montantApplique = Math.min(restantADistribuer, soldeRein);
 
           await query(`

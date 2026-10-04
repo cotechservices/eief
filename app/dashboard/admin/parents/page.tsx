@@ -533,7 +533,7 @@ export default function AdminParentsPage() {
                     throw new Error("Erreur modification élève: " + (errorData.error || ""));
                 }
                 
-                // ✅ Gérer cantine et transport (uniquement pour les enfants inscrits)
+                // ✅ Gérer cantine pour les enfants INSCRITS
                 if (cantineData.inscrire && cantineData.mois > 0) {
                     const resCantine = await fetch("/api/admin/cantine/inscrire", {
                         method: "POST",
@@ -991,6 +991,34 @@ export default function AdminParentsPage() {
                                     )}
                                 </div>
 
+                                {/* Synthèse Financière du Parent */}
+                                {(parentDetail as any).totaux && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 bg-gradient-to-br from-gray-50 to-blue-50 p-4 rounded-xl border border-blue-100">
+                                        <div>
+                                            <span className="text-xs text-gray-900 block">Dépenses Brutes</span>
+                                            <span className="font-bold text-gray-900 text-sm">{((parentDetail as any).totaux.depenses_brutes || 0).toLocaleString()} GNF</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-900 block">Remise Déduite</span>
+                                            <span className="font-bold text-purple-600 text-sm">-{((parentDetail as any).totaux.remise_accordee || 0).toLocaleString()} GNF</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-900 block">Net à Payer</span>
+                                            <span className="font-bold text-blue-600 text-sm">{((parentDetail as any).totaux.total_net || 0).toLocaleString()} GNF</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-900 block">Déjà Payé</span>
+                                            <span className="font-bold text-green-600 text-sm">{((parentDetail as any).totaux.total_paye || 0).toLocaleString()} GNF</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-gray-900 block">Reste à Payer</span>
+                                            <span className={`font-bold text-sm ${((parentDetail as any).totaux.solde_restant || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                {((parentDetail as any).totaux.solde_restant || 0).toLocaleString()} GNF
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div>
                                     <h3 className="font-semibold text-black mb-4 flex items-center gap-2 border-b pb-2">
                                         <GraduationCap className="w-5 h-5 text-green-600" />
@@ -1135,24 +1163,77 @@ export default function AdminParentsPage() {
 
                                 {parentDetail.preinscriptions && parentDetail.preinscriptions.length > 0 && (
                                 <div>
-                                    <h3 className="font-semibold text-black mb-3 flex items-center gap-2 border-b pb-2">
-                                        <FileText className="w-5 h-5 text-purple-600" />
-                                        Inscriptions ({parentDetail.preinscriptions.length})
+                                    <h3 className="font-semibold text-black mb-3 flex items-center justify-between border-b pb-2">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-5 h-5 text-purple-600" />
+                                            Inscriptions ({parentDetail.preinscriptions.length})
+                                        </div>
+                                        {(parentDetail as any).solde_restant_total !== undefined && (
+                                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
+                                                Total global restant : {((parentDetail as any).solde_restant_total || 0).toLocaleString()} GNF
+                                            </span>
+                                        )}
                                     </h3>
-                                    <div className="space-y-2">
-                                        {parentDetail.preinscriptions.map((preins) => (
-                                            <div key={preins.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                                    <div className="space-y-3">
+                                        {parentDetail.preinscriptions.map((preins: any) => {
+                                            const scolarite = Number(preins.scolarite_montant ?? (preins.montant_total_plan || preins.frais_montant || 0));
+                                            const fournitures = Number(preins.fournitures_montant || 0);
+                                            const cantine = Number(preins.cantine_montant || 0);
+                                            const transport = Number(preins.transport_montant || 0);
+                                            const totalDossier = Number(preins.montant_total_global ?? (scolarite + fournitures + cantine + transport));
+                                            const paye = Number(preins.paye_montant || 0);
+                                            const reste = Math.max(0, totalDossier - paye);
+
+                                            return (
+                                            <div key={preins.id} className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-wrap justify-between items-center gap-3">
                                                 <div>
-                                                    <p className="font-medium text-black">
+                                                    <p className="font-bold text-black text-base">
                                                         {preins.enfant_prenom} {preins.enfant_nom}
                                                     </p>
-                                                    <p className="text-sm text-gray-900">{preins.classe} • {preins.niveau}</p>
+                                                    <p className="text-xs text-gray-900 mt-0.5">
+                                                        {preins.classe} • {preins.niveau}
+                                                        {preins.numero_dossier && (
+                                                            <span className="ml-2 font-mono text-gray-700 font-medium">
+                                                                Dossier: {preins.numero_dossier}
+                                                            </span>
+                                                        )}
+                                                    </p>
+                                                    <div className="flex flex-wrap gap-2 mt-2 text-xs">
+                                                        <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 font-medium">
+                                                            Scolarité: {scolarite.toLocaleString()} GNF
+                                                        </span>
+                                                        {fournitures > 0 && (
+                                                            <span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100 font-medium">
+                                                                Fournitures: {fournitures.toLocaleString()} GNF
+                                                            </span>
+                                                        )}
+                                                        {cantine > 0 && (
+                                                            <span className="bg-orange-50 text-orange-700 px-2 py-0.5 rounded border border-orange-100 font-medium">
+                                                                Cantine: {cantine.toLocaleString()} GNF
+                                                            </span>
+                                                        )}
+                                                        {transport > 0 && (
+                                                            <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded border border-green-100 font-medium">
+                                                                Transport: {transport.toLocaleString()} GNF
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-sm text-gray-900">
-                                                        {preins.montant_total_plan?.toLocaleString() || 0} GNF
-                                                    </span>
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                <div className="flex items-center gap-4">
+                                                    <div className="text-right">
+                                                        <p className="text-base font-bold text-black">
+                                                            {totalDossier.toLocaleString()} GNF
+                                                        </p>
+                                                        {paye > 0 && (
+                                                            <p className="text-xs text-green-600 font-medium">
+                                                                Payé: {paye.toLocaleString()} GNF
+                                                            </p>
+                                                        )}
+                                                        <p className={`text-xs font-semibold ${reste > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                            Reste: {reste.toLocaleString()} GNF
+                                                        </p>
+                                                    </div>
+                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                                                         preins.statut === 'en_attente' ? 'bg-yellow-100 text-yellow-700' :
                                                         preins.statut === 'valide' ? 'bg-green-100 text-green-700' :
                                                         'bg-red-100 text-red-700'
@@ -1180,21 +1261,15 @@ export default function AdminParentsPage() {
                                                             numero_dossier: preins.numero_dossier,
                                                             type_dossier: 'preinscription'
                                                         } as any)}
-                                                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 bg-blue-50 px-2 py-1 rounded transition font-medium"
+                                                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 bg-blue-50 px-2 py-1.5 rounded-lg transition font-medium"
                                                     >
                                                         <Eye className="w-3.5 h-3.5" />
                                                         Détails
                                                     </button>
-                                                    <Link
-                                                        href={`/dashboard/admin/preinscriptions`}
-                                                        className="text-gray-500 hover:text-gray-700 text-sm p-1"
-                                                        title="Voir la gestion des pré-inscriptions"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </Link>
                                                 </div>
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
@@ -1891,7 +1966,15 @@ export default function AdminParentsPage() {
                         }
                         fetchParents();
                     }}
-                    soldeRestant={(parentDetail as any).solde_restant_total ?? (parentDetail.preinscriptions ? parentDetail.preinscriptions.reduce((acc, p) => acc + (Number(p.montant_restant_plan) || 0), 0) : 0)}
+                    solde={(parentDetail as any).solde_global || {
+                        total: (parentDetail as any).solde_restant_total || 0,
+                        details: {
+                            inscription: (parentDetail as any).solde_restant_total || 0,
+                            transport: 0,
+                            cantine: 0,
+                            fournitures: 0
+                        }
+                    }}
                     parentId={selectedParentId || undefined}
                 />
             )}
