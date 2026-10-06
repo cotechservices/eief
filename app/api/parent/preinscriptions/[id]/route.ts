@@ -87,11 +87,30 @@ export async function GET(
     `, [preinscriptionId]);
 
     const fraisRow         = echeancesResult.rows[0] || {};
-    const fraisInscription = Number(fraisRow.inscription) || 0;
-    const cantineSelected  = Number(fraisRow.cantine)     || 0;
-    const transportSelected= Number(fraisRow.transport)   || 0;
-    const fournituresSelected = Number(fraisRow.fournitures) || 0;
-    const autresSelected   = Number(fraisRow.autres)      || 0;
+    const fraisInscription = Number(fraisRow.inscription) || Number(data.montant_total_plan) || Number(data.frais_montant) || 0;
+
+    // Cantine : echeances_paiement OU preinscription_cantine
+    let cantineSelected = Number(fraisRow.cantine) || 0;
+    if (cantineSelected === 0) {
+      const cantineRes = await query(`SELECT COALESCE(SUM(prix), 0) as total FROM preinscription_cantine WHERE preinscription_id = $1`, [preinscriptionId]);
+      cantineSelected = Number(cantineRes.rows[0]?.total) || 0;
+    }
+
+    // Transport : echeances_paiement OU preinscription_transport
+    let transportSelected = Number(fraisRow.transport) || 0;
+    if (transportSelected === 0) {
+      const transRes = await query(`SELECT COALESCE(SUM(prix), 0) as total FROM preinscription_transport WHERE preinscription_id = $1`, [preinscriptionId]);
+      transportSelected = Number(transRes.rows[0]?.total) || 0;
+    }
+
+    // Fournitures : echeances_paiement OU commandes_fournitures
+    let fournituresSelected = Number(fraisRow.fournitures) || 0;
+    if (fournituresSelected === 0) {
+      const fournRes = await query(`SELECT COALESCE(SUM(quantite * prix_unitaire), 0) as total FROM commandes_fournitures WHERE preinscription_id = $1`, [preinscriptionId]);
+      fournituresSelected = Number(fournRes.rows[0]?.total) || 0;
+    }
+
+    const autresSelected = Number(fraisRow.autres) || 0;
 
     // ===================== CALCUL DES TOTAUX =====================
     const totalFrais = fraisInscription + cantineSelected + transportSelected + fournituresSelected + autresSelected;
@@ -105,7 +124,7 @@ export async function GET(
 
     const fraisPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
 
-    console.log("📊 Détails des frais (echeances_paiement):", {
+    console.log("📊 Détails des frais complets:", {
       inscription: fraisInscription,
       cantine: cantineSelected,
       transport: transportSelected,
@@ -122,7 +141,7 @@ export async function GET(
       transport_montant: transportSelected,
       cantine_montant: cantineSelected,
       fournitures_montant: fournituresSelected,
-      scolarite_montant: 0,
+      scolarite_montant: fraisInscription,
       montant_total: totalFrais,
       fournitures_commandees: [],
       transport_selectionne: [],
@@ -134,7 +153,7 @@ export async function GET(
         fournitures: fournituresSelected,
         librairie: fournituresSelected,
         autres: autresSelected,
-        scolarite: 0,
+        scolarite: fraisInscription,
         total: totalFrais,
         paye: fraisPaye,
         reste: Math.max(0, totalFrais - fraisPaye)

@@ -791,7 +791,7 @@ export default function RecuPaiement({ recu, onClose, onDelete }: RecuPaiementPr
                 <p className="note" style={{ fontSize: "11px", color: "#94a3b8", maxWidth: "320px", lineHeight: 1.4 }}>
                   <span style={{ fontWeight: 700, color: "#1e3a5f" }}>NB : Tout paiement effectué n'est ni remboursable ni échangeable.</span>
                 </p>
-                <p className="date" style={{ fontSize: "11px", color: "#94a3b8" }}>
+                <p className="date text-black" style={{ fontSize: "11px", color: "#94a3b8" }}>
                   Édité le {new Date().toLocaleDateString("fr-FR")}
                 </p>
               </div>

@@ -270,6 +270,36 @@ export async function GET(request: NextRequest) {
           ORDER BY ep.id ASC
         `, [parentId]);
 
+        // ⭐ 8b. Paiements DÉJÀ EFFECTUÉS par type de frais
+        const paiementsParTypeRes = await query(`
+          SELECT 
+            COALESCE(type_frais, 'inscription') as type_frais,
+            COALESCE(SUM(montant), 0) as total_paye
+          FROM paiements
+          WHERE statut IN ('valide', 'paye')
+            AND (
+              eleve_id IN (SELECT eleve_id FROM lien_parent_eleve WHERE parent_id = $1)
+              OR preinscription_id IN (SELECT id FROM preinscriptions WHERE parent_id = $1)
+              OR reinscription_id IN (SELECT id FROM reinscriptions WHERE parent_id = $1)
+            )
+          GROUP BY COALESCE(type_frais, 'inscription')
+        `, [parentId]);
+
+        const payeParType: Record<string, number> = {};
+        for (const row of paiementsParTypeRes.rows) {
+          payeParType[row.type_frais] = Number(row.total_paye) || 0;
+        }
+
+        // Paiements globaux/non-typés → répartir proportionnellement sur scolarité
+        const payeScolarite = (payeParType['inscription'] || 0) + (payeParType['reinscription'] || 0) + (payeParType['scolarite'] || 0);
+        const payeCantine = payeParType['cantine'] || 0;
+        const payeTransport = payeParType['transport'] || 0;
+        const payeFournitures = (payeParType['fournitures'] || 0) + (payeParType['librairie'] || 0);
+
+        // Paiements "globaux" (sans type_frais ou type = 'global') → à déduire du solde général
+        // On ne les répartit pas par service pour éviter la double déduction
+        // Le solde_restant global (totalNet - totalPaye) est la référence
+
         return {
           parent_id: parent.parent_id,
           nom: parent.nom,
@@ -291,10 +321,26 @@ export async function GET(request: NextRequest) {
             solde_restant: soldeRestant
           },
           services_breakdown: {
-            scolarite: { total: scolariteBrut },
-            cantine: { total: cantineBrut },
-            transport: { total: transportBrut },
-            fournitures: { total: fournituresBrut }
+            scolarite: { 
+              total: scolariteBrut, 
+              paye: payeScolarite, 
+              reste: Math.max(0, scolariteBrut - payeScolarite) 
+            },
+            cantine: { 
+              total: cantineBrut, 
+              paye: payeCantine, 
+              reste: Math.max(0, cantineBrut - payeCantine) 
+            },
+            transport: { 
+              total: transportBrut, 
+              paye: payeTransport, 
+              reste: Math.max(0, transportBrut - payeTransport) 
+            },
+            fournitures: { 
+              total: fournituresBrut, 
+              paye: payeFournitures, 
+              reste: Math.max(0, fournituresBrut - payeFournitures) 
+            }
           },
           echeances: echeancesRes.rows || []
         };

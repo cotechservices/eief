@@ -1,3 +1,4 @@
+//app\dashboard\admin\cantine\page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -599,7 +600,7 @@ export default function CantinePage() {
                     <th className="px-6 py-3">Dessert</th>
                     <th className="px-6 py-3">Prix mensuel</th>
                     <th className="px-6 py-3">Prix annuel</th>
-                    <th className="px-6 py-3">Inscrits</th>
+                   {/*<th className="px-6 py-3">Inscrits</th>*/}
                     <th className="px-6 py-3">Actions</th>
                   </tr>
                 </thead>
@@ -615,7 +616,7 @@ export default function CantinePage() {
                       <td className="px-6 py-4 text-blue-900 font-medium">
                         {m.prix_annuel ? `${m.prix_annuel.toLocaleString()} GNF` : "—"}
                       </td>
-                      <td className="px-6 py-4 text-center text-black">{m.inscrits || 0}</td>
+                       {/*<td className="px-6 py-4 text-center text-black">{m.inscrits || 0}</td>*/}
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           <button onClick={() => handleOpenEditMenu(m)} className="text-blue-600 hover:text-blue-800 p-1">

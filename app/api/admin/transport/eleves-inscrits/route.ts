@@ -21,10 +21,10 @@ export async function GET() {
         u.prenom,
         u.nom,
         c.nom as classe,
-        it.date_debut as date_inscription,
+        COALESCE(it.date_debut, it.date_inscription)::text as date_inscription,
         it.est_actif as status,
-        l.nom as ligne_nom,
-        b.immatriculation as bus_immatriculation
+        COALESCE(l.nom, 'Non assigné') as ligne_nom,
+        COALESCE(b.immatriculation, 'Non assigné') as bus_immatriculation
       FROM inscriptions_transport it
       JOIN eleves e ON e.id = it.eleve_id
       JOIN utilisateurs u ON u.id = e.utilisateur_id
@@ -32,7 +32,26 @@ export async function GET() {
       LEFT JOIN lignes_transport l ON l.id = it.ligne_id
       LEFT JOIN bus b ON b.id = l.bus_id
       WHERE it.est_actif = true
-      ORDER BY it.date_debut DESC
+
+      UNION ALL
+
+      SELECT 
+        p.id as id,
+        p.numero_dossier as matricule,
+        p.enfant_prenom as prenom,
+        p.enfant_nom as nom,
+        p.classe,
+        pt.created_at::text as date_inscription,
+        true as status,
+        COALESCE(l.nom, 'Non assigné') as ligne_nom,
+        COALESCE(b.immatriculation, 'Non assigné') as bus_immatriculation
+      FROM preinscription_transport pt
+      JOIN preinscriptions p ON pt.preinscription_id = p.id
+      LEFT JOIN lignes_transport l ON pt.ligne_id = l.id
+      LEFT JOIN bus b ON b.id = l.bus_id
+      WHERE p.statut != 'rejete'
+
+      ORDER BY date_inscription DESC
     `);
 
     // Si aucun élève n'est inscrit, retourner un tableau vide

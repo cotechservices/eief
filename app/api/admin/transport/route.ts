@@ -25,7 +25,11 @@ export async function GET() {
         l.horaire_matin, 
         l.horaire_soir,
         l.prix_abonnement,
-        (SELECT COUNT(*) FROM inscriptions_transport i WHERE i.ligne_id = l.id AND i.est_actif = true) as inscrits
+        (
+          COALESCE((SELECT COUNT(*) FROM inscriptions_transport i WHERE i.ligne_id = l.id AND i.est_actif = true), 0)
+          +
+          COALESCE((SELECT COUNT(*) FROM preinscription_transport pt JOIN preinscriptions p ON pt.preinscription_id = p.id WHERE pt.ligne_id = l.id AND p.statut != 'rejete'), 0)
+        ) as inscrits
       FROM bus b
       LEFT JOIN lignes_transport l ON l.bus_id = b.id
       ORDER BY b.id ASC
@@ -47,7 +51,15 @@ export async function GET() {
 
     // 2. Statistiques globales
     const totalBus = bus.length;
-    const totalInscrits = bus.reduce((acc, curr) => acc + curr.inscrits, 0);
+    // Compter tous les élèves uniques inscrits (élèves confirmés + pré-inscriptions)
+    const inscritsTotalRes = await query(`
+      SELECT (
+        COALESCE((SELECT COUNT(DISTINCT eleve_id) FROM inscriptions_transport WHERE est_actif = true), 0)
+        +
+        COALESCE((SELECT COUNT(DISTINCT pt.preinscription_id) FROM preinscription_transport pt JOIN preinscriptions p ON pt.preinscription_id = p.id WHERE p.statut != 'rejete'), 0)
+      ) as total
+    `);
+    const totalInscrits = parseInt(inscritsTotalRes.rows[0]?.total || 0) || bus.reduce((acc, curr) => acc + curr.inscrits, 0);
     const capaciteTotale = bus.reduce((acc, curr) => acc + curr.capacite, 0);
     const tauxRemplissage = capaciteTotale > 0 ? Math.round((totalInscrits / capaciteTotale) * 100) : 0;
 

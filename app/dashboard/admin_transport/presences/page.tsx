@@ -194,12 +194,12 @@ export default function PresencesTransportPage() {
           </h1>
           <p className="text-gray-900 mt-1">Gérez les présences des élèves dans les bus</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="text-gray-900 flex items-center gap-3">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="px-4 py-2 text-gray-900 border border-gray-400 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
           <button
             onClick={sauvegarderPresences}

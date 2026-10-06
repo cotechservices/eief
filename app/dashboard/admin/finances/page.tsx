@@ -544,7 +544,7 @@ export default function FinancesPage() {
                               ))}
                               {p.preinscriptions.map((pre: any) => (
                                 <span key={pre.preinscription_id} className="bg-yellow-50 text-yellow-700 text-xs px-2 py-0.5 rounded font-medium border border-yellow-100">
-                                  ⏳ {pre.prenom} {pre.nom} ({pre.classe_nom})
+                                   {pre.prenom} {pre.nom} ({pre.classe_nom})
                                 </span>
                               ))}
                             </div>
@@ -977,6 +977,12 @@ export default function FinancesPage() {
                   </h3>
                   <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
                     Total Scolarité: {(selectedParentPaiement.services_breakdown?.scolarite?.total || 0).toLocaleString()} GNF
+                    {(selectedParentPaiement.services_breakdown?.scolarite?.paye || 0) > 0 && (
+                      <span className="ml-2 text-green-600">• Payé: {(selectedParentPaiement.services_breakdown?.scolarite?.paye || 0).toLocaleString()} GNF</span>
+                    )}
+                    {(selectedParentPaiement.services_breakdown?.scolarite?.reste || 0) > 0 && (
+                      <span className="ml-2 text-red-600">• Reste: {(selectedParentPaiement.services_breakdown?.scolarite?.reste || 0).toLocaleString()} GNF</span>
+                    )}
                   </span>
                 </div>
                 {selectedParentPaiement.echeances && selectedParentPaiement.echeances.length > 0 ? (
@@ -1002,14 +1008,22 @@ export default function FinancesPage() {
                           {ech.statut !== 'paye' && (
                             <button
                               onClick={() => {
+                                // Calculer le reste dû pour cette échéance
+                                // Si des paiements globaux ont été faits, déduire du montant de l'échéance
+                                const montantEcheance = Number(ech.montant) || 0;
+                                const montantPaye = Number(ech.montant_paye || 0);
+                                const resteEcheance = Math.max(0, montantEcheance - montantPaye);
+                                // Si reste échéance = 0 mais statut pas payé, utiliser solde_restant global
+                                const soldeGlobal = selectedParentPaiement.totaux?.solde_restant || 0;
+                                const montantSuggere = resteEcheance > 0 ? resteEcheance : Math.min(montantEcheance, soldeGlobal);
                                 setTargetPaiementItem({
                                   type: "scolarite",
                                   title: `Règlement : ${ech.echeance?.replace('_', ' ')}`,
                                   preinscriptionId: ech.preinscription_id,
                                   reinscriptionId: ech.reinscription_id,
-                                  montantSuggere: Number(ech.montant) || 0
+                                  montantSuggere
                                 });
-                                setTargetMontant(String(Number(ech.montant) || 0));
+                                setTargetMontant(String(montantSuggere));
                                 setShowTargetPaiementModal(true);
                               }}
                               className="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
@@ -1037,25 +1051,35 @@ export default function FinancesPage() {
                 <div className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
                   <div>
                     <p className="text-sm font-medium text-gray-900">Total Frais Cantine</p>
+                    <p className="text-xs text-gray-500">
+                      Total: {(selectedParentPaiement.services_breakdown?.cantine?.total || 0).toLocaleString()} GNF
+                      {(selectedParentPaiement.services_breakdown?.cantine?.paye || 0) > 0 && (
+                        <span className="ml-2 text-green-600">• Payé: {(selectedParentPaiement.services_breakdown?.cantine?.paye || 0).toLocaleString()} GNF</span>
+                      )}
+                    </p>
                     <p className="text-xs font-bold text-orange-600">
-                      {selectedParentPaiement.services_breakdown?.cantine?.total?.toLocaleString() || 0} GNF
+                      Reste: {(selectedParentPaiement.services_breakdown?.cantine?.reste ?? selectedParentPaiement.services_breakdown?.cantine?.total ?? 0).toLocaleString()} GNF
                     </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      const m = selectedParentPaiement.services_breakdown?.cantine?.total || 0;
-                      setTargetPaiementItem({
-                        type: "cantine",
-                        title: "Règlement Service Cantine",
-                        montantSuggere: m
-                      });
-                      setTargetMontant(String(m));
-                      setShowTargetPaiementModal(true);
-                    }}
-                    className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
-                  >
-                    Régler la Cantine
-                  </button>
+                  {(selectedParentPaiement.services_breakdown?.cantine?.reste ?? selectedParentPaiement.services_breakdown?.cantine?.total ?? 0) > 0 ? (
+                    <button
+                      onClick={() => {
+                        const m = selectedParentPaiement.services_breakdown?.cantine?.reste ?? selectedParentPaiement.services_breakdown?.cantine?.total ?? 0;
+                        setTargetPaiementItem({
+                          type: "cantine",
+                          title: "Règlement Service Cantine",
+                          montantSuggere: m
+                        });
+                        setTargetMontant(String(m));
+                        setShowTargetPaiementModal(true);
+                      }}
+                      className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                    >
+                      Régler la Cantine
+                    </button>
+                  ) : (
+                    <span className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-semibold rounded-lg">✓ Soldé</span>
+                  )}
                 </div>
               </div>
 
@@ -1068,25 +1092,35 @@ export default function FinancesPage() {
                 <div className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
                   <div>
                     <p className="text-sm font-medium text-gray-900">Total Frais Transport</p>
+                    <p className="text-xs text-gray-500">
+                      Total: {(selectedParentPaiement.services_breakdown?.transport?.total || 0).toLocaleString()} GNF
+                      {(selectedParentPaiement.services_breakdown?.transport?.paye || 0) > 0 && (
+                        <span className="ml-2 text-green-600">• Payé: {(selectedParentPaiement.services_breakdown?.transport?.paye || 0).toLocaleString()} GNF</span>
+                      )}
+                    </p>
                     <p className="text-xs font-bold text-blue-600">
-                      {selectedParentPaiement.services_breakdown?.transport?.total?.toLocaleString() || 0} GNF
+                      Reste: {(selectedParentPaiement.services_breakdown?.transport?.reste ?? selectedParentPaiement.services_breakdown?.transport?.total ?? 0).toLocaleString()} GNF
                     </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      const m = selectedParentPaiement.services_breakdown?.transport?.total || 0;
-                      setTargetPaiementItem({
-                        type: "transport",
-                        title: "Règlement Service Transport",
-                        montantSuggere: m
-                      });
-                      setTargetMontant(String(m));
-                      setShowTargetPaiementModal(true);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
-                  >
-                    Régler le Transport
-                  </button>
+                  {(selectedParentPaiement.services_breakdown?.transport?.reste ?? selectedParentPaiement.services_breakdown?.transport?.total ?? 0) > 0 ? (
+                    <button
+                      onClick={() => {
+                        const m = selectedParentPaiement.services_breakdown?.transport?.reste ?? selectedParentPaiement.services_breakdown?.transport?.total ?? 0;
+                        setTargetPaiementItem({
+                          type: "transport",
+                          title: "Règlement Service Transport",
+                          montantSuggere: m
+                        });
+                        setTargetMontant(String(m));
+                        setShowTargetPaiementModal(true);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                    >
+                      Régler le Transport
+                    </button>
+                  ) : (
+                    <span className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-semibold rounded-lg">✓ Soldé</span>
+                  )}
                 </div>
               </div>
 
@@ -1099,25 +1133,35 @@ export default function FinancesPage() {
                 <div className="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
                   <div>
                     <p className="text-sm font-medium text-gray-900">Total Fournitures Commandées</p>
+                    <p className="text-xs text-gray-500">
+                      Total: {(selectedParentPaiement.services_breakdown?.fournitures?.total || 0).toLocaleString()} GNF
+                      {(selectedParentPaiement.services_breakdown?.fournitures?.paye || 0) > 0 && (
+                        <span className="ml-2 text-green-600">• Payé: {(selectedParentPaiement.services_breakdown?.fournitures?.paye || 0).toLocaleString()} GNF</span>
+                      )}
+                    </p>
                     <p className="text-xs font-bold text-purple-600">
-                      {selectedParentPaiement.services_breakdown?.fournitures?.total?.toLocaleString() || 0} GNF
+                      Reste: {(selectedParentPaiement.services_breakdown?.fournitures?.reste ?? selectedParentPaiement.services_breakdown?.fournitures?.total ?? 0).toLocaleString()} GNF
                     </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      const m = selectedParentPaiement.services_breakdown?.fournitures?.total || 0;
-                      setTargetPaiementItem({
-                        type: "fournitures",
-                        title: "Règlement Fournitures & Librairie",
-                        montantSuggere: m
-                      });
-                      setTargetMontant(String(m));
-                      setShowTargetPaiementModal(true);
-                    }}
-                    className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
-                  >
-                    Régler les Fournitures
-                  </button>
+                  {(selectedParentPaiement.services_breakdown?.fournitures?.reste ?? selectedParentPaiement.services_breakdown?.fournitures?.total ?? 0) > 0 ? (
+                    <button
+                      onClick={() => {
+                        const m = selectedParentPaiement.services_breakdown?.fournitures?.reste ?? selectedParentPaiement.services_breakdown?.fournitures?.total ?? 0;
+                        setTargetPaiementItem({
+                          type: "fournitures",
+                          title: "Règlement Fournitures & Librairie",
+                          montantSuggere: m
+                        });
+                        setTargetMontant(String(m));
+                        setShowTargetPaiementModal(true);
+                      }}
+                      className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                    >
+                      Régler les Fournitures
+                    </button>
+                  ) : (
+                    <span className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-semibold rounded-lg">✓ Soldé</span>
+                  )}
                 </div>
               </div>
             </div>

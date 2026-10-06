@@ -82,17 +82,16 @@ export async function GET() {
         COALESCE(c.total_versement, c.frais_inscription, 0) as frais_inscription_classe,
         COALESCE(c.reinscription_total_versement, c.total_versement, 0) as frais_reinscription_classe,
         e.photo_url,
-        -- Frais optionnels
+        -- Frais optionnels cantine (inscriptions_cantine ou preinscription_cantine liée)
         COALESCE(
-          (SELECT SUM(ic.montant_total)
-           FROM inscriptions_cantine ic
-           WHERE ic.eleve_id = e.id),
+          (SELECT SUM(ic.montant_total) FROM inscriptions_cantine ic WHERE ic.eleve_id = e.id AND ic.est_actif = true),
+          (SELECT SUM(pc.prix) FROM preinscription_cantine pc JOIN inscriptions i ON i.preinscription_id = pc.preinscription_id WHERE i.eleve_id = e.id),
           0
         ) as frais_cantine_reel,
+        -- Frais optionnels transport (inscriptions_transport ou preinscription_transport liée)
         COALESCE(
-          (SELECT SUM(it.montant_mensuel * it.mois_total)
-           FROM inscriptions_transport it
-           WHERE it.eleve_id = e.id),
+          (SELECT SUM(it.montant_mensuel * it.mois_total) FROM inscriptions_transport it WHERE it.eleve_id = e.id AND it.est_actif = true),
+          (SELECT SUM(pt.prix) FROM preinscription_transport pt JOIN inscriptions i ON i.preinscription_id = pt.preinscription_id WHERE i.eleve_id = e.id),
           0
         ) as frais_transport_reel,
         COALESCE(
@@ -186,15 +185,19 @@ export async function GET() {
         ) as frais_inscription_classe,
         0 as frais_reinscription_classe,
         p.photo_url,
+        -- Cantine : échéances cantine OU preinscription_cantine
         COALESCE(
-          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'cantine'),
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'cantine'), 0),
+          (SELECT SUM(pc.prix) FROM preinscription_cantine pc WHERE pc.preinscription_id = p.id),
           0
         ) as frais_cantine_reel,
+        -- Transport : échéances transport OU preinscription_transport
         COALESCE(
-          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'transport'),
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'transport'), 0),
+          (SELECT SUM(pt.prix) FROM preinscription_transport pt WHERE pt.preinscription_id = p.id),
           0
         ) as frais_transport_reel,
-        -- Fournitures réelles depuis échéances ou commandes (ex: 660 000)
+        -- Fournitures : échéances fournitures OU commandes_fournitures
         COALESCE(
           NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'fournitures'), 0),
           (SELECT SUM(cf.quantite * cf.prix_unitaire) FROM commandes_fournitures cf WHERE cf.preinscription_id = p.id),
@@ -253,15 +256,17 @@ export async function GET() {
         ) as frais_reinscription_classe,
         r.photo_url,
         COALESCE(
-          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'cantine'),
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'cantine'), 0),
+          (SELECT SUM(ic.montant_total) FROM inscriptions_cantine ic WHERE ic.eleve_id = r.eleve_id),
           0
         ) as frais_cantine_reel,
         COALESCE(
-          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'transport'),
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'transport'), 0),
+          (SELECT SUM(it.montant_mensuel * it.mois_total) FROM inscriptions_transport it WHERE it.eleve_id = r.eleve_id),
           0
         ) as frais_transport_reel,
         COALESCE(
-          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'fournitures'),
+          NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id AND ep.type = 'fournitures'), 0),
           0
         ) as frais_fournitures,
         COALESCE(

@@ -35,7 +35,9 @@ interface BusItem {
 
 interface InscriptionTransport {
   id: number;
-  eleve_id: number;
+  eleve_id?: number | null;
+  preinscription_id?: number | null;
+  source?: "eleve" | "preinscription";
   ligne_id: number;
   est_actif: boolean;
   solde: number;
@@ -272,15 +274,19 @@ export default function TransportPage() {
   const handleOpenInscriptionEdit = (ins: InscriptionTransport) => {
     setEditingInscription(ins);
     setInscriptionForm({
-      eleveId: ins.eleve_id.toString(),
+      eleveId: (ins.eleve_id || ins.preinscription_id || "").toString(),
       ligneId: ins.ligne_id.toString(),
       mois: ins.mois_total,
-      montantMensuel: ins.montant_mensuel,
-      montantTotal: ins.montant_total,
+      montantMensuel: Number(ins.montant_mensuel) || 0,
+      montantTotal: Number(ins.montant_total) || 0,
     });
     // Trouver l'élève pour afficher son nom dans la recherche
-    const eleve = eleves.find(e => e.id === ins.eleve_id);
-    setEleveSearch(eleve ? `${eleve.prenom} ${eleve.nom} (${eleve.matricule})` : "");
+    const eleve = eleves.find(e => 
+      ins.source === 'preinscription' 
+        ? e.preinscription_id === ins.preinscription_id 
+        : e.id === ins.eleve_id
+    );
+    setEleveSearch(eleve ? `${eleve.prenom} ${eleve.nom} (${eleve.matricule})` : `${ins.eleve_prenom} ${ins.eleve_nom}`);
     setFilteredEleves(eleves);
     setShowInscriptionForm(true);
   };
@@ -307,7 +313,7 @@ export default function TransportPage() {
     // Pour les élèves inscrits, on utilise eleve.id ; pour les pré-inscriptions, on met null
     setInscriptionForm({ ...inscriptionForm, eleveId: eleve.ref_id.toString() });
     setEleveSearch(`${eleve.prenom} ${eleve.nom} (${eleve.matricule})${
-      eleve.source === 'preinscription' ? ' ⏳ En attente' : ''
+      eleve.source === 'preinscription' ? ' En attente' : ''
     }`);
     setShowEleveDropdown(false);
   };
@@ -341,7 +347,7 @@ export default function TransportPage() {
     e.preventDefault();
     try {
       const url = editingInscription
-        ? `/api/admin/transport/inscriptions/${editingInscription.id}`
+        ? `/api/admin/transport/inscriptions/${editingInscription.id}?source=${editingInscription.source || 'eleve'}`
         : "/api/admin/transport/inscrire";
       const method = editingInscription ? "PUT" : "POST";
 
@@ -391,17 +397,17 @@ export default function TransportPage() {
     }
   };
 
-  const handleDeleteInscription = async (id: number) => {
-    if (confirm("Voulez-vous vraiment désactiver cette inscription ?")) {
+  const handleDeleteInscription = async (ins: InscriptionTransport) => {
+    if (confirm("Voulez-vous vraiment désactiver ou retirer cette inscription ?")) {
       try {
-        const response = await fetch(`/api/admin/transport/inscriptions/${id}`, {
+        const response = await fetch(`/api/admin/transport/inscriptions/${ins.id}?source=${ins.source || 'eleve'}`, {
           method: "DELETE",
         });
         if (response.ok) {
           fetchInscriptions();
           fetchTransport();
         } else {
-          alert("Erreur lors de la désactivation");
+          alert("Erreur lors de la suppression");
         }
       } catch (error) {
         console.error("Erreur désactivation inscription:", error);
@@ -511,7 +517,7 @@ export default function TransportPage() {
               <input
                 type="text"
                 placeholder="Rechercher..."
-                className="pl-9 pr-4 py-1.5 border rounded-lg text-sm bg-gray-50/50"
+                className="pl-9 text-gray-900 pr-4 py-1.5 border rounded-lg text-sm bg-gray-50/50"
               />
             </div>
           </div>
@@ -631,25 +637,32 @@ export default function TransportPage() {
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {inscriptions.map((ins) => (
-                <tr key={ins.id} className="hover:bg-gray-50">
+                <tr key={`${ins.source || 'eleve'}-${ins.id}`} className="hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-gray-900">
-                    {ins.eleve_prenom} {ins.eleve_nom}
+                    <div className="flex items-center gap-2">
+                      <span>{ins.eleve_prenom} {ins.eleve_nom}</span>
+                      {ins.source === 'preinscription' && (
+                        <span className="px-2 py-0.5 text-xs bg-amber-100 text-amber-800 rounded-full font-medium">
+                          
+                        </span>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-6 py-4">{ins.classe_nom || "Non assigné"}</td>
-                  <td className="px-6 py-4">{ins.ligne_nom}</td>
-                  <td className="px-6 py-4">{ins.bus_immatriculation || "-"}</td>
-                  <td className="px-6 py-4">{ins.mois_total} mois</td>
+                  <td className="px-6 py-4 text-black">{ins.classe_nom || "Non assigné"}</td>
+                  <td className="px-6 py-4 text-black">{ins.ligne_nom}</td>
+                  <td className="px-6 py-4 text-black">{ins.bus_immatriculation || "-"}</td>
+                  <td className="px-6 py-4 text-black">{ins.mois_total}</td>
+                  <td className="px-6 py-4 text-black">
+                    {Number(ins.montant_mensuel || 0).toLocaleString()} GNF
+                  </td>
+                  <td className="px-6 py-4 text-black font-semibold">
+                    {Number(ins.montant_total || 0).toLocaleString()} GNF
+                  </td>
+                  <td className="px-6 py-4 text-black">
+                    {Number(ins.solde || 0).toLocaleString()} GNF
+                  </td>
                   <td className="px-6 py-4">
-                    {ins.montant_mensuel.toLocaleString()} GNF
-                  </td>
-                  <td className="px-6 py-4 font-semibold">
-                    {ins.montant_total.toLocaleString()} GNF
-                  </td>
-                  <td className="px-6 py-4">
-                    {ins.solde.toLocaleString()} GNF
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 text-black">
                       <button
                         onClick={() => handleOpenInscriptionEdit(ins)}
                         className="text-blue-600 hover:text-blue-800 p-1"
@@ -657,7 +670,7 @@ export default function TransportPage() {
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDeleteInscription(ins.id)}
+                        onClick={() => handleDeleteInscription(ins)}
                         className="text-red-600 hover:text-red-800 p-1"
                       >
                         <Trash2 className="w-4 h-4" />

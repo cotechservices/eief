@@ -549,7 +549,7 @@ export default function PaiementUnifieModal({
                   {modePaiement === 'especes' && (
                     <div className="bg-yellow-50 p-3 rounded-lg text-center mb-4">
                       <p className="text-sm text-yellow-700">
-                        💰 Paiement en espèces à effectuer à la caisse de l'école.
+                         Paiement en espèces à effectuer à la caisse de l'école.
                       </p>
                     </div>
                   )}
@@ -585,7 +585,7 @@ export default function PaiementUnifieModal({
                     ) : paiementEffectue ? (
                       '✅ Paiement effectué'
                     ) : montantSaisiNumber === montantRestant ? (
-                      '💰 Payer le solde complet'
+                      ' Payer le solde complet'
                     ) : (
                       `💳 Payer ${formatMontant(montantSaisiNumber)} GNF`
                     )}
@@ -639,7 +639,7 @@ export default function PaiementUnifieModal({
                               estPartiel ? 'bg-yellow-100 text-yellow-700' :
                                 'bg-yellow-100 text-yellow-700'
                               }`}>
-                              {estPaye ? '✅ Payé' : estPartiel ? '⏳ Partiel' : '⏳ En attente'}
+                              {estPaye ? '✅ Payé' : estPartiel ? ' Partiel' : ' En attente'}
                             </span>
                           </div>
                         </div>

@@ -200,12 +200,12 @@ export default function PresencesTransportPage() {
           </h1>
           <p className="text-gray-900 mt-1">Gérez les présences des élèves dans les bus</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="text-gray-900 flex items-center gap-3">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="px-4 text-gray-900 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
           <button
             onClick={sauvegarderPresences}
@@ -214,7 +214,7 @@ export default function PresencesTransportPage() {
           >
             {saving ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 text-gray-900 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Sauvegarde...
               </>
             ) : (
@@ -271,19 +271,19 @@ export default function PresencesTransportPage() {
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
+            <Search className="text-gray-900 absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
             <input
               type="text"
               placeholder="Rechercher un élève..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full text-gray-900 pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
           <select
             value={filterLigne}
             onChange={(e) => setFilterLigne(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="px-4 text-gray-900 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             <option value="">Toutes les lignes</option>
             {lignes.map((ligne) => (
