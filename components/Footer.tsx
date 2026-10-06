@@ -69,7 +69,7 @@ export default function Footer() {
               <GraduationCap className="w-8 h-8 text-blue-500" />
               <span className="text-xl font-bold text-white">E.I.E.F</span>
             </div>
-            <p className="text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed text-white">
               École Internationale les Enfants du Futur - Une éducation pour former les leaders de demain.
             </p>
           </div>
@@ -77,7 +77,7 @@ export default function Footer() {
           {/* Liens rapides */}
           <div>
             <h3 className="text-white font-semibold mb-4">Liens rapides</h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm text-white">
               <li><Link href="/" className="hover:text-blue-400 transition">Accueil</Link></li>
               <li><Link href="/apropos" className="hover:text-blue-400 transition">À propos</Link></li>
               <li><Link href="/contact" className="hover:text-blue-400 transition">Contact</Link></li>
@@ -87,16 +87,16 @@ export default function Footer() {
           {/* Contact */}
           <div>
             <h3 className="text-white font-semibold mb-4">Contact</h3>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-3 text-sm text-white">
               <li className="flex items-center gap-3">
                 <MapPin className="w-4 h-4 text-blue-400" />
                 Conakry, Guinée
               </li>
-              <li className="flex items-center gap-3">
+              <li className="flex items-center gap-3 text-white">
                 <Phone className="w-4 h-4 text-blue-400" />
                 +224 628 84 84 37
               </li>
-              <li className="flex items-center gap-3">
+              <li className="flex items-center gap-3 text-white">
                 <Mail className="w-4 h-4 text-blue-400" />
                 contact@eief.edu.gn
               </li>
@@ -106,7 +106,7 @@ export default function Footer() {
           {/* Newsletter */}
           <div>
             <h3 className="text-white font-semibold mb-4">Newsletter</h3>
-            <p className="text-sm mb-3">Recevez nos actualités</p>
+            <p className="text-sm mb-3 text-white">Recevez nos actualités</p>
             <div className="flex">
               <input
                 type="email"
@@ -149,7 +149,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="text-center text-xs pt-8 border-t border-gray-800">
+        <div className="text-center text-xs pt-8 border-t border-gray-800 text-white">
           <p>&copy; {new Date().getFullYear()} École Internationale les Enfants du Futur. Tous droits réservés.</p>
         </div>
       </div>
