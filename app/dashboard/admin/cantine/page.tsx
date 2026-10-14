@@ -112,7 +112,7 @@ export default function CantinePage() {
   const [stats, setStats] = useState<CantineStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ⭐ Onglets : menus | inscriptions | preinscriptions | reinscriptions
+  //⭐ Onglets : menus | inscriptions | preinscriptions | reinscriptions
   const [activeTab, setActiveTab] = useState<'menus' | 'inscriptions' | 'preinscriptions' | 'reinscriptions'>('menus');
 
   // ⭐ États pour les menus
