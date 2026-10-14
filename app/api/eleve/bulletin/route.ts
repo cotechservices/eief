@@ -1,17 +1,14 @@
 // app/api/eleve/bulletin/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { query } from "@/lib/db";
+import { getEleveSession } from "@/lib/eleve-auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ELEVE") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+    const auth = await getEleveSession(req);
+    if (auth.error) return auth.error;
 
-    const userId = (session.user as any).id;
+    const { eleveId } = auth;
 
     const eleveRes = await query(
       `SELECT e.id, e.matricule, c.nom AS classe_nom, c.niveau,
@@ -20,8 +17,8 @@ export async function GET(req: NextRequest) {
        JOIN public.utilisateurs u ON u.id = e.utilisateur_id
        LEFT JOIN public.classes c ON c.id = e.classe_id
        LEFT JOIN public.annees_scolaires an ON an.id = c.annee_scolaire_id
-       WHERE e.utilisateur_id = $1`,
-      [userId]
+       WHERE e.id = $1`,
+      [eleveId]
     );
 
     if (eleveRes.rows.length === 0) {

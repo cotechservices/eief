@@ -1,3 +1,4 @@
+// app/dashboard/parent/finances/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -41,14 +42,18 @@ import {
 
 interface DetailsFrais {
   inscription: number;
+  reinscription?: number;
   cantine: number;
   transport: number;
   librairie: number;
   scolarite: number;
   total: number;
+  total_brut?: number;
+  total_net_actuel?: number;
+  remise?: number;
+  net?: number;
   paye: number;
   reste: number;
-  remise?: number;
 }
 
 interface Enfant {
@@ -62,6 +67,9 @@ interface Enfant {
   frais_inscription_classe: number;
   photo_url: string | null;
   details_frais?: DetailsFrais;
+  total_remise_parent?: number;
+  remise_globale?: number;
+  type?: string;
 }
 
 interface Preinscription {
@@ -403,20 +411,64 @@ export default function ParentDashboard() {
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
   };
 
-  // ✅ CALCUL IDENTIQUE AU DASHBOARD PARENT (app/dashboard/parent/page.tsx)
-  const totalAPayerBrut = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.total) || 0), 0);
-  const totalPaye = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.paye) || 0), 0);
-  const remisesAffectees = enfants.reduce((acc, e) => acc + (Number((e.details_frais as any)?.remise) || 0), 0);
-  const totalRemiseParentGlobale = enfants.length > 0 ? (Number((enfants[0] as any)?.total_remise_parent) || 0) : 0;
-  const totalRemises = Math.max(remisesAffectees, totalRemiseParentGlobale);
+  // ⭐⭐⭐ CALCUL UNIFIÉ (identique à l'Espace Parent) ⭐⭐⭐
+  // Règle : Total brut = net actuel + remise | Net = brut - remise | Solde = net - payé
 
+  const totalAPayerBrut = enfants.reduce((acc, e) => {
+    const details = e.details_frais;
+    if (!details) return acc;
+
+    // Priorité 1 : utiliser total_brut fourni par l'API
+    if (details.total_brut !== undefined && details.total_brut !== null && details.total_brut > 0) {
+      return acc + Number(details.total_brut);
+    }
+
+    // Priorité 2 : reconstituer = net actuel + remise
+    const netActuel = Number(details.total_net_actuel) || Number(details.total) || 0;
+    const remise = Number(details.remise) || 0;
+    return acc + (netActuel + remise);
+  }, 0);
+
+  const totalPaye = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.paye) || 0), 0);
+
+  // ⭐ Remise lue directement depuis details_frais.remise (plus de Math.max)
+  const totalRemises = enfants.reduce((acc, e) => {
+    return acc + (Number(e.details_frais?.remise) || 0);
+  }, 0);
+
+  // ⭐ Net = brut - remise (une seule fois)
   const totalAPayerNet = Math.max(0, totalAPayerBrut - totalRemises);
+
+  // ⭐ Solde = net - payé
   const soldeRestant = Math.max(0, totalAPayerNet - totalPaye);
 
+  // Détails par service
   const totalTransport = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.transport) || 0), 0);
   const totalCantine = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.cantine) || 0), 0);
   const totalFournitures = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.librairie) || 0), 0);
-  const totalScolarite = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.scolarite) || Number(e.details_frais?.inscription) || 0), 0);
+
+  // ⭐ Scolarité BRUTE reconstituée = scolarité actuelle + remise
+  const totalScolarite = enfants.reduce((acc, e) => {
+    const details = e.details_frais;
+    if (!details) return acc;
+    const scolariteActuelle = Number(details.scolarite) || Number(details.inscription) || 0;
+    const remise = Number(details.remise) || 0;
+    return acc + (scolariteActuelle + remise);
+  }, 0);
+
+  console.log("📊 STATS FINANCES PARENT:", {
+    totalAPayerBrut,
+    totalRemises,
+    totalAPayerNet,
+    totalPaye,
+    soldeRestant,
+    detail: {
+      scolarite: totalScolarite,
+      transport: totalTransport,
+      cantine: totalCantine,
+      fournitures: totalFournitures
+    }
+  });
 
   const statsGlobales = {
     totalEnfants: enfants.length,
@@ -482,6 +534,28 @@ export default function ParentDashboard() {
         <h1 className="text-2xl font-bold text-black">Finances & Règlement</h1>
         <p className="text-gray-900">Aperçu financier complet et historique de vos paiements</p>
       </div>
+
+      {/* Bannière de remise */}
+      {statsGlobales.totalRemises > 0 && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-center justify-between text-indigo-900 mb-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 font-bold text-lg">
+              🏷️
+            </div>
+            <div>
+              <h4 className="font-bold text-sm">Remise Famille Nombreuse Accordée</h4>
+              <p className="text-xs text-indigo-700">Une réduction de scolarité a été déduite du montant total de vos dépenses.</p>
+              <p className="text-xs text-indigo-900 mt-1 font-medium">
+                Scolarité brute initiale : <span className="font-semibold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</span>
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-xs text-indigo-600 font-semibold block">Montant de la remise</span>
+            <span className="text-lg font-bold text-indigo-700">-{statsGlobales.totalRemises.toLocaleString()} GNF</span>
+          </div>
+        </div>
+      )}
 
       {/* STATISTIQUES FINANCIÈRES COMPLÈTES */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
@@ -595,7 +669,7 @@ export default function ParentDashboard() {
                 : "border-transparent text-gray-900 hover:text-gray-900"
                 }`}
             >
-              <FileText className="w-4 h-4" /> Mes inscriptions
+              <FileText className="w-4 h-4" /> Mes enfants
             </button>
             <button
               onClick={() => setActiveTab("recus")}

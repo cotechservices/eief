@@ -1,376 +1,269 @@
-//app\dashboard\parent\page.tsx
+// app/dashboard/parent/enfants/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import PaiementPlanModal from "@/components/PaiementPlanModal";
 import PaiementGlobalModal from "@/components/PaiementGlobalModal";
-
 import {
   Users,
   CreditCard,
-  Bus,
   Calendar,
-  AlertCircle,
-  MessageSquare,
   GraduationCap,
   Eye,
+  AlertCircle,
   Loader2,
-  FileText,
-  Smartphone,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Wallet,
-  Trash2,
-  AlertTriangle,
-  X,
-  Plus,
-  ShoppingCart,
+  Bus,
   Utensils,
-  Camera,
+  ShoppingCart,
+  Wallet,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Image,
   File,
   ExternalLink,
-  Image,
-  User,
-  ArrowRight
+  Camera,
+  Plus,
+  FileText,
+  TrendingUp,
+  Download,
+  RefreshCw
 } from "lucide-react";
 
 interface DetailsFrais {
   inscription: number;
+  reinscription?: number;
   cantine: number;
   transport: number;
   librairie: number;
   scolarite: number;
   total: number;
-  paye: number;
-  reste: number;
   total_brut?: number;
+  total_net_actuel?: number;
   remise?: number;
   net?: number;
+  paye: number;
+  reste: number;
 }
 
 interface Enfant {
   id: number;
-  matricule: string;
   eleve_id: number;
   nom: string;
   prenom: string;
   classe_nom: string;
   niveau: string;
-  frais_inscription_classe: number;
-  photo_url: string | null;
-  details_frais?: DetailsFrais;
-  remise_globale?: number;
-  total_remise_parent?: number;
-}
-
-interface Preinscription {
-  id: number;
-  numero_dossier: string;
-  enfant_nom: string;
-  enfant_prenom: string;
+  sexe: string;
   date_naissance: string;
   lieu_naissance?: string;
-  sexe?: string;
-  niveau: string;
-  classe: string;
-  statut: "en_attente" | "valide" | "rejete";
-  date_preinscription: string;
-  frais_statut: string;
-  frais_montant: number;
-  photo_url: string | null;
-  acte_naissance_url?: string | null;
-  bulletin_url?: string | null;
-  transport_montant: number;
-  cantine_montant: number;
-  fournitures_montant: number;
-  scolarite_montant: number;
-  montant_total: number;
-  montant_restant_plan?: number;
+  matricule: string;
+  photo_url?: string | null;
+  details_frais: DetailsFrais;
+  moyenne: number;
+  est_eleve?: boolean;
+  est_preinscription?: boolean;
+  type?: string;
+  total_remise_parent?: number;
+  remise_globale?: number;
 }
 
-interface PreinscriptionDetail extends Preinscription {
-  details_frais: {
-    inscription: number;
-    cantine: number;
-    transport: number;
-    librairie: number;
-    scolarite: number;
-    total: number;
-    paye: number;
-    reste: number;
+interface Stats {
+  notes: Array<{ matiere: string; moyenne: number; coefficient: number }>;
+  presences: { total: number; presents: number; absents: number; retards: number };
+  paiements: {
+    total_paye: number;
+    nombre_paiements: number;
+    details?: Array<{ montant: number; type_frais: string; mode_paiement: string; date_paiement: string }>;
   };
-  parent_nom: string;
-  parent_prenom: string;
-  parent_email: string;
-  parent_telephone: string;
-  parent_profession: string;
-  mere_info: string | null;
-  acte_naissance_url: string | null;
-  bulletin_url: string | null;
-  photo_url: string | null;
 }
 
-interface Notification {
-  id: number;
-  type: "success" | "error" | "warning" | "info";
-  message: string;
-}
-
-export default function ParentDashboard() {
+export default function MesEnfantsPage() {
   const [enfants, setEnfants] = useState<Enfant[]>([]);
-  const [preinscriptions, setPreinscriptions] = useState<Preinscription[]>([]);
+  const [statsEnfant, setStatsEnfant] = useState<{ [key: number]: Stats }>({});
   const [loading, setLoading] = useState(true);
-  const [showPaiementModal, setShowPaiementModal] = useState(false);
-  const [showGlobalPaiementModal, setShowGlobalPaiementModal] = useState(false);
-  const [selectedPreinscription, setSelectedPreinscription] = useState<Preinscription | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // États pour le modal de détails
+  // États pour le modal détail
+  const [selectedEnfant, setSelectedEnfant] = useState<Enfant | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedPreinscriptionDetail, setSelectedPreinscriptionDetail] = useState<Preinscription | null>(null);
-  const [preinscriptionDetail, setPreinscriptionDetail] = useState<PreinscriptionDetail | null>(null);
+  const [showGlobalPaiementModal, setShowGlobalPaiementModal] = useState(false);
+  const [enfantDetail, setEnfantDetail] = useState<any | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
-  // États pour l'annulation
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [preinscriptionToCancel, setPreinscriptionToCancel] = useState<Preinscription | null>(null);
-  const [cancelling, setCancelling] = useState(false);
-
-  // État pour les notifications
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // Fonction pour ajouter une notification
-  const addNotification = (type: Notification["type"], message: string) => {
-    const id = Date.now();
-    setNotifications(prev => [...prev, { id, type, message }]);
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 5000);
-  };
-
-  // Fonction pour supprimer une notification
-  const removeNotification = (id: number) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
+  const itemsPerPage = 10;
 
   useEffect(() => {
-    fetchData();
-  }, [refreshTrigger]);
+    fetchEnfants();
+  }, []);
 
-  const triggerRefresh = () => {
-    setRefreshTrigger(prev => prev + 1);
-  };
-
-  const fetchData = async () => {
-    setLoading(true);
+  // ⭐⭐⭐ CHARGER ENFANTS + STATS (uniquement pour les vrais élèves) ⭐⭐⭐
+  const fetchEnfants = async () => {
     try {
-      // 1. Récupérer les enfants
-      const enfantsRes = await fetch("/api/parent/enfants");
+      const response = await fetch("/api/parent/enfants");
+      const data = await response.json();
+      setEnfants(data);
 
-      if (!enfantsRes.ok) {
-        console.error("❌ Erreur API enfants:", enfantsRes.status);
-        addNotification("error", "Erreur lors du chargement des enfants");
-        setLoading(false);
-        return;
-      }
+      // Charger les stats UNIQUEMENT pour les élèves inscrits (type='eleve')
+      // pour éviter les erreurs 403 sur les pré-inscriptions
+      for (const enfant of data) {
+        if (enfant.type !== 'eleve' || !enfant.eleve_id) {
+          continue;
+        }
 
-      const enfantsData = await enfantsRes.json();
-      console.log("📋 Enfants reçus (brut):", enfantsData);
-
-      // ⭐⭐⭐ S'ASSURER QUE C'EST UN TABLEAU ⭐⭐⭐
-      let enfantsArray: Enfant[] = [];
-      if (Array.isArray(enfantsData)) {
-        enfantsArray = enfantsData;
-      } else if (enfantsData && typeof enfantsData === 'object') {
-        if (Array.isArray(enfantsData.data)) {
-          enfantsArray = enfantsData.data;
-        } else if (Array.isArray(enfantsData.enfants)) {
-          enfantsArray = enfantsData.enfants;
-        } else if (enfantsData.error) {
-          console.error("❌ Erreur API:", enfantsData.error);
-          addNotification("error", enfantsData.error);
-          setLoading(false);
-          return;
-        } else {
-          const values = Object.values(enfantsData).filter(item =>
-            typeof item === 'object' && item !== null && !Array.isArray(item)
-          );
-          if (values.length > 0) {
-            enfantsArray = values as Enfant[];
+        try {
+          const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
+          if (!statsResponse.ok) {
+            console.warn(`⚠️ Stats non disponibles pour ${enfant.prenom} (HTTP ${statsResponse.status})`);
+            continue;
           }
+
+          const statsData = await statsResponse.json();
+
+          const cleanedStats = {
+            ...statsData,
+            paiements: {
+              total_paye: typeof statsData.paiements?.total_paye === 'number'
+                ? statsData.paiements.total_paye
+                : parseFloat(statsData.paiements?.total_paye) || 0,
+              nombre_paiements: typeof statsData.paiements?.nombre_paiements === 'number'
+                ? statsData.paiements.nombre_paiements
+                : parseInt(statsData.paiements?.nombre_paiements) || 0,
+              details: statsData.paiements?.details || []
+            }
+          };
+
+          setStatsEnfant(prev => ({ ...prev, [enfant.eleve_id]: cleanedStats }));
+        } catch (err) {
+          console.warn(`Stats non chargées pour ${enfant.prenom}:`, err);
         }
       }
-
-      console.log("✅ Enfants après validation:", enfantsArray);
-      setEnfants(enfantsArray);
-
-      // 2. Récupérer les pré-inscriptions
-      try {
-        const preinscriptionsRes = await fetch("/api/parent/preinscriptions");
-        if (preinscriptionsRes.ok) {
-          const preinscriptionsData = await preinscriptionsRes.json();
-          if (Array.isArray(preinscriptionsData)) {
-            setPreinscriptions(preinscriptionsData);
-          }
-        }
-      } catch (e) {
-        console.error("Erreur pré-inscriptions:", e);
-      }
-
-      // ⭐ Plus de chargement de stats par enfant (optimisation)
-
     } catch (error) {
-      console.error("❌ Erreur globale:", error);
-      addNotification("error", "Erreur lors du chargement des données");
+      console.error("Erreur:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadPreinscriptionDetail = async (id: number) => {
+  // ⭐⭐⭐ CHARGER DÉTAILS SELON LE TYPE ⭐⭐⭐
+  const loadEnfantDetail = async (enfant: Enfant) => {
     setLoadingDetail(true);
     try {
-      const response = await fetch(`/api/parent/preinscriptions/${id}`);
-      if (!response.ok) {
-        throw new Error("Erreur chargement détails");
+      let url = "";
+
+      if (enfant.type === "eleve") {
+        url = `/api/parent/enfants/${enfant.eleve_id}`;
+      } else if (enfant.type === "preinscription") {
+        url = `/api/parent/preinscriptions/${enfant.id}`;
+      } else if (enfant.type === "reinscription") {
+        url = `/api/parent/reinscriptions/${enfant.id}`;
+      } else {
+        url = `/api/parent/enfants/${enfant.eleve_id}`;
       }
+
+      console.log(`🔍 [MES ENFANTS] Chargement détail: ${enfant.type} → ${url}`);
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error(`❌ Erreur API ${url}:`, response.status, errorData);
+        throw new Error(errorData.error || `Erreur ${response.status}`);
+      }
+
       const data = await response.json();
-      console.log(" Détails pré-inscription reçus:", data);
-      setPreinscriptionDetail(data);
-    } catch (error) {
-      console.error("Erreur:", error);
-      addNotification("error", "Erreur lors du chargement des détails");
+      console.log(`✅ Détail chargé pour ${enfant.prenom} ${enfant.nom}:`, data);
+      setEnfantDetail(data);
+    } catch (error: any) {
+      console.error("❌ Erreur chargement détail:", error);
+      setEnfantDetail(null);
     } finally {
       setLoadingDetail(false);
     }
   };
 
-  const handleCancelPreinscription = async () => {
-    if (!preinscriptionToCancel) return;
-
-    setCancelling(true);
-    try {
-      const response = await fetch(`/api/parent/preinscriptions/${preinscriptionToCancel.id}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        addNotification("success", `Pré-inscription de ${preinscriptionToCancel.enfant_prenom} ${preinscriptionToCancel.enfant_nom} annulée avec succès`);
-        setShowConfirmModal(false);
-        setPreinscriptionToCancel(null);
-        triggerRefresh();
-      } else {
-        addNotification("error", data.error || "Erreur lors de l'annulation");
-      }
-    } catch (error) {
-      console.error("Erreur annulation:", error);
-      addNotification("error", "Erreur lors de l'annulation");
-    } finally {
-      setCancelling(false);
-    }
+  const handleOpenDetails = (enfant: Enfant) => {
+    setSelectedEnfant(enfant);
+    setShowDetailModal(true);
+    loadEnfantDetail(enfant);
   };
 
-  const openConfirmCancel = (preinscription: Preinscription) => {
-    setPreinscriptionToCancel(preinscription);
-    setShowConfirmModal(true);
-  };
-
-  const getStatutBadge = (statut: string) => {
-    switch (statut) {
-      case "en_attente":
-        return <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> En attente</span>;
-      case "valide":
-        return <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Validée</span>;
-      case "rejete":
-        return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Rejetée</span>;
-      default:
-        return null;
-    }
-  };
-
-  const getFraisBadge = (fraisStatut: string) => {
-    if (fraisStatut === "paye") {
-      return <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Payé</span>;
-    }
-    if (fraisStatut === "partiel") {
-      return <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> Partiel</span>;
-    }
-    return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><XCircle className="w-3 h-3" /> Non payé</span>;
-  };
-
-  // ⭐⭐⭐ CALCUL DES STATISTIQUES GLOBALES ⭐⭐⭐
-
+  // ⭐⭐⭐ STATISTIQUES GLOBALES ⭐⭐⭐
   const totalAPayerBrut = enfants.reduce((acc, e) => {
-    const totalBrutEnfant = Number(e.details_frais?.total_brut) || Number(e.details_frais?.total) || 0;
-    return acc + totalBrutEnfant;
+    const details = e.details_frais;
+    if (!details) return acc;
+
+    if (details.total_brut !== undefined && details.total_brut !== null && details.total_brut > 0) {
+      return acc + Number(details.total_brut);
+    }
+
+    const netActuel = Number(details.total_net_actuel) || Number(details.total) || 0;
+    const remise = Number(details.remise) || 0;
+    return acc + (netActuel + remise);
   }, 0);
 
-  const totalScolarite = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.scolarite) || Number(e.details_frais?.inscription) || 0), 0);
-  const totalTransport = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.transport) || 0), 0);
-  const totalCantine = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.cantine) || 0), 0);
-  const totalFournitures = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.librairie) || 0), 0);
-
-  const remisesAffectees = enfants.reduce((acc, e) => acc + (Number((e.details_frais as any)?.remise) || 0), 0);
-  const totalRemiseParentGlobale = enfants.length > 0 ? (Number((enfants[0] as any)?.total_remise_parent) || Number((enfants[0] as any)?.remise_globale) || 0) : 0;
-  const totalRemises = Math.max(remisesAffectees, totalRemiseParentGlobale);
-
   const totalPaye = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.paye) || 0), 0);
+
+  const totalRemises = enfants.reduce((acc, e) => {
+    return acc + (Number(e.details_frais?.remise) || 0);
+  }, 0);
 
   const totalAPayerNet = Math.max(0, totalAPayerBrut - totalRemises);
   const soldeRestant = Math.max(0, totalAPayerNet - totalPaye);
 
-  const finalTotalBrut = totalAPayerBrut;
-  const finalRemise = totalRemises;
-  const finalTotalNet = totalAPayerNet;
-  const finalSoldeRestant = soldeRestant;
-
-  console.log("📊 STATS GLOBALES PARENT:", {
-    totalAPayerBrut: finalTotalBrut,
-    remiseGlobale: finalRemise,
-    totalAPayerNet: finalTotalNet,
+  const statsGlobales = {
+    totalEnfants: enfants.filter(e => e.est_eleve).length,
+    totalPreinscriptions: enfants.filter(e => e.est_preinscription && e.type === 'preinscription').length,
+    totalAPayerBrut: totalAPayerBrut,
+    totalAPayerNet: totalAPayerNet,
+    totalAPayer: totalAPayerNet,
     totalPaye: totalPaye,
-    soldeRestant: finalSoldeRestant,
-    detail: {
-      scolarite: totalScolarite,
-      transport: totalTransport,
-      cantine: totalCantine,
-      fournitures: totalFournitures
-    }
+    totalRemises: totalRemises,
+    soldeRestant: soldeRestant,
+  };
+
+  const filteredEnfants = enfants.filter(e => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      e.nom?.toLowerCase().includes(searchLower) ||
+      e.prenom?.toLowerCase().includes(searchLower) ||
+      e.matricule?.toLowerCase().includes(searchLower) ||
+      e.classe_nom?.toLowerCase().includes(searchLower)
+    );
   });
 
-  const statsGlobales = {
-    totalEnfants: enfants.length,
-    totalPreinscriptions: preinscriptions.length,
-    preinscriptionsEnAttente: preinscriptions.filter(p => p.statut === "en_attente").length,
-    preinscriptionsPayees: preinscriptions.filter(p => p.frais_statut === "paye").length,
+  const totalPages = Math.ceil(filteredEnfants.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedEnfants = filteredEnfants.slice(startIndex, endIndex);
 
-    totalAPayerBrut: finalTotalBrut,
-    totalAPayerNet: finalTotalNet,
-    totalAPayer: finalTotalNet,
-    totalPaye: totalPaye,
-    totalRemises: finalRemise,
-
-    totalFraisInscription: totalScolarite,
-    totalTransport: totalTransport,
-    totalCantine: totalCantine,
-    totalFournitures: totalFournitures,
-    totalFraisGeneral: finalTotalNet,
-    soldeRestant: finalSoldeRestant,
-
-    soldeDetaille: {
-      total: finalSoldeRestant,
-      details: {
-        inscription: Math.max(0, totalScolarite - totalPaye),
-        transport: totalTransport,
-        cantine: totalCantine,
-        fournitures: totalFournitures
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
       }
     }
+    return pages;
   };
 
   if (loading) {
@@ -382,55 +275,41 @@ export default function ParentDashboard() {
   }
 
   return (
-    <div className="relative">
-      {/* Notifications Toast */}
-      <div className="fixed top-20 right-4 z-50 space-y-2">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 ${notification.type === "success"
-              ? "bg-green-50 border-l-4 border-green-500 text-green-800"
-              : notification.type === "error"
-                ? "bg-red-50 border-l-4 border-red-500 text-red-800"
-                : notification.type === "warning"
-                  ? "bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800"
-                  : "bg-blue-50 border-l-4 border-blue-500 text-blue-800"
-              }`}
-          >
-            <div className="flex-1">
-              {notification.type === "success" && <CheckCircle className="w-5 h-5 text-green-500" />}
-              {notification.type === "error" && <XCircle className="w-5 h-5 text-red-500" />}
-              {notification.type === "warning" && <AlertTriangle className="w-5 h-5 text-yellow-500" />}
-              {notification.type === "info" && <FileText className="w-5 h-5 text-blue-500" />}
-            </div>
-            <p className="text-sm font-medium">{notification.message}</p>
+    <div className="space-y-6 text-black">
+      {/* En-tête */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-black">Mes enfants</h1>
+          <p className="text-gray-900">Gérez le suivi scolaire et les paiements de vos enfants</p>
+        </div>
+        <div className="flex gap-3">
+          {statsGlobales.soldeRestant > 0 && (
             <button
-              onClick={() => removeNotification(notification.id)}
-              className="ml-4 text-gray-900 hover:text-gray-900 transition"
+              onClick={() => setShowGlobalPaiementModal(true)}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 font-medium"
             >
-              <X className="w-4 h-4" />
+              <Wallet className="w-4 h-4" />
+              Paiement Global
             </button>
-          </div>
-        ))}
+          )}
+          <Link href="/register" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+            <Plus className="w-4 h-4" />Inscrire un enfant
+          </Link>
+        </div>
       </div>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-black">Espace Parent</h1>
-        <p className="text-gray-900">Bienvenue dans votre espace de suivi scolaire</p>
-      </div>
-
-      {/* Bannière de remise */}
+      {/* BANNIÈRE DE REMISE */}
       {statsGlobales.totalRemises > 0 && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-center justify-between text-indigo-900 mb-6 shadow-sm">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-center justify-between text-indigo-900 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 font-bold text-lg">
               🏷️
             </div>
             <div>
-              <h4 className="font-bold text-sm">Remise Famille Nombreuse / Déduction Accordée</h4>
-              <p className="text-xs text-indigo-700">Une réduction de scolarité a été déduite du montant total de vos dépenses.</p>
+              <h4 className="font-bold text-sm">Remise Famille Nombreuse Accordée</h4>
+              <p className="text-xs text-indigo-700">Une réduction exceptionnelle de scolarité a été déduite de votre solde global.</p>
               <p className="text-xs text-indigo-900 mt-1 font-medium">
-                Dépenses brutes totales : <span className="font-semibold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</span>
+                Scolarité brute initiale : <span className="font-semibold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</span>
               </p>
             </div>
           </div>
@@ -441,336 +320,272 @@ export default function ParentDashboard() {
         </div>
       )}
 
-      {/* Statistiques globales */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        {/* Total dépenses (Brut) */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center gap-2 mb-1 text-gray-700">
-            <ShoppingCart className="w-4 h-4 text-blue-600" />
-            <p className="text-xs font-semibold uppercase tracking-wider">Total dépenses (Brut)</p>
-          </div>
-          <p className="text-xl font-extrabold text-gray-900">{statsGlobales.totalAPayerBrut.toLocaleString()} GNF</p>
-          <p className="text-[11px] text-gray-500 mt-1">Scolarité + services</p>
-          <div className="mt-2 pt-2 border-t border-gray-100 text-[10px] text-gray-500 space-y-0.5">
-            <div className="flex justify-between">
-              <span>Scolarité:</span>
-              <span className="font-medium">{statsGlobales.totalFraisInscription.toLocaleString()} GNF</span>
-            </div>
-            {statsGlobales.totalTransport > 0 && (
-              <div className="flex justify-between">
-                <span>Transport:</span>
-                <span className="font-medium">{statsGlobales.totalTransport.toLocaleString()} GNF</span>
-              </div>
-            )}
-            {statsGlobales.totalCantine > 0 && (
-              <div className="flex justify-between">
-                <span>Cantine:</span>
-                <span className="font-medium">{statsGlobales.totalCantine.toLocaleString()} GNF</span>
-              </div>
-            )}
-            {statsGlobales.totalFournitures > 0 && (
-              <div className="flex justify-between">
-                <span>Fournitures:</span>
-                <span className="font-medium">{statsGlobales.totalFournitures.toLocaleString()} GNF</span>
-              </div>
-            )}
-          </div>
+      {/* STATISTIQUES GLOBALES */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+          <div className="flex items-center gap-2 mb-1"><Users className="w-5 h-5" /><p className="text-sm opacity-90">Enfants inscrits</p></div>
+          <p className="text-3xl font-bold">{statsGlobales.totalEnfants}</p>
         </div>
-
-        {/* Remise accordée */}
-        <div className="bg-white rounded-xl shadow-sm border border-indigo-200 bg-indigo-50/20 p-4">
-          <div className="flex items-center gap-2 mb-1 text-indigo-700">
-            <CreditCard className="w-4 h-4 text-indigo-600" />
-            <p className="text-xs font-semibold uppercase tracking-wider">Remise accordée</p>
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+          <div className="flex items-center gap-2 mb-1"><FileText className="w-5 h-5" /><p className="text-sm opacity-90">Pré-inscriptions</p></div>
+          <p className="text-3xl font-bold">{statsGlobales.totalPreinscriptions}</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-1 text-gray-900">
+            <CreditCard className="w-5 h-5 text-blue-600" />
+            <p className="text-sm">Montant net à payer</p>
           </div>
-          <p className="text-xl font-extrabold text-indigo-600">
-            {statsGlobales.totalRemises > 0 ? `-${statsGlobales.totalRemises.toLocaleString()} GNF` : "0 GNF"}
-          </p>
-          <p className="text-[11px] text-indigo-500 mt-1">Réduction déduite</p>
+          <p className="text-lg font-bold text-blue-600">{statsGlobales.totalAPayerNet.toLocaleString()} GNF</p>
           {statsGlobales.totalRemises > 0 && (
-            <p className="text-[10px] text-indigo-400 mt-1">Famille nombreuse ({statsGlobales.totalEnfants} enfants)</p>
+            <p className="text-xs text-gray-900 mt-1 line-through">
+              Brut: {statsGlobales.totalAPayerBrut.toLocaleString()} GNF
+            </p>
           )}
         </div>
-
-        {/* Net à payer */}
-        <div className="bg-white rounded-xl shadow-sm border border-blue-200 bg-blue-50/40 p-4">
-          <div className="flex items-center gap-2 mb-1 text-blue-800">
-            <Wallet className="w-4 h-4 text-blue-600" />
-            <p className="text-xs font-semibold uppercase tracking-wider">Net à payer</p>
-          </div>
-          <p className="text-xl font-extrabold text-blue-700">{statsGlobales.totalAPayerNet.toLocaleString()} GNF</p>
-          <p className="text-[11px] text-blue-600 mt-1">Dépenses - Remise</p>
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-green-600" /><p className="text-sm">Montant payé</p></div>
+          <p className="text-lg font-bold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
         </div>
-
-        {/* Montant payé */}
-        <div className="bg-white rounded-xl shadow-sm border border-green-200 bg-green-50/40 p-4">
-          <div className="flex items-center gap-2 mb-1 text-green-800">
-            <CheckCircle className="w-4 h-4 text-green-600" />
-            <p className="text-xs font-semibold uppercase tracking-wider">Montant payé</p>
-          </div>
-          <p className="text-xl font-extrabold text-green-600">{statsGlobales.totalPaye.toLocaleString()} GNF</p>
-          <p className="text-[11px] text-green-600 mt-1">Versements effectués</p>
-        </div>
-
-        {/* Solde restant */}
-        <div className={`rounded-xl shadow-sm border p-4 col-span-2 sm:col-span-1 ${
-          statsGlobales.soldeRestant === 0 ? "bg-green-100/50 border-green-300" : "bg-red-50/50 border-red-200"
-        }`}>
-          <div className="flex items-center gap-2 mb-1">
-            <Clock className={`w-4 h-4 ${statsGlobales.soldeRestant === 0 ? "text-green-600" : "text-red-600"}`} />
-            <p className={`text-xs font-semibold uppercase tracking-wider ${
-              statsGlobales.soldeRestant === 0 ? "text-green-800" : "text-red-800"
-            }`}>Reste à payer</p>
-          </div>
-          <p className={`text-xl font-extrabold ${
-            statsGlobales.soldeRestant === 0 ? "text-green-700" : "text-red-600"
-          }`}>
-            {statsGlobales.soldeRestant.toLocaleString()} GNF
-          </p>
-          <p className={`text-[11px] mt-1 ${
-            statsGlobales.soldeRestant === 0 ? "text-green-700 font-medium" : "text-red-500"
-          }`}>
-            {statsGlobales.soldeRestant === 0 ? "✅ Totalement réglé" : "Solde restant dû"}
-          </p>
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-1 text-gray-900"><CreditCard className="w-5 h-5 text-red-600" /><p className="text-sm">Solde restant</p></div>
+          <p className="text-lg font-bold text-red-600">{statsGlobales.soldeRestant.toLocaleString()} GNF</p>
         </div>
       </div>
 
-      {/* Section 1 : mes enfants inscrits */}
-      {enfants.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <GraduationCap className="w-6 h-6 text-blue-600" />
-                Mes enfants ({enfants.length})
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Accédez au suivi complet de chacun de vos enfants (devoirs, notes, cours, évaluations, bulletins et finances)
-              </p>
+      {/* Filtres */}
+      <div className="bg-white rounded-xl shadow-sm p-4 text-black border border-gray-200">
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[250px]">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-900" />
+              <input
+                type="text"
+                placeholder="Rechercher par nom, prénom ou matricule..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
+              />
             </div>
-            <div className="flex gap-2">
-              <Link
-                href="/dashboard/parent/enfants"
-                className="bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5"
-              >
-                <Users className="w-4 h-4" />
-                Gérer mes enfants
-              </Link>
-              <Link
-                href="/register"
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Nouvelle inscription
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {enfants.map((enfant) => {
-              const childId = enfant.eleve_id || enfant.id;
-
-              return (
-                <div
-                  key={childId}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all flex flex-col justify-between"
-                >
-                  <div className="p-5">
-                    <div className="flex items-center gap-3">
-                      {enfant.photo_url ? (
-                        <img
-                          src={enfant.photo_url}
-                          alt={enfant.prenom}
-                          className="w-14 h-14 rounded-2xl object-cover border-2 border-blue-100 shadow-sm"
-                        />
-                      ) : (
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-700 font-bold text-xl border border-blue-200">
-                          {enfant.prenom?.charAt(0)}{enfant.nom?.charAt(0)}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 text-base truncate">
-                          {enfant.prenom} {enfant.nom}
-                        </h3>
-                        <p className="text-xs text-blue-700 font-medium">
-                          {enfant.classe_nom || "Classe non assignée"} {enfant.niveau && `• ${enfant.niveau}`}
-                        </p>
-                        <p className="text-[11px] text-gray-500 font-mono mt-0.5">
-                          Matricule : {enfant.matricule || "—"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bouton d'accès direct au Dashboard individuel */}
-                  <div className="p-4 bg-gray-50/70 border-t border-gray-100 mt-auto">
-                    <Link
-                      href={`/dashboard/parent/enfants/${childId}`}
-                      className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-sm py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition active:scale-95"
-                    >
-                      <GraduationCap className="w-4 h-4" />
-                      Tableau de bord de {enfant.prenom}
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Message si aucun enfant ni préinscription */}
-      {enfants.length === 0 && preinscriptions.length === 0 && (
-        <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center mb-8 shadow-sm">
-          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8" />
-          </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-1">Aucun enfant enregistré</h3>
-          <p className="text-sm text-gray-500 mb-5 max-w-md mx-auto">
-            Vous n'avez pas encore d'enfant inscrit ou en cours de pré-inscription pour cette année scolaire.
-          </p>
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition shadow-sm"
-          >
-            <Plus className="w-4 h-4" /> Inscrire un enfant
-          </Link>
+      {/* Tableau */}
+      {filteredEnfants.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-200">
+          <Users className="w-16 h-16 text-gray-900 mx-auto mb-4" />
+          <p className="text-gray-900">Aucun enfant trouvé</p>
         </div>
-      )}
+      ) : (
+        <>
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Matricule</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Photo</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Enfant</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Classe</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Statut</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Frais</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Accès</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {paginatedEnfants.map((e) => {
+                    const frais = e.details_frais;
+                    const statusPaiement = frais.reste === 0 ? "paye" : frais.paye > 0 ? "partiel" : "non_paye";
+                    const isEleve = e.type === 'eleve';
+                    const isPreinscription = e.type === 'preinscription';
+                    const isReinscription = e.type === 'reinscription';
 
-      {/* Section 2 : Dossiers de Pré-inscriptions */}
-      {preinscriptions.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-600" />
-                Dossiers de pré-inscription ({preinscriptions.length})
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">Dossiers en attente de validation ou de paiement</p>
-            </div>
-            <div className="flex gap-2">
-              {statsGlobales.soldeRestant > 0 && (
-                <button
-                  onClick={() => setShowGlobalPaiementModal(true)}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 font-medium"
-                >
-                  <Wallet className="w-4 h-4" />
-                  Paiement Global
-                </button>
-              )}
-              <Link
-                href="/register"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Nouvelle inscription
-              </Link>
-            </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            {preinscriptions.map((p) => (
-              <div key={p.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
-                <div className="p-4">
-                  <div className="flex items-start gap-3">
-                    {p.photo_url ? (
-                      <img src={p.photo_url} alt="photo" className="w-12 h-12 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        <Users className="w-6 h-6 text-gray-900" />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold text-black">{p.enfant_prenom} {p.enfant_nom}</h3>
-                          <p className="text-sm text-gray-900">{p.classe}</p>
-                          <p className="text-xs text-gray-900 mt-1">Dossier: {p.numero_dossier}</p>
-                        </div>
-                        <div className="text-right">
-                          {getStatutBadge(p.statut)}
-                          <div className="mt-1">{getFraisBadge(p.frais_statut)}</div>
-                        </div>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {p.frais_statut !== "paye" && p.statut === "en_attente" && (
-                          <>
+                    return (
+                      <tr key={`${e.type}-${e.id}`} className="hover:bg-gray-50 transition duration-150">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="font-mono text-sm font-semibold text-blue-600">{e.matricule}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {e.photo_url ? (
+                            <img src={e.photo_url} alt="photo" className="w-10 h-10 rounded-full object-cover border" />
+                          ) : (
+                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center border">
+                              <Users className="w-5 h-5 text-gray-900" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="font-medium text-gray-900 block">{e.prenom} {e.nom}</span>
+                          <span className="text-xs text-gray-900 block">
+                            {e.sexe === "M" ? "Garçon" : "Fille"}
+                            {e.date_naissance && ` - ${new Date(e.date_naissance).toLocaleDateString()}`}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 text-gray-950 font-medium">
+                            <GraduationCap className="w-4 h-4 text-gray-900" />
+                            <span>{e.classe_nom}</span>
+                          </div>
+                          <span className="text-xs text-gray-900">{e.niveau}</span>
+                        </td>
+
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {isEleve && (
+                            <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <CheckCircle className="w-3 h-3" /> Élève inscrit
+                            </span>
+                          )}
+                          {isPreinscription && (
+                            <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <Clock className="w-3 h-3" /> Inscription
+                            </span>
+                          )}
+                          {isReinscription && (
+                            <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <RefreshCw className="w-3 h-3" /> Réinscription
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {statusPaiement === "paye" ? (
+                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <CheckCircle className="w-3 h-3" /> Payé
+                            </span>
+                          ) : statusPaiement === "partiel" ? (
+                            <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <Clock className="w-3 h-3" /> Partiel
+                            </span>
+                          ) : (
+                            <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <XCircle className="w-3 h-3" /> Non payé
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div className="flex gap-2">
                             <button
-                              onClick={() => {
-                                setSelectedPreinscription(p);
-                                setShowPaiementModal(true);
-                              }}
-                              className="flex-1 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 min-w-[100px]"
-                            >
-                              <CreditCard className="w-4 h-4" />
-                              Paiement
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedPreinscriptionDetail(p);
-                                loadPreinscriptionDetail(p.id);
-                                setShowDetailModal(true);
-                              }}
-                              className="px-3 py-1.5 bg-blue-100 text-blue-600 text-sm rounded-lg hover:bg-blue-200 transition flex items-center gap-1"
-                              title="Voir les détails de la pré-inscription"
+                              onClick={() => handleOpenDetails(e)}
+                              className="bg-blue-50 text-blue-600 hover:bg-blue-100 p-2 rounded-lg transition"
+                              title="Voir détails financiers"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
-                            <button
-                              onClick={() => openConfirmCancel(p)}
-                              className="px-3 py-1.5 bg-red-100 text-red-600 text-sm rounded-lg hover:bg-red-200 transition flex items-center gap-1"
-                              title="Annuler la pré-inscription"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        {p.frais_statut === "paye" && p.statut === "en_attente" && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setSelectedPreinscriptionDetail(p);
-                                loadPreinscriptionDetail(p.id);
-                                setShowDetailModal(true);
-                              }}
-                              className="flex-1 bg-blue-100 text-blue-600 text-sm py-1.5 rounded-lg hover:bg-blue-200 transition flex items-center justify-center gap-1"
-                            >
-                              <Eye className="w-4 h-4" /> Voir détails
-                            </button>
-                            <div className="flex-1 bg-yellow-100 text-yellow-700 text-sm py-1.5 rounded-lg text-center">
-                              En attente de validation
-                            </div>
-                          </>
-                        )}
-                        {p.statut === "valide" && (
-                          <div className="flex-1 bg-green-100 text-green-700 text-sm py-1.5 rounded-lg text-center">
-                            ✅ Inscription validée
                           </div>
-                        )}
-                        {p.statut === "rejete" && (
-                          <div className="flex-1 bg-red-100 text-red-700 text-sm py-1.5 rounded-lg text-center">
-                            ❌ Pré-inscription rejetée
+                        </td>
+
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div className="flex items-center gap-2">
+                            {isEleve && (
+                              <>
+                                <Link
+                                  href={`/dashboard/eleve?eleveId=${e.eleve_id || e.id}`}
+                                  onClick={() => {
+                                    document.cookie = `active_eleve_id=${e.eleve_id || e.id}; path=/; max-age=86400`;
+                                  }}
+                                  className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition text-xs font-semibold shadow-sm"
+                                  title="Accéder directement au compte de cet élève"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  Compte élève
+                                </Link>
+                                <Link
+                                  href={`/dashboard/parent/enfants/${e.eleve_id || e.id}`}
+                                  className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1.5 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition text-xs font-semibold shadow-sm"
+                                  title="Accéder au dossier de l'enfant"
+                                >
+                                  <GraduationCap className="w-3.5 h-3.5" />
+                                  Dossier
+                                </Link>
+                              </>
+                            )}
+
+                            {isPreinscription && (
+                              <Link
+                                href="/dashboard/parent/inscription"
+                                className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg transition text-xs font-semibold shadow-sm"
+                                title="Voir / finaliser la pré-inscription"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                Voir inscription
+                              </Link>
+                            )}
+
+                            {isReinscription && (
+                              <Link
+                                href="/dashboard/parent/reinscription"
+                                className="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg transition text-xs font-semibold shadow-sm"
+                                title="Voir / finaliser la réinscription"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                Voir réinscription
+                              </Link>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p className="text-sm text-gray-900">
+                  Affichage de <span className="font-semibold">{startIndex + 1}</span> à <span className="font-semibold">{Math.min(endIndex, filteredEnfants.length)}</span> sur <span className="font-semibold">{filteredEnfants.length}</span> résultats
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronLeft className="w-4 h-4 text-black" />
+                  </button>
+                  <div className="flex gap-1">
+                    {getPageNumbers().map((page, index) => (
+                      page === '...' ? (
+                        <span key={`dots-${index}`} className="px-3 py-1 text-sm text-gray-900">...</span>
+                      ) : (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page as number)}
+                          className={`px-3 py-1 rounded-lg text-sm font-semibold transition ${currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-900 hover:bg-gray-100'}`}
+                        >
+                          {page}
+                        </button>
+                      )
+                    ))}
                   </div>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronRight className="w-4 h-4 text-black" />
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Modal Détail Pré-inscription */}
-      {showDetailModal && selectedPreinscriptionDetail && (
+      {/* Modal Détail */}
+      {showDetailModal && selectedEnfant && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b sticky top-0 bg-white">
+            <div className="p-6 border-b sticky top-0 bg-white z-10">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-black">Détail de la pré-inscription</h2>
-                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900">✕</button>
+                <h2 className="text-xl font-bold text-black">
+                  Détail de {selectedEnfant.type === 'eleve' ? "l'élève" : selectedEnfant.type === 'preinscription' ? "l'inscription" : "la réinscription"}
+                </h2>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900 text-xl font-bold">✕</button>
               </div>
             </div>
 
@@ -778,411 +593,419 @@ export default function ParentDashboard() {
               {/* En-tête avec photo */}
               <div className="flex items-start gap-6 pb-6 border-b">
                 <div className="flex-shrink-0">
-                  {selectedPreinscriptionDetail.photo_url ? (
-                    <img src={selectedPreinscriptionDetail.photo_url} alt="Photo" className="w-32 h-32 rounded-lg object-cover shadow-md" />
+                  {(enfantDetail?.photo_url || selectedEnfant.photo_url) ? (
+                    <img
+                      src={enfantDetail?.photo_url || selectedEnfant.photo_url}
+                      alt="Photo"
+                      className="w-32 h-32 rounded-lg object-cover shadow-md border"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        const parent = (e.target as HTMLImageElement).parentElement;
+                        if (parent) {
+                          const fallback = document.createElement('div');
+                          fallback.className = 'w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center border';
+                          fallback.innerHTML = `<svg class="w-12 h-12 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`;
+                          parent.appendChild(fallback);
+                        }
+                      }}
+                    />
                   ) : (
-                    <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center border">
                       <Camera className="w-12 h-12 text-gray-900" />
                     </div>
                   )}
                 </div>
                 <div className="flex-1">
-                  <div className="bg-gray-50 p-3 rounded-lg mb-3">
-                    <p className="text-sm text-gray-900">Numéro de dossier</p>
-                    <p className="font-mono text-xl font-bold text-blue-600">{selectedPreinscriptionDetail.numero_dossier}</p>
+                  <div className="bg-gray-50 p-3 rounded-lg mb-3 border">
+                    <p className="text-sm text-gray-900">Numéro de Matricule</p>
+                    <p className="font-mono text-xl font-bold text-blue-600">{selectedEnfant.matricule}</p>
                   </div>
                   <div className="flex gap-4">
-                    <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="bg-gray-50 p-3 rounded-lg border">
                       <p className="text-xs text-gray-900">Statut dossier</p>
-                      {getStatutBadge(selectedPreinscriptionDetail.statut)}
+                      {selectedEnfant.type === 'eleve' && (
+                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <CheckCircle className="w-3 h-3" /> Inscription active
+                        </span>
+                      )}
+                      {selectedEnfant.type === 'preinscription' && (
+                        <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <Clock className="w-3 h-3" /> Inscription
+                        </span>
+                      )}
+                      {selectedEnfant.type === 'reinscription' && (
+                        <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <RefreshCw className="w-3 h-3" /> Réinscription
+                        </span>
+                      )}
                     </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="bg-gray-50 p-3 rounded-lg border">
                       <p className="text-xs text-gray-900">Paiement</p>
-                      {getFraisBadge(selectedPreinscriptionDetail.frais_statut)}
+                      {selectedEnfant.details_frais.reste === 0 ? (
+                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <CheckCircle className="w-3 h-3" /> Payé
+                        </span>
+                      ) : selectedEnfant.details_frais.paye > 0 ? (
+                        <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <Clock className="w-3 h-3" /> Partiel
+                        </span>
+                      ) : (
+                        <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <XCircle className="w-3 h-3" /> Non payé
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Informations des parents */}
-              {preinscriptionDetail && (
-                <div>
-                  <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                    <User className="w-5 h-5 text-blue-900" /> Informations des parents
-                  </h3>
-                  <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                    <p className="text-sm text-gray-900">Email (commun)</p>
-                    <p className="font-medium text-black">{preinscriptionDetail.parent_email}</p>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                      <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">Père</h4>
-                      <div className="space-y-2">
-                        <div><p className="text-xs text-gray-900">Nom complet</p><p className="font-medium text-black">{preinscriptionDetail.parent_prenom} {preinscriptionDetail.parent_nom}</p></div>
-                        <div><p className="text-xs text-gray-900">Téléphone</p><p className="font-medium text-black">{preinscriptionDetail.parent_telephone || "Non renseigné"}</p></div>
-                        <div><p className="text-xs text-gray-900">Profession</p><p className="font-medium text-black">{preinscriptionDetail.parent_profession || "Non renseigné"}</p></div>
+              {/* Reste du modal */}
+              {loadingDetail ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                </div>
+              ) : (enfantDetail || selectedEnfant) ? (
+                <>
+                  {/* Informations des parents */}
+                  {(enfantDetail?.parent_email || enfantDetail?.eleve?.parent_email) && (
+                    <div>
+                      <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                        <User className="w-5 h-5 text-blue-900" /> Informations des parents
+                      </h3>
+                      <div className="bg-gray-50 p-3 rounded-lg mb-4 border">
+                        <p className="text-sm text-gray-900">Email de contact</p>
+                        <p className="font-medium text-gray-900">{enfantDetail?.parent_email || enfantDetail?.eleve?.parent_email}</p>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                          <h4 className="font-semibold text-blue-800 mb-3 text-sm uppercase tracking-wide">Père</h4>
+                          <div className="space-y-2">
+                            <div>
+                              <p className="text-xs text-gray-900">Nom complet</p>
+                              <p className="font-medium text-gray-900">
+                                {enfantDetail?.parent_prenom || enfantDetail?.eleve?.parent_prenom} {enfantDetail?.parent_nom || enfantDetail?.eleve?.parent_nom}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-900">Téléphone</p>
+                              <p className="font-medium text-gray-900">
+                                {enfantDetail?.parent_telephone || enfantDetail?.eleve?.parent_telephone || "Non renseigné"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-900">Profession</p>
+                              <p className="font-medium text-gray-900">
+                                {enfantDetail?.parent_profession || enfantDetail?.eleve?.parent_profession || "Non renseigné"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg">
+                          <h4 className="font-semibold text-pink-800 mb-3 text-sm uppercase tracking-wide">Mère</h4>
+                          {(() => {
+                            let mereData: any = null;
+                            try {
+                              const info = enfantDetail?.mere_info || enfantDetail?.eleve?.mere_info;
+                              if (info) {
+                                mereData = typeof info === 'string' ? JSON.parse(info) : info;
+                              }
+                            } catch (e) { }
+                            return mereData && (mereData.mereNom || mereData.merePrenom) ? (
+                              <div className="space-y-2">
+                                <div>
+                                  <p className="text-xs text-gray-900">Nom complet</p>
+                                  <p className="font-medium text-gray-900">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-900">Téléphone</p>
+                                  <p className="font-medium text-gray-900">{mereData.merePhone || "Non renseigné"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-900">Profession</p>
+                                  <p className="font-medium text-gray-900">{mereData.mereProfession || "Non renseigné"}</p>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-900 italic">Non renseigné</p>
+                            );
+                          })()}
+                        </div>
                       </div>
                     </div>
-                    <div className="bg-pink-50 border border-pink-200 p-4 rounded-lg">
-                      <h4 className="font-semibold text-pink-800 mb-3 text-sm uppercase tracking-wide">Mère</h4>
-                      {(() => {
-                        let mereData: any = null;
-                        try {
-                          if (preinscriptionDetail.mere_info) {
-                            mereData = typeof preinscriptionDetail.mere_info === 'string'
-                              ? JSON.parse(preinscriptionDetail.mere_info)
-                              : preinscriptionDetail.mere_info;
-                          }
-                        } catch (e) { }
-                        return mereData && (mereData.mereNom || mereData.merePrenom) ? (
-                          <div className="space-y-2">
-                            <div><p className="text-xs text-gray-900">Nom complet</p><p className="font-medium text-black">{mereData.merePrenom || ""} {mereData.mereNom || ""}</p></div>
-                            <div><p className="text-xs text-gray-900">Téléphone</p><p className="font-medium text-black">{mereData.merePhone || "Non renseigné"}</p></div>
-                            <div><p className="text-xs text-gray-900">Profession</p><p className="font-medium text-black">{mereData.mereProfession || "Non renseigné"}</p></div>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-900 italic">Non renseigné</p>
-                        );
-                      })()}
+                  )}
+
+                  {/* Informations enfant */}
+                  <div>
+                    <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                      <GraduationCap className="w-5 h-5 text-green-600" /> Informations de l'enfant
+                    </h3>
+                    <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border">
+                      <div>
+                        <p className="text-sm text-gray-900">Nom complet</p>
+                        <p className="font-medium text-gray-900">
+                          {selectedEnfant.prenom} {selectedEnfant.nom}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-900">Date de naissance</p>
+                        <p className="font-medium text-gray-900">
+                          {selectedEnfant.date_naissance ? new Date(selectedEnfant.date_naissance).toLocaleDateString() : "Non renseigné"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-900">Lieu de naissance</p>
+                        <p className="font-medium text-gray-900">{selectedEnfant.lieu_naissance ?? "Non renseigné"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-900">Sexe</p>
+                        <p className="font-medium text-gray-900">{selectedEnfant.sexe === "M" ? "Masculin" : "Féminin"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-900">Niveau</p>
+                        <p className="font-medium text-gray-900">{selectedEnfant.niveau}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-900">Classe</p>
+                        <p className="font-medium text-gray-900">{selectedEnfant.classe_nom}</p>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Documents joints */}
+                  <div>
+                    <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-purple-600" /> Documents joints
+                    </h3>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="border rounded-lg p-4 hover:shadow-md transition">
+                        <div className="flex items-center gap-2 mb-2">
+                          <File className="w-5 h-5 text-blue-600" />
+                          <span className="font-medium text-black">Acte de naissance</span>
+                        </div>
+                        {(enfantDetail?.acte_naissance_url || enfantDetail?.eleve?.acte_naissance_url) ? (
+                          <a
+                            href={enfantDetail?.acte_naissance_url || enfantDetail?.eleve?.acte_naissance_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                          >
+                            Voir le document <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <p className="text-gray-900 text-sm">Non téléchargé</p>
+                        )}
+                      </div>
+
+                      <div className="border rounded-lg p-4 hover:shadow-md transition">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Image className="w-5 h-5 text-green-600" />
+                          <span className="font-medium text-black">Photo d'identité</span>
+                        </div>
+                        {(enfantDetail?.photo_url || selectedEnfant?.photo_url) ? (
+                          <a
+                            href={(enfantDetail?.photo_url || selectedEnfant?.photo_url) as string}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                          >
+                            Voir la photo <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <p className="text-gray-900 text-sm">Non téléchargée</p>
+                        )}
+                      </div>
+
+                      <div className="border rounded-lg p-4 hover:shadow-md transition">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-5 h-5 text-orange-600" />
+                          <span className="font-medium text-black">Bulletin scolaire</span>
+                        </div>
+                        {(enfantDetail?.bulletin_url || enfantDetail?.eleve?.bulletin_url) ? (
+                          <a
+                            href={enfantDetail?.bulletin_url || enfantDetail?.eleve?.bulletin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                          >
+                            Voir le bulletin <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <p className="text-gray-900 text-sm">Non téléchargé</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Détail des frais */}
+                  <div>
+                    <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                      <CreditCard className="w-5 h-5 text-purple-600" />
+                      Détail des paiements
+                    </h3>
+
+                    {(() => {
+                      // ⭐ Unifier la lecture : frais/détails_frais/selectedEnfant.details_frais
+                      const sourceFrais = enfantDetail?.frais || enfantDetail?.details_frais || selectedEnfant?.details_frais || {};
+
+                      const totalBrut = Number(
+                        sourceFrais.total_brut
+                        ?? sourceFrais.total_a_payer
+                        ?? sourceFrais.total
+                        ?? selectedEnfant?.details_frais?.total_brut
+                        ?? 0
+                      );
+
+                      const remiseEnfant = Number(
+                        sourceFrais.remise
+                        ?? selectedEnfant?.details_frais?.remise
+                        ?? 0
+                      );
+
+                      const netEnfant = Number(
+                        sourceFrais.net
+                        ?? sourceFrais.total
+                        ?? selectedEnfant?.details_frais?.net
+                        ?? selectedEnfant?.details_frais?.total
+                        ?? 0
+                      );
+
+                      const dejaPaye = Number(
+                        sourceFrais.total_paye
+                        ?? sourceFrais.paye
+                        ?? selectedEnfant?.details_frais?.paye
+                        ?? 0
+                      );
+
+                      const resteAPayer = Number(
+                        sourceFrais.solde_restant
+                        ?? sourceFrais.reste
+                        ?? selectedEnfant?.details_frais?.reste
+                        ?? 0
+                      );
+
+                      const totalAPayerAffiche = netEnfant || totalBrut;
+
+                      return (
+                        <>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div>
+                              <p className="text-xs text-gray-900 font-semibold">Total à payer</p>
+                              <p className="font-bold text-gray-900 text-lg">{totalAPayerAffiche.toLocaleString()} GNF</p>
+                              {remiseEnfant > 0 && (
+                                <p className="text-[10px] text-gray-500 mt-0.5">
+                                  Brut: {totalBrut.toLocaleString()} - Remise: {remiseEnfant.toLocaleString()}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-900">Déjà payé</p>
+                              <p className="font-bold text-green-600">{dejaPaye.toLocaleString()} GNF</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-900">Reste à payer</p>
+                              <p className={`font-bold ${resteAPayer > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                {resteAPayer.toLocaleString()} GNF
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-900">Statut</p>
+                              {resteAPayer === 0 && totalAPayerAffiche > 0 ? (
+                                <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                                  <CheckCircle className="w-3 h-3" /> Tout payé
+                                </span>
+                              ) : dejaPaye > 0 ? (
+                                <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                                  <Clock className="w-3 h-3" /> Partiel
+                                </span>
+                              ) : (
+                                <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                                  <XCircle className="w-3 h-3" /> Non payé
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {totalAPayerAffiche > 0 && (
+                            <div className="mt-3">
+                              <div className="flex justify-between text-xs text-gray-900 mb-1">
+                                <span>Progression des paiements</span>
+                                <span>{Math.round((dejaPaye / totalAPayerAffiche) * 100)}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                <div
+                                  className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                                  style={{ width: `${Math.min(100, (dejaPaye / totalAPayerAffiche) * 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Bulletins scolaires */}
+                  {enfantDetail?.bulletins && enfantDetail.bulletins.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                        Bulletins scolaires
+                      </h3>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {enfantDetail.bulletins.map((bulletin: any, idx: number) => (
+                          <div key={idx} className="border rounded-lg p-4 hover:shadow-md transition">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h4 className="font-medium text-gray-900">{bulletin.titre || "Bulletin"}</h4>
+                                {bulletin.trimestre && (
+                                  <p className="text-xs text-gray-900">Trimestre {bulletin.trimestre}</p>
+                                )}
+                                <p className="text-xs text-gray-900 mt-1">
+                                  {bulletin.date_publication ? new Date(bulletin.date_publication).toLocaleDateString() : "Date inconnue"}
+                                </p>
+                              </div>
+                              {bulletin.fichier_url && (
+                                <a
+                                  href={bulletin.fichier_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 bg-blue-50 rounded-lg hover:bg-blue-100 transition"
+                                >
+                                  <Download className="w-5 h-5 text-blue-600" />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-12 text-gray-900">
+                  <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+                  <p className="font-semibold">Impossible de charger les détails</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Vérifiez que la pré-inscription appartient bien à votre compte.
+                  </p>
                 </div>
               )}
+            </div>
 
-              {/* Informations de l'enfant */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-green-600" /> Informations de l'enfant
-                </h3>
-                <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-900">Nom complet</p>
-                    <p className="font-medium text-black">{selectedPreinscriptionDetail.enfant_prenom} {selectedPreinscriptionDetail.enfant_nom}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Date de naissance</p>
-                    <p className="font-medium text-black">{new Date(selectedPreinscriptionDetail.date_naissance).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Lieu de naissance</p>
-                    <p className="font-medium text-black">{selectedPreinscriptionDetail.lieu_naissance || "Non renseigné"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Sexe</p>
-                    <p className="font-medium text-black">{selectedPreinscriptionDetail.sexe === "M" ? "Masculin" : "Féminin"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Niveau</p>
-                    <p className="font-medium text-black">{selectedPreinscriptionDetail.niveau}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">Classe souhaitée</p>
-                    <p className="font-medium text-black">{selectedPreinscriptionDetail.classe}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Documents téléchargés */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-purple-600" /> Documents joints
-                </h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="border rounded-lg p-4 hover:shadow-md transition">
-                    <div className="flex items-center gap-2 mb-2">
-                      <File className="w-5 h-5 text-blue-600" />
-                      <span className="font-medium text-black">Acte de naissance</span>
-                    </div>
-                    {(() => {
-                      const acteUrl = preinscriptionDetail?.acte_naissance_url || selectedPreinscriptionDetail?.acte_naissance_url;
-                      return acteUrl ? (
-                        <a href={acteUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                          Voir le document <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <p className="text-gray-900 text-sm">Non téléchargé</p>
-                      );
-                    })()}
-                  </div>
-                  <div className="border rounded-lg p-4 hover:shadow-md transition">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Image className="w-5 h-5 text-green-600" />
-                      <span className="font-medium text-black">Photo d'identité</span>
-                    </div>
-                    {(() => {
-                      const photoUrl = preinscriptionDetail?.photo_url || selectedPreinscriptionDetail?.photo_url;
-                      return photoUrl ? (
-                        <a href={photoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                          Voir la photo <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <p className="text-gray-900 text-sm">Non téléchargée</p>
-                      );
-                    })()}
-                  </div>
-                  <div className="border rounded-lg p-4 hover:shadow-md transition">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="w-5 h-5 text-orange-600" />
-                      <span className="font-medium text-black">Bulletin scolaire</span>
-                    </div>
-                    {(() => {
-                      const bulletinUrl = preinscriptionDetail?.bulletin_url || selectedPreinscriptionDetail?.bulletin_url;
-                      return bulletinUrl ? (
-                        <a href={bulletinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
-                          Voir le bulletin <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : (
-                        <p className="text-gray-900 text-sm">Non téléchargé</p>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
-
-              {/* Détail des paiements */}
-              <div>
-                <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-purple-600" />
-                  Détail des frais
-                </h3>
-                {loadingDetail ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                  </div>
-                ) : preinscriptionDetail?.details_frais ? (
-                  <>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                        <p className="text-xs text-gray-900">Inscription</p>
-                        <p className="font-bold text-blue-600">
-                          {preinscriptionDetail.details_frais.inscription.toLocaleString()} GNF
-                        </p>
-                      </div>
-                      {preinscriptionDetail.details_frais.cantine > 0 && (
-                        <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
-                          <p className="text-xs text-gray-900">Cantine</p>
-                          <p className="font-bold text-pink-600">
-                            {preinscriptionDetail.details_frais.cantine.toLocaleString()} GNF
-                          </p>
-                        </div>
-                      )}
-                      {preinscriptionDetail.details_frais.transport > 0 && (
-                        <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                          <p className="text-xs text-gray-900">Transport</p>
-                          <p className="font-bold text-green-600">
-                            {preinscriptionDetail.details_frais.transport.toLocaleString()} GNF
-                          </p>
-                        </div>
-                      )}
-                      {preinscriptionDetail.details_frais.librairie > 0 && (
-                        <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                          <p className="text-xs text-gray-900">Fournitures</p>
-                          <p className="font-bold text-purple-600">
-                            {preinscriptionDetail.details_frais.librairie.toLocaleString()} GNF
-                          </p>
-                        </div>
-                      )}
-                      {preinscriptionDetail.details_frais.scolarite > 0 && (
-                        <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                          <p className="text-xs text-gray-900">Scolarité</p>
-                          <p className="font-bold text-orange-600">
-                            {preinscriptionDetail.details_frais.scolarite.toLocaleString()} GNF
-                          </p>
-                        </div>
-                      )}
-                      <div className="bg-gray-100 p-3 rounded-lg border border-gray-300">
-                        <p className="text-xs text-gray-900 font-semibold">Total à payer</p>
-                        <p className="font-bold text-gray-900 text-lg">
-                          {preinscriptionDetail.details_frais.total.toLocaleString()} GNF
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-sm font-medium text-gray-900 mb-1">Services sélectionnés :</p>
-                      <div className="flex flex-wrap gap-3 text-sm">
-                        <span className="flex items-center gap-1 text-gray-900">
-                          <CheckCircle className="w-4 h-4 text-blue-600" /> Inscription
-                        </span>
-                        {preinscriptionDetail.details_frais.cantine > 0 && (
-                          <span className="flex items-center gap-1 text-gray-900">
-                            <CheckCircle className="w-4 h-4 text-pink-600" /> Cantine
-                          </span>
-                        )}
-                        {preinscriptionDetail.details_frais.transport > 0 && (
-                          <span className="flex items-center gap-1 text-gray-900">
-                            <CheckCircle className="w-4 h-4 text-green-600" /> Transport
-                          </span>
-                        )}
-                        {preinscriptionDetail.details_frais.librairie > 0 && (
-                          <span className="flex items-center gap-1 text-gray-900">
-                            <CheckCircle className="w-4 h-4 text-purple-600" /> Fournitures
-                          </span>
-                        )}
-                        {preinscriptionDetail.details_frais.scolarite > 0 && (
-                          <span className="flex items-center gap-1 text-gray-900">
-                            <CheckCircle className="w-4 h-4 text-orange-600" /> Scolarité
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-4 rounded-lg">
-                      <div>
-                        <p className="text-xs text-gray-900">Déjà payé</p>
-                        <p className="font-bold text-green-600">
-                          {preinscriptionDetail.details_frais.paye.toLocaleString()} GNF
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-900">Reste à payer</p>
-                        <p className={`font-bold ${preinscriptionDetail.details_frais.reste > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                          {preinscriptionDetail.details_frais.reste.toLocaleString()} GNF
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-900">Statut</p>
-                        {preinscriptionDetail.details_frais.reste === 0 ? (
-                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                            <CheckCircle className="w-3 h-3" /> Tout payé
-                          </span>
-                        ) : preinscriptionDetail.details_frais.paye > 0 ? (
-                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> Partiel
-                          </span>
-                        ) : (
-                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                            <XCircle className="w-3 h-3" /> Non payé
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {preinscriptionDetail.details_frais.total > 0 && (
-                      <div className="mt-3">
-                        <div className="flex justify-between text-xs text-gray-900 mb-1">
-                          <span>Progression des paiements</span>
-                          <span>
-                            {Math.round((preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div
-                            className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
-                            style={{
-                              width: `${Math.min(100, (preinscriptionDetail.details_frais.paye / preinscriptionDetail.details_frais.total) * 100)}%`
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-4 text-gray-900">
-                    <p>Chargement des informations de frais...</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                >
-                  Fermer
-                </button>
-              </div>
+            <div className="p-6 border-t bg-gray-50 flex justify-end gap-3 sticky bottom-0 z-10">
+              <button onClick={() => setShowDetailModal(false)} className="px-4 py-2 text-black border rounded-lg hover:bg-gray-100 bg-white transition">Fermer</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal de confirmation d'annulation */}
-      {showConfirmModal && preinscriptionToCancel && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-red-600" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">Confirmer l'annulation</h2>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <p className="text-gray-900 mb-2">
-                Êtes-vous sûr de vouloir annuler la pré-inscription de <strong>{preinscriptionToCancel.enfant_prenom} {preinscriptionToCancel.enfant_nom}</strong> ?
-              </p>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-4">
-                <p className="text-sm text-yellow-800 flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  Cette action est irréversible et supprimera le dossier.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowConfirmModal(false);
-                  setPreinscriptionToCancel(null);
-                }}
-                disabled={cancelling}
-                className="px-4 py-2 text-gray-900 border rounded-lg hover:bg-gray-100 transition"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleCancelPreinscription}
-                disabled={cancelling}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2 disabled:opacity-50"
-              >
-                {cancelling ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Annulation...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-4 h-4" />
-                    Confirmer l'annulation
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal paiement */}
-      {showPaiementModal && selectedPreinscription && (
-        <PaiementPlanModal
-          isOpen={showPaiementModal}
-          onClose={() => {
-            setShowPaiementModal(false);
-            setSelectedPreinscription(null);
-          }}
-          onSuccess={() => {
-            triggerRefresh();
-            addNotification("success", "Paiement effectué avec succès !");
-          }}
-          onPaymentComplete={triggerRefresh}
-          preinscriptionId={selectedPreinscription.id}
-          enfantNom={`${selectedPreinscription.enfant_prenom} ${selectedPreinscription.enfant_nom}`}
-          niveau={selectedPreinscription.niveau}
-        />
-      )}
-
-      {/* Modal paiement global */}
+      {/* MODAL PAIEMENT GLOBAL */}
       <PaiementGlobalModal
         isOpen={showGlobalPaiementModal}
         onClose={() => setShowGlobalPaiementModal(false)}
         onSuccess={() => {
-          addNotification("success", "Paiement global effectué avec succès !");
-          triggerRefresh();
+          fetchEnfants();
         }}
-        solde={statsGlobales.soldeDetaille}
         soldeRestant={statsGlobales.soldeRestant}
       />
     </div>

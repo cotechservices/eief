@@ -30,16 +30,22 @@ import {
   Plus,
   FileText,
   TrendingUp,
-  Download
+  Download,
+  RefreshCw
 } from "lucide-react";
 
 interface DetailsFrais {
   inscription: number;
+  reinscription?: number;
   cantine: number;
   transport: number;
   librairie: number;
   scolarite: number;
   total: number;
+  total_brut?: number;
+  total_net_actuel?: number;
+  remise?: number;
+  net?: number;
   paye: number;
   reste: number;
 }
@@ -61,6 +67,8 @@ interface Enfant {
   est_eleve?: boolean;
   est_preinscription?: boolean;
   type?: string;
+  total_remise_parent?: number;
+  remise_globale?: number;
 }
 
 interface Stats {
@@ -93,30 +101,46 @@ export default function MesEnfantsPage() {
     fetchEnfants();
   }, []);
 
+  // ⭐⭐⭐ CHARGER LES ENFANTS + STATS (uniquement pour les vrais élèves) ⭐⭐⭐
   const fetchEnfants = async () => {
     try {
       const response = await fetch("/api/parent/enfants");
       const data = await response.json();
       setEnfants(data);
 
+      // ⭐ Charger les stats UNIQUEMENT pour les élèves inscrits (type='eleve')
+      // pour éviter les erreurs 403 sur les pré-inscriptions
       for (const enfant of data) {
-        const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
-        const statsData = await statsResponse.json();
+        if (enfant.type !== 'eleve' || !enfant.eleve_id) {
+          continue;
+        }
 
-        const cleanedStats = {
-          ...statsData,
-          paiements: {
-            total_paye: typeof statsData.paiements?.total_paye === 'number'
-              ? statsData.paiements.total_paye
-              : parseFloat(statsData.paiements?.total_paye) || 0,
-            nombre_paiements: typeof statsData.paiements?.nombre_paiements === 'number'
-              ? statsData.paiements.nombre_paiements
-              : parseInt(statsData.paiements?.nombre_paiements) || 0,
-            details: statsData.paiements?.details || []
+        try {
+          const statsResponse = await fetch(`/api/parent/enfants/${enfant.eleve_id}/stats`);
+          if (!statsResponse.ok) {
+            console.warn(`⚠️ Stats non disponibles pour ${enfant.prenom} (HTTP ${statsResponse.status})`);
+            continue;
           }
-        };
 
-        setStatsEnfant(prev => ({ ...prev, [enfant.eleve_id]: cleanedStats }));
+          const statsData = await statsResponse.json();
+
+          const cleanedStats = {
+            ...statsData,
+            paiements: {
+              total_paye: typeof statsData.paiements?.total_paye === 'number'
+                ? statsData.paiements.total_paye
+                : parseFloat(statsData.paiements?.total_paye) || 0,
+              nombre_paiements: typeof statsData.paiements?.nombre_paiements === 'number'
+                ? statsData.paiements.nombre_paiements
+                : parseInt(statsData.paiements?.nombre_paiements) || 0,
+              details: statsData.paiements?.details || []
+            }
+          };
+
+          setStatsEnfant(prev => ({ ...prev, [enfant.eleve_id]: cleanedStats }));
+        } catch (err) {
+          console.warn(`Stats non chargées pour ${enfant.prenom}:`, err);
+        }
       }
     } catch (error) {
       console.error("Erreur:", error);
@@ -125,17 +149,42 @@ export default function MesEnfantsPage() {
     }
   };
 
-  const loadEnfantDetail = async (id: number) => {
+  // ⭐⭐⭐ CHARGER LES DÉTAILS SELON LE TYPE ⭐⭐⭐
+  const loadEnfantDetail = async (enfant: Enfant) => {
     setLoadingDetail(true);
     try {
-      const response = await fetch(`/api/parent/enfants/${id}`);
-      if (!response.ok) {
-        throw new Error("Erreur chargement détails");
+      let url = "";
+
+      if (enfant.type === "eleve") {
+        // Élève inscrit → /api/parent/enfants/[id]
+        url = `/api/parent/enfants/${enfant.eleve_id}`;
+      } else if (enfant.type === "preinscription") {
+        // Pré-inscription → /api/parent/preinscriptions/[id]
+        url = `/api/parent/preinscriptions/${enfant.id}`;
+      } else if (enfant.type === "reinscription") {
+        // Réinscription → /api/parent/reinscriptions/[id]
+        url = `/api/parent/reinscriptions/${enfant.id}`;
+      } else {
+        // Fallback
+        url = `/api/parent/enfants/${enfant.eleve_id}`;
       }
+
+      console.log(`🔍 Chargement détail: ${enfant.type} → ${url}`);
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error(`❌ Erreur API ${url}:`, response.status, errorData);
+        throw new Error(errorData.error || `Erreur ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log(`✅ Détail chargé pour ${enfant.prenom} ${enfant.nom}:`, data);
       setEnfantDetail(data);
-    } catch (error) {
-      console.error("Erreur:", error);
+    } catch (error: any) {
+      console.error("❌ Erreur chargement détail:", error);
+      setEnfantDetail(null);
     } finally {
       setLoadingDetail(false);
     }
@@ -144,13 +193,29 @@ export default function MesEnfantsPage() {
   const handleOpenDetails = (enfant: Enfant) => {
     setSelectedEnfant(enfant);
     setShowDetailModal(true);
-    loadEnfantDetail(enfant.eleve_id);
+    loadEnfantDetail(enfant);
   };
 
-  // STATISTIQUES GLOBALES SYNCHRONISÉES AVEC L'ACCUEIL
-  const totalAPayerBrut = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.total) || 0), 0);
+  // ⭐⭐⭐ STATISTIQUES GLOBALES (LOGIQUE UNIFIÉE) ⭐⭐⭐
+  const totalAPayerBrut = enfants.reduce((acc, e) => {
+    const details = e.details_frais;
+    if (!details) return acc;
+
+    if (details.total_brut !== undefined && details.total_brut !== null && details.total_brut > 0) {
+      return acc + Number(details.total_brut);
+    }
+
+    const netActuel = Number(details.total_net_actuel) || Number(details.total) || 0;
+    const remise = Number(details.remise) || 0;
+    return acc + (netActuel + remise);
+  }, 0);
+
   const totalPaye = enfants.reduce((acc, e) => acc + (Number(e.details_frais?.paye) || 0), 0);
-  const totalRemises = enfants.reduce((acc, e) => acc + (Number((e.details_frais as any)?.remise) || 0), 0);
+
+  const totalRemises = enfants.reduce((acc, e) => {
+    return acc + (Number(e.details_frais?.remise) || 0);
+  }, 0);
+
   const totalAPayerNet = Math.max(0, totalAPayerBrut - totalRemises);
   const soldeRestant = Math.max(0, totalAPayerNet - totalPaye);
 
@@ -164,6 +229,24 @@ export default function MesEnfantsPage() {
     totalRemises: totalRemises,
     soldeRestant: soldeRestant,
   };
+
+  console.log("📊 STATS MES ENFANTS:", {
+    totalAPayerBrut,
+    totalRemises,
+    totalAPayerNet,
+    totalPaye,
+    soldeRestant,
+    enfantsDetail: enfants.map(e => ({
+      nom: `${e.prenom} ${e.nom}`,
+      type: e.type,
+      eleve_id: e.eleve_id,
+      total_brut: e.details_frais?.total_brut,
+      net_actuel: e.details_frais?.total_net_actuel,
+      total: e.details_frais?.total,
+      remise: e.details_frais?.remise,
+      net: e.details_frais?.net,
+    }))
+  });
 
   const filteredEnfants = enfants.filter(e => {
     const searchLower = searchTerm.toLowerCase();
@@ -237,7 +320,7 @@ export default function MesEnfantsPage() {
         </div>
       </div>
 
-      {/* ⭐ BANNIÈRE DE REMISE SI APPLICABLE */}
+      {/* BANNIÈRE DE REMISE */}
       {statsGlobales.totalRemises > 0 && (
         <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-center justify-between text-indigo-900 shadow-sm">
           <div className="flex items-center gap-3">
@@ -326,6 +409,7 @@ export default function MesEnfantsPage() {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Photo</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Enfant</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Classe</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Statut</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Frais</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Actions</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">Accès</th>
@@ -335,9 +419,12 @@ export default function MesEnfantsPage() {
                   {paginatedEnfants.map((e) => {
                     const frais = e.details_frais;
                     const statusPaiement = frais.reste === 0 ? "paye" : frais.paye > 0 ? "partiel" : "non_paye";
+                    const isEleve = e.type === 'eleve';
+                    const isPreinscription = e.type === 'preinscription';
+                    const isReinscription = e.type === 'reinscription';
 
                     return (
-                      <tr key={e.id} className="hover:bg-gray-50 transition duration-150">
+                      <tr key={`${e.type}-${e.id}`} className="hover:bg-gray-50 transition duration-150">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="font-mono text-sm font-semibold text-blue-600">{e.matricule}</span>
                         </td>
@@ -364,6 +451,25 @@ export default function MesEnfantsPage() {
                           </div>
                           <span className="text-xs text-gray-900">{e.niveau}</span>
                         </td>
+
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {isEleve && (
+                            <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <CheckCircle className="w-3 h-3" /> Élève inscrit
+                            </span>
+                          )}
+                          {isPreinscription && (
+                            <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <Clock className="w-3 h-3" /> Inscription
+                            </span>
+                          )}
+                          {isReinscription && (
+                            <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                              <RefreshCw className="w-3 h-3" /> Réinscription
+                            </span>
+                          )}
+                        </td>
+
                         <td className="px-6 py-4 whitespace-nowrap">
                           {statusPaiement === "paye" ? (
                             <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
@@ -390,15 +496,58 @@ export default function MesEnfantsPage() {
                             </button>
                           </div>
                         </td>
+
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <Link
-                            href={`/dashboard/parent/enfants/${e.eleve_id}`}
-                            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1.5 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition text-xs font-semibold shadow-sm"
-                            title="Accéder au tableau de bord de l'enfant"
-                          >
-                            <GraduationCap className="w-3.5 h-3.5" />
-                            Tableau de bord
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            {/* Élève inscrit */}
+                            {isEleve && (
+                              <>
+                                <Link
+                                  href={`/dashboard/eleve?eleveId=${e.eleve_id || e.id}`}
+                                  onClick={() => {
+                                    document.cookie = `active_eleve_id=${e.eleve_id || e.id}; path=/; max-age=86400`;
+                                  }}
+                                  className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition text-xs font-semibold shadow-sm"
+                                  title="Accéder directement au compte de cet élève"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  Compte élève
+                                </Link>
+                                <Link
+                                  href={`/dashboard/parent/enfants/${e.eleve_id || e.id}`}
+                                  className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1.5 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition text-xs font-semibold shadow-sm"
+                                  title="Accéder au dossier de l'enfant"
+                                >
+                                  <GraduationCap className="w-3.5 h-3.5" />
+                                  Dossier
+                                </Link>
+                              </>
+                            )}
+
+                            {/* Pré-inscription */}
+                            {isPreinscription && (
+                              <Link
+                                href="/dashboard/parent/inscription"
+                                className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg transition text-xs font-semibold shadow-sm"
+                                title="Voir / finaliser la pré-inscription"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                Voir inscription
+                              </Link>
+                            )}
+
+                            {/* Réinscription */}
+                            {isReinscription && (
+                              <Link
+                                href="/dashboard/parent/reinscription"
+                                className="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg transition text-xs font-semibold shadow-sm"
+                                title="Voir / finaliser la réinscription"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                Voir réinscription
+                              </Link>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -458,7 +607,9 @@ export default function MesEnfantsPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b sticky top-0 bg-white z-10">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-black">Détail de l'élève</h2>
+                <h2 className="text-xl font-bold text-black">
+                  Détail de {selectedEnfant.type === 'eleve' ? "l'élève" : selectedEnfant.type === 'preinscription' ? "l'inscription" : "la réinscription"}
+                </h2>
                 <button onClick={() => setShowDetailModal(false)} className="text-gray-900 hover:text-gray-900 text-xl font-bold">✕</button>
               </div>
             </div>
@@ -467,9 +618,9 @@ export default function MesEnfantsPage() {
               {/* En-tête avec photo */}
               <div className="flex items-start gap-6 pb-6 border-b">
                 <div className="flex-shrink-0">
-                  {enfantDetail?.eleve?.photo_url ? (
+                  {(enfantDetail?.photo_url || selectedEnfant.photo_url) ? (
                     <img
-                      src={enfantDetail.eleve.photo_url}
+                      src={enfantDetail?.photo_url || selectedEnfant.photo_url}
                       alt="Photo"
                       className="w-32 h-32 rounded-lg object-cover shadow-md border"
                       onError={(e) => {
@@ -497,9 +648,21 @@ export default function MesEnfantsPage() {
                   <div className="flex gap-4">
                     <div className="bg-gray-50 p-3 rounded-lg border">
                       <p className="text-xs text-gray-900">Statut dossier</p>
-                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
-                        <CheckCircle className="w-3 h-3" /> Inscription active
-                      </span>
+                      {selectedEnfant.type === 'eleve' && (
+                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <CheckCircle className="w-3 h-3" /> Inscription active
+                        </span>
+                      )}
+                      {selectedEnfant.type === 'preinscription' && (
+                        <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <Clock className="w-3 h-3" /> Inscription
+                        </span>
+                      )}
+                      {selectedEnfant.type === 'reinscription' && (
+                        <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 mt-1">
+                          <RefreshCw className="w-3 h-3" /> Réinscription
+                        </span>
+                      )}
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg border">
                       <p className="text-xs text-gray-900">Paiement</p>
@@ -521,7 +684,7 @@ export default function MesEnfantsPage() {
                 </div>
               </div>
 
-              {/* Reste du modal... */}
+              {/* Reste du modal */}
               {loadingDetail ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -529,14 +692,14 @@ export default function MesEnfantsPage() {
               ) : (enfantDetail || selectedEnfant) ? (
                 <>
                   {/* Informations des parents */}
-                  {enfantDetail?.eleve?.parent_email && (
+                  {(enfantDetail?.parent_email) && (
                     <div>
                       <h3 className="font-semibold text-black mb-3 flex items-center gap-2">
                         <User className="w-5 h-5 text-blue-900" /> Informations des parents
                       </h3>
                       <div className="bg-gray-50 p-3 rounded-lg mb-4 border">
                         <p className="text-sm text-gray-900">Email de contact</p>
-                        <p className="font-medium text-gray-900">{enfantDetail?.eleve?.parent_email}</p>
+                        <p className="font-medium text-gray-900">{enfantDetail.parent_email}</p>
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
@@ -544,15 +707,15 @@ export default function MesEnfantsPage() {
                           <div className="space-y-2">
                             <div>
                               <p className="text-xs text-gray-900">Nom complet</p>
-                              <p className="font-medium text-gray-900">{enfantDetail?.eleve?.parent_prenom} {enfantDetail?.eleve?.parent_nom}</p>
+                              <p className="font-medium text-gray-900">{enfantDetail.parent_prenom} {enfantDetail.parent_nom}</p>
                             </div>
                             <div>
                               <p className="text-xs text-gray-900">Téléphone</p>
-                              <p className="font-medium text-gray-900">{enfantDetail?.eleve?.parent_telephone || "Non renseigné"}</p>
+                              <p className="font-medium text-gray-900">{enfantDetail.parent_telephone || "Non renseigné"}</p>
                             </div>
                             <div>
                               <p className="text-xs text-gray-900">Profession</p>
-                              <p className="font-medium text-gray-900">{enfantDetail?.eleve?.parent_profession || "Non renseigné"}</p>
+                              <p className="font-medium text-gray-900">{enfantDetail.parent_profession || "Non renseigné"}</p>
                             </div>
                           </div>
                         </div>
@@ -561,10 +724,10 @@ export default function MesEnfantsPage() {
                           {(() => {
                             let mereData: any = null;
                             try {
-                              if (enfantDetail?.eleve?.mere_info) {
-                                mereData = typeof enfantDetail.eleve.mere_info === 'string'
-                                  ? JSON.parse(enfantDetail.eleve.mere_info)
-                                  : enfantDetail.eleve.mere_info;
+                              if (enfantDetail?.mere_info) {
+                                mereData = typeof enfantDetail.mere_info === 'string'
+                                  ? JSON.parse(enfantDetail.mere_info)
+                                  : enfantDetail.mere_info;
                               }
                             } catch (e) { }
                             return mereData && (mereData.mereNom || mereData.merePrenom) ? (
@@ -599,29 +762,31 @@ export default function MesEnfantsPage() {
                     <div className="grid md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border">
                       <div>
                         <p className="text-sm text-gray-900">Nom complet</p>
-                        <p className="font-medium text-gray-900">{enfantDetail?.eleve?.prenom ?? selectedEnfant?.prenom} {enfantDetail?.eleve?.nom ?? selectedEnfant?.nom}</p>
+                        <p className="font-medium text-gray-900">
+                          {selectedEnfant.prenom} {selectedEnfant.nom}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-900">Date de naissance</p>
                         <p className="font-medium text-gray-900">
-                          {(enfantDetail?.eleve?.date_naissance ?? selectedEnfant?.date_naissance) ? new Date(enfantDetail?.eleve?.date_naissance ?? selectedEnfant?.date_naissance ?? '').toLocaleDateString() : "Non renseigné"}
+                          {selectedEnfant.date_naissance ? new Date(selectedEnfant.date_naissance).toLocaleDateString() : "Non renseigné"}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-900">Lieu de naissance</p>
-                        <p className="font-medium text-gray-900">{enfantDetail?.eleve?.lieu_naissance ?? selectedEnfant?.lieu_naissance ?? "Non renseigné"}</p>
+                        <p className="font-medium text-gray-900">{selectedEnfant.lieu_naissance ?? "Non renseigné"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-900">Sexe</p>
-                        <p className="font-medium text-gray-900">{(enfantDetail?.eleve?.sexe ?? selectedEnfant?.sexe) === "M" ? "Masculin" : "Féminin"}</p>
+                        <p className="font-medium text-gray-900">{selectedEnfant.sexe === "M" ? "Masculin" : "Féminin"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-900">Niveau</p>
-                        <p className="font-medium text-gray-900">{enfantDetail?.eleve?.niveau ?? selectedEnfant?.niveau}</p>
+                        <p className="font-medium text-gray-900">{selectedEnfant.niveau}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-900">Classe</p>
-                        <p className="font-medium text-gray-900">{enfantDetail?.eleve?.classe_nom ?? selectedEnfant?.classe_nom}</p>
+                        <p className="font-medium text-gray-900">{selectedEnfant.classe_nom}</p>
                       </div>
                     </div>
                   </div>
@@ -632,15 +797,14 @@ export default function MesEnfantsPage() {
                       <FileText className="w-5 h-5 text-purple-600" /> Documents joints
                     </h3>
                     <div className="grid md:grid-cols-3 gap-4">
-                      {/* Acte de naissance */}
                       <div className="border rounded-lg p-4 hover:shadow-md transition">
                         <div className="flex items-center gap-2 mb-2">
                           <File className="w-5 h-5 text-blue-600" />
                           <span className="font-medium text-black">Acte de naissance</span>
                         </div>
-                        {enfantDetail?.eleve?.acte_naissance_url ? (
+                        {enfantDetail?.acte_naissance_url ? (
                           <a
-                            href={enfantDetail.eleve.acte_naissance_url}
+                            href={enfantDetail.acte_naissance_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 text-sm hover:underline flex items-center gap-1"
@@ -652,15 +816,14 @@ export default function MesEnfantsPage() {
                         )}
                       </div>
 
-                      {/* Photo d'identité */}
                       <div className="border rounded-lg p-4 hover:shadow-md transition">
                         <div className="flex items-center gap-2 mb-2">
                           <Image className="w-5 h-5 text-green-600" />
                           <span className="font-medium text-black">Photo d'identité</span>
                         </div>
-                        {(enfantDetail?.eleve?.photo_url ?? selectedEnfant?.photo_url) ? (
+                        {(enfantDetail?.photo_url || selectedEnfant?.photo_url) ? (
                           <a
-                            href={(enfantDetail?.eleve?.photo_url ?? selectedEnfant?.photo_url) as string}
+                            href={(enfantDetail?.photo_url || selectedEnfant?.photo_url) as string}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 text-sm hover:underline flex items-center gap-1"
@@ -672,15 +835,14 @@ export default function MesEnfantsPage() {
                         )}
                       </div>
 
-                      {/* Bulletin scolaire */}
                       <div className="border rounded-lg p-4 hover:shadow-md transition">
                         <div className="flex items-center gap-2 mb-2">
                           <FileText className="w-5 h-5 text-orange-600" />
                           <span className="font-medium text-black">Bulletin scolaire</span>
                         </div>
-                        {enfantDetail?.eleve?.bulletin_url ? (
+                        {enfantDetail?.bulletin_url ? (
                           <a
-                            href={enfantDetail.eleve.bulletin_url}
+                            href={enfantDetail.bulletin_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 text-sm hover:underline flex items-center gap-1"
@@ -702,21 +864,57 @@ export default function MesEnfantsPage() {
                     </h3>
 
                     {(() => {
-                      const inscription = enfantDetail?.frais?.inscription ?? selectedEnfant?.details_frais?.inscription ?? 0;
-                      const cantine = enfantDetail?.frais?.cantine ?? selectedEnfant?.details_frais?.cantine ?? 0;
-                      const transport = enfantDetail?.frais?.transport ?? selectedEnfant?.details_frais?.transport ?? 0;
-                      const fournitures = enfantDetail?.frais?.fournitures ?? selectedEnfant?.details_frais?.librairie ?? 0;
-                      const scolarite = enfantDetail?.frais?.scolarite ?? selectedEnfant?.details_frais?.scolarite ?? 0;
-                      const totalAPayer = selectedEnfant?.details_frais?.total ?? enfantDetail?.frais?.total_a_payer ?? 0;
-                      const dejaPaye = selectedEnfant?.details_frais?.paye ?? enfantDetail?.frais?.total_paye ?? 0;
-                      const resteAPayer = selectedEnfant?.details_frais?.reste ?? enfantDetail?.frais?.solde_restant ?? 0;
+                      const totalBrut = Number(
+                        enfantDetail?.frais?.total_brut
+                        ?? selectedEnfant?.details_frais?.total_brut
+                        ?? 0
+                      );
+
+                      const totalNetActuel = Number(
+                        enfantDetail?.frais?.total_net_actuel
+                        ?? selectedEnfant?.details_frais?.total_net_actuel
+                        ?? selectedEnfant?.details_frais?.total
+                        ?? 0
+                      );
+
+                      const remiseEnfant = Number(
+                        enfantDetail?.frais?.remise
+                        ?? selectedEnfant?.details_frais?.remise
+                        ?? 0
+                      );
+
+                      const netEnfant = Number(
+                        enfantDetail?.frais?.net
+                        ?? selectedEnfant?.details_frais?.net
+                        ?? selectedEnfant?.details_frais?.total
+                        ?? 0
+                      );
+
+                      const dejaPaye = Number(
+                        enfantDetail?.frais?.total_paye
+                        ?? selectedEnfant?.details_frais?.paye
+                        ?? 0
+                      );
+
+                      const resteAPayer = Number(
+                        enfantDetail?.frais?.solde_restant
+                        ?? selectedEnfant?.details_frais?.reste
+                        ?? 0
+                      );
+
+                      const totalAPayerAffiche = netEnfant || totalNetActuel;
 
                       return (
                         <>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
                             <div>
                               <p className="text-xs text-gray-900 font-semibold">Total à payer</p>
-                              <p className="font-bold text-gray-900 text-lg">{totalAPayer.toLocaleString()} GNF</p>
+                              <p className="font-bold text-gray-900 text-lg">{totalAPayerAffiche.toLocaleString()} GNF</p>
+                              {remiseEnfant > 0 && (
+                                <p className="text-[10px] text-gray-500 mt-0.5">
+                                  Brut: {totalBrut.toLocaleString()} - Remise: {remiseEnfant.toLocaleString()}
+                                </p>
+                              )}
                             </div>
                             <div>
                               <p className="text-xs text-gray-900">Déjà payé</p>
@@ -746,16 +944,16 @@ export default function MesEnfantsPage() {
                             </div>
                           </div>
 
-                          {totalAPayer > 0 && (
+                          {totalAPayerAffiche > 0 && (
                             <div className="mt-3">
                               <div className="flex justify-between text-xs text-gray-900 mb-1">
                                 <span>Progression des paiements</span>
-                                <span>{Math.round((dejaPaye / totalAPayer) * 100)}%</span>
+                                <span>{Math.round((dejaPaye / totalAPayerAffiche) * 100)}%</span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2.5">
                                 <div
                                   className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
-                                  style={{ width: `${Math.min(100, (dejaPaye / totalAPayer) * 100)}%` }}
+                                  style={{ width: `${Math.min(100, (dejaPaye / totalAPayerAffiche) * 100)}%` }}
                                 />
                               </div>
                             </div>
@@ -803,7 +1001,13 @@ export default function MesEnfantsPage() {
                   )}
                 </>
               ) : (
-                <div className="text-center py-12 text-gray-900">Une erreur est survenue lors du chargement des détails.</div>
+                <div className="text-center py-12 text-gray-900">
+                  <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+                  <p className="font-semibold">Impossible de charger les détails</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Vérifiez que la pré-inscription appartient bien à votre compte.
+                  </p>
+                </div>
               )}
             </div>
 

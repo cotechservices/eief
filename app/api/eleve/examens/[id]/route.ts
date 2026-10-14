@@ -1,32 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { query } from "@/lib/db";
+import { getEleveSession } from "@/lib/eleve-auth";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ELEVE") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+    const auth = await getEleveSession(req);
+    if (auth.error) return auth.error;
+
+    const { eleveId } = auth;
 
     const { id } = await params;
     const examenId = parseInt(id);
-    const userId = (session.user as any).id;
 
-    const eleveRes = await query(
-      "SELECT id FROM public.eleves WHERE utilisateur_id = $1",
-      [userId]
-    );
-    if (eleveRes.rows.length === 0) {
-      return NextResponse.json({ error: "Élève introuvable" }, { status: 404 });
-    }
-    const eleveId = eleveRes.rows[0].id;
-
-    // ⭐ Vérifier que l'élève est bien associé à l'examen
+    // Vérifier que l'élève est bien associé à l'examen
     const checkAccess = await query(
       `SELECT 1 FROM public.examens_eleves 
        WHERE examen_id = $1 AND eleve_id = $2`,
@@ -37,10 +26,10 @@ export async function GET(
       return NextResponse.json({ error: "Accès non autorisé à cet examen" }, { status: 403 });
     }
 
-    // ⭐ Infos examen avec fichier_url
+    // Infos examen avec fichier_url
     const examenRes = await query(
       `SELECT ex.id, ex.titre, ex.duree_minutes, ex.date_debut, ex.date_fin, ex.est_actif,
-              ex.fichier_url,  -- ⭐ Ajouté
+              ex.fichier_url,
               COALESCE(m.nom, 'Sans matière') AS matiere
        FROM public.examens ex
        JOIN public.enseignements en ON en.id = ex.enseignement_id
@@ -60,7 +49,7 @@ export async function GET(
     );
     const dejaPassé = parseInt(reponsesExist.rows[0].nb) > 0;
 
-    // ⭐ Questions avec options
+    // Questions avec options
     const questionsRes = await query(
       `SELECT q.id, q.question, q.points, q.ordre
        FROM public.questions_qcm q

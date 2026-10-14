@@ -1,26 +1,22 @@
 // app/api/eleve/lecons/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { query } from "@/lib/db";
+import { getEleveSession } from "@/lib/eleve-auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ELEVE") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+    const auth = await getEleveSession(req);
+    if (auth.error) return auth.error;
 
-    const userId = (session.user as any).id;
+    const { classeId } = auth;
 
-    const eleveRes = await query(
-      "SELECT id, classe_id FROM public.eleves WHERE utilisateur_id = $1",
-      [userId]
-    );
-    if (eleveRes.rows.length === 0) {
-      return NextResponse.json({ error: "Élève introuvable" }, { status: 404 });
+    if (!classeId) {
+      return NextResponse.json({
+        lecons: [],
+        parMatiere: [],
+        total: 0,
+      });
     }
-    const { classe_id: classeId } = eleveRes.rows[0];
 
     const leconsRes = await query(
       `SELECT 

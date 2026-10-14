@@ -255,10 +255,23 @@ export default function ParentEnfantDashboard() {
             <p className="text-white/80 mt-1">{profil?.classe_nom} · {profil?.classe_niveau}</p>
             <p className="text-white/60 text-sm mt-1">Matricule : {profil?.matricule}</p>
           </div>
-          <div className="text-right hidden md:block">
-            <div className="text-3xl font-extrabold">{moyenneGenerale > 0 ? moyenneGenerale : "—"}</div>
-            <div className="text-white/70 text-sm">Moyenne générale</div>
-            {moyenneGenerale > 0 && <div className="mt-1"><MentionBadge moy={moyenneGenerale} /></div>}
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <Link
+              href={`/dashboard/eleve?eleveId=${id}`}
+              onClick={() => {
+                document.cookie = `active_eleve_id=${id}; path=/; max-age=86400`;
+              }}
+              className="inline-flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-xl text-xs font-bold transition shadow-md"
+              title="Accéder directement au compte élève (comme si l'élève était connecté)"
+            >
+              <ExternalLink className="w-4 h-4 text-blue-700" />
+              Accéder au compte élève
+            </Link>
+            <div className="text-right hidden md:block">
+              <div className="text-3xl font-extrabold">{moyenneGenerale > 0 ? moyenneGenerale : "—"}</div>
+              <div className="text-white/70 text-sm">Moyenne générale</div>
+              {moyenneGenerale > 0 && <div className="mt-1"><MentionBadge moy={moyenneGenerale} /></div>}
+            </div>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-3 mt-5">

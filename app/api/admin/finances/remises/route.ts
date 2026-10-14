@@ -32,10 +32,9 @@ export async function GET(request: NextRequest) {
       );
     `);
 
-    // ⭐ CORRECTION : Comptage propre des enfants sans doublons (UNION + DISTINCT)
+    // ⭐ Comptage propre des enfants sans doublons
     const parentsResult = await query(`
       WITH enfants_uniques AS (
-        -- Enfants inscrits
         SELECT DISTINCT lpe.parent_id, lpe.eleve_id::text AS enfant_key
         FROM lien_parent_eleve lpe
         JOIN eleves e ON e.id = lpe.eleve_id
@@ -43,14 +42,12 @@ export async function GET(request: NextRequest) {
 
         UNION
 
-        -- Enfants en préinscription
         SELECT DISTINCT p.parent_id, ('pre_' || p.id)::text AS enfant_key
         FROM preinscriptions p
         WHERE p.statut != 'rejete'
 
         UNION
 
-        -- Enfants en réinscription
         SELECT DISTINCT r.parent_id, ('re_' || r.id)::text AS enfant_key
         FROM reinscriptions r
         WHERE r.statut != 'rejete'
@@ -80,8 +77,11 @@ export async function GET(request: NextRequest) {
     for (const parent of parentsResult.rows) {
       const parentId = parent.parent_id;
 
-      // ⭐ CORRECTION : Frais bruts lus depuis echeances_paiement (préinscriptions + réinscriptions)
-      // 1) Échéances liées aux préinscriptions
+      // ⭐ Récupérer la remise accordée AVANT tout calcul
+      const remiseAccordee = Number(parent.total_remises) || 0;
+
+      // ========== 1. SCOLARITÉ : MONTANT ACTUEL (déjà net) ==========
+      // Échéances préinscriptions (montants ACTUELS, déjà réduits par la remise)
       const fraisPreinsRes = await query(`
         SELECT COALESCE(SUM(ep.montant), 0) as total
         FROM echeances_paiement ep
@@ -90,9 +90,9 @@ export async function GET(request: NextRequest) {
         )
         AND ep.type IN ('inscription', 'scolarite', 'reinscription')
       `, [parentId]);
-      const scolaritePreins = Number(fraisPreinsRes.rows[0]?.total) || 0;
+      const scolaritePreinsActuelle = Number(fraisPreinsRes.rows[0]?.total) || 0;
 
-      // 2) Échéances liées aux réinscriptions
+      // Échéances réinscriptions (montants ACTUELS)
       const fraisReinsRes = await query(`
         SELECT COALESCE(SUM(ep.montant), 0) as total
         FROM echeances_paiement ep
@@ -101,11 +101,11 @@ export async function GET(request: NextRequest) {
         )
         AND ep.type IN ('inscription', 'scolarite', 'reinscription')
       `, [parentId]);
-      const scolariteReins = Number(fraisReinsRes.rows[0]?.total) || 0;
+      const scolariteReinsActuelle = Number(fraisReinsRes.rows[0]?.total) || 0;
 
-      // 3) Fallback : si aucune échéance, utiliser les montants stockés dans les tables
+      // Fallback si aucune échéance
       let scolariteFallback = 0;
-      if (scolaritePreins === 0) {
+      if (scolaritePreinsActuelle === 0) {
         const fallbackPreins = await query(`
           SELECT COALESCE(SUM(COALESCE(montant_total_plan, frais_montant, 0)), 0) as total
           FROM preinscriptions
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
         `, [parentId]);
         scolariteFallback += Number(fallbackPreins.rows[0]?.total) || 0;
       }
-      if (scolariteReins === 0) {
+      if (scolariteReinsActuelle === 0) {
         const fallbackReins = await query(`
           SELECT COALESCE(SUM(COALESCE(montant_total_plan, montant_frais, 0)), 0) as total
           FROM reinscriptions
@@ -122,10 +122,14 @@ export async function GET(request: NextRequest) {
         scolariteFallback += Number(fallbackReins.rows[0]?.total) || 0;
       }
 
-      const scolariteBrut = scolaritePreins + scolariteReins + scolariteFallback;
+      // ⭐ Montant actuel total de la scolarité (déjà net de remise)
+      const scolariteActuelle = scolaritePreinsActuelle + scolariteReinsActuelle + scolariteFallback;
 
-      // ⭐ CORRECTION : Services annexes lus depuis les bonnes tables
-      // Cantine via preinscription_cantine (source principale)
+      // ⭐ RECONSTITUTION DU VRAI BRUT : actuel + remise
+      // (car la remise a été appliquée UNIQUEMENT sur les échéances de scolarité)
+      const scolariteBrut = scolariteActuelle + remiseAccordee;
+
+      // ========== 2. SERVICES (brut = actuel, pas de remise dessus) ==========
       const cantineRes = await query(`
         SELECT COALESCE(SUM(pc.prix), 0) as total
         FROM preinscription_cantine pc
@@ -135,7 +139,6 @@ export async function GET(request: NextRequest) {
       `, [parentId]);
       const cantineBrut = Number(cantineRes.rows[0]?.total) || 0;
 
-      // Transport via preinscription_transport
       const transportRes = await query(`
         SELECT COALESCE(SUM(pt.prix), 0) as total
         FROM preinscription_transport pt
@@ -145,7 +148,6 @@ export async function GET(request: NextRequest) {
       `, [parentId]);
       const transportBrut = Number(transportRes.rows[0]?.total) || 0;
 
-      // Fournitures : commandes_fournitures + commandes_librairie
       const fournituresRes = await query(`
         SELECT 
           COALESCE((
@@ -164,7 +166,7 @@ export async function GET(request: NextRequest) {
 
       const totalServices = cantineBrut + transportBrut + fournituresBrut;
 
-      // ⭐ CORRECTION : Total payé unifié
+      // ========== 3. TOTAL PAYÉ ==========
       const paiementsRes = await query(`
         SELECT COALESCE(SUM(montant), 0) as total
         FROM (
@@ -183,12 +185,29 @@ export async function GET(request: NextRequest) {
       `, [parentId]);
       const totalPaye = Number(paiementsRes.rows[0]?.total) || 0;
 
-      // ⭐ Calcul final
+      // ========== 4. CALCUL FINAL (cohérent avec l'API parents) ==========
+      // Total brut AVANT remise
       const totalAPayer = scolariteBrut + totalServices;
-      const totalRemises = Number(parent.total_remises) || 0;
-      const soldeRestant = Math.max(0, totalAPayer - totalPaye - totalRemises);
+      // Net à payer APRÈS remise
+      const totalNet = Math.max(0, totalAPayer - remiseAccordee);
+      // Solde restant = net - payé
+      const soldeRestant = Math.max(0, totalNet - totalPaye);
 
-      // ⭐ IMPORTANT : Sécuriser tous les champs numériques avec Number() || 0
+      // ⭐ DEBUG pour vérifier
+      console.log(`[DEBUG REMISES] Parent ${parent.prenom} ${parent.nom}:`, {
+        scolariteActuelle,
+        remiseAccordee,
+        scolariteBrut,
+        cantineBrut,
+        transportBrut,
+        fournituresBrut,
+        totalServices,
+        totalAPayer,
+        totalNet,
+        totalPaye,
+        soldeRestant,
+      });
+
       parentsComplets.push({
         id: Number(parent.parent_id) || 0,
         nom: parent.nom || "",
@@ -196,10 +215,10 @@ export async function GET(request: NextRequest) {
         email: parent.email || "",
         telephone: parent.telephone || "",
         nb_enfants: Number(parent.nb_enfants) || 0,
-        total_a_payer: Number(totalAPayer) || 0,
-        total_paye: Number(totalPaye) || 0,
-        total_remises: Number(totalRemises) || 0,
-        solde_restant: Number(soldeRestant) || 0
+        total_a_payer: Number(totalAPayer) || 0,      // 25 720 000 ✅
+        total_paye: Number(totalPaye) || 0,            // 0
+        total_remises: Number(remiseAccordee) || 0,    // 720 000
+        solde_restant: Number(soldeRestant) || 0       // 25 000 000 ✅
       });
     }
 
@@ -241,10 +260,11 @@ export async function POST(request: NextRequest) {
       );
     `);
 
-    // ⭐ CORRECTION MAJEURE : Calculer le solde restant RÉEL du parent avant d'appliquer la remise
+    // ⭐ Calculer le solde restant RÉEL avant d'appliquer la remise
+    // IMPORTANT : Ici on lit les montants ACTUELS (déjà nets des remises précédentes)
     const soldeInfoRes = await query(`
       SELECT 
-        -- Scolarité brute (échéances préinscriptions + réinscriptions)
+        -- Scolarité actuelle (déjà nette)
         COALESCE((
           SELECT SUM(ep.montant)
           FROM echeances_paiement ep
@@ -256,9 +276,9 @@ export async function POST(request: NextRequest) {
           FROM echeances_paiement ep
           WHERE ep.reinscription_id IN (SELECT id FROM reinscriptions WHERE parent_id = $1)
             AND ep.type IN ('inscription', 'scolarite', 'reinscription')
-        ), 0) AS scolarite_brut,
+        ), 0) AS scolarite_actuelle,
 
-        -- Services bruts (cantine + transport + fournitures + librairie)
+        -- Services (jamais affectés par remise)
         COALESCE((
           SELECT SUM(pc.prix) FROM preinscription_cantine pc
           JOIN preinscriptions p ON pc.preinscription_id = p.id
@@ -277,7 +297,7 @@ export async function POST(request: NextRequest) {
         COALESCE((
           SELECT SUM(total) FROM commandes_librairie
           WHERE parent_id = $1 AND statut = 'valide'
-        ), 0) AS services_brut,
+        ), 0) AS services_actuels,
 
         -- Total déjà payé
         COALESCE((
@@ -294,24 +314,19 @@ export async function POST(request: NextRequest) {
             WHERE statut IN ('valide', 'paye')
               AND reinscription_id IN (SELECT id FROM reinscriptions WHERE parent_id = $1)
           ) p
-        ), 0) AS total_paye,
-
-        -- Remises déjà accordées
-        COALESCE((
-          SELECT SUM(montant) FROM remises_familles WHERE parent_id = $1
-        ), 0) AS remises_existantes
+        ), 0) AS total_paye
     `, [parentId]);
 
     const info = soldeInfoRes.rows[0];
-    const scolariteBrut = Number(info.scolarite_brut) || 0;
-    const servicesBrut = Number(info.services_brut) || 0;
-    const totalBrut = scolariteBrut + servicesBrut;
+    const scolariteActuelle = Number(info.scolarite_actuelle) || 0;
+    const servicesActuels = Number(info.services_actuels) || 0;
+    const totalActuel = scolariteActuelle + servicesActuels;
     const totalPaye = Number(info.total_paye) || 0;
-    const remisesExistantes = Number(info.remises_existantes) || 0;
 
-    const soldeRestantReel = Math.max(0, totalBrut - totalPaye - remisesExistantes);
+    // ⭐ Le solde réel = montant actuel - payé (la remise précédente est déjà dans scolariteActuelle)
+    const soldeRestantReel = Math.max(0, totalActuel - totalPaye);
 
-    // ⭐ CORRECTION : Plafonner la remise au solde restant réel
+    // Plafonner la remise
     if (Number(montant) > soldeRestantReel) {
       return NextResponse.json({ 
         error: `La remise (${Number(montant).toLocaleString()} GNF) dépasse le solde restant réel (${soldeRestantReel.toLocaleString()} GNF).`,
@@ -326,13 +341,11 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `, [parentId, montant, motif || "Remise Famille Nombreuse", (session.user as any).id || null]);
 
-    // ⭐ CORRECTION MAJEURE : Répartir la remise PROPORTIONNELLEMENT sur les échéances
-    // au lieu de la soustraire en masse à chaque préinscription/réinscription
-    if (scolariteBrut > 0) {
-      const montantRemiseApplique = Math.min(Number(montant), scolariteBrut);
-      const facteurReduction = 1 - (montantRemiseApplique / scolariteBrut);
+    // ⭐ Répartir la remise PROPORTIONNELLEMENT sur les échéances de SCOLARITÉ
+    if (scolariteActuelle > 0) {
+      const montantRemiseApplique = Math.min(Number(montant), scolariteActuelle);
+      const facteurReduction = 1 - (montantRemiseApplique / scolariteActuelle);
 
-      // Mettre à jour chaque échéance de scolarité proportionnellement
       await query(`
         UPDATE echeances_paiement
         SET montant = GREATEST(0, ROUND(montant * $1::numeric, 2))
@@ -344,7 +357,7 @@ export async function POST(request: NextRequest) {
       `, [facteurReduction, parentId]);
     }
 
-    // ⭐ CORRECTION : Recalculer montant_restant_plan de manière cohérente
+    // Recalculer montant_restant_plan
     await query(`
       UPDATE preinscriptions p
       SET montant_restant_plan = GREATEST(0, 

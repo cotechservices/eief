@@ -1,28 +1,20 @@
 // app/api/eleve/devoirs/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { query } from "@/lib/db";
+import { getEleveSession } from "@/lib/eleve-auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ELEVE") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    const auth = await getEleveSession(req);
+    if (auth.error) return auth.error;
+
+    const { eleveId, classeId } = auth;
+
+    if (!classeId) {
+      return NextResponse.json({ devoirs: [] });
     }
 
-    const userId = (session.user as any).id;
-
-    const eleveRes = await query(
-      "SELECT id, classe_id FROM public.eleves WHERE utilisateur_id = $1",
-      [userId]
-    );
-    if (eleveRes.rows.length === 0) {
-      return NextResponse.json({ error: "Élève introuvable" }, { status: 404 });
-    }
-    const { id: eleveId, classe_id: classeId } = eleveRes.rows[0];
-
-    // Devoirs de la classe de l'élève avec statut soumission - SANS MATIERE
+    // Devoirs de la classe de l'élève avec statut soumission
     const devoirsRes = await query(
       `SELECT 
         d.id,
@@ -31,7 +23,7 @@ export async function GET(req: NextRequest) {
         d.fichier_url,
         d.date_limite,
         d.date_publication,
-        '' AS matiere,  -- Pas de matière, on met une chaîne vide
+        '' AS matiere,
         CONCAT(u.prenom, ' ', u.nom) AS enseignant,
         sd.id AS soumission_id,
         sd.date_soumission,

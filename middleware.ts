@@ -20,8 +20,8 @@ const routeRoles: Record<string, string[]> = {
   "/dashboard/parent": ["PARENT"],
   "/parent": ["PARENT"],
 
-  "/dashboard/eleve": ["ELEVE"],
-  "/eleve": ["ELEVE"],
+  "/dashboard/eleve": ["ELEVE", "PARENT", "SUPER_ADMIN", "ADMIN"],
+  "/eleve": ["ELEVE", "PARENT", "SUPER_ADMIN", "ADMIN"],
 
   "/dashboard/enseignant": ["ENSEIGNANT"],
   "/enseignant": ["ENSEIGNANT"],

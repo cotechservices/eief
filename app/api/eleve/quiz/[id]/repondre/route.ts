@@ -1,31 +1,20 @@
-//app/api/eleve/quiz/[id]/repondre/route.ts
+// app/api/eleve/quiz/[id]/repondre/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { query, transaction } from "@/lib/db";
+import { getEleveSession } from "@/lib/eleve-auth";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ELEVE") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+    const auth = await getEleveSession(req);
+    if (auth.error) return auth.error;
+
+    const { eleveId } = auth;
 
     const { id } = await params;
     const quizId = parseInt(id);
-    const userId = (session.user as any).id;
-
-    const eleveRes = await query(
-      "SELECT id FROM public.eleves WHERE utilisateur_id = $1",
-      [userId]
-    );
-    if (eleveRes.rows.length === 0) {
-      return NextResponse.json({ error: "Élève introuvable" }, { status: 404 });
-    }
-    const eleveId = eleveRes.rows[0].id;
 
     const body = await req.json();
     const { reponses, temps_total_ms } = body;

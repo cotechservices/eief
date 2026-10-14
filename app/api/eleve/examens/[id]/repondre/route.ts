@@ -1,32 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { query, transaction } from "@/lib/db";
+import { getEleveSession } from "@/lib/eleve-auth";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ELEVE") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+    const auth = await getEleveSession(req);
+    if (auth.error) return auth.error;
+
+    const { eleveId } = auth;
 
     const { id } = await params;
     const examenId = parseInt(id);
-    const userId = (session.user as any).id;
 
-    const eleveRes = await query(
-      "SELECT id FROM public.eleves WHERE utilisateur_id = $1",
-      [userId]
-    );
-    if (eleveRes.rows.length === 0) {
-      return NextResponse.json({ error: "Élève introuvable" }, { status: 404 });
-    }
-    const eleveId = eleveRes.rows[0].id;
-
-    // ⭐ Vérifier que l'élève est bien associé à l'examen
+    // Vérifier que l'élève est bien associé à l'examen
     const checkAccess = await query(
       `SELECT 1 FROM public.examens_eleves 
        WHERE examen_id = $1 AND eleve_id = $2`,
@@ -37,7 +26,7 @@ export async function POST(
       return NextResponse.json({ error: "Accès non autorisé à cet examen" }, { status: 403 });
     }
 
-    // ⭐ Vérifier que l'examen a des questions
+    // Vérifier que l'examen a des questions
     const questionsCheck = await query(
       `SELECT COUNT(*) as nb FROM public.questions_qcm WHERE examen_id = $1`,
       [examenId]

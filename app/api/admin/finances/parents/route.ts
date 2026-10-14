@@ -148,8 +148,7 @@ export async function GET(request: NextRequest) {
           WHERE lpe.parent_id = $1 AND e.est_inscrit = true AND e.deleted_at IS NULL
         `, [parentId]);
 
-        // ========== 2. PRÉ-INSCRIPTIONS VALIDÉES ==========
-        // ⭐ CORRECTION : prendre aussi les 'valide' et 'partiel', pas seulement 'en_attente'
+        // ========== 2. PRÉ-INSCRIPTIONS ==========
         const preinsResult = await query(`
           SELECT 
             p.id as preinscription_id,
@@ -179,12 +178,10 @@ export async function GET(request: NextRequest) {
           console.warn("⚠️ Table remises_familles non trouvée, remise = 0");
         }
 
-        // ========== 4. SCOLARITÉ BRUTE ==========
-        // ⭐ CORRECTION : Utiliser les pré-inscriptions VALIDÉES (pas les élèves inscrits)
-        // car les élèves inscrits ont le même montant → risque de doublon
-        let scolariteBrut = 0;
+        // ========== 4. SCOLARITÉ : ACTUEL (déjà net) + BRUT RECONSTITUÉ ==========
+        // ⭐ Lecture des échéances ACTUELLES (montants déjà réduits par la remise)
+        let scolariteActuelle = 0;
 
-        // 4a. Pré-inscriptions validées (exclure les fournitures qui sont dans echeances)
         for (const pre of preinsResult.rows) {
           const planRes = await query(`
             SELECT COALESCE(SUM(ep.montant), 0) as total_scolarite
@@ -192,18 +189,15 @@ export async function GET(request: NextRequest) {
             WHERE ep.preinscription_id = $1
               AND ep.type IN ('inscription', 'scolarite', 'reinscription')
           `, [pre.preinscription_id]);
-          
           const totalScolarite = Number(planRes.rows[0]?.total_scolarite) || 0;
-          
           if (totalScolarite > 0) {
-            scolariteBrut += totalScolarite;
+            scolariteActuelle += totalScolarite;
           } else {
-            // Fallback : utiliser montant_total_plan si aucune échéance
-            scolariteBrut += Number(pre.montant_total_plan) || 0;
+            scolariteActuelle += Number(pre.montant_total_plan) || 0;
           }
         }
 
-        // 4b. Réinscriptions en attente
+        // Réinscriptions
         const reinscriptionsPendingRes = await query(`
           SELECT r.id, r.montant_total_plan, r.montant_frais
           FROM reinscriptions r
@@ -211,11 +205,15 @@ export async function GET(request: NextRequest) {
             AND r.statut IN ('valide', 'en_attente', 'partiel')
         `, [parentId]);
         for (const r of reinscriptionsPendingRes.rows) {
-          scolariteBrut += Number(r.montant_total_plan) || Number(r.montant_frais) || 0;
+          scolariteActuelle += Number(r.montant_total_plan) || Number(r.montant_frais) || 0;
         }
 
-        // ========== 5. CANTINE BRUTE (CORRIGÉ) ==========
-        // ⭐ CORRECTION : lire depuis preinscription_cantine (pas inscriptions_cantine)
+        // ⭐ RECONSTITUTION DU BRUT
+        // La remise a été appliquée UNIQUEMENT sur la scolarité (par le POST remise)
+        // Donc : scolariteBrut = scolariteActuelle + remiseAccordee
+        const scolariteBrut = scolariteActuelle + remiseAccordee;
+
+        // ========== 5. CANTINE (brut = actuel, pas de remise dessus) ==========
         const cantineRes = await query(`
           SELECT COALESCE(SUM(pc.prix), 0) as total_cantine
           FROM preinscription_cantine pc
@@ -225,8 +223,7 @@ export async function GET(request: NextRequest) {
         `, [parentId]);
         const cantineBrut = Number(cantineRes.rows[0]?.total_cantine) || 0;
 
-        // ========== 6. TRANSPORT BRUT (CORRIGÉ) ==========
-        // ⭐ CORRECTION : lire depuis preinscription_transport (pas inscriptions_transport)
+        // ========== 6. TRANSPORT (brut = actuel) ==========
         const transportRes = await query(`
           SELECT COALESCE(SUM(pt.prix), 0) as total_transport
           FROM preinscription_transport pt
@@ -236,7 +233,7 @@ export async function GET(request: NextRequest) {
         `, [parentId]);
         const transportBrut = Number(transportRes.rows[0]?.total_transport) || 0;
 
-        // ========== 7. FOURNITURES BRUTES ==========
+        // ========== 7. FOURNITURES (brut = actuel) ==========
         const fournituresRes = await query(`
           SELECT 
             COALESCE(
@@ -282,12 +279,15 @@ export async function GET(request: NextRequest) {
 
         const totalPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
 
+        // ⭐ CALCUL FINAL (logique cohérente)
+        // depensesBrutes = vrai brut AVANT remise
         const depensesBrutes = scolariteBrut + cantineBrut + transportBrut + fournituresBrut;
+        // totalNet = brut - remise (une seule fois)
         const totalNet = Math.max(0, depensesBrutes - remiseAccordee);
+        // solde restant = net - payé
         const soldeRestant = Math.max(0, totalNet - totalPaye);
 
-        // ========== 9. ÉCHÉANCES SCOLAIRITÉ ==========
-        // ⭐ CORRECTION : exclure les fournitures (déjà comptées dans commandes_fournitures)
+        // ========== 9. ÉCHÉANCES SCOLAIRITÉ (ACTUELLES - déjà nettes) ==========
         const echeancesRes = await query(`
           SELECT 
             ep.id,
@@ -312,12 +312,12 @@ export async function GET(request: NextRequest) {
         `, [parentId]);
 
         const echeancesScolarite: EcheanceBrute[] = echeancesRes.rows
-          .filter((e: any) => e.type !== 'fournitures')  // ⭐ EXCLURE les fournitures
+          .filter((e: any) => e.type !== 'fournitures')
           .map((e: any) => ({
             id: e.id,
             echeance: e.echeance,
             type: e.type,
-            montant: Number(e.montant) || 0,
+            montant: Number(e.montant) || 0,  // ⭐ Montant NET actuel
             statut: e.statut,
             date_echeance: e.date_echeance,
             preinscription_id: e.preinscription_id,
@@ -326,8 +326,7 @@ export async function GET(request: NextRequest) {
             source_type: 'scolarite',
           }));
 
-        // ========== 10. CANTINE ÉCHÉANCES (CORRIGÉ) ==========
-        // ⭐ CORRECTION : lire depuis preinscription_cantine
+        // ========== 10. CANTINE ÉCHÉANCES ==========
         let echeancesCantine: EcheanceBrute[] = [];
         try {
           const cantineEchRes = await query(`
@@ -360,8 +359,7 @@ export async function GET(request: NextRequest) {
           console.warn("⚠️ Erreur cantine:", err);
         }
 
-        // ========== 11. TRANSPORT ÉCHÉANCES (CORRIGÉ) ==========
-        // ⭐ CORRECTION : lire depuis preinscription_transport
+        // ========== 11. TRANSPORT ÉCHÉANCES ==========
         let echeancesTransport: EcheanceBrute[] = [];
         try {
           const transportEchRes = await query(`
@@ -425,7 +423,7 @@ export async function GET(request: NextRequest) {
           console.warn("⚠️ Erreur fournitures:", err);
         }
 
-        // ========== 13. FUSION DE TOUTES LES ÉCHÉANCES ==========
+        // ========== 13. FUSION ==========
         const toutesEcheances: EcheanceBrute[] = [
           ...echeancesScolarite,
           ...echeancesCantine,
@@ -433,69 +431,54 @@ export async function GET(request: NextRequest) {
           ...echeancesFournitures,
         ];
 
-        // ========== 14. RÉPARTITION DE LA REMISE SUR LES SERVICES (PRORATA) ==========
-        const totauxBrutsParService: Record<string, number> = {
-          scolarite: scolariteBrut,
-          cantine: cantineBrut,
-          transport: transportBrut,
-          fournitures: fournituresBrut,
-        };
-
-        const remiseParService: Record<string, number> = {
-          scolarite: depensesBrutes > 0 ? (scolariteBrut / depensesBrutes) * remiseAccordee : 0,
-          cantine: depensesBrutes > 0 ? (cantineBrut / depensesBrutes) * remiseAccordee : 0,
-          transport: depensesBrutes > 0 ? (transportBrut / depensesBrutes) * remiseAccordee : 0,
-          fournitures: depensesBrutes > 0 ? (fournituresBrut / depensesBrutes) * remiseAccordee : 0,
-        };
+        // ========== 14. RÉPARTITION DE LA REMISE SUR LES SERVICES (prorata) ==========
+        // ⭐ La remise a été appliquée UNIQUEMENT sur la scolarité (par le POST remise)
+        // Donc toute la remise est sur "scolarite" pour le breakdown
+        const remiseScolarite = remiseAccordee;
 
         const echeancesAvecRemise: EcheanceBrute[] = toutesEcheances.map((ech) => {
-          const st = ech.source_type || 'scolarite';
-          const totalServiceBrut = totauxBrutsParService[st] || 0;
-          const remiseService = remiseParService[st] || 0;
+          if (ech.source_type === 'scolarite') {
+            // Pour la scolarité : montrer le brut reconstitué et la remise
+            const totalScolariteNet = scolariteActuelle;  // montant actuel total
+            const partEcheance = totalScolariteNet > 0 ? ech.montant / totalScolariteNet : 0;
+            const remiseEcheance = remiseScolarite * partEcheance;
 
-          const partEcheance = totalServiceBrut > 0 ? ech.montant / totalServiceBrut : 0;
-          const remiseEcheance = remiseService * partEcheance;
-          const montantNet = Math.max(0, ech.montant - remiseEcheance);
-
+            return {
+              ...ech,
+              montant_brut: ech.montant + remiseEcheance,  // brut reconstitué
+              remise_appliquee: remiseEcheance,
+              montant: ech.montant,  // net actuel
+            };
+          }
+          // Autres services : pas de remise
           return {
             ...ech,
             montant_brut: ech.montant,
-            remise_appliquee: remiseEcheance,
-            montant: montantNet,
+            remise_appliquee: 0,
+            montant: ech.montant,
           };
         });
 
         // ========== 15. DEBUG LOG ==========
-        console.log(`[DEBUG FIFO] Parent ${parent.prenom} ${parent.nom}:`, {
-          depensesBrutes,
+        console.log(`[DEBUG FINANCES] Parent ${parent.prenom} ${parent.nom}:`, {
+          scolariteActuelle,
+          scolariteBrut,
           remiseAccordee,
+          cantineBrut,
+          transportBrut,
+          fournituresBrut,
+          depensesBrutes,
           totalNet,
           totalPaye,
+          soldeRestant,
           nbEcheances: echeancesAvecRemise.length,
-          scolarite: {
-            count: echeancesScolarite.length,
-            montant: scolariteBrut,
-          },
-          cantine: {
-            count: echeancesCantine.length,
-            montant: cantineBrut,
-          },
-          transport: {
-            count: echeancesTransport.length,
-            montant: transportBrut,
-          },
-          fournitures: {
-            count: echeancesFournitures.length,
-            montant: fournituresBrut,
-          },
-          remiseParService,
         });
 
-        // ========== 16. APPLICATION FIFO SUR LES MONTANTS NETS ==========
+        // ========== 16. FIFO ==========
         const montantARepartir = Math.min(totalNet, totalPaye);
         const echeancesReparties = repartirPaiementsFIFO(montantARepartir, echeancesAvecRemise);
 
-        // ========== 17. CALCUL DES BREAKDOWNS PAR SERVICE ==========
+        // ========== 17. BREAKDOWNS PAR SERVICE ==========
         const sumBy = (
           sourceType: string,
           field: 'montant' | 'montant_paye' | 'reste_a_payer' | 'montant_brut' | 'remise_appliquee'
@@ -535,7 +518,7 @@ export async function GET(request: NextRequest) {
           },
         };
 
-        // ========== 18. ÉCHÉANCES FINALES (scolarité uniquement pour le modal) ==========
+        // ========== 18. ÉCHÉANCES FINALES (scolarité pour le modal) ==========
         const echeancesFinales = echeancesReparties
           .filter((e) => e.source_type === 'scolarite')
           .map((e) => ({
@@ -569,11 +552,11 @@ export async function GET(request: NextRequest) {
           enfants_inscrits: elevesResult.rows || [],
           preinscriptions: preinsResult.rows || [],
           totaux: {
-            depenses_brutes: depensesBrutes,
-            remise_accordee: remiseAccordee,
-            total_net: totalNet,
-            total_paye: totalPaye,
-            solde_restant: soldeRestant,
+            depenses_brutes: depensesBrutes,      // ⭐ vrai brut (25 720 000)
+            remise_accordee: remiseAccordee,      // 720 000
+            total_net: totalNet,                   // ⭐ 25 000 000
+            total_paye: totalPaye,                 // 0
+            solde_restant: soldeRestant,           // ⭐ 25 000 000
           },
           services_breakdown,
           echeances: echeancesFinales,

@@ -3,10 +3,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   BookOpen, Calendar, Clock, CheckCircle, AlertCircle,
   Download, TrendingUp, Award, FileText, Brain, ClipboardList,
-  HelpingHand, HelpCircle
+  HelpingHand, HelpCircle, UserCheck
 } from "lucide-react";
 
 interface Profil {
@@ -36,6 +37,9 @@ interface Devoir {
 }
 
 export default function EleveDashboard() {
+  const searchParams = useSearchParams();
+  const eleveId = searchParams.get("eleveId");
+
   const [loading, setLoading] = useState(true);
   const [profil, setProfil] = useState<Profil | null>(null);
   const [notesData, setNotesData] = useState<{
@@ -46,12 +50,17 @@ export default function EleveDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (eleveId) {
+      document.cookie = `active_eleve_id=${eleveId}; path=/; max-age=86400`;
+    }
+
     async function loadData() {
       try {
+        const queryParam = eleveId ? `?eleveId=${eleveId}` : "";
         const [profilRes, notesRes, devoirsRes] = await Promise.all([
-          fetch("/api/eleve/profil"),
-          fetch("/api/eleve/notes"),
-          fetch("/api/eleve/devoirs"),
+          fetch(`/api/eleve/profil${queryParam}`),
+          fetch(`/api/eleve/notes${queryParam}`),
+          fetch(`/api/eleve/devoirs${queryParam}`),
         ]);
 
         if (profilRes.ok) {
@@ -73,7 +82,7 @@ export default function EleveDashboard() {
       }
     }
     loadData();
-  }, []);
+  }, [eleveId]);
 
   const devoirsARendreOuRetard = devoirs.filter((d) =>
     d.statut === "a_rendre" || d.statut === "en_retard"
@@ -85,6 +94,52 @@ export default function EleveDashboard() {
 
   const getMoyenneBg = (moy: number) =>
     moy >= 14 ? "from-green-500 to-green-600" : moy >= 10 ? "from-orange-400 to-orange-500" : "from-red-500 to-red-600";
+
+  // ⭐⭐⭐ Liens rapides avec un ID unique pour éviter les clés dupliquées ⭐⭐⭐
+  const quickLinks = [
+    {
+      id: "bulletin",
+      href: "/dashboard/eleve/bulletin",
+      icon: Award,
+      label: "Bulletin de notes",
+      color: "blue",
+    },
+    {
+      id: "quiz-jeux",
+      href: "/dashboard/eleve/quiz",
+      icon: Brain,
+      label: "Quiz & Jeux",
+      color: "purple",
+    },
+    {
+      id: "devoirs",
+      href: "/dashboard/eleve/devoirs",
+      icon: FileText,
+      label: "Mes devoirs",
+      color: "orange",
+    },
+    {
+      id: "evaluations",
+      href: "/dashboard/eleve/examens",
+      icon: ClipboardList,
+      label: "Évaluations",
+      color: "purple",
+    },
+    {
+      id: "cours",
+      href: "/dashboard/eleve/cours",
+      icon: BookOpen,
+      label: "Mes cours",
+      color: "blue",
+    },
+    {
+      id: "revision",
+      href: "/dashboard/eleve/quiz",
+      icon: Brain,
+      label: "Espace révision",
+      color: "green",
+    },
+  ];
 
   if (loading) {
     return (
@@ -103,7 +158,7 @@ export default function EleveDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold text-black">
-            Bonjour {profil?.prenom || "Élève"} ! 👋
+            Bonjour {profil?.prenom || "Élève"} ! 
           </h1>
           <p className="text-gray-900 font-semibold mt-1">
             Elève de la {profil?.classe_nom || "—"}  • Année scolaire {profil?.annee_scolaire || "—"}  • Matricule : {" "}
@@ -184,44 +239,7 @@ export default function EleveDashboard() {
 
       {/* Espaces rapides */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          {
-            href: "/dashboard/eleve/bulletin",
-            icon: Award,
-            label: "Bulletin de notes",
-            color: "blue",
-          },
-          {
-            href: "/dashboard/eleve/quiz",
-            icon: Brain,
-            label: "Quiz & Jeux",
-            color: "purple",
-          },
-          {
-            href: "/dashboard/eleve/devoirs",
-            icon: FileText,
-            label: "Mes devoirs",
-            color: "orange",
-          },
-          {
-            href: "/dashboard/eleve/examens",
-            icon: ClipboardList,
-            label: "Évaluations",
-            color: "purple",
-          },
-          {
-            href: "/dashboard/eleve/cours",
-            icon: BookOpen,
-            label: "Mes cours",
-            color: "blue",
-          },
-          {
-            href: "/dashboard/eleve/quiz",
-            icon: Brain,
-            label: "Espace révision",
-            color: "green",
-          },
-        ].map((item) => {
+        {quickLinks.map((item) => {
           const Icon = item.icon;
           const colors: Record<string, string> = {
             blue: "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border-blue-100",
@@ -231,8 +249,8 @@ export default function EleveDashboard() {
           };
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={item.id}
+              href={`${item.href}${eleveId ? `?eleveId=${eleveId}` : ""}`}
               className={`flex flex-col items-center gap-3 p-4 rounded-2xl border transition-all group ${colors[item.color]}`}
             >
               <Icon className="w-7 h-7" />

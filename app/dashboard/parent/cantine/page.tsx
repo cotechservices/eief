@@ -4,16 +4,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
-  Loader2,
-  Utensils,
-  AlertTriangle,
-  CheckCircle,
-  Users,
-  Wallet,
-  CalendarDays,
-  TrendingUp,
-  XCircle,
-  Info
+  Loader2, Utensils, AlertTriangle, CheckCircle, Users, Wallet,
+  CalendarDays, TrendingUp, XCircle, Info, Clock
 } from "lucide-react";
 
 interface Enfant {
@@ -31,14 +23,12 @@ interface Enfant {
   montantMensuel: number;
   montantTotal: number;
   dateInscription: string | null;
-  // ⭐ Nouveaux champs
   montantPaye: number;
   montantRestant: number;
   menuNom: string | null;
-  paiementStatut: string | null;
+  paiementStatut: 'paye' | 'partiel' | 'non_paye' | null;
 }
 
-// ⭐ Helper sûr pour formater un montant
 const formatGNF = (value: number | undefined | null): string => {
   const n = Number(value ?? 0);
   return Number.isFinite(n) ? n.toLocaleString() : "0";
@@ -61,7 +51,6 @@ export default function CantinePage() {
       try {
         setLoading(true);
         setError(null);
-
         const res = await fetch("/api/parent/cantine");
         if (!res.ok) {
           if (res.status === 401) {
@@ -70,7 +59,6 @@ export default function CantinePage() {
           }
           throw new Error(`Erreur ${res.status}`);
         }
-
         const data = await res.json();
         setEnfants(data.enfants || []);
 
@@ -90,35 +78,31 @@ export default function CantinePage() {
         setLoading(false);
       }
     };
-
     fetchEnfants();
   }, [initialEnfantId, router]);
 
-  // ⭐ Statistiques globales
+  // ⭐ Statistiques globales avec statut
   const stats = useMemo(() => {
     const inscrits = enfants.filter((e) => e.inscritCantine);
-    const soldeTotal = inscrits.reduce((sum, e) => sum + (Number(e.solde) || 0), 0);
-    const moisTotaux = inscrits.reduce((sum, e) => sum + (Number(e.moisTotal) || 0), 0);
-    const moisRestants = inscrits.reduce((sum, e) => sum + (Number(e.moisRestants) || 0), 0);
     const fraisTotaux = inscrits.reduce((sum, e) => sum + (Number(e.montantTotal) || 0), 0);
-    // ⭐ Montant payé = somme des paiements enregistrés
     const montantPaye = inscrits.reduce((sum, e) => sum + (Number(e.montantPaye) || 0), 0);
-    // ⭐ Montant restant = total - payé
     const montantRestant = Math.max(0, fraisTotaux - montantPaye);
     const tauxPaiement = fraisTotaux > 0 ? Math.round((montantPaye / fraisTotaux) * 100) : 0;
-    const nonInscrits = enfants.length - inscrits.length;
+    const moisTotaux = inscrits.reduce((sum, e) => sum + (Number(e.moisTotal) || 0), 0);
+    const moisRestants = inscrits.reduce((sum, e) => sum + (Number(e.moisRestants) || 0), 0);
+
+    // ⭐ Comptage par statut
+    const payes = inscrits.filter((e) => e.paiementStatut === 'paye').length;
+    const partiels = inscrits.filter((e) => e.paiementStatut === 'partiel').length;
+    const nonPayes = inscrits.filter((e) => e.paiementStatut === 'non_paye').length;
 
     return {
       totalEnfants: enfants.length,
       inscrits: inscrits.length,
-      nonInscrits,
-      soldeTotal,
-      moisTotaux,
-      moisRestants,
-      fraisTotaux,
-      montantPaye,
-      montantRestant,
-      tauxPaiement
+      nonInscrits: enfants.length - inscrits.length,
+      fraisTotaux, montantPaye, montantRestant, tauxPaiement,
+      moisTotaux, moisRestants,
+      payes, partiels, nonPayes,
     };
   }, [enfants]);
 
@@ -137,9 +121,7 @@ export default function CantinePage() {
       <div className="p-6 max-w-2xl mx-auto">
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
           <AlertTriangle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-yellow-900 mb-2">
-            Aucun enfant trouvé
-          </h2>
+          <h2 className="text-lg font-bold text-yellow-900 mb-2">Aucun enfant trouvé</h2>
           <p className="text-sm text-yellow-800">
             Vous n'avez aucun enfant inscrit ou pré-inscrit pour le moment.
           </p>
@@ -162,12 +144,9 @@ export default function CantinePage() {
 
       {/* Statistiques */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Carte 1 : Enfants */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Enfants
-            </p>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Enfants</p>
             <Users className="w-5 h-5 text-blue-500" />
           </div>
           <p className="text-2xl font-bold text-gray-900">{stats.totalEnfants}</p>
@@ -176,66 +155,45 @@ export default function CantinePage() {
           </p>
         </div>
 
-        {/* Carte 2 : Montant payé */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Montant payé
-            </p>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Montant payé</p>
             <Wallet className="w-5 h-5 text-green-500" />
           </div>
           <p className="text-2xl font-bold text-gray-900">
-            {formatGNF(stats.montantPaye)}{" "}
-            <span className="text-sm font-normal">GNF</span>
+            {formatGNF(stats.montantPaye)} <span className="text-sm font-normal">GNF</span>
           </p>
-          <p className="text-xs text-gray-500 mt-1">
-            {stats.tauxPaiement}% du total
-          </p>
+          <p className="text-xs text-gray-500 mt-1">{stats.tauxPaiement}% du total</p>
         </div>
 
-        {/* Carte 3 : Reste à payer */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Reste à payer
-            </p>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Reste à payer</p>
             <CalendarDays className="w-5 h-5 text-red-500" />
           </div>
           <p className="text-2xl font-bold text-gray-900">
-            {formatGNF(stats.montantRestant)}{" "}
-            <span className="text-sm font-normal">GNF</span>
+            {formatGNF(stats.montantRestant)} <span className="text-sm font-normal">GNF</span>
           </p>
           <p className="text-xs text-gray-500 mt-1">
             Frais totaux : {formatGNF(stats.fraisTotaux)} GNF
           </p>
         </div>
 
-        {/* Carte 4 : Mois restants */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Mois restants
-            </p>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Statuts paiement</p>
             <TrendingUp className="w-5 h-5 text-purple-500" />
           </div>
-          <p className="text-2xl font-bold text-gray-900">
-            {stats.moisRestants}
-            <span className="text-sm font-normal text-gray-500">
-              {" "}
-              / {stats.moisTotaux}
+          <div className="flex flex-wrap gap-2 mt-1">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+              <CheckCircle className="w-3 h-3" /> {stats.payes} Payé(s)
             </span>
-          </p>
-          <div className="w-full h-1.5 bg-gray-100 rounded-full mt-2 overflow-hidden">
-            <div
-              className="h-full bg-purple-500 rounded-full transition-all"
-              style={{
-                width: `${
-                  stats.moisTotaux > 0
-                    ? ((stats.moisTotaux - stats.moisRestants) / stats.moisTotaux) * 100
-                    : 0
-                }%`
-              }}
-            />
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+              <Clock className="w-3 h-3" /> {stats.partiels} Partiel(s)
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+              <XCircle className="w-3 h-3" /> {stats.nonPayes} Non payé(s)
+            </span>
           </div>
         </div>
       </div>
@@ -254,9 +212,7 @@ export default function CantinePage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <h2 className="font-semibold text-gray-900">Liste des enfants</h2>
-          <span className="text-xs text-gray-500">
-            {enfants.length} enfant(s)
-          </span>
+          <span className="text-xs text-gray-500">{enfants.length} enfant(s)</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -270,7 +226,7 @@ export default function CantinePage() {
                 <th className="px-4 py-3 text-right">Frais totaux</th>
                 <th className="px-4 py-3 text-right">Payé</th>
                 <th className="px-4 py-3 text-right">Reste</th>
-                <th className="px-4 py-3 text-center">Statut</th>
+                <th className="px-4 py-3 text-center">Statut paiement</th>
                 <th className="px-4 py-3 text-center">Action</th>
               </tr>
             </thead>
@@ -278,22 +234,14 @@ export default function CantinePage() {
               {enfants.map((e) => (
                 <tr
                   key={`${e.source}-${e.id}`}
-                  className={`hover:bg-gray-50 transition ${
-                    selectedEnfantId === e.id ? "bg-pink-50" : ""
-                  }`}
+                  className={`hover:bg-gray-50 transition ${selectedEnfantId === e.id ? "bg-pink-50" : ""}`}
                 >
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">
-                      {e.prenom} {e.nom}
-                    </p>
+                    <p className="font-medium text-gray-900">{e.prenom} {e.nom}</p>
                     <p className="text-xs text-gray-500">{e.matricule}</p>
                   </td>
-                  <td className="px-4 py-3 text-gray-700">
-                    {e.classe || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">
-                    {e.menuNom || "—"}
-                  </td>
+                  <td className="px-4 py-3 text-gray-700">{e.classe || "—"}</td>
+                  <td className="px-4 py-3 text-gray-700">{e.menuNom || "—"}</td>
                   <td className="px-4 py-3 text-right text-gray-700">
                     {e.inscritCantine ? `${e.moisRestants ?? 0} / ${e.moisTotal ?? 0}` : "—"}
                   </td>
@@ -305,40 +253,37 @@ export default function CantinePage() {
                       <span className="text-green-700 font-semibold">
                         {formatGNF(e.montantPaye)} GNF
                       </span>
-                    ) : (
-                      "—"
-                    )}
+                    ) : "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
                     {e.inscritCantine ? (
-                      <span
-                        className={
-                          (e.montantRestant ?? 0) > 0
-                            ? "text-red-600 font-semibold"
-                            : "text-green-700 font-semibold"
-                        }
-                      >
+                      <span className={(e.montantRestant ?? 0) > 0 ? "text-red-600 font-semibold" : "text-green-700 font-semibold"}>
                         {formatGNF(e.montantRestant)} GNF
                       </span>
-                    ) : (
-                      "—"
-                    )}
+                    ) : "—"}
                   </td>
                   <td className="px-4 py-3 text-center">
                     {e.inscritCantine ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                        <CheckCircle className="w-3 h-3" />
-                        Inscrit
-                      </span>
+                      e.paiementStatut === 'paye' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          <CheckCircle className="w-3 h-3" /> Payé
+                        </span>
+                      ) : e.paiementStatut === 'partiel' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                          <Clock className="w-3 h-3" /> Partiel
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                          <XCircle className="w-3 h-3" /> Non payé
+                        </span>
+                      )
                     ) : e.source === "preinscription" ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-                        <Info className="w-3 h-3" />
-                        Pré-inscrit
+                        <Info className="w-3 h-3" /> Pré-inscrit
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                        <XCircle className="w-3 h-3" />
-                        Non inscrit
+                        <XCircle className="w-3 h-3" /> Non inscrit
                       </span>
                     )}
                   </td>
@@ -346,9 +291,7 @@ export default function CantinePage() {
                     <button
                       onClick={() => {
                         setSelectedEnfantId(e.id);
-                        router.replace(
-                          `/dashboard/parent/cantine?enfantId=${e.id}`
-                        );
+                        router.replace(`/dashboard/parent/cantine?enfantId=${e.id}`);
                       }}
                       className="text-pink-600 hover:text-pink-800 text-xs font-medium"
                     >
@@ -389,29 +332,20 @@ export default function CantinePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-3 bg-blue-50 rounded-lg">
                 <p className="text-xs text-blue-700 font-medium">Menu</p>
-                <p className="text-lg font-bold text-blue-900">
-                  {selectedEnfant.menuNom || "—"}
-                </p>
+                <p className="text-lg font-bold text-blue-900">{selectedEnfant.menuNom || "—"}</p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg">
                 <p className="text-xs text-green-700 font-medium">Montant payé</p>
-                <p className="text-lg font-bold text-green-900">
-                  {formatGNF(selectedEnfant.montantPaye)} GNF
-                </p>
+                <p className="text-lg font-bold text-green-900">{formatGNF(selectedEnfant.montantPaye)} GNF</p>
               </div>
               <div className="p-3 bg-red-50 rounded-lg">
                 <p className="text-xs text-red-700 font-medium">Reste à payer</p>
-                <p className="text-lg font-bold text-red-900">
-                  {formatGNF(selectedEnfant.montantRestant)} GNF
-                </p>
+                <p className="text-lg font-bold text-red-900">{formatGNF(selectedEnfant.montantRestant)} GNF</p>
               </div>
               <div className="p-3 bg-purple-50 rounded-lg">
-                <p className="text-xs text-purple-700 font-medium">
-                  Mois restants
-                </p>
+                <p className="text-xs text-purple-700 font-medium">Mois restants</p>
                 <p className="text-lg font-bold text-purple-900">
-                  {selectedEnfant.moisRestants ?? 0} /{" "}
-                  {selectedEnfant.moisTotal ?? 0}
+                  {selectedEnfant.moisRestants ?? 0} / {selectedEnfant.moisTotal ?? 0}
                 </p>
               </div>
             </div>

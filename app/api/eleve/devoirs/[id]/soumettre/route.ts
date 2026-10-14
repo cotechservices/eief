@@ -1,23 +1,19 @@
 // app/api/eleve/devoirs/[id]/soumettre/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { query } from "@/lib/db";
+import { getEleveSession } from "@/lib/eleve-auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }  // ⭐ params est une Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ELEVE") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+    const auth = await getEleveSession(req);
+    if (auth.error) return auth.error;
 
-    // ⭐ Déballer params avec await
+    const { eleveId } = auth;
+
     const { id } = await params;
-    
-    // ⭐ Vérifier que l'ID est valide
     const devoirId = parseInt(id);
     if (isNaN(devoirId) || devoirId <= 0) {
       return NextResponse.json(
@@ -25,27 +21,6 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    const userId = (session.user as any).id;
-
-    // ⭐ Vérifier que l'utilisateur existe
-    const userRes = await query(
-      "SELECT id FROM public.utilisateurs WHERE id = $1 AND role = 'ELEVE'",
-      [userId]
-    );
-    if (userRes.rows.length === 0) {
-      return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });
-    }
-
-    // Récupérer l'élève
-    const eleveRes = await query(
-      "SELECT id FROM public.eleves WHERE utilisateur_id = $1",
-      [userId]
-    );
-    if (eleveRes.rows.length === 0) {
-      return NextResponse.json({ error: "Élève introuvable" }, { status: 404 });
-    }
-    const eleveId = eleveRes.rows[0].id;
 
     // Vérifier que le devoir existe
     const devoirRes = await query(
@@ -68,7 +43,6 @@ export async function POST(
     const body = await req.json();
     const { fichier_url, commentaire } = body;
 
-    // ⭐ Vérifier qu'au moins un fichier ou un commentaire est fourni
     if (!fichier_url && !commentaire) {
       return NextResponse.json(
         { error: "Veuillez fournir un fichier ou un commentaire" },

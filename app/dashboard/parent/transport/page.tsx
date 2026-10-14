@@ -1,7 +1,7 @@
 // app/dashboard/parent/transport/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,6 +18,10 @@ import {
   Wallet,
   ArrowRight,
   Info,
+  Users,
+  TrendingUp,
+  XCircle,
+  CreditCard,
 } from "lucide-react";
 
 interface Enfant {
@@ -36,8 +40,11 @@ interface Enfant {
   immatriculation: string | null;
   capacite: number | null;
   prixAbonnement: number;
+  montantMensuel?: number;
   montantTotal: number;
+  montantPaye?: number;
   solde: number;
+  paiementStatut?: 'paye' | 'partiel' | 'non_paye';
   moisTotal: number | null;
   moisRestants: number | null;
   source: 'eleve' | 'preinscription';
@@ -64,6 +71,11 @@ interface BusPosition {
   retard: number;
 }
 
+const formatGNF = (value: number | undefined | null): string => {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) ? n.toLocaleString() : "0";
+};
+
 export default function TransportPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,7 +93,6 @@ export default function TransportPage() {
   const [selectedLigneId, setSelectedLigneId] = useState<number | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // 1. Charger les enfants + lignes
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -102,7 +113,6 @@ export default function TransportPage() {
         setLignes(data.lignes || []);
         setBusPosition(data.busPosition || null);
 
-        // Vérifier que l'enfant de l'URL est autorisé
         if (initialEnfantId) {
           const enfantAutorise = data.enfants?.find(
             (e: Enfant) => e.id === parseInt(initialEnfantId)
@@ -123,7 +133,65 @@ export default function TransportPage() {
     fetchData();
   }, [initialEnfantId, router]);
 
-  // ⭐ S'abonner au transport
+  // ⭐⭐⭐ STATISTIQUES GLOBALES DU TRANSPORT ⭐⭐⭐
+  const stats = useMemo(() => {
+    const abonnes = enfants.filter((e) => e.inscritTransport);
+
+    const fraisTotaux = abonnes.reduce(
+      (sum, e) => sum + (Number(e.montantTotal) || 0),
+      0
+    );
+
+    const montantPaye = abonnes.reduce(
+      (sum, e) => sum + (Number(e.montantPaye) || 0),
+      0
+    );
+
+    const resteAPayer = abonnes.reduce(
+      (sum, e) => sum + (Number(e.solde) || 0),
+      0
+    );
+
+    const tauxPaiement =
+      fraisTotaux > 0 ? Math.round((montantPaye / fraisTotaux) * 100) : 0;
+
+    const moisTotaux = abonnes.reduce(
+      (sum, e) => sum + (Number(e.moisTotal) || 0),
+      0
+    );
+    const moisRestants = abonnes.reduce(
+      (sum, e) => sum + (Number(e.moisRestants) || 0),
+      0
+    );
+    const moisConsommes = Math.max(0, moisTotaux - moisRestants);
+    const tauxMois =
+      moisTotaux > 0 ? Math.round((moisConsommes / moisTotaux) * 100) : 0;
+
+    const payes = abonnes.filter((e) => e.paiementStatut === 'paye').length;
+    const partiels = abonnes.filter((e) => e.paiementStatut === 'partiel').length;
+    const nonPayes = abonnes.filter((e) => e.paiementStatut === 'non_paye').length;
+
+    return {
+      totalEnfants: enfants.length,
+      abonnes: abonnes.length,
+      nonAbonnes: enfants.length - abonnes.length,
+      fraisTotaux,
+      montantPaye,
+      resteAPayer,
+      tauxPaiement,
+      moisTotaux,
+      moisRestants,
+      moisConsommes,
+      tauxMois,
+      payes,
+      partiels,
+      nonPayes,
+      lignesUtilisees: new Set(
+        abonnes.map((e) => e.ligneId).filter(Boolean)
+      ).size,
+    };
+  }, [enfants]);
+
   const handleSubscribe = async () => {
     if (!selectedEnfantId || !selectedLigneId) return;
 
@@ -148,7 +216,6 @@ export default function TransportPage() {
         throw new Error(data.error || "Erreur lors de l'inscription");
       }
 
-      // Recharger les données
       const reloadRes = await fetch("/api/parent/transport");
       const reloadData = await reloadRes.json();
       setEnfants(reloadData.enfants || []);
@@ -187,6 +254,205 @@ export default function TransportPage() {
           Gérez l'abonnement au transport scolaire de vos enfants
         </p>
       </div>
+
+      {/* ⭐⭐⭐ STATISTIQUES DU TRANSPORT ⭐⭐⭐ */}
+      {enfants.length > 0 && (
+        <>
+          {/* Cartes principales */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Carte 1 : Enfants abonnés */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Enfants abonnés
+                </p>
+                <Users className="w-5 h-5 text-blue-500" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.abonnes}
+                <span className="text-sm font-normal text-gray-500">
+                  {" "}/ {stats.totalEnfants}
+                </span>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats.nonAbonnes} non abonné(s)
+              </p>
+            </div>
+
+            {/* Carte 2 : Montant payé */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Montant payé
+                </p>
+                <Wallet className="w-5 h-5 text-green-500" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatGNF(stats.montantPaye)}
+                <span className="text-sm font-normal text-gray-500"> GNF</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats.tauxPaiement}% du total
+              </p>
+            </div>
+
+            {/* Carte 3 : Reste à payer */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Reste à payer
+                </p>
+                <CreditCard className="w-5 h-5 text-red-500" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatGNF(stats.resteAPayer)}
+                <span className="text-sm font-normal text-gray-500"> GNF</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Frais totaux : {formatGNF(stats.fraisTotaux)} GNF
+              </p>
+            </div>
+
+            {/* Carte 4 : Mois restants */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Mois restants
+                </p>
+                <TrendingUp className="w-5 h-5 text-purple-500" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.moisRestants}
+                <span className="text-sm font-normal text-gray-500">
+                  {" "}/ {stats.moisTotaux}
+                </span>
+              </p>
+              <div className="w-full h-1.5 bg-gray-100 rounded-full mt-2 overflow-hidden">
+                <div
+                  className="h-full bg-purple-500 rounded-full transition-all"
+                  style={{ width: `${stats.tauxMois}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Barre de progression paiement */}
+          {stats.fraisTotaux > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-green-600" />
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Progression des paiements transport
+                  </h3>
+                </div>
+                <span className="text-sm font-bold text-green-600">
+                  {stats.tauxPaiement}%
+                </span>
+              </div>
+              <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-500"
+                  style={{ width: `${stats.tauxPaiement}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 mt-2">
+                <span>Payé : {formatGNF(stats.montantPaye)} GNF</span>
+                <span>Reste : {formatGNF(stats.resteAPayer)} GNF</span>
+              </div>
+            </div>
+          )}
+
+          {/* Détail par enfant (uniquement les abonnés) */}
+          {stats.abonnes > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                  <Bus className="w-4 h-4 text-blue-600" />
+                  Détail des abonnements
+                </h2>
+                <span className="text-xs text-gray-500">
+                  {stats.abonnes} enfant(s) abonné(s)
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-gray-600 text-xs uppercase">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Enfant</th>
+                      <th className="px-4 py-3 text-left">Ligne</th>
+                      <th className="px-4 py-3 text-right">Mois</th>
+                      <th className="px-4 py-3 text-right">Frais totaux</th>
+                      <th className="px-4 py-3 text-right">Payé</th>
+                      <th className="px-4 py-3 text-right">Reste</th>
+                      <th className="px-4 py-3 text-center">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {enfants
+                      .filter((e) => e.inscritTransport)
+                      .map((e) => {
+                        const total = Number(e.montantTotal) || 0;
+                        const paye = Number(e.montantPaye) || 0;
+                        const reste = Number(e.solde) || 0;
+
+                        return (
+                          <tr key={e.id} className="hover:bg-gray-50 transition">
+                            <td className="px-4 py-3">
+                              <p className="font-medium text-gray-900">
+                                {e.prenom} {e.nom}
+                              </p>
+                              <p className="text-xs text-gray-500">{e.classe || "—"}</p>
+                            </td>
+                            <td className="px-4 py-3 text-gray-700 text-xs">
+                              {e.ligne || "—"}
+                            </td>
+                            <td className="px-4 py-3 text-right text-gray-700 text-xs">
+                              {e.moisRestants ?? 0} / {e.moisTotal ?? 0}
+                            </td>
+                            <td className="px-4 py-3 text-right text-gray-900 font-medium">
+                              {formatGNF(total)} GNF
+                            </td>
+                            <td className="px-4 py-3 text-right text-green-700 font-semibold">
+                              {formatGNF(paye)} GNF
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <span
+                                className={
+                                  reste > 0
+                                    ? "text-red-600 font-semibold"
+                                    : "text-green-700 font-semibold"
+                                }
+                              >
+                                {formatGNF(reste)} GNF
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {e.paiementStatut === 'paye' ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                  <CheckCircle className="w-3 h-3" /> Payé
+                                </span>
+                              ) : e.paiementStatut === 'partiel' ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                                  <Clock className="w-3 h-3" /> Partiel
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                  <XCircle className="w-3 h-3" /> Non payé
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Message d'erreur */}
       {error && (
@@ -257,7 +523,6 @@ export default function TransportPage() {
       {selectedEnfant && (
         <>
           {selectedEnfant.inscritTransport ? (
-            // ⭐ Enfant DÉJÀ abonné
             <div className="space-y-4">
               {/* Info abonnement */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-6">
@@ -273,10 +538,19 @@ export default function TransportPage() {
                       {selectedEnfant.prenom} {selectedEnfant.nom}
                     </p>
                   </div>
-                  <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
-                    Actif
-                  </span>
+                  {selectedEnfant.paiementStatut === 'paye' ? (
+                    <span className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" /> Payé
+                    </span>
+                  ) : selectedEnfant.paiementStatut === 'partiel' ? (
+                    <span className="bg-yellow-100 text-yellow-700 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> Partiel
+                    </span>
+                  ) : (
+                    <span className="bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                      <XCircle className="w-3 h-3" /> Non payé
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -337,14 +611,22 @@ export default function TransportPage() {
                 </div>
 
                 {/* Paiement */}
-                <div className="mt-4 pt-4 border-t border-blue-200 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="mt-4 pt-4 border-t border-blue-200 grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
                     <p className="text-xs text-gray-500 uppercase font-semibold flex items-center gap-1">
                       <Wallet className="w-3 h-3" />
                       Montant total
                     </p>
                     <p className="text-lg font-bold text-blue-900">
-                      {selectedEnfant.montantTotal.toLocaleString()} GNF
+                      {formatGNF(selectedEnfant.montantTotal)} GNF
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase font-semibold">
+                      Payé
+                    </p>
+                    <p className="text-lg font-bold text-green-600">
+                      {formatGNF(selectedEnfant.montantPaye)} GNF
                     </p>
                   </div>
                   <div>
@@ -356,7 +638,7 @@ export default function TransportPage() {
                         selectedEnfant.solde > 0 ? "text-red-600" : "text-green-600"
                       }`}
                     >
-                      {selectedEnfant.solde.toLocaleString()} GNF
+                      {formatGNF(selectedEnfant.solde)} GNF
                     </p>
                   </div>
                   {selectedEnfant.moisRestants !== null && selectedEnfant.moisTotal !== null && (
@@ -419,7 +701,6 @@ export default function TransportPage() {
               )}
             </div>
           ) : (
-            // ⭐ Enfant PAS ENCORE abonné → afficher les lignes
             <div>
               <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">
                 <Info className="w-5 h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
@@ -570,7 +851,7 @@ export default function TransportPage() {
         </div>
       )}
 
-      {/* ⭐ Modal de confirmation */}
+      {/* Modal de confirmation */}
       {showConfirm && selectedEnfant && selectedLigne && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">

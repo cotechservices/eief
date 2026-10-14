@@ -82,13 +82,11 @@ export async function GET() {
         COALESCE(c.total_versement, c.frais_inscription, 0) as frais_inscription_classe,
         COALESCE(c.reinscription_total_versement, c.total_versement, 0) as frais_reinscription_classe,
         e.photo_url,
-        -- Frais optionnels cantine (inscriptions_cantine ou preinscription_cantine liée)
         COALESCE(
           (SELECT SUM(ic.montant_total) FROM inscriptions_cantine ic WHERE ic.eleve_id = e.id AND ic.est_actif = true),
           (SELECT SUM(pc.prix) FROM preinscription_cantine pc JOIN inscriptions i ON i.preinscription_id = pc.preinscription_id WHERE i.eleve_id = e.id),
           0
         ) as frais_cantine_reel,
-        -- Frais optionnels transport (inscriptions_transport ou preinscription_transport liée)
         COALESCE(
           (SELECT SUM(it.montant_mensuel * it.mois_total) FROM inscriptions_transport it WHERE it.eleve_id = e.id AND it.est_actif = true),
           (SELECT SUM(pt.prix) FROM preinscription_transport pt JOIN inscriptions i ON i.preinscription_id = pt.preinscription_id WHERE i.eleve_id = e.id),
@@ -177,7 +175,6 @@ export async function GET() {
         p.sexe,
         p.date_naissance,
         p.lieu_naissance,
-        -- Scolarité réelle (échéances de type 'inscription' uniquement, ex: 5 900 000)
         COALESCE(
           NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'inscription'), 0),
           p.frais_montant,
@@ -185,19 +182,16 @@ export async function GET() {
         ) as frais_inscription_classe,
         0 as frais_reinscription_classe,
         p.photo_url,
-        -- Cantine : échéances cantine OU preinscription_cantine
         COALESCE(
           NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'cantine'), 0),
           (SELECT SUM(pc.prix) FROM preinscription_cantine pc WHERE pc.preinscription_id = p.id),
           0
         ) as frais_cantine_reel,
-        -- Transport : échéances transport OU preinscription_transport
         COALESCE(
           NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'transport'), 0),
           (SELECT SUM(pt.prix) FROM preinscription_transport pt WHERE pt.preinscription_id = p.id),
           0
         ) as frais_transport_reel,
-        -- Fournitures : échéances fournitures OU commandes_fournitures
         COALESCE(
           NULLIF((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id AND ep.type = 'fournitures'), 0),
           (SELECT SUM(cf.quantite * cf.prix_unitaire) FROM commandes_fournitures cf WHERE cf.preinscription_id = p.id),
@@ -338,8 +332,11 @@ export async function GET() {
         montantBase = montantTotalPlan > 0 ? montantTotalPlan : fraisInscription;
       }
 
-      // ⭐ TOTAL BRUT (scolarité + services)
-      const totalBrut = montantBase + fraisCantine + fraisTransport + fraisFournitures;
+      // ⭐ Montant NET actuel de la scolarité (échéances déjà réduites par la remise)
+      const scolariteActuelle = montantBase;
+
+      // ⭐ TOTAL NET ACTUEL (avant reconstitution du brut)
+      const totalNetActuel = scolariteActuelle + fraisCantine + fraisTransport + fraisFournitures;
 
       // ⭐⭐ CALCUL DU TOTAL PAYÉ ⭐⭐
       let totalPaye = 0;
@@ -356,26 +353,26 @@ export async function GET() {
         totalPaye = fraisPayeDirect + fraisPayeEcheances;
       }
 
-      // ⭐⭐ RETOURNER LES DONNÉES COMPLÈTES ⭐⭐
+      // ⭐⭐ RETOURNER LES DONNÉES (la reconstitution du brut se fera APRÈS répartition de la remise)
       return {
         ...enfant,
-        frais_montant: totalBrut,
+        frais_montant: totalNetActuel,
         frais_paye: totalPaye,
-        frais_reste: Math.max(0, totalBrut - totalPaye),
-        // ⭐⭐ DÉTAILS DES FRAIS AVEC total_brut ET total ⭐⭐
+        frais_reste: Math.max(0, totalNetActuel - totalPaye),
         details_frais: {
           inscription: fraisInscription,
           reinscription: fraisReinscription,
           cantine: fraisCantine,
           transport: fraisTransport,
           librairie: fraisFournitures,
-          scolarite: montantBase,
-          total_brut: totalBrut,        // ⭐ TOTAL BRUT (scolarité + services)
-          total: totalBrut,              // ⭐ Pour compatibilité, mais sera ajusté après remise
+          scolarite: scolariteActuelle,     // montant NET actuel
+          total_net_actuel: totalNetActuel, // montant NET actuel (sans reconstruction)
+          total_brut: 0,                    // ⚠️ Sera calculé après répartition remise
+          total: 0,                         // ⚠️ Sera calculé après répartition remise
           paye: totalPaye,
-          reste: Math.max(0, totalBrut - totalPaye),
+          reste: Math.max(0, totalNetActuel - totalPaye),
           remise: 0,
-          net: totalBrut
+          net: 0
         }
       };
     });
@@ -384,55 +381,68 @@ export async function GET() {
     if (enfantsAvecFrais.length > 0 && totalLibrairieParent > 0) {
       const premier = enfantsAvecFrais[0];
       premier.details_frais.librairie = (premier.details_frais.librairie || 0) + totalLibrairieParent;
-      premier.details_frais.total_brut += totalLibrairieParent;
-      premier.details_frais.total += totalLibrairieParent;
-      premier.details_frais.net += totalLibrairieParent;
+      premier.details_frais.total_net_actuel += totalLibrairieParent;
       premier.frais_montant += totalLibrairieParent;
     }
 
-    // ⭐⭐⭐ APPLIQUER LA REMISE GLOBALE ⭐⭐⭐
-    if (totalRemiseParent > 0) {
-      // Calculer le total brut de tous les enfants
-      const totalBrutGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.total_brut, 0);
-      
-      // Appliquer la remise proportionnellement
-      for (const e of enfantsAvecFrais) {
-        const proportion = e.details_frais.total_brut / totalBrutGlobal;
-        const remiseDeduction = Math.round(totalRemiseParent * proportion);
-        
-        // Mettre à jour les champs
-        e.total_remise_parent = totalRemiseParent;
-        e.details_frais.remise = remiseDeduction;
-        e.details_frais.net = Math.max(0, e.details_frais.total_brut - remiseDeduction);
-        e.details_frais.total = e.details_frais.net; // Mettre à jour total avec net après remise
-        e.details_frais.reste = Math.max(0, e.details_frais.net - e.details_frais.paye);
-        e.frais_reste = e.details_frais.reste;
-      }
-    } else {
-      for (const e of enfantsAvecFrais) {
-        e.total_remise_parent = 0;
-        e.details_frais.remise = 0;
-        e.details_frais.net = e.details_frais.total_brut;
-        e.details_frais.total = e.details_frais.total_brut;
-        e.details_frais.reste = Math.max(0, e.details_frais.total_brut - e.details_frais.paye);
-        e.frais_reste = e.details_frais.reste;
-      }
+    // ⭐⭐⭐ RÉPARTITION DE LA REMISE ET RECONSTITUTION DU BRUT ⭐⭐⭐
+    // Étape 1 : Calculer le total NET actuel (avec librairie ajoutée)
+    const totalNetActuelGlobal = enfantsAvecFrais.reduce(
+      (acc, e) => acc + (e.details_frais.total_net_actuel || 0),
+      0
+    );
+
+    // Étape 2 : Le VRAI brut global = net actuel + remise (reconstitution)
+    const totalBrutGlobal = totalNetActuelGlobal + totalRemiseParent;
+
+    // Étape 3 : Répartir la remise proportionnellement et reconstituer le brut par enfant
+    for (const e of enfantsAvecFrais) {
+      const netActuelEnfant = e.details_frais.total_net_actuel || 0;
+
+      // Proportion de cet enfant dans le total net actuel
+      const proportion = totalNetActuelGlobal > 0
+        ? netActuelEnfant / totalNetActuelGlobal
+        : 0;
+
+      // Remise attribuée à cet enfant
+      const remiseEnfant = Math.round(totalRemiseParent * proportion);
+
+      // ⭐ Reconstituer le VRAI BRUT de cet enfant
+      const brutEnfant = netActuelEnfant + remiseEnfant;
+
+      // Le net de cet enfant = brut - remise = net actuel (déjà cohérent)
+      const netEnfant = brutEnfant - remiseEnfant;
+
+      // Reste à payer
+      const resteEnfant = Math.max(0, netEnfant - e.details_frais.paye);
+
+      // Mettre à jour les champs
+      e.total_remise_parent = totalRemiseParent;
+      e.remise_globale = totalRemiseParent;
+
+      e.details_frais.total_brut = brutEnfant;
+      e.details_frais.remise = remiseEnfant;
+      e.details_frais.net = netEnfant;
+      e.details_frais.total = netEnfant;      // pour compatibilité avec le frontend
+      e.details_frais.reste = resteEnfant;
+      e.frais_montant = brutEnfant;           // ⚠️ Important : brut pour affichage
+      e.frais_reste = resteEnfant;
     }
 
-    // Afficher les totaux pour débogage
-    const totalBrutGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.total_brut, 0);
-    const totalNetGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.total, 0);
+    // Totaux pour débogage
+    const totalBrutFinal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.total_brut, 0);
+    const totalNetFinal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.total, 0);
     const totalPayeGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.paye, 0);
     const totalResteGlobal = enfantsAvecFrais.reduce((acc, e) => acc + e.details_frais.reste, 0);
 
     console.log(`📋 Enfants trouvés: ${enfantsAvecFrais.length}`);
-    console.log(`📊 Total BRUT global: ${totalBrutGlobal.toLocaleString()} GNF`);
-    console.log(`📊 Total Remise: ${totalRemiseParent.toLocaleString()} GNF`);
-    console.log(`📊 Total NET global: ${totalNetGlobal.toLocaleString()} GNF`);
+    console.log(`📊 Total NET actuel: ${totalNetActuelGlobal.toLocaleString()} GNF`);
+    console.log(`📊 Remise accordée: ${totalRemiseParent.toLocaleString()} GNF`);
+    console.log(`📊 Total BRUT reconstitué: ${totalBrutFinal.toLocaleString()} GNF`);
+    console.log(`📊 Total NET final: ${totalNetFinal.toLocaleString()} GNF`);
     console.log(`📊 Total payé: ${totalPayeGlobal.toLocaleString()} GNF`);
     console.log(`📊 Solde restant: ${totalResteGlobal.toLocaleString()} GNF`);
 
-    // ⭐⭐⭐ GARANTIR QUE LA RÉPONSE EST UN TABLEAU ⭐⭐⭐
     const result = Array.isArray(enfantsAvecFrais) ? enfantsAvecFrais : [];
     return NextResponse.json(result);
 

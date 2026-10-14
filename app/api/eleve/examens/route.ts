@@ -1,27 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { query } from "@/lib/db";
+import { getEleveSession } from "@/lib/eleve-auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ELEVE") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+    const auth = await getEleveSession(req);
+    if (auth.error) return auth.error;
 
-    const userId = (session.user as any).id;
+    const { eleveId } = auth;
 
-    const eleveRes = await query(
-      "SELECT id FROM public.eleves WHERE utilisateur_id = $1",
-      [userId]
-    );
-    if (eleveRes.rows.length === 0) {
-      return NextResponse.json({ error: "Élève introuvable" }, { status: 404 });
-    }
-    const eleveId = eleveRes.rows[0].id;
-
-    // ⭐ Récupérer UNIQUEMENT les examens associés à l'élève via examens_eleves
+    // Récupérer UNIQUEMENT les examens associés à l'élève via examens_eleves
     const examensRes = await query(
       `SELECT 
         ex.id,
@@ -30,7 +18,7 @@ export async function GET(req: NextRequest) {
         ex.date_debut,
         ex.date_fin,
         ex.est_actif,
-        ex.fichier_url,  -- ⭐ Ajouté
+        ex.fichier_url,
         COALESCE(m.nom, 'Sans matière') AS matiere,
         CONCAT(u.prenom, ' ', u.nom) AS enseignant,
         COUNT(DISTINCT q.id) AS nb_questions,
