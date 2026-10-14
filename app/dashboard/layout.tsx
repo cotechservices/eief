@@ -3,7 +3,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -438,7 +438,18 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <Providers>
-      <DashboardContent>{children}</DashboardContent>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-900">Chargement...</p>
+            </div>
+          </div>
+        }
+      >
+        <DashboardContent>{children}</DashboardContent>
+      </Suspense>
     </Providers>
   );
 }

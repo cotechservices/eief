@@ -1,4 +1,4 @@
-// app/dashboard/admin/finances/salaires/page.tsx
+// dashboard\comptable\finances\salaires\page.tsx
 "use client";
 
 import { useState } from "react";
