@@ -401,7 +401,7 @@ export default function PaiementPlanModal({
                 </div>
               </div>
 
-              {/* SUGGESTIONS DE MONTANT */}
+              {/* SUGGESTIONS DE MONTANT 
               {montantRestant > 0 && (
                 <div className="mb-4">
                   <label className="block text-gray-900 text-sm font-medium mb-2">
@@ -429,7 +429,7 @@ export default function PaiementPlanModal({
                     )}
                   </div>
                 </div>
-              )}
+              )}*/}
 
               {/* CHAMP DE SAISIE DU MONTANT */}
               <div className="mb-4">

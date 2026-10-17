@@ -155,7 +155,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
 
           {safeSolde.total > 0 ? (
             <>
-              {/* Suggestions de montant */}
+              {/* Suggestions de montant 
               <div className="mb-4">
                 <label className="block text-gray-900 text-sm font-medium mb-2">Suggestions de montant</label>
                 <div className="flex flex-wrap gap-2">
@@ -168,7 +168,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
                     <TrendingUp className="w-3 h-3" /> Payer le solde
                   </button>
                 </div>
-              </div>
+              </div>*/}
 
               {/* Saisie du montant */}
               <div className="mb-4">

@@ -426,16 +426,36 @@ export async function DELETE(
     await query('BEGIN');
 
     try {
-      // 1. Récupérer tous les IDs des enfants du parent
+      // 1. Récupérer tous les IDs des enfants du parent (via lien_parent_eleve, inscriptions, reinscriptions)
       const enfantsResult = await query(`
-        SELECT eleve_id FROM lien_parent_eleve WHERE parent_id = $1
+        SELECT DISTINCT eleve_id FROM (
+          SELECT eleve_id FROM lien_parent_eleve WHERE parent_id = $1
+          UNION
+          SELECT eleve_id FROM inscriptions WHERE parent_id = $1
+          UNION
+          SELECT eleve_id FROM reinscriptions WHERE parent_id = $1 AND eleve_id IS NOT NULL
+        ) sub WHERE eleve_id IS NOT NULL
       `, [parentId]);
 
-      const enfantIds = enfantsResult.rows.map(row => row.eleve_id);
+      const enfantIds: number[] = enfantsResult.rows.map(row => Number(row.eleve_id));
 
-      // 2. Supprimer les données liées aux pré-inscriptions
+      // 2. Supprimer les données liées aux pré-inscriptions du parent
       await query(`
         DELETE FROM commandes_fournitures 
+        WHERE preinscription_id IN (
+          SELECT id FROM preinscriptions WHERE parent_id = $1
+        )
+      `, [parentId]);
+
+      await query(`
+        DELETE FROM preinscription_cantine 
+        WHERE preinscription_id IN (
+          SELECT id FROM preinscriptions WHERE parent_id = $1
+        )
+      `, [parentId]);
+
+      await query(`
+        DELETE FROM preinscription_transport 
         WHERE preinscription_id IN (
           SELECT id FROM preinscriptions WHERE parent_id = $1
         )
@@ -459,7 +479,7 @@ export async function DELETE(
         DELETE FROM preinscriptions WHERE parent_id = $1
       `, [parentId]);
 
-      // 3. Supprimer les données liées aux réinscriptions
+      // 3. Supprimer les données liées aux réinscriptions du parent
       await query(`
         DELETE FROM echeances_paiement 
         WHERE reinscription_id IN (
@@ -478,36 +498,86 @@ export async function DELETE(
         DELETE FROM reinscriptions WHERE parent_id = $1
       `, [parentId]);
 
-      // 4. Supprimer les inscriptions
+      // 4. Supprimer les inscriptions directes
       await query(`
         DELETE FROM inscriptions WHERE parent_id = $1
       `, [parentId]);
 
-      // 5. Supprimer les présences et notes des enfants - ✅ CORRIGÉ
+      // 5. ⭐ SUPPRIMER TOUS LES PAIEMENTS ET DONNÉES LIÉS AUX ENFANTS
       if (enfantIds.length > 0) {
+        // ⭐ Suppression de tous les paiements liés aux enfants
         await query(`
-          DELETE FROM presences WHERE eleve_id IN (SELECT unnest($1::int[]))
+          DELETE FROM paiements WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        // Suppression des échéances de paiement des enfants
+        await query(`
+          DELETE FROM echeances_paiement WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        // Suppression des transactions et réservations de cantine
+        await query(`
+          DELETE FROM transactions_cantine WHERE eleve_id = ANY($1::int[])
         `, [enfantIds]);
 
         await query(`
-          DELETE FROM notes WHERE eleve_id IN (SELECT unnest($1::int[]))
+          DELETE FROM reservations_cantine WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        // Suppression des inscriptions cantine et transport
+        await query(`
+          DELETE FROM inscriptions_cantine WHERE eleve_id = ANY($1::int[])
         `, [enfantIds]);
 
         await query(`
-          DELETE FROM inscriptions_transport WHERE eleve_id IN (SELECT unnest($1::int[]))
+          DELETE FROM inscriptions_transport WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        // Suppression des emprunts, devoirs et ventes librairie
+        await query(`
+          DELETE FROM emprunts_bibliotheque WHERE eleve_id = ANY($1::int[])
         `, [enfantIds]);
 
         await query(`
-          DELETE FROM inscriptions_cantine WHERE eleve_id IN (SELECT unnest($1::int[]))
+          DELETE FROM soumissions_devoirs WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        await query(`
+          DELETE FROM ventes_librairie WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        // Suppression des présences et notes
+        await query(`
+          DELETE FROM presences WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        await query(`
+          DELETE FROM notes WHERE eleve_id = ANY($1::int[])
         `, [enfantIds]);
       }
 
-      // 6. Supprimer les liens parent-enfant
+      // 6. Supprimer les commandes librairie et remises du parent
+      await query(`
+        DELETE FROM commandes_librairie_articles 
+        WHERE commande_id IN (
+          SELECT id FROM commandes_librairie WHERE parent_id = $1
+        )
+      `, [parentId]);
+
+      await query(`
+        DELETE FROM commandes_librairie WHERE parent_id = $1
+      `, [parentId]);
+
+      await query(`
+        DELETE FROM remises_familles WHERE parent_id = $1
+      `, [parentId]);
+
+      // 7. Supprimer les liens parent-enfant
       await query(`
         DELETE FROM lien_parent_eleve WHERE parent_id = $1
       `, [parentId]);
 
-      // 7. Supprimer les enfants et leurs comptes utilisateurs
+      // 8. Supprimer les enfants et leurs comptes utilisateurs
       for (const enfantId of enfantIds) {
         // Récupérer l'utilisateur_id de l'enfant
         const enfantResult = await query(`
@@ -523,27 +593,31 @@ export async function DELETE(
           `, [enfantId]);
 
           // Supprimer l'utilisateur (élève)
-          await query(`
-            DELETE FROM utilisateurs WHERE id = $1
-          `, [utilisateurId]);
+          if (utilisateurId) {
+            await query(`
+              DELETE FROM utilisateurs WHERE id = $1
+            `, [utilisateurId]);
+          }
         }
       }
 
-      // 8. Supprimer le parent
+      // 9. Supprimer le parent
       await query(`
         DELETE FROM parents WHERE id = $1
       `, [parentId]);
 
-      // 9. Supprimer l'utilisateur du parent
-      await query(`
-        DELETE FROM utilisateurs WHERE id = $1
-      `, [parent.utilisateur_id]);
+      // 10. Supprimer l'utilisateur du parent
+      if (parent.utilisateur_id) {
+        await query(`
+          DELETE FROM utilisateurs WHERE id = $1
+        `, [parent.utilisateur_id]);
+      }
 
       await query('COMMIT');
 
       return NextResponse.json({
         success: true,
-        message: `Parent ${parent.prenom} ${parent.nom} et ses ${enfantIds.length} enfant(s) supprimés avec succès`,
+        message: `Parent ${parent.prenom} ${parent.nom}, ses ${enfantIds.length} enfant(s) et tous les paiements associés ont été supprimés avec succès`,
         deletedChildren: enfantIds.length
       });
 

@@ -278,20 +278,51 @@ export async function DELETE(
       `, [parentId]);
 
       if (enfantIds.length > 0) {
+        // ⭐ Suppression de tous les paiements liés aux enfants
         await query(`
-          DELETE FROM presences WHERE eleve_id IN (SELECT unnest($1::int[]))
+          DELETE FROM paiements WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        // Suppression des échéances de paiement des enfants
+        await query(`
+          DELETE FROM echeances_paiement WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        // Suppression des transactions et réservations cantine
+        await query(`
+          DELETE FROM transactions_cantine WHERE eleve_id = ANY($1::int[])
         `, [enfantIds]);
 
         await query(`
-          DELETE FROM notes WHERE eleve_id IN (SELECT unnest($1::int[]))
+          DELETE FROM reservations_cantine WHERE eleve_id = ANY($1::int[])
         `, [enfantIds]);
 
         await query(`
-          DELETE FROM inscriptions_transport WHERE eleve_id IN (SELECT unnest($1::int[]))
+          DELETE FROM presences WHERE eleve_id = ANY($1::int[])
         `, [enfantIds]);
 
         await query(`
-          DELETE FROM inscriptions_cantine WHERE eleve_id IN (SELECT unnest($1::int[]))
+          DELETE FROM notes WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        await query(`
+          DELETE FROM inscriptions_transport WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        await query(`
+          DELETE FROM inscriptions_cantine WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        await query(`
+          DELETE FROM emprunts_bibliotheque WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        await query(`
+          DELETE FROM soumissions_devoirs WHERE eleve_id = ANY($1::int[])
+        `, [enfantIds]);
+
+        await query(`
+          DELETE FROM ventes_librairie WHERE eleve_id = ANY($1::int[])
         `, [enfantIds]);
       }
 
