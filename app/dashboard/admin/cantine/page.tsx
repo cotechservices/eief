@@ -7,7 +7,7 @@ import {
   Eye, Search, Download, Check, X, TrendingUp, TrendingDown,
   User, UserCheck, DollarSign, BarChart3, FileText, UserPlus, RefreshCw,
   ClipboardList, BookOpen, Wallet, Clock, AlertCircle, PieChart, CheckCircle,
-  Minus, Plus as PlusIcon, Save, Pencil
+  Minus, Plus as PlusIcon, Save, Pencil, AlertTriangle
 } from "lucide-react";
 
 interface Menu {
@@ -107,6 +107,13 @@ interface CantineStats {
   pourcentageNonPaye?: number;
 }
 
+// ⭐ Type de dialogue
+type DialogState = {
+  type: 'success' | 'error';
+  title: string;
+  message: string;
+} | null;
+
 export default function CantinePage() {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [stats, setStats] = useState<CantineStats | null>(null);
@@ -147,6 +154,9 @@ export default function CantinePage() {
   const [deletingMenuId, setDeletingMenuId] = useState<number | null>(null);
   const [deletingInscriptionId, setDeletingInscriptionId] = useState<number | null>(null);
 
+  // ⭐ État pour les dialogues personnalisés (succès / erreur)
+  const [dialog, setDialog] = useState<DialogState>(null);
+
   const MOIS_MAX = 9;
 
   // ⭐ Chargement des données
@@ -159,6 +169,15 @@ export default function CantinePage() {
   useEffect(() => {
     setTotalAPayer(nombreMois * prixMensuel);
   }, [nombreMois, prixMensuel]);
+
+  // ⭐ Helpers dialogues
+  const showSuccess = (title: string, message: string) => {
+    setDialog({ type: 'success', title, message });
+  };
+
+  const showError = (message: string, title: string = "Erreur") => {
+    setDialog({ type: 'error', title, message });
+  };
 
   // ⭐ API Calls
   const fetchCantine = async () => {
@@ -226,7 +245,6 @@ export default function CantinePage() {
 
   const fetchEleves = async () => {
     try {
-      // ⭐ Charger élèves inscrits + pré-inscriptions en attente
       const response = await fetch('/api/admin/eleves-et-preinscriptions');
       if (response.ok) {
         const data = await response.json();
@@ -279,7 +297,6 @@ export default function CantinePage() {
   const handleSubmitMenu = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ⭐ Éviter la double soumission
     if (isSubmittingMenu) return;
 
     setIsSubmittingMenu(true);
@@ -295,20 +312,24 @@ export default function CantinePage() {
 
       if (response.ok) {
         setShowMenuForm(false);
+        showSuccess(
+          editingMenu ? "Menu modifié" : "Menu ajouté",
+          `Le menu "${menuForm.plat}" a été ${editingMenu ? "modifié" : "ajouté"} avec succès.`
+        );
         fetchCantine();
       } else {
         const error = await response.json();
-        alert(error.error || "Erreur lors de l'enregistrement");
+        showError(error.error || "Erreur lors de l'enregistrement");
       }
     } catch (error) {
       console.error("Erreur:", error);
+      showError("Erreur réseau lors de l'enregistrement");
     } finally {
       setIsSubmittingMenu(false);
     }
   };
 
   const handleDeleteMenu = async (id: number) => {
-    // ⭐ Éviter les clics multiples
     if (deletingMenuId !== null) return;
 
     if (confirm("Voulez-vous vraiment supprimer ce menu ?")) {
@@ -316,12 +337,14 @@ export default function CantinePage() {
       try {
         const response = await fetch(`/api/admin/cantine?id=${id}`, { method: 'DELETE' });
         if (response.ok) {
+          showSuccess("Menu supprimé", "Le menu a été supprimé avec succès.");
           fetchCantine();
         } else {
-          alert("Erreur lors de la suppression");
+          showError("Erreur lors de la suppression");
         }
       } catch (error) {
         console.error("Erreur:", error);
+        showError("Erreur réseau lors de la suppression");
       } finally {
         setDeletingMenuId(null);
       }
@@ -330,17 +353,15 @@ export default function CantinePage() {
 
   // ⭐ Gestion des inscriptions directes
   const handleInscrire = async () => {
-    // ⭐ Éviter la double soumission
     if (isSubmittingInscription) return;
 
     if (!selectedEleve) {
-      alert("Veuillez sélectionner un élève");
+      showError("Veuillez sélectionner un élève");
       return;
     }
 
     setIsSubmittingInscription(true);
     try {
-      // ⭐ Détecter le type : élève inscrit ou pré-inscription en attente
       const isPreinscription = selectedEleve.source === 'preinscription';
 
       const payload: any = {
@@ -362,20 +383,28 @@ export default function CantinePage() {
       });
 
       if (response.ok) {
-        alert(`✅ ${selectedEleve.prenom} ${selectedEleve.nom} inscrit à la cantine pour ${nombreMois} mois${
-          isPreinscription ? ' (dossier en attente)' : ''
-        }`);
+        const suffixeDossier = isPreinscription ? ' (dossier en attente)' : '';
+        const successMessage = `${selectedEleve.prenom} ${selectedEleve.nom} inscrit à la cantine pour ${nombreMois} mois${suffixeDossier}`;
+
+        // Reset UI
         setShowInscriptionModal(false);
         setSelectedEleve(null);
+        setSearchEleve("");
         setNombreMois(9);
+
+        // Dialogue de succès
+        showSuccess("Inscription réussie", successMessage);
+
+        // Rafraîchir les données
         fetchInscriptions();
         fetchCantine();
       } else {
         const error = await response.json();
-        alert(error.error || "Erreur lors de l'inscription");
+        showError(error.error || "Erreur lors de l'inscription");
       }
     } catch (error) {
       console.error("Erreur:", error);
+      showError("Erreur réseau lors de l'inscription");
     } finally {
       setIsSubmittingInscription(false);
     }
@@ -389,7 +418,6 @@ export default function CantinePage() {
   };
 
   const handleUpdateInscription = async () => {
-    // ⭐ Éviter la double soumission
     if (isSubmittingEdit) return;
 
     if (!editingInscription) return;
@@ -407,24 +435,27 @@ export default function CantinePage() {
       });
 
       if (response.ok) {
-        alert("✅ Inscription modifiée avec succès");
         setShowEditModal(false);
         setEditingInscription(null);
+        showSuccess(
+          "Inscription modifiée",
+          `L'inscription de ${editingInscription.eleve_prenom} ${editingInscription.eleve_nom} a été mise à jour avec succès.`
+        );
         fetchInscriptions();
         fetchCantine();
       } else {
         const error = await response.json();
-        alert(error.error || "Erreur lors de la modification");
+        showError(error.error || "Erreur lors de la modification");
       }
     } catch (error) {
       console.error("Erreur:", error);
+      showError("Erreur réseau lors de la modification");
     } finally {
       setIsSubmittingEdit(false);
     }
   };
 
   const handleDeleteInscription = async (id: number) => {
-    // ⭐ Éviter les clics multiples
     if (deletingInscriptionId !== null) return;
 
     if (confirm("Voulez-vous vraiment supprimer cette inscription ?")) {
@@ -432,13 +463,15 @@ export default function CantinePage() {
       try {
         const response = await fetch(`/api/admin/cantine/inscriptions/${id}`, { method: 'DELETE' });
         if (response.ok) {
+          showSuccess("Inscription supprimée", "L'inscription a été supprimée avec succès.");
           fetchInscriptions();
           fetchCantine();
         } else {
-          alert("Erreur lors de la suppression");
+          showError("Erreur lors de la suppression");
         }
       } catch (error) {
         console.error("Erreur:", error);
+        showError("Erreur réseau lors de la suppression");
       } finally {
         setDeletingInscriptionId(null);
       }
@@ -640,7 +673,6 @@ export default function CantinePage() {
                     <th className="px-6 py-3">Dessert</th>
                     <th className="px-6 py-3">Prix mensuel</th>
                     <th className="px-6 py-3">Prix annuel</th>
-                   {/*<th className="px-6 py-3">Inscrits</th>*/}
                     <th className="px-6 py-3">Actions</th>
                   </tr>
                 </thead>
@@ -656,18 +688,17 @@ export default function CantinePage() {
                       <td className="px-6 py-4 text-blue-900 font-medium">
                         {m.prix_annuel ? `${m.prix_annuel.toLocaleString()} GNF` : "—"}
                       </td>
-                       {/*<td className="px-6 py-4 text-center text-black">{m.inscrits || 0}</td>*/}
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          <button 
-                            onClick={() => handleOpenEditMenu(m)} 
+                          <button
+                            onClick={() => handleOpenEditMenu(m)}
                             disabled={deletingMenuId === m.id}
                             className="text-blue-600 hover:text-blue-800 p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
-                          <button 
-                            onClick={() => handleDeleteMenu(m.id)} 
+                          <button
+                            onClick={() => handleDeleteMenu(m.id)}
                             disabled={deletingMenuId === m.id}
                             className="text-red-600 hover:text-red-800 p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
@@ -725,15 +756,15 @@ export default function CantinePage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          <button 
-                            onClick={() => handleOpenEditInscription(ins)} 
+                          <button
+                            onClick={() => handleOpenEditInscription(ins)}
                             disabled={deletingInscriptionId === ins.id}
                             className="text-blue-600 hover:text-blue-800 p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
-                          <button 
-                            onClick={() => handleDeleteInscription(ins.id)} 
+                          <button
+                            onClick={() => handleDeleteInscription(ins.id)}
                             disabled={deletingInscriptionId === ins.id}
                             className="text-red-600 hover:text-red-800 p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
@@ -875,8 +906,8 @@ export default function CantinePage() {
                 <UserPlus className="w-5 h-5 text-green-600" />
                 Inscription à la cantine
               </h2>
-              <button 
-                onClick={() => setShowInscriptionModal(false)} 
+              <button
+                onClick={() => setShowInscriptionModal(false)}
                 disabled={isSubmittingInscription}
                 className="text-gray-900 hover:text-gray-900 disabled:opacity-50"
               >
@@ -1037,8 +1068,8 @@ export default function CantinePage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {editingMenu ? "Modifier le menu" : "Ajouter un menu"}
               </h2>
-              <button 
-                onClick={() => setShowMenuForm(false)} 
+              <button
+                onClick={() => setShowMenuForm(false)}
                 disabled={isSubmittingMenu}
                 className="text-gray-900 hover:text-gray-900 disabled:opacity-50"
               >
@@ -1160,8 +1191,8 @@ export default function CantinePage() {
                 <Pencil className="w-5 h-5 text-blue-600" />
                 Modifier l'inscription
               </h2>
-              <button 
-                onClick={() => setShowEditModal(false)} 
+              <button
+                onClick={() => setShowEditModal(false)}
                 disabled={isSubmittingEdit}
                 className="text-gray-900 hover:text-gray-900 disabled:opacity-50"
               >
@@ -1250,6 +1281,68 @@ export default function CantinePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ⭐ DIALOGUE DE SUCCÈS / ERREUR (remplace alert) */}
+      {dialog && (
+        <>
+          <style>{`
+            @keyframes dialogScaleIn {
+              from { opacity: 0; transform: scale(0.92); }
+              to   { opacity: 1; transform: scale(1); }
+            }
+          `}</style>
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[60] p-4"
+            onClick={() => setDialog(null)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+              style={{ animation: 'dialogScaleIn 0.25s ease-out' }}
+            >
+              <div className="p-8 text-center">
+                {dialog.type === 'success' ? (
+                  <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mb-4 ring-4 ring-green-50">
+                    <CheckCircle className="w-10 h-10 text-green-600" strokeWidth={2.5} />
+                  </div>
+                ) : (
+                  <div className="mx-auto w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mb-4 ring-4 ring-red-50">
+                    <AlertTriangle className="w-10 h-10 text-red-600" strokeWidth={2.5} />
+                  </div>
+                )}
+                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                  {dialog.title}
+                </h2>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {dialog.message}
+                </p>
+              </div>
+              <div className="px-8 pb-6">
+                <button
+                  onClick={() => setDialog(null)}
+                  className={`w-full px-4 py-3 text-white rounded-lg font-medium transition flex items-center justify-center gap-2 ${
+                    dialog.type === 'success'
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  {dialog.type === 'success' ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Compris
+                    </>
+                  ) : (
+                    <>
+                      <X className="w-4 h-4" />
+                      Fermer
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
