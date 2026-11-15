@@ -125,7 +125,7 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
             <h4 className="font-semibold text-gray-900 mb-2">Détail du solde global</h4>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between text-black">
-                <span>Frais d'inscription</span>
+                <span>Frais de scolarité</span>
                 <span className="font-medium text-indigo-600">{formatMontant(safeSolde.details.inscription)} GNF</span>
               </div>
               {safeSolde.details.transport > 0 && (
@@ -140,12 +140,13 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
                   <span className="font-medium text-orange-600">{formatMontant(safeSolde.details.cantine)} GNF</span>
                 </div>
               )}
+              {/* Récapitulatif détaillé du solde global
               {safeSolde.details.fournitures > 0 && (
                 <div className="flex justify-between pl-4">
                   <span className="text-gray-900 flex items-center gap-1"><ShoppingCart className="w-3 h-3" /> Fournitures</span>
                   <span className="font-medium text-purple-600">{formatMontant(safeSolde.details.fournitures)} GNF</span>
                 </div>
-              )}
+              )} */}
               <div className="border-t pt-2 flex justify-between font-bold text-black text-lg">
                 <span>Total restant</span>
                 <span className="text-indigo-700">{formatMontant(safeSolde.total)} GNF</span>

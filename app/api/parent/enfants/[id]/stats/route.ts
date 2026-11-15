@@ -152,57 +152,27 @@ export async function GET(
     // 5. TOTAL DES FRAIS
     const totalFraisGeneral = fraisBase + transportTotal + cantineTotal + fournituresTotal;
 
-    // 6. PAIEMENTS - APPROCHE UNIFIÉE
-    let totalPaye = 0;
-
-    // 6a. Paiements directs
-    const paiementsDirects = await query(`
+    // 6. PAIEMENTS - SOURCE UNIQUE SANS DOUBLE COMPTAGE
+    // On récupère en une seule requête TOUS les paiements valides liés à cet élève :
+    //   - Directement via eleve_id
+    //   - Via SA pré-inscription (inscriptions.preinscription_id pour cet élève)
+    //   - Via SA réinscription (reinscriptions.eleve_id)
+    // On évite de passer par parent_id (qui ramènerait les paiements de TOUS les enfants du parent)
+    const paiementsResult = await query(`
       SELECT COALESCE(SUM(montant), 0) as total
       FROM paiements
-      WHERE eleve_id = $1 AND statut = 'valide'
-    `, [eleveId]);
-    totalPaye += Number(paiementsDirects.rows[0]?.total) || 0;
-
-    // 6b. Paiements via pré-inscriptions
-    const paiementsPreinscription = await query(`
-      SELECT COALESCE(SUM(p.montant), 0) as total
-      FROM paiements p
-      JOIN preinscriptions pr ON p.preinscription_id = pr.id
-      WHERE pr.parent_id IN (
-        SELECT parent_id FROM lien_parent_eleve WHERE eleve_id = $1
-      )
-      AND p.statut = 'valide'
-    `, [eleveId]);
-    totalPaye += Number(paiementsPreinscription.rows[0]?.total) || 0;
-
-    // 6c. Paiements via réinscriptions
-    const paiementsReinscription = await query(`
-      SELECT COALESCE(SUM(p.montant), 0) as total
-      FROM paiements p
-      JOIN reinscriptions r ON p.reinscription_id = r.id
-      WHERE r.eleve_id = $1
-      AND p.statut = 'valide'
-    `, [eleveId]);
-    totalPaye += Number(paiementsReinscription.rows[0]?.total) || 0;
-
-    // 6d. Échéances payées
-    const echeancesPayees = await query(`
-      SELECT COALESCE(SUM(e.montant), 0) as total
-      FROM echeances_paiement e
-      WHERE e.statut = 'paye'
-      AND (
-        e.preinscription_id IN (
-          SELECT pr.id FROM preinscriptions pr
-          WHERE pr.parent_id IN (
-            SELECT parent_id FROM lien_parent_eleve WHERE eleve_id = $1
+      WHERE statut = 'valide'
+        AND (
+          eleve_id = $1
+          OR preinscription_id IN (
+            SELECT preinscription_id FROM inscriptions WHERE eleve_id = $1 AND preinscription_id IS NOT NULL
+          )
+          OR reinscription_id IN (
+            SELECT id FROM reinscriptions WHERE eleve_id = $1
           )
         )
-        OR e.reinscription_id IN (
-          SELECT r.id FROM reinscriptions r WHERE r.eleve_id = $1
-        )
-      )
     `, [eleveId]);
-    totalPaye += Number(echeancesPayees.rows[0]?.total) || 0;
+    const totalPaye = Number(paiementsResult.rows[0]?.total) || 0;
 
     // 7. CALCUL FINAL
     const montantAPayer = Math.max(0, totalFraisGeneral - totalPaye);

@@ -13,7 +13,7 @@ export async function GET() {
 
     const role = (session.user as any).role;
 
-    // ========== STATISTIQUES GÉNÉRALES (pour tous) ==========
+    // ========== STATISTIQUES GÉNÉRALES ==========
     const eleves = await query(`
       SELECT COUNT(*) as total,
              SUM(CASE WHEN sexe = 'M' THEN 1 ELSE 0 END) as hommes,
@@ -21,7 +21,6 @@ export async function GET() {
       FROM eleves WHERE est_inscrit = true
     `);
 
-    // ⭐ COMPTER TOUS LES PERSONNELS (au lieu de seulement enseignants)
     const personnels = await query("SELECT COUNT(*) as total FROM personnels");
     const classes = await query("SELECT COUNT(*) as total FROM classes");
     const parents = await query("SELECT COUNT(*) as total FROM utilisateurs WHERE role = 'PARENT'");
@@ -50,6 +49,8 @@ export async function GET() {
     const totalDepenses = Number(depensesResult.rows[0]?.total_depenses) || 0;
 
     // Scolarité des élèves inscrits
+    // ⭐ IMPORTANT: exclure les élèves ayant une pré-inscription 'valide' liée
+    // car leur montant est déjà compté dans totalAPayerInscriptionPlan
     const elevesScolariteResult = await query(`
       SELECT 
         e.id,
@@ -58,6 +59,15 @@ export async function GET() {
       FROM eleves e
       LEFT JOIN classes c ON e.classe_id = c.id
       WHERE e.est_inscrit = true AND e.deleted_at IS NULL
+        -- Exclure les élèves dont la pré-inscription valide est encore active
+        -- pour éviter le double comptage avec totalAPayerInscriptionPlan
+        AND NOT EXISTS (
+          SELECT 1 FROM inscriptions i
+          JOIN preinscriptions p ON i.preinscription_id = p.id
+          WHERE i.eleve_id = e.id
+            AND p.statut = 'valide'
+            AND p.montant_total_plan > 0
+        )
     `);
 
     let totalScolariteEleves = 0;
@@ -66,10 +76,11 @@ export async function GET() {
       totalScolariteEleves += inscr;
     }
 
+    // ⭐ Inclure EN ATTENTE + VALIDE pour ne pas perdre les montants après validation
     const totalAPayerInscriptionResult = await query(`
       SELECT COALESCE(SUM(montant_total_plan), 0) as total_a_payer
       FROM preinscriptions
-      WHERE statut = 'en_attente'
+      WHERE statut IN ('en_attente', 'valide')
     `);
     const totalAPayerInscriptionPlan = Number(totalAPayerInscriptionResult.rows[0]?.total_a_payer) || 0;
     const totalAPayerInscription = totalAPayerInscriptionPlan;
@@ -97,34 +108,84 @@ export async function GET() {
     `);
     const totalPayeReinscription = Number(totalPayeReinscriptionResult.rows[0]?.total_paye) || 0;
 
+    // ========== TRANSPORT ==========
+    // ⭐ Inclure pré-inscriptions EN ATTENTE + VALIDÉES (pour ne pas perdre les montants après validation)
+    // + inscriptions_transport des élèves inscrits (en évitant le double comptage via inscriptions)
     const transportResult = await query(`
       SELECT COALESCE(
+        -- Transport des pré-inscriptions en attente (pas encore d'élève créé)
         (SELECT SUM(pt.prix)
-         FROM preinscriptions p
-         JOIN preinscription_transport pt ON pt.preinscription_id = p.id
+         FROM preinscription_transport pt
+         JOIN preinscriptions p ON pt.preinscription_id = p.id
          WHERE p.statut = 'en_attente'), 0) +
         COALESCE(
+        -- Transport des pré-inscriptions validées qui n'ont PAS encore de ligne dans inscriptions_transport
+        (SELECT SUM(pt.prix)
+         FROM preinscription_transport pt
+         JOIN preinscriptions p ON pt.preinscription_id = p.id
+         WHERE p.statut = 'valide'
+           AND NOT EXISTS (
+             SELECT 1 FROM inscriptions_transport it
+             JOIN inscriptions i ON it.eleve_id = i.eleve_id
+             WHERE i.preinscription_id = p.id AND it.est_actif = true
+           )), 0) +
+        COALESCE(
+        -- Transport des élèves inscrits avec ligne dans inscriptions_transport
         (SELECT SUM(it.montant_mensuel * it.mois_total)
          FROM inscriptions_transport it
          JOIN eleves e ON it.eleve_id = e.id
-         WHERE e.est_inscrit = true AND e.deleted_at IS NULL), 0) as total_transport
+         WHERE e.est_inscrit = true AND e.deleted_at IS NULL AND it.est_actif = true), 0) as total_transport
     `);
     const totalTransport = Number(transportResult.rows[0]?.total_transport) || 0;
 
+    // ========== CANTINE ==========
+    // ⭐ Même logique que transport
     const cantineResult = await query(`
       SELECT COALESCE(
+        -- Cantine des pré-inscriptions en attente
         (SELECT SUM(pc.prix)
-         FROM preinscriptions p
-         JOIN preinscription_cantine pc ON pc.preinscription_id = p.id
+         FROM preinscription_cantine pc
+         JOIN preinscriptions p ON pc.preinscription_id = p.id
          WHERE p.statut = 'en_attente'), 0) +
         COALESCE(
-        (SELECT SUM(montant_total)
+        -- Cantine des pré-inscriptions validées qui n'ont PAS encore de ligne dans inscriptions_cantine
+        (SELECT SUM(pc.prix)
+         FROM preinscription_cantine pc
+         JOIN preinscriptions p ON pc.preinscription_id = p.id
+         WHERE p.statut = 'valide'
+           AND NOT EXISTS (
+             SELECT 1 FROM inscriptions_cantine ic
+             JOIN inscriptions i ON ic.eleve_id = i.eleve_id
+             WHERE i.preinscription_id = p.id AND ic.est_actif = true
+           )), 0) +
+        COALESCE(
+        -- Cantine des élèves inscrits avec ligne dans inscriptions_cantine
+        (SELECT SUM(ic.montant_total)
          FROM inscriptions_cantine ic
          JOIN eleves e ON ic.eleve_id = e.id
-         WHERE e.est_inscrit = true AND e.deleted_at IS NULL), 0) as total_cantine
+         WHERE e.est_inscrit = true AND e.deleted_at IS NULL AND ic.est_actif = true), 0) as total_cantine
     `);
     const totalCantine = Number(cantineResult.rows[0]?.total_cantine) || 0;
 
+    // ========== FOURNITURES INSCRIPTION (obligatoires) ==========
+    // Ces fournitures sont liées aux préinscriptions (obligatoires pour l'inscription)
+    const fournituresObligatoiresResult = await query(`
+      SELECT COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total
+      FROM preinscriptions p
+      JOIN commandes_fournitures cf ON cf.preinscription_id = p.id
+      WHERE p.statut IN ('en_attente', 'valide')
+    `);
+    const totalFournituresObligatoires = Number(fournituresObligatoiresResult.rows[0]?.total) || 0;
+
+    // Recettes fournitures obligatoires : échéances payées de type 'fournitures'
+    const recettesFournituresResult = await query(`
+      SELECT COALESCE(SUM(montant), 0) as total
+      FROM echeances_paiement
+      WHERE type = 'fournitures' AND statut = 'paye'
+    `);
+    const recettesFournitures = Number(recettesFournituresResult.rows[0]?.total) || 0;
+
+    // Total ancien champ totalFournitures (fournitures + librairie) — pour compatibilité
     const fournituresResult = await query(`
       SELECT COALESCE(
         (SELECT SUM(cf.quantite * cf.prix_unitaire)
@@ -138,6 +199,24 @@ export async function GET() {
     `);
     const totalFournitures = Number(fournituresResult.rows[0]?.total_fournitures) || 0;
 
+    // ========== LIBRAIRIE (ventes indépendantes) ==========
+    // Ventes validées = recettes
+    const recettesLibrairieResult = await query(`
+      SELECT COALESCE(SUM(total), 0) as total
+      FROM commandes_librairie
+      WHERE statut = 'valide'
+    `);
+    const recettesLibrairie = Number(recettesLibrairieResult.rows[0]?.total) || 0;
+
+    // Total attendu (en_attente + valide) = total des commandes
+    const totalLibrairieVentesResult = await query(`
+      SELECT COALESCE(SUM(total), 0) as total
+      FROM commandes_librairie
+      WHERE statut IN ('en_attente', 'valide')
+    `);
+    const totalLibrairieVentes = Number(totalLibrairieVentesResult.rows[0]?.total) || 0;
+
+    // ========== REMISES ==========
     const remisesResult = await query(`
       SELECT COALESCE(SUM(montant), 0) as total_remises
       FROM remises_familles
@@ -180,7 +259,8 @@ export async function GET() {
           SELECT id FROM annees_scolaires WHERE est_active = true LIMIT 1
         )
     `);
-    const totalScolarite = Number(scolariteResult.rows[0]?.total_scolarite) || 0;
+    const totalScolariteConfig = Number(scolariteResult.rows[0]?.total_scolarite) || 0;
+    const totalScolarite = (totalScolariteEleves + totalAPayerInscriptionPlan + totalAPayerReinscription) || totalScolariteConfig;
 
     const soldeParPreinscription = await query(`
       SELECT
@@ -221,7 +301,11 @@ export async function GET() {
       tauxRecouvrement,
       totalDepenses,
       totalFraisReinscription,
-      totalReinscription
+      totalReinscription,
+      totalFournituresObligatoires,
+      recettesFournitures,
+      totalLibrairieVentes,
+      recettesLibrairie,
     });
 
     const derniersPaiements = await query(`
@@ -320,7 +404,17 @@ export async function GET() {
         totalScolarite: totalScolarite,
         totalTransport: totalTransport,
         totalCantine: totalCantine,
+        // Fournitures Inscription (obligatoires)
+        totalFournituresObligatoires: totalFournituresObligatoires,
+        recettesFournitures: recettesFournitures,
+        soldeRestantFournitures: Math.max(0, totalFournituresObligatoires - recettesFournitures),
+        // Ancien champ (compatibilité) : fournitures + librairie
         totalFournitures: totalFournitures,
+        // Librairie (ventes indépendantes)
+        totalLibrairieVentes: totalLibrairieVentes,
+        recettesLibrairie: recettesLibrairie,
+        soldeRestantLibrairie: Math.max(0, totalLibrairieVentes - recettesLibrairie),
+        // Autres
         totalInscription: totalInscription,
         totalReinscription: totalReinscription,
         totalFraisReinscription: totalFraisReinscription,

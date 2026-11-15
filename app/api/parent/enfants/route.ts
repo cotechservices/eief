@@ -338,19 +338,29 @@ export async function GET() {
       // ⭐ TOTAL NET ACTUEL (avant reconstitution du brut)
       const totalNetActuel = scolariteActuelle + fraisCantine + fraisTransport + fraisFournitures;
 
-      // ⭐⭐ CALCUL DU TOTAL PAYÉ ⭐⭐
+      // ⭐⭐ CALCUL DU TOTAL PAYÉ — SOURCE UNIQUE SANS DOUBLE COMPTAGE ⭐⭐
+      // Pour un élève inscrit : paiements directs + paiements de SA pré-inscription + sa réinscription
+      // Pour une pré-inscription en attente : paiements directs seulement
+      // ⚠️ Ne jamais additionner echeances_paiement séparément (déjà couverts par paiements)
       let totalPaye = 0;
 
       if (enfant.est_eleve) {
+        // Paiements via eleve_id + paiements de la pré-inscription liée à cet élève (sans passer par parent_id)
+        // frais_paye_eleve = paiements WHERE eleve_id = e.id
+        // frais_paye_preinscription = paiements WHERE preinscription_id IN (SELECT preinscription_id FROM inscriptions WHERE eleve_id = e.id)
+        // frais_paye_reinscription = paiements WHERE reinscription_id IN (SELECT id FROM reinscriptions WHERE eleve_id = e.id)
+        // Les 3 sont mutuellement exclusifs (clés étrangères distinctes dans paiements)
         const fraisPayeEleve = Number(enfant.frais_paye_eleve) || 0;
         const fraisPayePreinscription = Number(enfant.frais_paye_preinscription) || 0;
         const fraisPayeReinscription = Number(enfant.frais_paye_reinscription) || 0;
-        const fraisPayeEcheances = Number(enfant.frais_paye_echeances) || 0;
-        totalPaye = fraisPayeEleve + fraisPayePreinscription + fraisPayeReinscription + fraisPayeEcheances;
+        // NE PAS ajouter frais_paye_echeances : les échéances créent des paiements dans la table paiements
+        // => déjà comptabilisés dans frais_paye_preinscription / frais_paye_reinscription
+        totalPaye = fraisPayeEleve + fraisPayePreinscription + fraisPayeReinscription;
       } else {
         const fraisPayeDirect = Number(enfant.frais_paye_direct) || 0;
-        const fraisPayeEcheances = Number(enfant.frais_paye_echeances) || 0;
-        totalPaye = fraisPayeDirect + fraisPayeEcheances;
+        // Pour une pré-inscription, frais_paye_direct = tous les paiements liés à cette pré-inscription
+        // Ne pas ajouter echeances séparément
+        totalPaye = fraisPayeDirect;
       }
 
       // ⭐⭐ RETOURNER LES DONNÉES (la reconstitution du brut se fera APRÈS répartition de la remise)

@@ -510,10 +510,13 @@ export async function DELETE(
           DELETE FROM paiements WHERE eleve_id = ANY($1::int[])
         `, [enfantIds]);
 
-        // Suppression des échéances de paiement des enfants
-        await query(`
-          DELETE FROM echeances_paiement WHERE eleve_id = ANY($1::int[])
-        `, [enfantIds]);
+        // ⭐ NOTE : La table `echeances_paiement` ne possède PAS de colonne `eleve_id`.
+        // Les échéances ont DÉJÀ été supprimées :
+        //   - via preinscription_id à l'étape 2
+        //   - via reinscription_id  à l'étape 3
+        // La ligne suivante (buggée) a été SUPPRIMÉE :
+        //   ⛔ DELETE FROM echeances_paiement WHERE eleve_id = ANY($1::int[])
+        //      → causait "column eleve_id does not exist" (SQLSTATE 42703)
 
         // Suppression des transactions et réservations de cantine
         await query(`
