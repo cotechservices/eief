@@ -43,12 +43,12 @@ export async function GET(request: NextRequest) {
         pay.preinscription_id,
         -- ⭐ Total réel = somme de TOUTES les écheances (inscription + fournitures + cantine + transport)
         COALESCE((
-          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep
           WHERE ep.preinscription_id = p.id
         ), p.montant_total_plan, 0)                                  AS montant_total,
         -- ⭐ Reste = total - ce qui est déjà payé (paiements valides)
         GREATEST(0, COALESCE((
-          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep
           WHERE ep.preinscription_id = p.id
         ), p.montant_total_plan, 0) - COALESCE((
           SELECT SUM(pp.montant) FROM paiements pp

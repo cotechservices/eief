@@ -82,13 +82,13 @@ export async function GET(
     // ===================== FRAIS DEPUIS echeances_paiement =====================
     const echeancesResult = await query(`
       SELECT
-        COALESCE(SUM(CASE WHEN type = 'inscription'  THEN montant ELSE 0 END), 0) AS inscription,
-        COALESCE(SUM(CASE WHEN type = 'scolarite'    THEN montant ELSE 0 END), 0) AS scolarite,
-        COALESCE(SUM(CASE WHEN type = 'reinscription' THEN montant ELSE 0 END), 0) AS reinscription,
-        COALESCE(SUM(CASE WHEN type = 'cantine'      THEN montant ELSE 0 END), 0) AS cantine,
-        COALESCE(SUM(CASE WHEN type = 'transport'    THEN montant ELSE 0 END), 0) AS transport,
-        COALESCE(SUM(CASE WHEN type = 'fournitures'  THEN montant ELSE 0 END), 0) AS fournitures,
-        COALESCE(SUM(CASE WHEN type NOT IN ('inscription','scolarite','reinscription','cantine','transport','fournitures') THEN montant ELSE 0 END), 0) AS autres
+        COALESCE(SUM(CASE WHEN type = 'inscription'  THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS inscription,
+        COALESCE(SUM(CASE WHEN type = 'scolarite'    THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS scolarite,
+        COALESCE(SUM(CASE WHEN type = 'reinscription' THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS reinscription,
+        COALESCE(SUM(CASE WHEN type = 'cantine'      THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS cantine,
+        COALESCE(SUM(CASE WHEN type = 'transport'    THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS transport,
+        COALESCE(SUM(CASE WHEN type = 'fournitures'  THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS fournitures,
+        COALESCE(SUM(CASE WHEN type NOT IN ('inscription','scolarite','reinscription','cantine','transport','fournitures') THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS autres
       FROM echeances_paiement
       WHERE preinscription_id = $1
     `, [preinscriptionId]);

@@ -179,12 +179,12 @@ export async function GET(request: NextRequest) {
         }
 
         // ========== 4. SCOLARITÉ : ACTUEL (déjà net) + BRUT RECONSTITUÉ ==========
-        // ⭐ Lecture des échéances ACTUELLES (montants déjà réduits par la remise)
+        // ⚠️ On exclut 'fournitures' : gérées séparément (Section 12)
         let scolariteActuelle = 0;
 
         for (const pre of preinsResult.rows) {
           const planRes = await query(`
-            SELECT COALESCE(SUM(ep.montant), 0) as total_scolarite
+            SELECT COALESCE(SUM(COALESCE(ep.montant_initial, ep.montant)), 0) as total_scolarite
             FROM echeances_paiement ep
             WHERE ep.preinscription_id = $1
               AND ep.type IN ('inscription', 'scolarite', 'reinscription')
@@ -209,11 +209,9 @@ export async function GET(request: NextRequest) {
         }
 
         // ⭐ RECONSTITUTION DU BRUT
-        // La remise a été appliquée UNIQUEMENT sur la scolarité (par le POST remise)
-        // Donc : scolariteBrut = scolariteActuelle + remiseAccordee
         const scolariteBrut = scolariteActuelle + remiseAccordee;
 
-        // ========== 5. CANTINE (brut = actuel, pas de remise dessus) ==========
+        // ========== 5. CANTINE ==========
         const cantineRes = await query(`
           SELECT COALESCE(SUM(pc.prix), 0) as total_cantine
           FROM preinscription_cantine pc
@@ -223,7 +221,7 @@ export async function GET(request: NextRequest) {
         `, [parentId]);
         const cantineBrut = Number(cantineRes.rows[0]?.total_cantine) || 0;
 
-        // ========== 6. TRANSPORT (brut = actuel) ==========
+        // ========== 6. TRANSPORT ==========
         const transportRes = await query(`
           SELECT COALESCE(SUM(pt.prix), 0) as total_transport
           FROM preinscription_transport pt
@@ -233,24 +231,25 @@ export async function GET(request: NextRequest) {
         `, [parentId]);
         const transportBrut = Number(transportRes.rows[0]?.total_transport) || 0;
 
-        // ========== 7. FOURNITURES (brut = actuel) ==========
-        const fournituresRes = await query(`
-          SELECT 
-            COALESCE(
-              (SELECT SUM(cf.quantite * cf.prix_unitaire) 
-               FROM commandes_fournitures cf
-               JOIN preinscriptions p ON cf.preinscription_id = p.id
-               WHERE p.parent_id = $1), 0
-            ) +
-            COALESCE(
-              (SELECT SUM(cl.total) 
-               FROM commandes_librairie cl
-               WHERE cl.parent_id = $1 AND cl.statut = 'valide'), 0
-            ) as total_fournitures
+        // ========== 7. FOURNITURES ==========
+        const fournituresObligatoiresRes = await query(`
+          SELECT COALESCE(SUM(cf.quantite * cf.prix_unitaire), 0) as total
+          FROM commandes_fournitures cf
+          JOIN preinscriptions p ON cf.preinscription_id = p.id
+          WHERE p.parent_id = $1
         `, [parentId]);
-        const fournituresBrut = Number(fournituresRes.rows[0]?.total_fournitures) || 0;
+        const fournituresObligatoiresBrut = Number(fournituresObligatoiresRes.rows[0]?.total) || 0;
 
-        // ========== 8. TOTAL PAYÉ (DISTINCT pour éviter double comptage) ==========
+        const librairieVentesRes = await query(`
+          SELECT COALESCE(SUM(cl.total), 0) as total
+          FROM commandes_librairie cl
+          WHERE cl.parent_id = $1 AND cl.statut = 'valide'
+        `, [parentId]);
+        const librairieVentesBrut = Number(librairieVentesRes.rows[0]?.total) || 0;
+
+        const fournituresBrut = fournituresObligatoiresBrut + librairieVentesBrut;
+
+        // ========== 8. TOTAL PAYÉ ==========
         const paiementsResult = await query(`
           SELECT COALESCE(SUM(montant), 0) as total_paye
           FROM (
@@ -273,21 +272,24 @@ export async function GET(request: NextRequest) {
 
         const totalPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
 
-        // ⭐ CALCUL FINAL (logique cohérente)
-        // depensesBrutes = vrai brut AVANT remise
-        const depensesBrutes = scolariteBrut + cantineBrut + transportBrut + fournituresBrut;
-        // totalNet = brut - remise (une seule fois)
+        // ⭐ CALCUL FINAL
+        const depensesBrutes = scolariteBrut + cantineBrut + transportBrut + fournituresObligatoiresBrut;
         const totalNet = Math.max(0, depensesBrutes - remiseAccordee);
-        // solde restant = net - payé
         const soldeRestant = Math.max(0, totalNet - totalPaye);
 
         // ========== 9. ÉCHÉANCES SCOLAIRITÉ (ACTUELLES - déjà nettes) ==========
+        // ⭐⭐⭐ CORRECTION 1 : exclusion explicite des 'fournitures' (gérées Section 12)
+        // ⭐⭐⭐ CORRECTION 2 : suppression du DISTINCT ON erroné qui ne gardait qu'UNE
+        //                     échéance par (préinscription, type) → perdait les versements
+        //                     successifs (319, 320, 321 pour la même préinscription 48).
+        //                     Le doublon venait de la double sélection Sections 9+12,
+        //                     pas de la requête elle-même : chaque échéance est unique par id.
         const echeancesRes = await query(`
-          SELECT 
+          SELECT
             ep.id,
             ep.echeance,
             ep.type,
-            ep.montant,
+            COALESCE(ep.montant_initial, ep.montant) AS montant,
             ep.statut,
             ep.date_echeance,
             ep.preinscription_id,
@@ -296,13 +298,16 @@ export async function GET(request: NextRequest) {
           FROM echeances_paiement ep
           LEFT JOIN preinscriptions p ON ep.preinscription_id = p.id
           LEFT JOIN reinscriptions r ON ep.reinscription_id = r.id
-          WHERE ep.preinscription_id IN (
-            SELECT id FROM preinscriptions WHERE parent_id = $1
+          WHERE (
+            ep.preinscription_id IN (
+              SELECT id FROM preinscriptions WHERE parent_id = $1
+            )
+            OR ep.reinscription_id IN (
+              SELECT id FROM reinscriptions WHERE parent_id = $1
+            )
           )
-          OR ep.reinscription_id IN (
-            SELECT id FROM reinscriptions WHERE parent_id = $1
-          )
-          ORDER BY ep.id ASC
+          AND ep.type <> 'fournitures'
+          ORDER BY ep.preinscription_id, ep.reinscription_id, ep.id ASC
         `, [parentId]);
 
         const echeancesScolarite: EcheanceBrute[] = echeancesRes.rows
@@ -316,8 +321,7 @@ export async function GET(request: NextRequest) {
             preinscription_id: e.preinscription_id,
             reinscription_id: e.reinscription_id,
             enfant_nom: e.enfant_nom,
-            // Les fournitures dans echeances_paiement = partie du plan scolarité
-            source_type: (e.type === 'fournitures' ? 'fournitures' : 'scolarite') as 'scolarite' | 'fournitures',
+            source_type: 'scolarite' as const,
           }));
 
         // ========== 10. CANTINE ÉCHÉANCES ==========
@@ -387,27 +391,35 @@ export async function GET(request: NextRequest) {
         }
 
         // ========== 12. FOURNITURES ÉCHÉANCES ==========
+        // ⭐ Source UNIQUE des fournitures dans le breakdown.
+        // Le DISTINCT ON ici est JUSTIFIÉ : plusieurs lignes 'fournitures' historiques
+        // peuvent coexister (régénérations d'échéancier) → on garde la plus récente.
         let echeancesFournitures: EcheanceBrute[] = [];
         try {
           const fournEchRes = await query(`
-            SELECT 
-              cf.id,
-              (cf.quantite * cf.prix_unitaire) as montant,
-              cf.created_at as date_creation,
-              p.id as preinscription_id,
+            SELECT DISTINCT ON (ep.preinscription_id) 
+              ep.id,
+              ep.echeance,
+              ep.type,
+              COALESCE(ep.montant_initial, ep.montant) AS montant,
+              ep.statut,
+              ep.date_echeance,
+              ep.preinscription_id,
               p.enfant_prenom || ' ' || p.enfant_nom as enfant_nom
-            FROM commandes_fournitures cf
-            JOIN preinscriptions p ON cf.preinscription_id = p.id
+            FROM echeances_paiement ep
+            JOIN preinscriptions p ON ep.preinscription_id = p.id
             WHERE p.parent_id = $1
+              AND ep.type = 'fournitures'
+            ORDER BY ep.preinscription_id, ep.id DESC
           `, [parentId]);
 
           echeancesFournitures = fournEchRes.rows.map((e: any) => ({
-            id: -200000 - e.id,
-            echeance: 'Fournitures scolaires',
-            type: 'fournitures',
+            id: e.id,
+            echeance: e.echeance || 'Fournitures scolaires',
+            type: e.type,
             montant: Number(e.montant) || 0,
-            statut: 'en_attente',
-            date_echeance: e.date_creation,
+            statut: e.statut,
+            date_echeance: e.date_echeance,
             preinscription_id: e.preinscription_id,
             reinscription_id: null,
             enfant_nom: e.enfant_nom,
@@ -417,34 +429,40 @@ export async function GET(request: NextRequest) {
           console.warn("⚠️ Erreur fournitures:", err);
         }
 
-        // ========== 13. FUSION ==========
-        const toutesEcheances: EcheanceBrute[] = [
+        // ========== 13. FUSION (avec déduplication de sécurité) ==========
+        const toutesEcheancesMap = new Map<number, EcheanceBrute>();
+        for (const e of [
           ...echeancesScolarite,
           ...echeancesCantine,
           ...echeancesTransport,
           ...echeancesFournitures,
-        ];
+        ]) {
+          if (!toutesEcheancesMap.has(e.id)) {
+            toutesEcheancesMap.set(e.id, e);
+          } else {
+            console.warn(
+              `⚠️ [DÉDUPLICATION] Échéance id=${e.id} (${e.type}) ignorée (déjà présente)`
+            );
+          }
+        }
+        const toutesEcheances: EcheanceBrute[] = Array.from(toutesEcheancesMap.values());
 
-        // ========== 14. RÉPARTITION DE LA REMISE SUR LES SERVICES (prorata) ==========
-        // ⭐ La remise a été appliquée UNIQUEMENT sur la scolarité (par le POST remise)
-        // Donc toute la remise est sur "scolarite" pour le breakdown
+        // ========== 14. RÉPARTITION DE LA REMISE ==========
         const remiseScolarite = remiseAccordee;
 
         const echeancesAvecRemise: EcheanceBrute[] = toutesEcheances.map((ech) => {
           if (ech.source_type === 'scolarite') {
-            // Pour la scolarité : montrer le brut reconstitué et la remise
-            const totalScolariteNet = scolariteActuelle;  // montant actuel total
+            const totalScolariteNet = scolariteActuelle;
             const partEcheance = totalScolariteNet > 0 ? ech.montant / totalScolariteNet : 0;
             const remiseEcheance = remiseScolarite * partEcheance;
 
             return {
               ...ech,
-              montant_brut: ech.montant + remiseEcheance,  // brut reconstitué
+              montant_brut: ech.montant + remiseEcheance,
               remise_appliquee: remiseEcheance,
-              montant: ech.montant,  // net actuel
+              montant: ech.montant,
             };
           }
-          // Autres services : pas de remise
           return {
             ...ech,
             montant_brut: ech.montant,
@@ -469,7 +487,6 @@ export async function GET(request: NextRequest) {
         });
 
         // ========== 16. FIFO ==========
-        // Calculer le solde restant en fonction des échéances encore en_attente/partiel
         const totalEcheancesDues = toutesEcheances.reduce((sum, e) => sum + (Number(e.montant) || 0), 0);
         const montantARepartir = Math.min(totalNet, totalPaye);
         const echeancesReparties = repartirPaiementsFIFO(montantARepartir, echeancesAvecRemise);
@@ -514,6 +531,33 @@ export async function GET(request: NextRequest) {
           },
         };
 
+        // ========== DEBUG LOG FOURNITURES ==========
+        console.log(`[DEBUG FOURNITURES] Parent ${parent.prenom} ${parent.nom}:`, {
+          fournituresObligatoiresBrut,
+          fournituresBreakdown: services_breakdown.fournitures,
+          echeancesFournituresCount: echeancesFournitures.length,
+          echeancesFournitures: echeancesFournitures.map(e => ({ id: e.id, montant: e.montant, statut: e.statut })),
+        });
+
+        // ========== DEBUG LOG COHÉRENCE ==========
+        const sommeBreakdowns =
+          services_breakdown.scolarite.total +
+          services_breakdown.cantine.total +
+          services_breakdown.transport.total +
+          services_breakdown.fournitures.total;
+        const ecart = Math.abs(sommeBreakdowns - totalNet);
+        if (ecart > 1) {
+          console.warn(
+            `⚠️ [COHÉRENCE] Parent ${parent.prenom} ${parent.nom} : ` +
+            `somme breakdowns (${sommeBreakdowns}) ≠ totalNet (${totalNet}) — écart ${ecart}`
+          );
+        } else {
+          console.log(
+            `✅ [COHÉRENCE] Parent ${parent.prenom} ${parent.nom} : ` +
+            `breakdowns (${sommeBreakdowns}) = totalNet (${totalNet})`
+          );
+        }
+
         // ========== 18. ÉCHÉANCES FINALES (toutes pour le modal) ==========
         const echeancesFinales = echeancesReparties
           .filter((e) => e.source_type === 'scolarite' || e.source_type === 'fournitures')
@@ -548,11 +592,11 @@ export async function GET(request: NextRequest) {
           enfants_inscrits: elevesResult.rows || [],
           preinscriptions: preinsResult.rows || [],
           totaux: {
-            depenses_brutes: depensesBrutes,      // ⭐ vrai brut (25 720 000)
-            remise_accordee: remiseAccordee,      // 720 000
-            total_net: totalNet,                   // ⭐ 25 000 000
-            total_paye: totalPaye,                 // 0
-            solde_restant: soldeRestant,           // ⭐ 25 000 000
+            depenses_brutes: depensesBrutes,
+            remise_accordee: remiseAccordee,
+            total_net: totalNet,
+            total_paye: totalPaye,
+            solde_restant: soldeRestant,
           },
           services_breakdown,
           echeances: echeancesFinales,

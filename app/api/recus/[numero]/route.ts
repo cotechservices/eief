@@ -29,11 +29,11 @@ export async function GET(
         pu.telephone as parent_telephone,
         -- ⭐ Récupérer le montant total et le reste à payer réels
         COALESCE((
-          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep
           WHERE ep.preinscription_id = p.id
         ), r.montant_total, p.montant_total_plan, 0) as montant_total,
         GREATEST(0, COALESCE((
-          SELECT SUM(ep.montant) FROM echeances_paiement ep
+          SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep
           WHERE ep.preinscription_id = p.id
         ), r.montant_total, p.montant_total_plan, 0) - COALESCE((
           SELECT SUM(pp.montant) FROM paiements pp

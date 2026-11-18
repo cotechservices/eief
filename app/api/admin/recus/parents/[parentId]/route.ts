@@ -96,13 +96,13 @@ export async function GET(
         COALESCE(pay.reference_transaction, p.numero_dossier, CONCAT('REF-', COALESCE(pay.id, r.id, 0))) AS reference,
         COALESCE(p.classe, r.classe_nom, c.nom, 'N/A') AS classe,
         COALESCE(
-          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id),
-          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id),
+          (SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id),
+          (SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id),
           p.montant_total_plan, r.montant_total_plan, c.total_versement, 0
         ) AS montant_total,
         GREATEST(0, COALESCE(
-          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id),
-          (SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id),
+          (SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id),
+          (SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id),
           p.montant_total_plan, r.montant_total_plan, 0
         ) - COALESCE(
           (SELECT SUM(pp.montant) FROM paiements pp WHERE (pp.preinscription_id = p.id OR pp.reinscription_id = r.id OR (pp.eleve_id = e.id AND pp.preinscription_id IS NULL AND pp.reinscription_id IS NULL)) AND pp.statut = 'valide'),

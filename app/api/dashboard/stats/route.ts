@@ -179,7 +179,7 @@ export async function GET() {
 
     // Recettes fournitures obligatoires : échéances payées de type 'fournitures'
     const recettesFournituresResult = await query(`
-      SELECT COALESCE(SUM(montant), 0) as total
+      SELECT COALESCE(SUM(COALESCE(montant_initial, montant)), 0) as total
       FROM echeances_paiement
       WHERE type = 'fournitures' AND statut = 'paye'
     `);

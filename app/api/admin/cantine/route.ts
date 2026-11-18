@@ -130,7 +130,7 @@ export async function GET() {
         r.date_reinscription,
         r.frais_statut,
         COALESCE(
-          (SELECT SUM(e.montant) 
+          (SELECT SUM(COALESCE(e.montant_initial, e.montant)) 
            FROM echeances_paiement e 
            WHERE e.reinscription_id = r.id AND e.type = 'cantine'),
           0

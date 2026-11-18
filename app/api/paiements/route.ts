@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
       const preCheck = await query(`
         SELECT 
           p.enfant_nom, p.enfant_prenom, p.classe,
-          COALESCE((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id), p.montant_total_plan, 0) as montant_total,
+          COALESCE((SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep WHERE ep.preinscription_id = p.id), p.montant_total_plan, 0) as montant_total,
           u.nom as parent_nom,
           u.prenom as parent_prenom,
           u.email as parent_email
@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
         SELECT 
           r.enfant_nom, r.enfant_prenom,
           c.nom as classe_nom,
-          COALESCE((SELECT SUM(ep.montant) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id), r.montant_total_plan, 0) as montant_total,
+          COALESCE((SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) FROM echeances_paiement ep WHERE ep.reinscription_id = r.id), r.montant_total_plan, 0) as montant_total,
           u.nom as parent_nom,
           u.prenom as parent_prenom,
           u.email as parent_email

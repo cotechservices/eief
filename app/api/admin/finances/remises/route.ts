@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       // ========== 1. SCOLARITÉ : MONTANT ACTUEL (déjà net) ==========
       // Échéances préinscriptions (montants ACTUELS, déjà réduits par la remise)
       const fraisPreinsRes = await query(`
-        SELECT COALESCE(SUM(ep.montant), 0) as total
+        SELECT COALESCE(SUM(COALESCE(ep.montant_initial, ep.montant)), 0) as total
         FROM echeances_paiement ep
         WHERE ep.preinscription_id IN (
           SELECT id FROM preinscriptions WHERE parent_id = $1
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
 
       // Échéances réinscriptions (montants ACTUELS)
       const fraisReinsRes = await query(`
-        SELECT COALESCE(SUM(ep.montant), 0) as total
+        SELECT COALESCE(SUM(COALESCE(ep.montant_initial, ep.montant)), 0) as total
         FROM echeances_paiement ep
         WHERE ep.reinscription_id IN (
           SELECT id FROM reinscriptions WHERE parent_id = $1
@@ -266,13 +266,13 @@ export async function POST(request: NextRequest) {
       SELECT 
         -- Scolarité actuelle (déjà nette)
         COALESCE((
-          SELECT SUM(ep.montant)
+          SELECT SUM(COALESCE(ep.montant_initial, ep.montant))
           FROM echeances_paiement ep
           WHERE ep.preinscription_id IN (SELECT id FROM preinscriptions WHERE parent_id = $1)
             AND ep.type IN ('inscription', 'scolarite', 'reinscription')
         ), 0) +
         COALESCE((
-          SELECT SUM(ep.montant)
+          SELECT SUM(COALESCE(ep.montant_initial, ep.montant))
           FROM echeances_paiement ep
           WHERE ep.reinscription_id IN (SELECT id FROM reinscriptions WHERE parent_id = $1)
             AND ep.type IN ('inscription', 'scolarite', 'reinscription')
@@ -348,7 +348,8 @@ export async function POST(request: NextRequest) {
 
       await query(`
         UPDATE echeances_paiement
-        SET montant = GREATEST(0, ROUND(montant * $1::numeric, 2))
+        SET montant = GREATEST(0, ROUND(montant * $1::numeric, 2)),
+            montant_initial = GREATEST(0, ROUND(COALESCE(montant_initial, montant) * $1::numeric, 2))
         WHERE (
           preinscription_id IN (SELECT id FROM preinscriptions WHERE parent_id = $2)
           OR reinscription_id IN (SELECT id FROM reinscriptions WHERE parent_id = $2)
@@ -362,7 +363,7 @@ export async function POST(request: NextRequest) {
       UPDATE preinscriptions p
       SET montant_restant_plan = GREATEST(0, 
         COALESCE((
-          SELECT SUM(ep.montant) 
+          SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) 
           FROM echeances_paiement ep 
           WHERE ep.preinscription_id = p.id
             AND ep.type IN ('inscription', 'scolarite', 'reinscription')
@@ -380,7 +381,7 @@ export async function POST(request: NextRequest) {
       UPDATE reinscriptions r
       SET montant_restant_plan = GREATEST(0, 
         COALESCE((
-          SELECT SUM(ep.montant) 
+          SELECT SUM(COALESCE(ep.montant_initial, ep.montant)) 
           FROM echeances_paiement ep 
           WHERE ep.reinscription_id = r.id
             AND ep.type IN ('inscription', 'scolarite', 'reinscription')

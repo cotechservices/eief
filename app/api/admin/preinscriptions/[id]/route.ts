@@ -29,11 +29,11 @@ export async function GET(
     // Récupérer les montants depuis echeances_paiement (source de vérité), groupés par type
     const fraisRes = await query(`
       SELECT
-        COALESCE(SUM(CASE WHEN type = 'inscription'  THEN montant ELSE 0 END), 0) AS inscription,
-        COALESCE(SUM(CASE WHEN type = 'cantine'      THEN montant ELSE 0 END), 0) AS cantine,
-        COALESCE(SUM(CASE WHEN type = 'transport'    THEN montant ELSE 0 END), 0) AS transport,
-        COALESCE(SUM(CASE WHEN type = 'fournitures'  THEN montant ELSE 0 END), 0) AS fournitures,
-        COALESCE(SUM(CASE WHEN type NOT IN ('inscription','cantine','transport','fournitures') THEN montant ELSE 0 END), 0) AS autres
+        COALESCE(SUM(CASE WHEN type = 'inscription'  THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS inscription,
+        COALESCE(SUM(CASE WHEN type = 'cantine'      THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS cantine,
+        COALESCE(SUM(CASE WHEN type = 'transport'    THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS transport,
+        COALESCE(SUM(CASE WHEN type = 'fournitures'  THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS fournitures,
+        COALESCE(SUM(CASE WHEN type NOT IN ('inscription','cantine','transport','fournitures') THEN COALESCE(montant_initial, montant) ELSE 0 END), 0) AS autres
       FROM echeances_paiement
       WHERE preinscription_id = $1
     `, [preinscriptionId]);

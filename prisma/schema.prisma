@@ -289,6 +289,7 @@ model echeances_paiement {
   type                  String           @db.VarChar(50)
   echeance              String           @db.VarChar(50)
   montant               Int
+  montant_initial       Int?
   date_echeance         DateTime?        @db.Date
   statut                String?          @default("en_attente") @db.VarChar(20)
   date_paiement         DateTime?        @db.Date
