@@ -1,7 +1,7 @@
 // app/dashboard/parent/inscription/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
@@ -25,7 +25,11 @@ import {
   Smartphone,
   AlertTriangle,
   X,
-  Eye
+  Eye,
+  TrendingUp,
+  PieChart,
+  Layers,
+  Banknote
 } from "lucide-react";
 
 interface Enfant {
@@ -60,8 +64,16 @@ interface Preinscription {
   date_preinscription: string;
   frais_statut: string;
   frais_montant: number;
+  transport_montant: number;
+  cantine_montant: number;
+  fournitures_montant: number;
+  montant_total: number;
+  montant_paye: number;
   photo_url: string | null;
 }
+
+const formatGNF = (montant: number) =>
+  `${Math.round(Number(montant) || 0).toLocaleString("fr-FR")} GNF`;
 
 interface Notification {
   id: number;
@@ -142,6 +154,94 @@ export default function InscriptionParentPage() {
       setLoadingData(false);
     }
   };
+
+  const stats = useMemo(() => {
+    const total = preinscriptions.length;
+    const enAttente = preinscriptions.filter(p => p.statut === "en_attente").length;
+    const validees = preinscriptions.filter(p => p.statut === "valide").length;
+    const rejetees = preinscriptions.filter(p => p.statut === "rejete").length;
+
+    const montantParDossier = (p: Preinscription) =>
+      Number(p.montant_total) || Number(p.frais_montant) || 0;
+
+    const montantTotal = preinscriptions.reduce((acc, p) => acc + montantParDossier(p), 0);
+    const montantPaye = preinscriptions.reduce(
+      (acc, p) => acc + (Number(p.montant_paye) || 0),
+      0
+    );
+    const montantRestant = Math.max(0, montantTotal - montantPaye);
+    const tauxRecouvrement =
+      montantTotal > 0 ? Math.min(100, Math.round((montantPaye / montantTotal) * 100)) : 0;
+
+    const services = [
+      {
+        key: "scolarite",
+        label: "Scolarité",
+        montant: preinscriptions.reduce((acc, p) => acc + (Number(p.frais_montant) || 0), 0),
+        color: "bg-blue-500",
+        text: "text-blue-600",
+      },
+      {
+        key: "transport",
+        label: "Transport",
+        montant: preinscriptions.reduce((acc, p) => acc + (Number(p.transport_montant) || 0), 0),
+        color: "bg-indigo-500",
+        text: "text-indigo-600",
+      },
+      {
+        key: "cantine",
+        label: "Cantine",
+        montant: preinscriptions.reduce((acc, p) => acc + (Number(p.cantine_montant) || 0), 0),
+        color: "bg-orange-500",
+        text: "text-orange-600",
+      },
+      {
+        key: "fournitures",
+        label: "Fournitures",
+        montant: preinscriptions.reduce((acc, p) => acc + (Number(p.fournitures_montant) || 0), 0),
+        color: "bg-purple-500",
+        text: "text-purple-600",
+      },
+    ];
+
+    const parNiveauMap = new Map<string, { niveau: string; count: number; montant: number }>();
+    preinscriptions.forEach(p => {
+      const key = p.niveau || "Non précisé";
+      const entry = parNiveauMap.get(key) || { niveau: key, count: 0, montant: 0 };
+      entry.count += 1;
+      entry.montant += montantParDossier(p);
+      parNiveauMap.set(key, entry);
+    });
+    const parNiveau = Array.from(parNiveauMap.values()).sort((a, b) => b.count - a.count);
+
+    const paiements = {
+      paye: preinscriptions.filter(p => p.frais_statut === "paye").length,
+      partiel: preinscriptions.filter(p => p.frais_statut === "partiel").length,
+      nonPaye: preinscriptions.filter(
+        p => p.frais_statut !== "paye" && p.frais_statut !== "partiel"
+      ).length,
+    };
+
+    return {
+      total,
+      enAttente,
+      validees,
+      rejetees,
+      montantTotal,
+      montantPaye,
+      montantRestant,
+      tauxRecouvrement,
+      services,
+      parNiveau,
+      paiements,
+    };
+  }, [preinscriptions]);
+
+  const statutRows = [
+    { label: "En attente", count: stats.enAttente, bar: "bg-yellow-500", text: "text-yellow-600" },
+    { label: "Validées", count: stats.validees, bar: "bg-green-500", text: "text-green-600" },
+    { label: "Rejetées", count: stats.rejetees, bar: "bg-red-500", text: "text-red-600" },
+  ];
 
   const getClassesForNiveau = (niveauNom: string) => {
     return classes.filter(c => c.niveau === niveauNom);
@@ -470,7 +570,159 @@ export default function InscriptionParentPage() {
         </div>
       </div>
 
-      {/* Liste des pré-inscriptions existantes 
+      {/* Synthèse financière des inscriptions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-gray-500 text-sm">Total des frais</p>
+              <p className="text-lg font-bold text-blue-600 truncate">{formatGNF(stats.montantTotal)}</p>
+            </div>
+            <Banknote className="w-8 h-8 text-blue-200 shrink-0" />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-gray-500 text-sm">Montant payé</p>
+              <p className="text-lg font-bold text-green-600 truncate">{formatGNF(stats.montantPaye)}</p>
+            </div>
+            <CheckCircle className="w-8 h-8 text-green-200 shrink-0" />
+          </div>
+          <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${stats.tauxRecouvrement}%` }} />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-red-500">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-gray-500 text-sm">Reste à payer</p>
+              <p className="text-lg font-bold text-red-600 truncate">{formatGNF(stats.montantRestant)}</p>
+            </div>
+            <Clock className="w-8 h-8 text-red-200 shrink-0" />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-purple-500">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-gray-500 text-sm">Taux de recouvrement</p>
+              <p className="text-lg font-bold text-purple-600">{stats.tauxRecouvrement}%</p>
+            </div>
+            <TrendingUp className="w-8 h-8 text-purple-200 shrink-0" />
+          </div>
+          <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full bg-purple-500 rounded-full transition-all" style={{ width: `${stats.tauxRecouvrement}%` }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Répartitions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Répartition par statut */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h2 className="font-semibold text-black flex items-center gap-2 mb-4">
+            <PieChart className="w-5 h-5 text-blue-600" />
+            Répartition par statut
+          </h2>
+
+          <div className="space-y-4">
+            {statutRows.map((row) => {
+              const pourcentage = stats.total > 0 ? Math.round((row.count / stats.total) * 100) : 0;
+              return (
+                <div key={row.label}>
+                  <div className="flex items-center justify-between text-sm mb-1.5">
+                    <span className={`font-medium ${row.text}`}>{row.label}</span>
+                    <span className="text-gray-500">
+                      {row.count} dossier{row.count > 1 ? "s" : ""} · {pourcentage}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${row.bar}`} style={{ width: `${pourcentage}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-gray-100">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Suivi des paiements</p>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-green-50 rounded-lg p-2">
+                <p className="text-lg font-bold text-green-600">{stats.paiements.paye}</p>
+                <p className="text-xs text-green-700">Payés</p>
+              </div>
+              <div className="bg-yellow-50 rounded-lg p-2">
+                <p className="text-lg font-bold text-yellow-600">{stats.paiements.partiel}</p>
+                <p className="text-xs text-yellow-700">Partiels</p>
+              </div>
+              <div className="bg-red-50 rounded-lg p-2">
+                <p className="text-lg font-bold text-red-600">{stats.paiements.nonPaye}</p>
+                <p className="text-xs text-red-700">Non payés</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Répartition par niveau */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h2 className="font-semibold text-black flex items-center gap-2 mb-4">
+            <Layers className="w-5 h-5 text-indigo-600" />
+            Répartition par niveau
+          </h2>
+
+          {stats.parNiveau.length === 0 ? (
+            <p className="text-sm text-gray-500 py-6 text-center">Aucune inscription à afficher.</p>
+          ) : (
+            <div className="space-y-3">
+              {stats.parNiveau.map((niveau) => {
+                const maxCount = Math.max(...stats.parNiveau.map(n => n.count), 1);
+                const largeur = Math.round((niveau.count / maxCount) * 100);
+                return (
+                  <div key={niveau.niveau}>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="font-medium text-gray-900">{niveau.niveau}</span>
+                      <span className="text-gray-500">
+                        {niveau.count} élève{niveau.count > 1 ? "s" : ""} · {formatGNF(niveau.montant)}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${largeur}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Détail des frais par service */}
+      <div className="bg-white rounded-xl shadow-sm p-5">
+        <h2 className="font-semibold text-black flex items-center gap-2 mb-4">
+          <Wallet className="w-5 h-5 text-green-600" />
+          Détail des frais par service
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.services.map((service) => {
+            const pourcentage = stats.montantTotal > 0
+              ? Math.round((service.montant / stats.montantTotal) * 100)
+              : 0;
+            return (
+              <div key={service.key} className="bg-gray-50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm text-gray-600">{service.label}</p>
+                  <span className={`text-xs font-semibold ${service.text}`}>{pourcentage}%</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900 mb-2">{formatGNF(service.montant)}</p>
+                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${service.color}`} style={{ width: `${pourcentage}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-4 border-b">
           <h2 className="text-lg font-semibold text-black flex items-center gap-2">
@@ -539,7 +791,6 @@ export default function InscriptionParentPage() {
           </div>
         )}
       </div>
-      fermer*/}
 
       {/* Modal Annulation */}
       {showConfirmModal && preinscriptionToCancel && (

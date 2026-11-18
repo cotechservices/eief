@@ -77,7 +77,20 @@ export async function GET() {
            FROM commandes_fournitures cf
            WHERE cf.preinscription_id = p.id),
           0
-        ) as montant_total
+        ) as montant_total,
+        -- MONTANT DÉJÀ PAYÉ (paiements validés liés à la pré-inscription ou à l'élève inscrit)
+        COALESCE(
+          (SELECT SUM(pai.montant)
+           FROM paiements pai
+           WHERE pai.statut = 'valide'
+             AND (
+               pai.preinscription_id = p.id
+               OR pai.eleve_id IN (
+                 SELECT i.eleve_id FROM inscriptions i WHERE i.preinscription_id = p.id
+               )
+             )),
+          0
+        ) as montant_paye
       FROM preinscriptions p
       JOIN parents pa ON p.parent_id = pa.id
       JOIN utilisateurs u ON pa.utilisateur_id = u.id
@@ -93,7 +106,8 @@ export async function GET() {
       transport_montant: Number(row.transport_montant) || 0,
       cantine_montant: Number(row.cantine_montant) || 0,
       fournitures_montant: Number(row.fournitures_montant) || 0,
-      montant_total: Number(row.montant_total) || 0
+      montant_total: Number(row.montant_total) || 0,
+      montant_paye: Number(row.montant_paye) || 0
     }));
 
     return NextResponse.json(rows);
