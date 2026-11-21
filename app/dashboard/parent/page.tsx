@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import PaiementGlobalModal from "@/components/PaiementGlobalModal";
+import PaiementGlobalParentModal from "@/components/PaiementGlobalParentModal";
 import {
   Users,
   CreditCard,
@@ -1000,7 +1000,7 @@ export default function MesEnfantsPage() {
       )}
 
       {/* MODAL PAIEMENT GLOBAL */}
-      <PaiementGlobalModal
+      <PaiementGlobalParentModal
         isOpen={showGlobalPaiementModal}
         onClose={() => setShowGlobalPaiementModal(false)}
         onSuccess={() => {

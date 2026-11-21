@@ -21,47 +21,90 @@ interface EcheanceBrute {
 }
 
 // ⭐⭐⭐ FONCTION DE RÉPARTITION FIFO ⭐⭐⭐
-function repartirPaiementsFIFO(
-  totalPaye: number,
-  echeances: EcheanceBrute[]
-): Array<EcheanceBrute & {
+type EcheanceRepartie = EcheanceBrute & {
   montant_paye: number;
   reste_a_payer: number;
   statut_calcule: 'paye' | 'partiel' | 'en_attente';
-}> {
-  const triees = [...echeances].sort((a, b) => {
-    const da = a.date_echeance ? new Date(a.date_echeance).getTime() : Infinity;
-    const db = b.date_echeance ? new Date(b.date_echeance).getTime() : Infinity;
-    if (da !== db) return da - db;
-    return a.id - b.id;
-  });
+};
 
-  let reste = totalPaye;
+type CategoriePaiement = 'scolarite' | 'cantine' | 'transport' | 'fournitures';
 
-  const resultat = triees.map((ech) => {
-    const montant = Number(ech.montant) || 0;
-    let montantPaye = 0;
-    let statutCalcule: 'paye' | 'partiel' | 'en_attente' = 'en_attente';
+// ⭐ Le type réel du paiement décide de la prestation concernée.
+//   On ne doit jamais utiliser la date pour convertir un paiement de
+//   scolarité en cantine ou en transport.
+function categoriePaiement(typeFrais: string | null | undefined): CategoriePaiement {
+  const v = String(typeFrais || '').toLowerCase();
+  if (v.includes('cantine')) return 'cantine';
+  if (v.includes('transport')) return 'transport';
+  if (v.includes('fourniture') || v.includes('librairie')) return 'fournitures';
+  return 'scolarite';
+}
 
-    if (reste >= montant && montant > 0) {
-      montantPaye = montant;
-      statutCalcule = 'paye';
-      reste -= montant;
-    } else if (reste > 0 && montant > 0) {
-      montantPaye = reste;
-      statutCalcule = 'partiel';
-      reste = 0;
+function cleDossier(preId: number | null, reinId: number | null): string {
+  if (preId) return `pre:${preId}`;
+  if (reinId) return `rein:${reinId}`;
+  return 'divers';
+}
+
+// ⭐⭐⭐ RÉPARTITION PAR DOSSIER ENFANT + CATÉGORIE ⭐⭐⭐
+// Un paiement est appliqué uniquement :
+//   - au dossier de l'enfant auquel il est rattaché,
+//   - à la catégorie issue de son type_frais.
+// Les fournitures obligatoires restent donc liées à la scolarité du même
+// élève, et un paiement de scolarité ne peut pas éteindre la cantine.
+function repartirPaiementsParDossierEtCategorie(
+  echeances: EcheanceBrute[],
+  paiementsParDossierEtCategorie: Map<string, number>
+): EcheanceRepartie[] {
+  const groupes = new Map<string, EcheanceBrute[]>();
+
+  for (const e of echeances) {
+    const categorie: CategoriePaiement =
+      e.source_type === 'cantine' || e.source_type === 'transport' || e.source_type === 'fournitures'
+        ? e.source_type
+        : categoriePaiement(e.type);
+    const cle = `${cleDossier(e.preinscription_id, e.reinscription_id)}|${categorie}`;
+    if (!groupes.has(cle)) groupes.set(cle, []);
+    groupes.get(cle)!.push(e);
+  }
+
+  const resultats: EcheanceRepartie[] = [];
+
+  for (const [cle, liste] of groupes.entries()) {
+    let reste = paiementsParDossierEtCategorie.get(cle) || 0;
+
+    const triees = [...liste].sort((a, b) => {
+      const da = a.date_echeance ? new Date(a.date_echeance).getTime() : Infinity;
+      const db = b.date_echeance ? new Date(b.date_echeance).getTime() : Infinity;
+      if (da !== db) return da - db;
+      return a.id - b.id;
+    });
+
+    for (const ech of triees) {
+      const montant = Number(ech.montant) || 0;
+      let montantPaye = 0;
+      let statutCalcule: 'paye' | 'partiel' | 'en_attente' = 'en_attente';
+
+      if (reste >= montant && montant > 0) {
+        montantPaye = montant;
+        statutCalcule = 'paye';
+        reste -= montant;
+      } else if (reste > 0 && montant > 0) {
+        montantPaye = reste;
+        statutCalcule = 'partiel';
+        reste = 0;
+      }
+
+      resultats.push({
+        ...ech,
+        montant_paye: montantPaye,
+        reste_a_payer: montant - montantPaye,
+        statut_calcule: statutCalcule,
+      });
     }
+  }
 
-    return {
-      ...ech,
-      montant_paye: montantPaye,
-      reste_a_payer: montant - montantPaye,
-      statut_calcule: statutCalcule,
-    };
-  });
-
-  return resultat.sort((a, b) => a.id - b.id);
+  return resultats.sort((a, b) => a.id - b.id);
 }
 
 export async function GET(request: NextRequest) {
@@ -271,6 +314,31 @@ export async function GET(request: NextRequest) {
         `, [parentId]);
 
         const totalPaye = Number(paiementsResult.rows[0]?.total_paye) || 0;
+
+        // ⭐ PAIEMENTS RATTACHÉS À CHAQUE DOSSIER ENFANT ET À LEUR CATÉGORIE RÉELLE
+        const paiementsDossierRes = await query(`
+          SELECT
+            preinscription_id,
+            reinscription_id,
+            type_frais,
+            COALESCE(SUM(montant), 0) AS total
+          FROM paiements
+          WHERE statut IN ('valide', 'paye')
+            AND (
+              preinscription_id IN (SELECT id FROM preinscriptions WHERE parent_id = $1)
+              OR reinscription_id IN (SELECT id FROM reinscriptions WHERE parent_id = $1)
+            )
+          GROUP BY preinscription_id, reinscription_id, type_frais
+        `, [parentId]);
+
+        const paiementsParDossierEtCategorie = new Map<string, number>();
+        for (const p of paiementsDossierRes.rows) {
+          const cle = `${cleDossier(p.preinscription_id, p.reinscription_id)}|${categoriePaiement(p.type_frais)}`;
+          paiementsParDossierEtCategorie.set(
+            cle,
+            (paiementsParDossierEtCategorie.get(cle) || 0) + (Number(p.total) || 0)
+          );
+        }
 
         // ⭐ CALCUL FINAL
         const depensesBrutes = scolariteBrut + cantineBrut + transportBrut + fournituresObligatoiresBrut;
@@ -486,10 +554,12 @@ export async function GET(request: NextRequest) {
           nbEcheances: echeancesAvecRemise.length,
         });
 
-        // ========== 16. FIFO ==========
-        const totalEcheancesDues = toutesEcheances.reduce((sum, e) => sum + (Number(e.montant) || 0), 0);
-        const montantARepartir = Math.min(totalNet, totalPaye);
-        const echeancesReparties = repartirPaiementsFIFO(montantARepartir, echeancesAvecRemise);
+        // ========== 16. RÉPARTITION PAR DOSSIER ENFANT + CATÉGORIE ==========
+        // ⭐ Un paiement 'inscription' ne peut pas éteindre la cantine ou le transport.
+        const echeancesReparties = repartirPaiementsParDossierEtCategorie(
+          echeancesAvecRemise,
+          paiementsParDossierEtCategorie
+        );
 
         // ========== 17. BREAKDOWNS PAR SERVICE ==========
         const sumBy = (

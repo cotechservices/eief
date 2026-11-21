@@ -29,6 +29,7 @@ interface PreinscriptionCantine {
   enfant_nom: string;
   enfant_prenom: string;
   sexe?: string;
+  photo_url?: string | null;
   classe: string;
   statut: string;
   menu_plat: string;
@@ -43,6 +44,7 @@ interface InscriptionCantine {
   sexe: string;
   enfant_nom: string;
   enfant_prenom: string;
+  photo_url?: string | null;
   classe_nom: string;
   est_actif: boolean;
   solde: number;
@@ -55,6 +57,7 @@ interface ReinscriptionCantine {
   enfant_nom: string;
   enfant_prenom: string;
   sexe?: string;
+  photo_url?: string | null;
   classe_nom: string;
   statut: string;
   montant_cantine: number;
@@ -636,7 +639,18 @@ export default function AdminCantineDashboard() {
                 {stats.preinscriptions.map((p) => (
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 font-mono text-xs text-purple-600">{p.numero_dossier || '-'}</td>
-                    <td className="px-6 py-4 font-medium">{p.enfant_prenom} {p.enfant_nom}</td>
+                    <td className="px-6 py-4 font-medium">
+                      <div className="flex items-center gap-2">
+                        {p.photo_url ? (
+                          <img src={p.photo_url} alt={`${p.enfant_prenom} ${p.enfant_nom}`} className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-semibold">
+                            {(p.enfant_prenom?.[0] || "")}{(p.enfant_nom?.[0] || "")}
+                          </div>
+                        )}
+                        <span>{p.enfant_prenom} {p.enfant_nom}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-center">
                       {getSexeLabel(p.sexe)}
                     </td>
@@ -676,7 +690,18 @@ export default function AdminCantineDashboard() {
                 {stats.inscriptions?.map((i) => (
                   <tr key={i.eleve_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 font-mono text-xs text-blue-600">{i.matricule}</td>
-                    <td className="px-6 py-4 font-medium">{i.enfant_prenom} {i.enfant_nom}</td>
+                    <td className="px-6 py-4 font-medium">
+                      <div className="flex items-center gap-2">
+                        {i.photo_url ? (
+                          <img src={i.photo_url} alt={`${i.enfant_prenom} ${i.enfant_nom}`} className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-semibold">
+                            {(i.enfant_prenom?.[0] || "")}{(i.enfant_nom?.[0] || "")}
+                          </div>
+                        )}
+                        <span>{i.enfant_prenom} {i.enfant_nom}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-center">
                       {getSexeLabel(i.sexe)}
                     </td>
@@ -721,7 +746,18 @@ export default function AdminCantineDashboard() {
                 {stats.reinscriptions.map((r) => (
                   <tr key={r.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 font-mono text-xs text-purple-600">{r.numero_dossier || '-'}</td>
-                    <td className="px-6 py-4 font-medium">{r.enfant_prenom} {r.enfant_nom}</td>
+                    <td className="px-6 py-4 font-medium">
+                      <div className="flex items-center gap-2">
+                        {r.photo_url ? (
+                          <img src={r.photo_url} alt={`${r.enfant_prenom} ${r.enfant_nom}`} className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-xs font-semibold">
+                            {(r.enfant_prenom?.[0] || "")}{(r.enfant_nom?.[0] || "")}
+                          </div>
+                        )}
+                        <span>{r.enfant_prenom} {r.enfant_nom}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-center">
                       {getSexeLabel(r.sexe)}
                     </td>

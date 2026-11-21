@@ -18,6 +18,7 @@ interface EleveInscrit {
   nom: string;
   prenom: string;
   matricule: string;
+  photo_url?: string | null;
   classe: string;
   date_inscription: string;
   status: string;
@@ -358,7 +359,20 @@ export default function TransportPage() {
                             {eleve.matricule}
                           </td>
                           <td className="px-4 py-3 font-medium text-gray-900">
-                            {eleve.prenom} {eleve.nom}
+                            <div className="flex items-center gap-2">
+                              {eleve.photo_url ? (
+                                <img
+                                  src={eleve.photo_url}
+                                  alt={`${eleve.prenom} ${eleve.nom}`}
+                                  className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-semibold">
+                                  {(eleve.prenom?.[0] || "")}{(eleve.nom?.[0] || "")}
+                                </div>
+                              )}
+                              <span>{eleve.prenom} {eleve.nom}</span>
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-gray-900">
                             {eleve.classe}

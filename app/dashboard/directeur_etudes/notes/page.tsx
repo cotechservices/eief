@@ -403,8 +403,16 @@ export default function NotesDirecteurPage() {
                   className="p-4 sm:p-5 flex items-center justify-between cursor-pointer bg-gray-50/50 hover:bg-gray-50 transition"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold">
-                      {eleve.nom.charAt(0)}{eleve.prenom.charAt(0)}
+                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold overflow-hidden shrink-0">
+                      {eleve.photo_url ? (
+                        <img
+                          src={eleve.photo_url}
+                          alt={`${eleve.prenom} ${eleve.nom}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <>{eleve.nom.charAt(0)}{eleve.prenom.charAt(0)}</>
+                      )}
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900">{eleve.nom} {eleve.prenom}</h3>

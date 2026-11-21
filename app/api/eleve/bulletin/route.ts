@@ -12,7 +12,8 @@ export async function GET(req: NextRequest) {
 
     const eleveRes = await query(
       `SELECT e.id, e.matricule, c.nom AS classe_nom, c.niveau,
-              u.prenom, u.nom, an.libelle AS annee_scolaire
+              u.prenom, u.nom, COALESCE(e.photo_url, u.photo_url) AS photo_url,
+              an.libelle AS annee_scolaire
        FROM public.eleves e
        JOIN public.utilisateurs u ON u.id = e.utilisateur_id
        LEFT JOIN public.classes c ON c.id = e.classe_id
@@ -129,6 +130,7 @@ export async function GET(req: NextRequest) {
         nom: `${eleve.prenom} ${eleve.nom}`,
         prenom: eleve.prenom,
         matricule: eleve.matricule,
+        photo_url: eleve.photo_url || null,
         classe: eleve.classe_nom,
         niveau: eleve.niveau,
         annee_scolaire: eleve.annee_scolaire,

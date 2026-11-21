@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
         sd.est_retard,
         d.titre AS devoir_titre,
         c.nom AS classe,
+        COALESCE(e.photo_url, u.photo_url) AS photo_url,
         u.prenom || ' ' || u.nom AS eleve_nom
        FROM public.soumissions_devoirs sd
        JOIN public.devoirs d ON d.id = sd.devoir_id

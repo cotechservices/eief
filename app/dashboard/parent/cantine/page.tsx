@@ -12,6 +12,7 @@ interface Enfant {
   id: number;
   nom: string;
   prenom: string;
+  photo_url?: string | null;
   classe: string;
   matricule: string;
   inscritCantine: boolean;
@@ -237,8 +238,23 @@ export default function CantinePage() {
                   className={`hover:bg-gray-50 transition ${selectedEnfantId === e.id ? "bg-pink-50" : ""}`}
                 >
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{e.prenom} {e.nom}</p>
-                    <p className="text-xs text-gray-500">{e.matricule}</p>
+                    <div className="flex items-center gap-3">
+                      {e.photo_url ? (
+                        <img
+                          src={e.photo_url}
+                          alt={`${e.prenom} ${e.nom}`}
+                          className="w-9 h-9 rounded-full object-cover border border-gray-200 shrink-0"
+                        />
+                      ) : (
+                        <span className="w-9 h-9 rounded-full bg-pink-100 text-pink-700 text-xs font-bold flex items-center justify-center shrink-0">
+                          {(e.prenom?.[0] || "")}{(e.nom?.[0] || "")}
+                        </span>
+                      )}
+                      <div>
+                        <p className="font-medium text-gray-900">{e.prenom} {e.nom}</p>
+                        <p className="text-xs text-gray-500">{e.matricule}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-gray-700">{e.classe || "—"}</td>
                   <td className="px-4 py-3 text-gray-700">{e.menuNom || "—"}</td>
@@ -309,13 +325,26 @@ export default function CantinePage() {
       {selectedEnfant && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
           <div className="flex items-start justify-between mb-4">
-            <div>
-              <h3 className="font-semibold text-gray-900 text-lg">
-                {selectedEnfant.prenom} {selectedEnfant.nom}
-              </h3>
-              <p className="text-sm text-gray-500">
-                {selectedEnfant.classe} · {selectedEnfant.matricule}
-              </p>
+            <div className="flex items-center gap-3">
+              {selectedEnfant.photo_url ? (
+                <img
+                  src={selectedEnfant.photo_url}
+                  alt={`${selectedEnfant.prenom} ${selectedEnfant.nom}`}
+                  className="w-14 h-14 rounded-full object-cover border border-gray-200"
+                />
+              ) : (
+                <span className="w-14 h-14 rounded-full bg-pink-100 text-pink-700 text-lg font-bold flex items-center justify-center">
+                  {(selectedEnfant.prenom?.[0] || "")}{(selectedEnfant.nom?.[0] || "")}
+                </span>
+              )}
+              <div>
+                <h3 className="font-semibold text-gray-900 text-lg">
+                  {selectedEnfant.prenom} {selectedEnfant.nom}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {selectedEnfant.classe} · {selectedEnfant.matricule}
+                </p>
+              </div>
             </div>
             <button
               onClick={() => {

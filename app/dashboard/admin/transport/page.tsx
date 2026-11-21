@@ -17,6 +17,7 @@ import {
   UserPlus,
   Minus,
   X,
+  User,
 } from "lucide-react";
 
 interface BusItem {
@@ -59,6 +60,7 @@ interface Eleve {
   prenom: string;
   matricule: string;
   classe_nom: string;
+  photo_url?: string | null;
   source: "eleve" | "preinscription";
   preinscription_id: number | null;
   ref_id: number;
@@ -796,7 +798,18 @@ export default function TransportPage() {
                           className="px-4 py-2 hover:bg-blue-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-b-0"
                           onClick={() => handleSelectEleve(el)}
                         >
-                          <span className="font-medium text-gray-900">
+                          <span className="flex items-center gap-2 font-medium text-gray-900">
+                            {el.photo_url ? (
+                              <img
+                                src={el.photo_url}
+                                alt={`${el.prenom} ${el.nom}`}
+                                className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                              />
+                            ) : (
+                              <span className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <User className="w-4 h-4 text-blue-600" />
+                              </span>
+                            )}
                             {el.prenom} {el.nom}
                           </span>
                           <span className="text-gray-500 text-xs">
@@ -817,9 +830,22 @@ export default function TransportPage() {
                   </div>
                 )}
                 {inscriptionForm.eleveId && selectedEleve && (
-                  <p className="text-xs text-green-600 mt-1">
-                    ✓ Élève sélectionné : {selectedEleve.prenom} {selectedEleve.nom}
-                  </p>
+                  <div className="flex items-center gap-2 mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                    {selectedEleve.photo_url ? (
+                      <img
+                        src={selectedEleve.photo_url}
+                        alt={`${selectedEleve.prenom} ${selectedEleve.nom}`}
+                        className="w-8 h-8 rounded-full object-cover border border-green-200"
+                      />
+                    ) : (
+                      <span className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                        <User className="w-4 h-4 text-green-600" />
+                      </span>
+                    )}
+                    <p className="text-xs text-green-700">
+                      ✓ Élève sélectionné : {selectedEleve.prenom} {selectedEleve.nom}
+                    </p>
+                  </div>
                 )}
               </div>
 

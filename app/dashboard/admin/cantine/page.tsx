@@ -942,8 +942,16 @@ export default function CantinePage() {
                         disabled={isSubmittingInscription}
                         className="text-gray-900 w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 border-b last:border-b-0 disabled:opacity-50"
                       >
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-blue-600" />
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden shrink-0">
+                          {eleve.photo_url ? (
+                            <img
+                              src={eleve.photo_url}
+                              alt={`${eleve.prenom} ${eleve.nom}`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="w-4 h-4 text-blue-600" />
+                          )}
                         </div>
                         <div>
                           <p className="font-medium">{eleve.prenom} {eleve.nom}</p>
@@ -955,7 +963,15 @@ export default function CantinePage() {
                 )}
                 {selectedEleve && (
                   <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200 flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    {selectedEleve.photo_url ? (
+                      <img
+                        src={selectedEleve.photo_url}
+                        alt={`${selectedEleve.prenom} ${selectedEleve.nom}`}
+                        className="w-9 h-9 rounded-full object-cover border border-green-200"
+                      />
+                    ) : (
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    )}
                     <div>
                       <p className="font-medium text-green-800">{selectedEleve.prenom} {selectedEleve.nom}</p>
                       <p className="text-xs text-green-600">{selectedEleve.matricule} • {selectedEleve.classe_nom}</p>

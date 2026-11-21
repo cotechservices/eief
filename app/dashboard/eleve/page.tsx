@@ -17,6 +17,7 @@ interface Profil {
   classe_niveau: string;
   annee_scolaire: string;
   matricule: string;
+  photo_url?: string | null;
 }
 
 interface Matiere {
@@ -156,16 +157,29 @@ export default function EleveDashboard() {
     <div className="space-y-6">
       {/* En-tête */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold text-black">
-            Bonjour {profil?.prenom || "Élève"} ! 
-          </h1>
-          <p className="text-gray-900 font-semibold mt-1">
-            Elève de la {profil?.classe_nom || "—"}  • Année scolaire {profil?.annee_scolaire || "—"}  • Matricule : {" "}
-            <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
-              {profil?.matricule}
-            </span>
-          </p>
+        <div className="flex items-center gap-4">
+          {profil?.photo_url ? (
+            <img
+              src={profil.photo_url}
+              alt={`${profil.prenom} ${profil.nom}`}
+              className="w-16 h-16 rounded-full object-cover border-2 border-blue-200 shadow-sm"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-blue-100 text-blue-700 text-xl font-bold flex items-center justify-center border-2 border-blue-200">
+              {(profil?.prenom?.[0] || "")}{(profil?.nom?.[0] || "")}
+            </div>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold text-black">
+              Bonjour {profil?.prenom || "Élève"} ! 
+            </h1>
+            <p className="text-gray-900 font-semibold mt-1">
+              Elève de la {profil?.classe_nom || "—"}  • Année scolaire {profil?.annee_scolaire || "—"}  • Matricule : {" "}
+              <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
+                {profil?.matricule}
+              </span>
+            </p>
+          </div>
         </div>
         <Link
           href="/dashboard/eleve/messages"

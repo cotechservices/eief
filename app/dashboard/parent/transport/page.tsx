@@ -28,6 +28,7 @@ interface Enfant {
   id: number;
   nom: string;
   prenom: string;
+  photo_url?: string | null;
   classe: string;
   matricule: string;
   inscritTransport: boolean;
@@ -516,6 +517,37 @@ export default function TransportPage() {
             </select>
             <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
+          {/* Avatars des enfants pour sélection rapide */}
+          <div className="flex flex-wrap gap-2 mt-3">
+            {enfants.map((e) => (
+              <button
+                key={`avatar-${e.id}`}
+                type="button"
+                onClick={() => {
+                  setSelectedEnfantId(e.id);
+                  setSelectedLigneId(null);
+                  router.replace(`/dashboard/parent/transport?enfantId=${e.id}`);
+                }}
+                className={`flex items-center gap-2 px-2 py-1 rounded-full border text-xs transition ${selectedEnfantId === e.id
+                    ? "border-blue-500 bg-blue-50 text-blue-800"
+                    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
+              >
+                {e.photo_url ? (
+                  <img
+                    src={e.photo_url}
+                    alt={`${e.prenom} ${e.nom}`}
+                    className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                  />
+                ) : (
+                  <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold flex items-center justify-center">
+                    {(e.prenom?.[0] || "")}{(e.nom?.[0] || "")}
+                  </span>
+                )}
+                {e.prenom} {e.nom}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -531,9 +563,22 @@ export default function TransportPage() {
                     <Bus className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h2 className="text-lg font-bold text-blue-900">
-                      Abonnement transport actif
-                    </h2>
+                    <div className="flex items-center gap-2">
+                      {selectedEnfant.photo_url ? (
+                        <img
+                          src={selectedEnfant.photo_url}
+                          alt={`${selectedEnfant.prenom} ${selectedEnfant.nom}`}
+                          className="w-7 h-7 rounded-full object-cover border border-blue-200"
+                        />
+                      ) : (
+                        <span className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
+                          {(selectedEnfant.prenom?.[0] || "")}{(selectedEnfant.nom?.[0] || "")}
+                        </span>
+                      )}
+                      <h2 className="text-lg font-bold text-blue-900">
+                        Abonnement transport actif
+                      </h2>
+                    </div>
                     <p className="text-xs text-blue-700">
                       {selectedEnfant.prenom} {selectedEnfant.nom}
                     </p>

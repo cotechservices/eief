@@ -128,25 +128,18 @@ export default function PaiementGlobalModal({ isOpen, onClose, onSuccess, solde,
                 <span>Frais de scolarité</span>
                 <span className="font-medium text-indigo-600">{formatMontant(safeSolde.details.inscription)} GNF</span>
               </div>
-              {safeSolde.details.transport > 0 && (
-                <div className="flex justify-between pl-4">
-                  <span className="text-gray-900 flex items-center gap-1"><Bus className="w-3 h-3" /> Transport</span>
-                  <span className="font-medium text-blue-600">{formatMontant(safeSolde.details.transport)} GNF</span>
-                </div>
-              )}
-              {safeSolde.details.cantine > 0 && (
-                <div className="flex justify-between pl-4">
-                  <span className="text-gray-900 flex items-center gap-1"><Utensils className="w-3 h-3" /> Cantine</span>
-                  <span className="font-medium text-orange-600">{formatMontant(safeSolde.details.cantine)} GNF</span>
-                </div>
-              )}
-              {/* Récapitulatif détaillé du solde global*/}
-              {safeSolde.details.fournitures > 0 && (
-                <div className="flex justify-between pl-4">
-                  <span className="text-gray-900 flex items-center gap-1"><ShoppingCart className="w-3 h-3" /> Fournitures</span>
-                  <span className="font-medium text-purple-600">{formatMontant(safeSolde.details.fournitures)} GNF</span>
-                </div>
-              )} 
+              <div className="flex justify-between pl-4">
+                <span className="text-gray-900 flex items-center gap-1"><ShoppingCart className="w-3 h-3" /> Fournitures</span>
+                <span className="font-medium text-purple-600">{formatMontant(safeSolde.details.fournitures)} GNF</span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span className="text-gray-900 flex items-center gap-1"><Utensils className="w-3 h-3" /> Cantine</span>
+                <span className="font-medium text-orange-600">{formatMontant(safeSolde.details.cantine)} GNF</span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span className="text-gray-900 flex items-center gap-1"><Bus className="w-3 h-3" /> Transport</span>
+                <span className="font-medium text-blue-600">{formatMontant(safeSolde.details.transport)} GNF</span>
+              </div>
               <div className="border-t pt-2 flex justify-between font-bold text-black text-lg">
                 <span>Total restant</span>
                 <span className="text-indigo-700">{formatMontant(safeSolde.total)} GNF</span>

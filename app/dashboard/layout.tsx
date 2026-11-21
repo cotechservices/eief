@@ -145,6 +145,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<string>("");
   const [enfantsParent, setEnfantsParent] = useState<any[]>([]);
   const [activeEnfant, setActiveEnfant] = useState<any | null>(null);
+  const [profilEleve, setProfilEleve] = useState<any | null>(null);
 
   const isParentViewingEleve = userRole === "PARENT" && pathname.startsWith("/dashboard/eleve");
 
@@ -179,6 +180,33 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         .catch(() => {});
     }
   }, [userRole, searchParams]);
+
+  // Récupérer la photo de profil de l'élève connecté
+  useEffect(() => {
+    if (userRole !== "ELEVE") {
+      setProfilEleve(null);
+      return;
+    }
+    fetch("/api/eleve/profil")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.profil) setProfilEleve(data.profil);
+      })
+      .catch(() => {});
+  }, [userRole]);
+
+  // Photo à afficher dans la barre supérieure / le menu
+  const photoCourante = isParentViewingEleve
+    ? activeEnfant?.photo_url || null
+    : userRole === "ELEVE"
+      ? profilEleve?.photo_url || null
+      : (session?.user as any)?.image || null;
+
+  const nomCourant = isParentViewingEleve
+    ? `${activeEnfant?.prenom || ""} ${activeEnfant?.nom || ""}`.trim()
+    : userRole === "ELEVE"
+      ? `${profilEleve?.prenom || ""} ${profilEleve?.nom || ""}`.trim()
+      : session?.user?.name || "";
 
   const handleSelectEnfant = (enf: any) => {
     const id = enf.eleve_id || enf.id;
@@ -280,10 +308,23 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               </div>
 
               {activeEnfant ? (
-                <p className="text-xs font-bold text-gray-900 truncate">
-                  {activeEnfant.prenom} {activeEnfant.nom}
-                  {activeEnfant.classe_nom && <span className="block text-[11px] font-normal text-gray-900">{activeEnfant.classe_nom}</span>}
-                </p>
+                <div className="flex items-center gap-2">
+                  {activeEnfant.photo_url ? (
+                    <img
+                      src={activeEnfant.photo_url}
+                      alt={`${activeEnfant.prenom} ${activeEnfant.nom}`}
+                      className="w-8 h-8 rounded-full object-cover border border-blue-200 shrink-0"
+                    />
+                  ) : (
+                    <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center shrink-0">
+                      {(activeEnfant.prenom?.[0] || "")}{(activeEnfant.nom?.[0] || "")}
+                    </span>
+                  )}
+                  <p className="text-xs font-bold text-gray-900 truncate">
+                    {activeEnfant.prenom} {activeEnfant.nom}
+                    {activeEnfant.classe_nom && <span className="block text-[11px] font-normal text-gray-900">{activeEnfant.classe_nom}</span>}
+                  </p>
+                </div>
               ) : (
                 <p className="text-xs text-gray-900">Élève connecté</p>
               )}
@@ -340,10 +381,21 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                           <div key={childId} className="flex items-center justify-between group py-0.5">
                             <Link
                               href={`/dashboard/parent/enfants/${childId}`}
-                              className="text-xs text-gray-600 hover:text-blue-600 truncate flex-1"
+                              className="text-xs text-gray-600 hover:text-blue-600 truncate flex-1 flex items-center gap-1.5"
                               title={`${enf.prenom} ${enf.nom} (Dossier parent)`}
                             >
-                              • {enf.prenom} {enf.nom}
+                              {enf.photo_url ? (
+                                <img
+                                  src={enf.photo_url}
+                                  alt={`${enf.prenom} ${enf.nom}`}
+                                  className="w-4 h-4 rounded-full object-cover border border-gray-200 shrink-0"
+                                />
+                              ) : (
+                                <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 text-[8px] font-bold flex items-center justify-center shrink-0">
+                                  {(enf.prenom?.[0] || "")}{(enf.nom?.[0] || "")}
+                                </span>
+                              )}
+                              {enf.prenom} {enf.nom}
                             </Link>
                             <Link
                               href={`/dashboard/eleve?eleveId=${childId}`}
@@ -417,9 +469,17 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               )}
 
               <div className="flex items-center gap-3">
-                <UserCircle className="w-8 h-8 text-gray-900" />
+                {photoCourante ? (
+                  <img
+                    src={photoCourante}
+                    alt={nomCourant || "Photo de profil"}
+                    className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                  />
+                ) : (
+                  <UserCircle className="w-8 h-8 text-gray-900" />
+                )}
                 <div className="hidden md:block">
-                  <p className="text-sm font-medium text-gray-900">{session?.user?.name}</p>
+                  <p className="text-sm font-medium text-gray-900">{nomCourant || session?.user?.name}</p>
                   <p className="text-xs text-gray-900">
                     {isParentViewingEleve ? "PARENT (En mode élève)" : userRole}
                   </p>

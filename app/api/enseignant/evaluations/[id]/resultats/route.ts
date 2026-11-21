@@ -66,6 +66,7 @@ export async function GET(
          e.id AS eleve_id,
          u.nom,
          u.prenom,
+         COALESCE(e.photo_url, u.photo_url) AS photo_url,
          u.email,
          COALESCE(s.score, 0) AS score,
          COALESCE(s.total_points, 0) AS total_points,

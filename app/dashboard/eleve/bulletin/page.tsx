@@ -23,6 +23,7 @@ interface BulletinData {
     classe: string;
     niveau: string;
     annee_scolaire: string;
+    photo_url?: string | null;
   };
   lignes: LigneBulletin[];
   moyenneGenerale: number;
@@ -115,13 +116,26 @@ export default function BulletinPage() {
         className={`bg-gradient-to-br ${getMentionBg(bulletin.moyenneGenerale)} rounded-2xl p-6 text-white shadow-lg`}
       >
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <p className="text-lg font-semibold opacity-90">
-              {bulletin.eleve.prenom} {bulletin.eleve.nom}
-            </p>
-            <p className="text-sm opacity-75 mt-1">
-              Classe : {bulletin.eleve.classe} • Matricule : {bulletin.eleve.matricule}
-            </p>
+          <div className="flex items-center gap-3">
+            {bulletin.eleve.photo_url ? (
+              <img
+                src={bulletin.eleve.photo_url}
+                alt={`${bulletin.eleve.prenom} ${bulletin.eleve.nom}`}
+                className="w-14 h-14 rounded-full object-cover border-2 border-white/70 shadow"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-white/20 text-white flex items-center justify-center text-lg font-bold border-2 border-white/50">
+                {(bulletin.eleve.prenom?.[0] || "")}{(bulletin.eleve.nom?.[0] || "")}
+              </div>
+            )}
+            <div>
+              <p className="text-lg font-semibold opacity-90">
+                {bulletin.eleve.prenom} {bulletin.eleve.nom}
+              </p>
+              <p className="text-sm opacity-75 mt-1">
+                Classe : {bulletin.eleve.classe} • Matricule : {bulletin.eleve.matricule}
+              </p>
+            </div>
           </div>
           <div className="text-center">
             <p className="text-sm opacity-80">Moyenne générale</p>

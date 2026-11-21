@@ -11,6 +11,7 @@ interface Soumission {
   devoir_id: number;
   eleve_id: number;
   eleve_nom: string;
+  photo_url?: string | null;
   fichier_url: string | null;
   commentaire: string | null;
   date_soumission: string;
@@ -166,7 +167,20 @@ export default function SoumissionsPage() {
                     }`}
                 >
                   <div className="flex-1 min-w-0 pr-3">
-                    <p className="font-medium text-gray-900 text-sm truncate">{s.eleve_nom}</p>
+                    <div className="flex items-center gap-2">
+                      {s.photo_url ? (
+                        <img
+                          src={s.photo_url}
+                          alt={s.eleve_nom}
+                          className="w-7 h-7 rounded-full object-cover border border-gray-200 shrink-0"
+                        />
+                      ) : (
+                        <span className="w-7 h-7 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold flex items-center justify-center shrink-0">
+                          {s.eleve_nom?.charAt(0) || "?"}
+                        </span>
+                      )}
+                      <p className="font-medium text-gray-900 text-sm truncate">{s.eleve_nom}</p>
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[10px] text-gray-900 flex items-center gap-1">
                         <Clock className="w-3 h-3" /> {new Date(s.date_soumission).toLocaleDateString()}
@@ -199,7 +213,15 @@ export default function SoumissionsPage() {
               <div className="p-6 border-b flex justify-between items-start bg-gradient-to-r from-orange-50 to-white">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <User className="w-5 h-5 text-orange-600" />
+                    {selectedSoumission.photo_url ? (
+                      <img
+                        src={selectedSoumission.photo_url}
+                        alt={selectedSoumission.eleve_nom}
+                        className="w-9 h-9 rounded-full object-cover border border-orange-200"
+                      />
+                    ) : (
+                      <User className="w-5 h-5 text-orange-600" />
+                    )}
                     {selectedSoumission.eleve_nom}
                   </h3>
                   <p className="text-sm text-gray-900 mt-1 flex items-center gap-2">

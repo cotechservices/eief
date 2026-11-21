@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
       let restantADistribuer = montantTotal;
 
       // ======================================================
-      // 1. Récupérer TOUTES les échéances impayées (FIFO)
-      //    pour toutes les préinscriptions/réinscriptions du parent
+      // 1. Récupérer TOUTES les dettes impayées du parent,
+      //    avec la catégorie réelle de chaque prestation.
       // ======================================================
       const echeancesResult = await query(`
         SELECT 
@@ -85,21 +85,92 @@ export async function POST(request: NextRequest) {
 
       const echeances = echeancesResult.rows;
 
-      // FIFO : distribuer le montant sur les échéances dans l'ordre chronologique
+      type Dette = {
+        id: number;
+        source: 'echeance' | 'cantine' | 'transport';
+        typePaiement: string;
+        montant: number;
+        date: string | null;
+        preinscription_id: number | null;
+        reinscription_id: number | null;
+      };
+
+      const dettes: Dette[] = echeances.map((e: any) => ({
+        id: Number(e.id),
+        source: 'echeance',
+        typePaiement: e.type || 'inscription',
+        montant: Number(e.montant) || 0,
+        date: e.date_echeance,
+        preinscription_id: e.preinscription_id || null,
+        reinscription_id: e.reinscription_id || null,
+      }));
+
+      // La cantine et le transport n'ont pas d'échéance dans echeances_paiement :
+      // leur reste à payer se déduit des paiements déjà enregistrés par type.
+      const dettesSupplementaires = async (
+        table: 'preinscription_cantine' | 'preinscription_transport',
+        typePaiement: 'cantine' | 'transport',
+        source: 'cantine' | 'transport'
+      ) => {
+        const res = await query(`
+          SELECT pc.id, pc.preinscription_id, pc.prix, pc.created_at,
+                 COALESCE((
+                   SELECT SUM(p.montant)
+                   FROM paiements p
+                   WHERE p.preinscription_id = pc.preinscription_id
+                     AND p.statut IN ('valide', 'paye')
+                     AND p.type_frais ILIKE $2
+                 ), 0) AS deja_paye
+          FROM ${table} pc
+          JOIN preinscriptions pre ON pc.preinscription_id = pre.id
+          WHERE pre.parent_id = $1
+            AND pre.statut IN ('en_attente', 'valide', 'partiel')
+            AND pc.prix > 0
+          ORDER BY pc.created_at ASC, pc.id ASC
+        `, [parentId, `%${typePaiement}%`]);
+
+        for (const row of res.rows) {
+          const restant = Math.max(0, (Number(row.prix) || 0) - (Number(row.deja_paye) || 0));
+          if (restant <= 0) continue;
+          dettes.push({
+            id: Number(row.id),
+            source,
+            typePaiement,
+            montant: restant,
+            date: row.created_at,
+            preinscription_id: Number(row.preinscription_id),
+            reinscription_id: null,
+          });
+        }
+      };
+
+      await dettesSupplementaires('preinscription_cantine', 'cantine', 'cantine');
+      await dettesSupplementaires('preinscription_transport', 'transport', 'transport');
+
+      dettes.sort((a, b) => {
+        const da = a.date ? new Date(a.date).getTime() : Infinity;
+        const db = b.date ? new Date(b.date).getTime() : Infinity;
+        if (da !== db) return da - db;
+        return a.id - b.id;
+      });
+
+      // Distribution : chaque paiement est enregistré avec le type de la dette.
       const echeancesPayees: number[] = [];
       const echeancesPartielles: { id: number; montantPaye: number }[] = [];
 
-      for (const ech of echeances) {
+      for (const dette of dettes) {
         if (restantADistribuer <= 0) break;
 
-        const montantEcheance = Number(ech.montant) || 0;
-        if (montantEcheance <= 0) continue;
+        const montantDette = Number(dette.montant) || 0;
+        if (montantDette <= 0) continue;
 
-        const montantApplique = Math.min(restantADistribuer, montantEcheance);
-        const nouveauStatut = montantApplique >= montantEcheance ? 'paye' : 'partiel';
+        const montantApplique = Math.min(restantADistribuer, montantDette);
+        const paiRef = reference || (
+          dette.source === 'echeance'
+            ? `GLB-ECH-${dette.id}`
+            : `GLB-${dette.source.toUpperCase()}-${dette.id}`
+        );
 
-        // Insérer un paiement pour cette échéance
-        const paiRef = reference || `GLB-ECH-${ech.id}`;
         await query(`
           INSERT INTO paiements (
             preinscription_id,
@@ -116,44 +187,46 @@ export async function POST(request: NextRequest) {
           ) VALUES ($1, $2, $3, $4, $5, $6, 'valide', CURRENT_DATE,
             EXTRACT(MONTH FROM CURRENT_DATE), EXTRACT(YEAR FROM CURRENT_DATE), $7)
         `, [
-          ech.preinscription_id || null,
-          ech.reinscription_id || null,
+          dette.preinscription_id,
+          dette.reinscription_id,
           montantApplique,
-          ech.type || 'inscription',
+          dette.typePaiement,
           modePaiement,
           paiRef,
           userId
         ]);
 
-        // Mettre à jour le statut de l'échéance
-        if (nouveauStatut === 'paye') {
-          await query(`
-            UPDATE echeances_paiement 
-            SET statut = 'paye',
-                date_paiement = CURRENT_DATE,
-                reference_transaction = $2,
-                mode_paiement = $3,
-                updated_at = NOW()
-            WHERE id = $1
-          `, [ech.id, paiRef, modePaiement]);
-          echeancesPayees.push(ech.id);
-        } else {
-          // Partiel : réduire le montant restant de l'échéance
-          await query(`
-            UPDATE echeances_paiement 
-            SET statut = 'partiel',
-                montant = montant - $2,
-                updated_at = NOW()
-            WHERE id = $1
-          `, [ech.id, montantApplique]);
-          echeancesPartielles.push({ id: ech.id, montantPaye: montantApplique });
+        // Seules les échéances scolarité/fournitures ont un statut à mettre à jour.
+        if (dette.source === 'echeance') {
+          const nouveauStatut = montantApplique >= montantDette ? 'paye' : 'partiel';
+          if (nouveauStatut === 'paye') {
+            await query(`
+              UPDATE echeances_paiement 
+              SET statut = 'paye',
+                  date_paiement = CURRENT_DATE,
+                  reference_transaction = $2,
+                  mode_paiement = $3,
+                  updated_at = NOW()
+              WHERE id = $1
+            `, [dette.id, paiRef, modePaiement]);
+            echeancesPayees.push(dette.id);
+          } else {
+            await query(`
+              UPDATE echeances_paiement 
+              SET statut = 'partiel',
+                  montant = montant - $2,
+                  updated_at = NOW()
+              WHERE id = $1
+            `, [dette.id, montantApplique]);
+            echeancesPartielles.push({ id: dette.id, montantPaye: montantApplique });
+          }
         }
 
         restantADistribuer -= montantApplique;
       }
 
       // ======================================================
-      // 2. Si surplus (plus que toutes les échéances), enregistrer comme avance
+      // 2. Si surplus (plus que toutes les dettes), enregistrer comme avance
       // ======================================================
       if (restantADistribuer > 0) {
         const preCheck = await query(`

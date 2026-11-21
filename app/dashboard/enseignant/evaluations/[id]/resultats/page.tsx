@@ -13,6 +13,7 @@ interface Resultat {
   eleve_id: number;
   nom: string;
   prenom: string;
+  photo_url?: string | null;
   email: string;
   score: number;
   total_points: number;
@@ -190,6 +191,17 @@ export default function ResultatsQCMPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <span className="text-gray-900 font-mono text-xs">{index + 1}.</span>
+                            {res.photo_url ? (
+                              <img
+                                src={res.photo_url}
+                                alt={`${res.prenom} ${res.nom}`}
+                                className="w-9 h-9 rounded-full object-cover border border-gray-200 shrink-0"
+                              />
+                            ) : (
+                              <span className="w-9 h-9 rounded-full bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center shrink-0">
+                                {(res.prenom?.[0] || "")}{(res.nom?.[0] || "")}
+                              </span>
+                            )}
                             <div>
                               <p className="font-bold text-gray-900">{res.nom} {res.prenom}</p>
                               <p className="text-xs text-gray-900">{res.email}</p>

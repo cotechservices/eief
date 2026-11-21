@@ -31,6 +31,7 @@ interface StatsData {
     date_saisie: string;
     eleve_prenom: string;
     eleve_nom: string;
+    eleve_photo_url?: string | null;
     classe_nom: string;
     matiere_nom: string;
   }>;
@@ -271,7 +272,20 @@ export default function DirecteurEtudesDashboard() {
                   {statsData.recentNotes.map((note) => (
                     <tr key={note.id} className="hover:bg-blue-50/30 transition">
                       <td className="py-3 font-semibold text-gray-900">
-                        {note.eleve_prenom} {note.eleve_nom}
+                        <div className="flex items-center gap-2">
+                          {note.eleve_photo_url ? (
+                            <img
+                              src={note.eleve_photo_url}
+                              alt={`${note.eleve_prenom} ${note.eleve_nom}`}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-semibold">
+                              {(note.eleve_prenom?.[0] || "")}{(note.eleve_nom?.[0] || "")}
+                            </div>
+                          )}
+                          <span>{note.eleve_prenom} {note.eleve_nom}</span>
+                        </div>
                       </td>
                       <td className="py-3 text-gray-900 text-xs">
                         <span className="px-2.5 py-1 bg-gray-100 text-gray-900 rounded-md font-medium">

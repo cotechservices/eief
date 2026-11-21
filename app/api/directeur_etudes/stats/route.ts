@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
         n.date_saisie,
         u_eleve.prenom AS eleve_prenom,
         u_eleve.nom AS eleve_nom,
+        COALESCE(e.photo_url, u_eleve.photo_url) AS eleve_photo_url,
         c.nom AS classe_nom,
         COALESCE(m.nom, 'Général') AS matiere_nom
       FROM notes n

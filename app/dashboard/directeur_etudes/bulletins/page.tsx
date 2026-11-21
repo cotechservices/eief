@@ -168,9 +168,22 @@ export default function BulletinsDirecteurPage() {
                 className="p-4 bg-gray-50 flex justify-between items-center cursor-pointer print:hidden hover:bg-gray-100 transition"
                 onClick={() => toggleBulletin(index)}
               >
-                <div>
-                  <h3 className="font-bold text-lg">{bulletin.eleve.nom} {bulletin.eleve.prenom}</h3>
-                  <p className="text-sm text-gray-900">Moyenne: {bulletin.moyenneGenerale.toFixed(2)}/20 - Rang: {bulletin.rang}e</p>
+                <div className="flex items-center gap-3">
+                  {bulletin.eleve.photo_url ? (
+                    <img
+                      src={bulletin.eleve.photo_url}
+                      alt={`${bulletin.eleve.prenom} ${bulletin.eleve.nom}`}
+                      className="w-10 h-10 rounded-full object-cover border border-gray-300"
+                    />
+                  ) : (
+                    <span className="w-10 h-10 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold">
+                      {(bulletin.eleve.nom?.[0] || "")}{(bulletin.eleve.prenom?.[0] || "")}
+                    </span>
+                  )}
+                  <div>
+                    <h3 className="font-bold text-lg">{bulletin.eleve.nom} {bulletin.eleve.prenom}</h3>
+                    <p className="text-sm text-gray-900">Moyenne: {bulletin.moyenneGenerale.toFixed(2)}/20 - Rang: {bulletin.rang}e</p>
+                  </div>
                 </div>
                 {expandedBulletin === index ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </div>
@@ -217,12 +230,20 @@ export default function BulletinsDirecteurPage() {
                 {/* 3. Informations de l'élève */}
                 <div className="border border-black flex h-[100px] mb-2 mt-1">
                   <div className="w-[100px] border-r border-black flex items-center justify-center overflow-hidden bg-gray-200">
-                    {/* Silhouette de l'élève */}
-                    <div className="w-full h-full text-gray-900">
-                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full scale-125 translate-y-3">
-                        <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
-                      </svg>
-                    </div>
+                    {bulletin.eleve.photo_url ? (
+                      <img
+                        src={bulletin.eleve.photo_url}
+                        alt={`${bulletin.eleve.prenom} ${bulletin.eleve.nom}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      /* Silhouette de l'élève */
+                      <div className="w-full h-full text-gray-900">
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full scale-125 translate-y-3">
+                          <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 p-2 text-[13px] leading-relaxed flex">
                     <div className="w-[170px]">

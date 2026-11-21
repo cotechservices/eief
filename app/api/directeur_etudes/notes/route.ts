@@ -249,7 +249,7 @@ export async function GET(req: NextRequest) {
       `, [targetEnseignementId]);
 
       const elevesRes = await query(`
-        SELECT e.id, e.matricule, u.prenom, u.nom
+        SELECT e.id, e.matricule, u.prenom, u.nom, COALESCE(e.photo_url, u.photo_url) as photo_url
         FROM eleves e
         JOIN utilisateurs u ON u.id = e.utilisateur_id
         WHERE e.classe_id = $1 AND e.est_inscrit = true AND e.deleted_at IS NULL
